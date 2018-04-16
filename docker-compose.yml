@@ -1,0 +1,12 @@
+version: '3'
+services:
+  finch:
+    buildout: .
+    image: birdhouse/finch
+    environment:
+      HOSTNAME: $HOSTNAME
+      HTTP_PORT: $HTTP_PORT
+      OUTPUT_PORT: $OUTPUT_PORT
+    ports:
+      - "$HTTP_PORT:$HTTP_PORT"
+      - "$OUTPUT_PORT:$OUTPUT_PORT"
