@@ -30,6 +30,7 @@ dependencies:
 - lxml=3.7
 - libxslt=1.1.29
 - genshi=0.7
+- xclim
 - pip:
   - sphinx-autoapi==0.5.0
   - -e git+https://github.com/huard/sphinx-autodoc-pywps.git#egg=sphinx_autodoc_pywps
