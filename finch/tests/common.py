@@ -1,5 +1,8 @@
+import os
+
 from pywps.tests import WpsClient, WpsTestResponse
 
+TESTS_HOME = os.path.abspath(os.path.dirname(__file__))
 
 class WpsTestClient(WpsClient):
 
