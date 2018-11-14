@@ -1,43 +1,13 @@
 from pywps import Process
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
-from funcsigs import signature
-import funcsigs
 import eggshell.general.utils
 from eggshell.log import init_process_logger
-import xclim.temperature
+
 import xarray as xr
 import os
 import logging
 LOGGER = logging.getLogger("PYWPS")
-
-
-def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC')):
-    return LiteralInput(name, 'Frequency',
-                        abstract='Resampling frequency',
-                        data_type='string',
-                        min_occurs=0,
-                        max_occurs=1,
-                        default=default,
-                        allowed_values=allowed)
-
-def make_thresh(name, default, abstract=''):
-    return LiteralInput(name, 'threshold',
-                        abstract=abstract,
-                        data_type='float',
-                        min_occurs=0,
-                        max_occurs=1,
-                        default=default,
-                        )
-
-
-def make_nc_input(name):
-    return ComplexInput(name, 'Resource',
-                 abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
-                 metadata=[Metadata('Info')],
-                 min_occurs=1,
-                 max_occurs=1000,
-                 supported_formats=[FORMATS.NETCDF])
 
 
 class UnivariateXclimIndicatorProcess(Process):
@@ -73,16 +43,23 @@ class UnivariateXclimIndicatorProcess(Process):
         )
 
     def load_inputs(self, params):
+        # Ideally this would be based on the Parameters docstring section rather than name conventions.
         inputs = []
 
         for name, attrs in params.items():
             if name in ['tas', 'tasmin', 'tasmax', 'pr', 'prsn']:
                 inputs.append(make_nc_input(name))
                 self.varname = name
+            elif name in ['tn10', 'tn90']:
+                inputs.append(make_nc_input(name))
+            elif name in ['thresh_tasmin', 'thresh_tasmax']:
+                inputs.append(make_nc_input(name))
             elif name in ['thresh',]:
                 inputs.append(make_thresh(name, attrs['default'], attrs['desc']))
             elif name in ['freq',]:
                 inputs.append(make_freq(name, attrs['default']))
+            elif name in ['window', ]:
+                inputs.append(make_window(name, attrs['default'], attrs['desc']))
             else:
                 raise NotImplementedError(name)
 
@@ -113,4 +90,41 @@ class UnivariateXclimIndicatorProcess(Process):
         response.outputs['output_netcdf'].file = out_fn
         return response
 
-tmmean = UnivariateXclimIndicatorProcess(xclim.temperature.tmmean)
+
+def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC')):
+    return LiteralInput(name, 'Frequency',
+                        abstract='Resampling frequency',
+                        data_type='string',
+                        min_occurs=0,
+                        max_occurs=1,
+                        default=default,
+                        allowed_values=allowed)
+
+def make_thresh(name, default, abstract=''):
+    return LiteralInput(name, 'threshold',
+                        abstract=abstract,
+                        data_type='float',
+                        min_occurs=0,
+                        max_occurs=1,
+                        default=default,
+                        )
+
+def make_window(name, default, abstract=''):
+    return LiteralInput(name, 'window',
+                        abstract=abstract,
+                        data_type='integer',
+                        min_occurs=0,
+                        max_occurs=1,
+                        default=default,
+                        )
+
+def make_nc_input(name):
+    return ComplexInput(name, 'Resource',
+                 abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+                 metadata=[Metadata('Info')],
+                 min_occurs=1,
+                 max_occurs=1000,
+                 supported_formats=[FORMATS.NETCDF])
+
+
+

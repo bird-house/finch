@@ -1,3 +1,4 @@
+import pytest
 from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
@@ -8,6 +9,7 @@ WPS, OWS = get_ElementMakerForVersion(VERSION)
 xpath_ns = get_xpath_ns(VERSION)
 
 TESTS_HOME = Path(__file__).parent
+CFG_FILE = str(TESTS_HOME / 'test.cfg')
 
 class WpsTestClient(WpsClient):
 
@@ -43,3 +45,4 @@ def get_output(doc):
             output[identifier_el.text] = data_el[0].text
 
     return output
+
