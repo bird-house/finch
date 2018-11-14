@@ -4,33 +4,7 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- python=2.7
-- pyopenssl=0.16
-- cryptography=1.4
-- pyyaml=3.11
-- curl=7.45.0
-- icu=58
-# buildout
-- mako
-# tests
-- pytest
-# pep8
-- flake8
-- pycodestyle
-# docs
-- sphinx
-- six
-- doc8
-# wps
-- pywps=4.0.0
-- click=6
-- nginx=1.10.3
-- supervisor=3.3
-- gunicorn=19.7
-- lxml=3.7
-- libxslt=1.1.29
-- genshi=0.7
-- xclim
-- pip:
-  - sphinx-autoapi==0.5.0
-  - -e git+https://github.com/huard/sphinx-autodoc-pywps.git#egg=sphinx_autodoc_pywps
+- pywps=4.1
+- jinja2
+- click
+- psutil

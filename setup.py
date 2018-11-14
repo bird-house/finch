@@ -24,14 +24,14 @@ classifiers = [
     'Natural Language :: English',
     "Programming Language :: Python :: 2",
     'Programming Language :: Python :: 2.7',
-    # 'Programming Language :: Python :: 3',
-    # 'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.6',
     'Topic :: Scientific/Engineering :: Atmospheric Science',
     'License :: OSI Approved :: Apache Software License',
 ]
 
 setup(name='finch',
-      version='0.1.0',
+      version=version,
       description="A Web Processing Service for Climate Indicators",
       long_description=README + '\n\n' + CHANGES,
       author="David Huard",
@@ -42,10 +42,8 @@ setup(name='finch',
       keywords='wps pywps birdhouse finch',
       packages=find_packages(),
       include_package_data=True,
-      zip_safe=False,
-      test_suite='finch',
       install_requires=reqs,
       entry_points={
           'console_scripts': [
-             'finch=finch:main',
+             'finch=finch.cli:cli',
           ]},)

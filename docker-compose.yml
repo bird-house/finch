@@ -1,12 +1,13 @@
 version: '3'
 services:
-  finch:
-    buildout: .
-    image: birdhouse/finch
-    environment:
-      HOSTNAME: $HOSTNAME
-      HTTP_PORT: $HTTP_PORT
-      OUTPUT_PORT: $OUTPUT_PORT
+  emu:
+    build: .
+    image: bird-house/finch
     ports:
-      - "$HTTP_PORT:$HTTP_PORT"
-      - "$OUTPUT_PORT:$OUTPUT_PORT"
+      - "5000:5000"
+
+
+# docker-compose build
+# docker-compose up
+# docker-compose down
+# docker-compose rm
