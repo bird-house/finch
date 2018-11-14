@@ -13,5 +13,5 @@ def test_wps_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     assert sorted(names.split()) == [
-        'inout',
-        'wordcounter']
+        'hello',
+    ]

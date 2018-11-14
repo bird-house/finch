@@ -6,6 +6,8 @@
 
    installation
    configuration
+   dev_guide
+   processes
    changes
 
 Indices and tables

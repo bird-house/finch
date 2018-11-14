@@ -3,86 +3,104 @@
 Installation
 ============
 
-The installation is using the Python distribution system `Anaconda`_ to maintain software dependencies.
-Anaconda will be installed during the installation process in your home directory ``~/anaconda``.
+.. contents::
+    :local:
+    :depth: 1
 
-The installation process setups a conda environment named ``finch`` with all dependent conda (and pip) packages.
-The installation folder (for configuration files etc) is by default ``~/birdhouse``.
-Configuration options can be overriden in the buildout ``custom.cfg`` file. The ``ANACONDA_HOME`` and ``CONDA_ENVS_DIR`` locations
-can be changed in the ``Makefile.config`` file.
+Install from Conda
+------------------
 
-The default installation *does not need admin rights* and files will only be written into the ``$HOME`` folder of the installation user.
-The services are started using `supervisor <http://supervisord.org/>`_ and run as the installation user.
+.. warning::
 
-Now, check out the finch code from GitHub and start the installation:
+   TODO: Prepare Conda package.
+
+Install from GitHub
+-------------------
+
+Check out code from the Finch GitHub repo and start the installation:
 
 .. code-block:: sh
 
    $ git clone https://github.com/bird-house/finch.git
    $ cd finch
-   $ make clean install
+   $ conda env create -f environment.yml
+   $ source activate finch
+   $ python setup.py develop
 
-After successful installation you need to start the services:
+... or do it the lazy way
++++++++++++++++++++++++++
+
+The previous installation instructions assume you have Anaconda installed.
+We provide also a ``Makefile`` to run this installation without additional steps:
 
 .. code-block:: sh
 
-   $ make start  # starts supervisor services
-   $ make status # shows supervisor status
+   $ git clone https://github.com/bird-house/finch.git
+   $ cd finch
+   $ make clean    # cleans up a previous Conda environment
+   $ make install  # installs Conda if necessary and runs the above installation steps
 
-The depolyed WPS service is by default available on http://localhost:8095/wps?service=WPS&version=1.0.0&request=GetCapabilities.
+Start Finch PyWPS service
+-------------------------
+
+After successful installation you can start the service using the ``finch`` command-line.
+
+.. code-block:: sh
+
+   $ finch --help # show help
+   $ finch start  # start service with default configuration
+
+   OR
+
+   $ finch start --daemon # start service as daemon
+   loading configuration
+   forked process id: 42
+
+The deployed WPS service is by default available on:
+
+http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities.
+
+.. NOTE:: Remember the process ID (PID) so you can stop the service with ``kill PID``.
+
+You can find which process uses a given port using the following command (here for port 5000):
+
+.. code-block:: sh
+
+   $ netstat -nlp | grep :5000
+
 
 Check the log files for errors:
 
 .. code-block:: sh
 
-   $ tail -f  ~/birdhouse/var/log/pywps/finch.log
-   $ tail -f  ~/birdhouse/var/log/supervisor/finch.log
+   $ tail -f  pywps.log
 
-You will find more information about the installation in the `Makefile documentation <http://birdhousebuilderbootstrap.readthedocs.io/en/latest/>`_.
+... or do it the lazy way
++++++++++++++++++++++++++
 
-Non-default installation
-------------------------
-
-You can customize the installation to use different ports, locations and run user.
-
-To change the anaconda location edit the ``Makefile.config``, for example::
-
-   ANACONDA_HOME ?= /opt/anaconda
-   CONDA_ENVS_DIR ?= /opt/anaconda/envs
-
-You can install finch as ``root`` and run it as unprivileged user like ``www-data``:
+You can also use the ``Makefile`` to start and stop the service:
 
 .. code-block:: sh
 
-   root$ mkdir -p /opt/birdhouse/src
-   root$ cd /opt/birdhouse/src
-   root$ git clone https://github.com/bird-house/finch.git
-   root$ cd finch
+  $ make start
+  $ make status
+  $ tail -f pywps.log
+  $ make stop
 
-Edit ``custom.cfg``:
 
-.. code-block:: ini
+Run Finch as Docker container
+-----------------------------
 
-    [buildout]
-    extends = buildout.cfg
+You can also run Finch as a Docker container.
 
-    [settings]
-    hostname = finch
-    http-port = 80
-    output-port = 8000
-    log-level = WARN
+.. warning::
 
-    # deployment options
-    prefix = /opt/birdhouse
-    user = www-data
-    etc-user = root
+  TODO: Describe Docker container support.
 
-Run the installtion and start the services:
+Use Ansible to deploy Finch on your System
+------------------------------------------
 
-.. code-block:: sh
+Use the `Ansible playbook`_ for PyWPS to deploy Finch on your system.
 
-    root$ make clean install
-    root$ make start      # stop or restart
-    root$ make status
 
-.. _Anaconda: https://www.continuum.io/
+.. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html
