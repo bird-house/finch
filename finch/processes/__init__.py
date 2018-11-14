@@ -22,4 +22,3 @@ indicators = get_indicators(xclim.temperature, xclim.precip)
 
 # Instantiate processes
 processes = [UnivariateXclimIndicatorProcess(i) for i in indicators]
-

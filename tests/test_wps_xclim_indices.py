@@ -26,9 +26,4 @@ def test_wps_xclim_indices(tas_data_set):
     p = Path(out['output_netcdf'])
     fn = Path('/').joinpath(*p.parts[1:])
     ds = xr.open_dataset(fn)
-    da = ds.tmmean
-
-
-
-
-
+    assert ds.tmmean.standard_name == 'air_temperature'

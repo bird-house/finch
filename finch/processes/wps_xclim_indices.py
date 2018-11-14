@@ -15,6 +15,7 @@ class UnivariateXclimIndicatorProcess(Process):
     def __init__(self, xci):
         """Create a WPS process from an xclim indicator class instance."""
         self.xci = xci
+        self.varname = None
 
         attrs = xci.json
 
@@ -54,9 +55,9 @@ class UnivariateXclimIndicatorProcess(Process):
                 inputs.append(make_nc_input(name))
             elif name in ['thresh_tasmin', 'thresh_tasmax']:
                 inputs.append(make_nc_input(name))
-            elif name in ['thresh',]:
+            elif name in ['thresh', ]:
                 inputs.append(make_thresh(name, attrs['default'], attrs['desc']))
-            elif name in ['freq',]:
+            elif name in ['freq', ]:
                 inputs.append(make_freq(name, attrs['default']))
             elif name in ['window', ]:
                 inputs.append(make_window(name, attrs['default'], attrs['desc']))
@@ -64,7 +65,6 @@ class UnivariateXclimIndicatorProcess(Process):
                 raise NotImplementedError(name)
 
         return inputs
-
 
     def _handler(self, request, response):
         init_process_logger('log.txt')
@@ -100,6 +100,7 @@ def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC')):
                         default=default,
                         allowed_values=allowed)
 
+
 def make_thresh(name, default, abstract=''):
     return LiteralInput(name, 'threshold',
                         abstract=abstract,
@@ -108,6 +109,7 @@ def make_thresh(name, default, abstract=''):
                         max_occurs=1,
                         default=default,
                         )
+
 
 def make_window(name, default, abstract=''):
     return LiteralInput(name, 'window',
@@ -118,13 +120,11 @@ def make_window(name, default, abstract=''):
                         default=default,
                         )
 
+
 def make_nc_input(name):
     return ComplexInput(name, 'Resource',
-                 abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
-                 metadata=[Metadata('Info')],
-                 min_occurs=1,
-                 max_occurs=1000,
-                 supported_formats=[FORMATS.NETCDF])
-
-
-
+                        abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+                        metadata=[Metadata('Info')],
+                        min_occurs=1,
+                        max_occurs=1000,
+                        supported_formats=[FORMATS.NETCDF])
