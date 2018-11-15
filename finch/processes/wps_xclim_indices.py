@@ -1,8 +1,8 @@
 from pywps import Process
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
-import eggshell.general.utils
-from eggshell.log import init_process_logger
+# import eggshell.general.utils
+# from eggshell.log import init_process_logger
 
 import xarray as xr
 import os
@@ -60,21 +60,26 @@ class UnivariateXclimIndicatorProcess(Process):
             elif name in ['freq', ]:
                 inputs.append(make_freq(name, attrs['default']))
             elif name in ['window', ]:
-                inputs.append(make_window(name, attrs['default'], attrs['desc']))
+                # TODO: does not work
+                # inputs.append(make_window(name, attrs['default'], attrs['desc']))
+                pass
             else:
-                raise NotImplementedError(name)
+                # raise NotImplementedError(name)
+                LOGGER.warning("not implemented: {}".format(name))
 
         return inputs
 
     def _handler(self, request, response):
-        init_process_logger('log.txt')
-        response.outputs['output_log'].file = 'log.txt'
+        # init_process_logger('log.txt')
+        with open(os.path.join(self.workdir, 'log.txt'), 'w') as fp:
+            fp.write('not used ... sorry.\n')
+            response.outputs['output_log'].file = fp.name
 
         # Process inputs
         kwds = {}
         for name, obj in request.inputs.items():
             if isinstance(obj[0], ComplexInput):
-                fn = eggshell.general.utils.archiveextract(resource=eggshell.general.utils.rename_complexinputs(obj))
+                fn = obj[0].file  # eggshell.general.utils.archiveextract(resource=eggshell.general.utils.rename_complexinputs(obj)) # noqa
                 ds = xr.open_mfdataset(fn)
                 kwds[name] = ds.data_vars[self.varname]
 

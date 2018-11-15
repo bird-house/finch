@@ -8,3 +8,14 @@ dependencies:
 - jinja2
 - click
 - psutil
+# app
+# - birdhouse-eggshell
+# xclim
+#- xclim
+- netcdf4
+- numpy
+- dask
+- xarray
+- scipy
+- pip:
+  - -e git+https://github.com/Ouranosinc/xclim.git#egg=xclim
