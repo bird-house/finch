@@ -35,6 +35,7 @@ class UnivariateXclimIndicatorProcess(Process):
         super(UnivariateXclimIndicatorProcess, self).__init__(
             self._handler,
             identifier=attrs['identifier'],
+            version='0.1',
             title=attrs['long_name'],
             abstract=attrs['abstract'],
             inputs=self.load_inputs(attrs['parameters']),
