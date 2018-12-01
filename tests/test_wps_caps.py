@@ -6,12 +6,12 @@ from finch.processes import processes
 
 
 def test_wps_caps():
-    print(processes)
+
     client = client_for(Service(processes=processes))
     resp = client.get(service='wps', request='getcapabilities', version='1.0.0')
     names = resp.xpath_text('/wps:Capabilities'
-                            '/wps:ProcessOfferings'
-                            '/wps:Process'
-                            '/ows:Identifier')
+                        '/wps:ProcessOfferings'
+                        '/wps:Process'
+                        '/ows:Identifier')
 
     assert len(processes) == len(names.split())

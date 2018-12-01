@@ -17,7 +17,7 @@ class UnivariateXclimIndicatorProcess(Process):
         self.xci = xci
         self.varname = None
 
-        attrs = xci.json
+        attrs = xci.json()
 
         outputs = [
             ComplexOutput('output_netcdf', 'Function output in netCDF',
@@ -38,7 +38,7 @@ class UnivariateXclimIndicatorProcess(Process):
             version='0.1',
             title=attrs['long_name'],
             abstract=attrs['abstract'],
-            inputs=self.load_inputs(attrs['parameters']),
+            inputs=self.load_inputs(eval(attrs['parameters'])),
             outputs=outputs,
             status_supported=True,
             store_supported=True,
@@ -89,7 +89,6 @@ class UnivariateXclimIndicatorProcess(Process):
 
         # Run the computation
         out = self.xci(**kwds)
-
         # Store the output
         out_fn = os.path.join(self.workdir, 'out.nc')
         out.to_netcdf(out_fn)
@@ -97,7 +96,7 @@ class UnivariateXclimIndicatorProcess(Process):
         return response
 
 
-def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC')):
+def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC', 'AS-JUL')):
     return LiteralInput(name, 'Frequency',
                         abstract='Resampling frequency',
                         data_type='string',
