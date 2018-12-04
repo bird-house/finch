@@ -7,10 +7,13 @@ import os
 
 from setuptools import setup, find_packages
 
-version = __import__('finch').__version__
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
+
+about = {}
+with open(os.path.join(here, 'finch', '__version__.py'), 'r') as f:
+    exec(f.read(), about)
 
 reqs = [line.strip() for line in open('requirements.txt')]
 
@@ -31,11 +34,11 @@ classifiers = [
 ]
 
 setup(name='finch',
-      version=version,
+      version=about['__version__'],
       description="A Web Processing Service for Climate Indicators",
       long_description=README + '\n\n' + CHANGES,
-      author="David Huard",
-      author_email='huard.david@ouranos.ca',
+      author=about['__author__'],
+      author_email=about['__email__'],
       url='https://github.com/bird-house/finch',
       classifiers=classifiers,
       license="Apache Software License 2.0",
