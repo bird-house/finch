@@ -2,8 +2,6 @@
 
 """Top-level package for Finch."""
 
-from .wsgi import application
+from .__version__ import __author__, __email__, __version__
 
-__author__ = """David Huard"""
-__email__ = 'huard.david@ouranos.ca'
-__version__ = '0.1.0'
+from .wsgi import application
