@@ -48,5 +48,7 @@ setup(name='finch',
       install_requires=reqs,
       entry_points={
           'console_scripts': [
-             'finch=finch.cli:cli',
-          ]},)
+              'finch=finch.cli:cli',
+          ]
+      },
+      )
