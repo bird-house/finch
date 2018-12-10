@@ -18,7 +18,7 @@ ARG pythonpath=/opt/python
 COPY environment.yml /opt/wps/environment.yml
 RUN conda env create -p ${pythonpath} -f environment.yml \
     # Install gunicorn to use as a production server
-    && conda install -p ${pythonpath} gunicorn \
+    && conda install -p ${pythonpath} gunicorn psycopg2 \
     && rm -rf /opt/conda/pkgs/*
 
 ## Add conda environent to the PATH. No need to activate the environment.
