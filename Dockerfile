@@ -12,25 +12,28 @@ RUN apt-get update && apt-get install -y \
 RUN conda update -n base conda
 
 WORKDIR /opt/wps
+ARG pythonpath=/opt/python
 
 # Create conda environment
 COPY environment.yml /opt/wps/environment.yml
-RUN conda env create -n wps -f environment.yml \
+RUN conda env create -p ${pythonpath} -f environment.yml \
+    # Install gunicorn to use as a production server
+    && conda install -p ${pythonpath} gunicorn \
     && rm -rf /opt/conda/pkgs/*
 
+## Add conda environent to the PATH. No need to activate the environment.
+ENV PATH ${pythonpath}/bin:$PATH
+
 # Copy WPS project
-COPY . /opt/wps
+COPY . .
 
-# Add wps environent to the PATH. No need to activate the environment.
-ENV PATH /opt/conda/envs/wps/bin:$PATH
+RUN python setup.py develop
 
-RUN python setup.py install
-
+RUN mkdir -p /data/wpsoutputs
 
 EXPOSE 5000
 
-ENTRYPOINT [ "/usr/bin/tini", "--"]
-CMD ["finch", "start", "-b", "0.0.0.0", "--config", "/opt/wps/etc/demo.cfg"]
+CMD ["gunicorn", "--bind=0.0.0.0:5000", "finch.wsgi:application"]
 
 # docker build -t bird-house/finch .
 # docker run -p 5000:5000 bird-house/finch
