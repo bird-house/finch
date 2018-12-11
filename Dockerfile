@@ -29,6 +29,7 @@ COPY . .
 
 RUN python setup.py develop
 
+# Create a folder to save wps outputs. This can then be mounted as a volume on the host.
 RUN mkdir -p /data/wpsoutputs
 
 EXPOSE 5000
