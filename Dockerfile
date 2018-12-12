@@ -11,26 +11,18 @@ RUN apt-get update && apt-get install -y \
 # Update conda
 RUN conda update -n base conda
 
-WORKDIR /opt/wps
-ARG pythonpath=/opt/python
+WORKDIR /code
 
 # Create conda environment
-COPY environment.yml /opt/wps/environment.yml
-RUN conda env create -p ${pythonpath} -f environment.yml \
-    # Install gunicorn to use as a production server
-    && conda install -p ${pythonpath} gunicorn psycopg2 \
+COPY environment.yml environment.yml
+RUN conda env update -n base -f environment.yml \
+    && conda install gunicorn psycopg2 \
     && rm -rf /opt/conda/pkgs/*
-
-## Add conda environent to the PATH. No need to activate the environment.
-ENV PATH ${pythonpath}/bin:$PATH
 
 # Copy WPS project
 COPY . .
 
-RUN python setup.py develop
-
-# Create a folder to save wps outputs. This can then be mounted as a volume on the host.
-RUN mkdir -p /data/wpsoutputs
+RUN python setup.py develop --no-deps
 
 EXPOSE 5000
 
