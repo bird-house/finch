@@ -16,7 +16,7 @@ WORKDIR /code
 # Create conda environment
 COPY environment.yml environment.yml
 RUN conda env update -n base -f environment.yml \
-    && conda install gunicorn psycopg2 \
+    && conda install -c conda-forge gunicorn psycopg2 \
     && rm -rf /opt/conda/pkgs/*
 
 # Copy WPS project
