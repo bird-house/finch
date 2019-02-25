@@ -1,3 +1,19 @@
 .git
 docs/
 tests/
+src/
+finch.egg-info/
+
+# Any pywps generated log files
+**/*.log
+
+# Unit test / Coverage reports
+.cache
+.pytest_cache
+
+# PyCharm
+*.idea
+
+# Byte-compiled / optimized / DLL files
+**/__pycache__
+**/*.py[cod]
