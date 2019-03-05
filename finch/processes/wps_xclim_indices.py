@@ -3,7 +3,7 @@ from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
 # import eggshell.general.utils
 # from eggshell.log import init_process_logger
-
+from unidecode import unidecode
 import xarray as xr
 import os
 import logging
@@ -37,7 +37,7 @@ class XclimIndicatorProcess(Process):
             identifier=identifier,
             version='0.1',
             title=attrs['long_name'],
-            abstract=attrs['abstract'],
+            abstract=unidecode(attrs['abstract']),
             inputs=self.load_inputs(eval(attrs['parameters'])),
             outputs=outputs,
             status_supported=True,
