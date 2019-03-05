@@ -4,14 +4,14 @@ from pywps import Service
 from pywps.tests import client_for, assert_response_success
 
 from .common import get_output, CFG_FILE
-from finch.processes import UnivariateXclimIndicatorProcess
+from finch.processes import XclimIndicatorProcess
 from xclim.temperature import tg_mean
 import xarray as xr
 from pathlib import Path
 
 
 def test_wps_xclim_indices(tas_data_set):
-    client = client_for(Service(processes=[UnivariateXclimIndicatorProcess(tg_mean)], cfgfiles=CFG_FILE))
+    client = client_for(Service(processes=[XclimIndicatorProcess(tg_mean)], cfgfiles=CFG_FILE))
 
     datainputs = "tas=files@xlink:href=file://{fn};" \
                  "freq={freq}".format(fn=tas_data_set,
