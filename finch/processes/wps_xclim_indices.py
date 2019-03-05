@@ -125,10 +125,13 @@ class XclimIndicatorProcess(Process):
         self.write_log("Running computation")
         LOGGER.debug(kwds)
         out = self.xci(**kwds)
-        # Store the output
         out_fn = os.path.join(self.workdir, 'out.nc')
+
+        self.write_log("Writing the output netcdf")
         out.to_netcdf(out_fn)
         response.outputs['output_netcdf'].file = out_fn
+
+        self.write_log("Processing finished successfully")
         return response
 
 
