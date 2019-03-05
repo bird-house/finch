@@ -1,34 +1,23 @@
 # vim:set ft=dockerfile:
-FROM continuumio/miniconda3
+FROM python:3.6-slim-stretch
 MAINTAINER https://github.com/bird-house/finch
 LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.1.0"
 
 # Update Debian system
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    build-essential git \
     && rm -rf /var/lib/apt/lists/*
-
-# Update conda
-RUN conda update -n base conda
 
 WORKDIR /code
 
-# Create conda environment
-COPY environment.yml environment.yml
-RUN conda env update -n base -f environment.yml \
-    && conda install -c conda-forge gunicorn psycopg2 \
-    && rm -rf /opt/conda/pkgs/*
+COPY requirements.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir gunicorn psycopg2-binary
 
-# Copy WPS project
 COPY . .
 
-RUN python setup.py develop --no-deps
+RUN pip install --no-dependencies -e .
 
 EXPOSE 5000
 
 CMD ["gunicorn", "--bind=0.0.0.0:5000", "finch.wsgi:application"]
-
-# docker build -t bird-house/finch .
-# docker run -p 5000:5000 bird-house/finch
-# http://localhost:5000/wps?request=GetCapabilities&service=WPS
-# http://localhost:5000/wps?request=DescribeProcess&service=WPS&identifier=all&version=1.0.0
