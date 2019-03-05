@@ -10,12 +10,11 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class UnivariateXclimIndicatorProcess(Process):
+class XclimIndicatorProcess(Process):
 
     def __init__(self, xci):
         """Create a WPS process from an xclim indicator class instance."""
         self.xci = xci
-        self.varname = None
 
         attrs = xci.json()
 
@@ -32,9 +31,10 @@ class UnivariateXclimIndicatorProcess(Process):
                           supported_formats=[FORMATS.TEXT]),
         ]
 
-        super(UnivariateXclimIndicatorProcess, self).__init__(
+        identifier = attrs['identifier']
+        super(XclimIndicatorProcess, self).__init__(
             self._handler,
-            identifier=attrs['identifier'],
+            identifier=identifier,
             version='0.1',
             title=attrs['long_name'],
             abstract=attrs['abstract'],
@@ -51,7 +51,6 @@ class UnivariateXclimIndicatorProcess(Process):
         for name, attrs in params.items():
             if name in ['tas', 'tasmin', 'tasmax', 'pr', 'prsn']:
                 inputs.append(make_nc_input(name))
-                self.varname = name
             elif name in ['tn10', 'tn90']:
                 inputs.append(make_nc_input(name))
             elif name in ['thresh_tasmin', 'thresh_tasmax']:
