@@ -54,15 +54,13 @@ class XclimIndicatorProcess(Process):
             elif name in ['tn10', 'tn90']:
                 inputs.append(make_nc_input(name))
             elif name in ['thresh_tasmin', 'thresh_tasmax']:
-                inputs.append(make_nc_input(name))
+                inputs.append(make_thresh(name, attrs['default'], attrs['desc']))
             elif name in ['thresh', ]:
                 inputs.append(make_thresh(name, attrs['default'], attrs['desc']))
             elif name in ['freq', ]:
                 inputs.append(make_freq(name, attrs['default']))
             elif name in ['window', ]:
-                # TODO: does not work
-                # inputs.append(make_window(name, attrs['default'], attrs['desc']))
-                pass
+                inputs.append(make_window(name, attrs['default'], attrs['desc']))
             else:
                 # raise NotImplementedError(name)
                 LOGGER.warning("not implemented: {}".format(name))
