@@ -4,6 +4,7 @@
 """The setup script."""
 
 import os
+import re
 
 from setuptools import setup, find_packages
 
@@ -15,7 +16,14 @@ about = {}
 with open(os.path.join(here, 'finch', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
-reqs = [line.strip() for line in open('requirements.txt')]
+egg_regex = re.compile(r"#egg=(\w+)")
+requirements = []
+for req in open('requirements.txt'):
+    req = req.strip()
+    git_url_match = egg_regex.search(req)
+    if git_url_match:
+        req = git_url_match.group(1)
+    requirements.append(req)
 
 classifiers = [
     'Development Status :: 3 - Alpha',
@@ -45,7 +53,7 @@ setup(name='finch',
       keywords='wps pywps birdhouse finch',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=reqs,
+      install_requires=requirements,
       entry_points={
           'console_scripts': [
               'finch=finch.cli:cli',
