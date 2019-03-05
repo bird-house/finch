@@ -2,11 +2,12 @@ from locust import HttpLocust, TaskSet
 
 
 def post_ice_days(l):
+    url = "https://github.com/Ouranosinc/xclim/raw/master/tests/testdata/NRCANdaily/nrcan_canada_daily_tasmax_1990.nc"
     data = {
         "inputs": [
             {
                 "id": "tasmax",
-                "href": "https://github.com/Ouranosinc/xclim/raw/master/tests/testdata/NRCANdaily/nrcan_canada_daily_tasmax_1990.nc"
+                "href": url
             },
             {
                 "id": "freq",
