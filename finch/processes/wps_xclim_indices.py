@@ -1,12 +1,19 @@
+import os
+import logging
+from functools import reduce
+from operator import mul
+from itertools import cycle
+
 from pywps import Process
+from pywps.inout.basic import ComplexInput as BasicComplexInput
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
 # import eggshell.general.utils
 # from eggshell.log import init_process_logger
 from unidecode import unidecode
+import requests
 import xarray as xr
-import os
-import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -67,30 +74,80 @@ class XclimIndicatorProcess(Process):
 
         return inputs
 
+    def try_opendap(self, url):
+        """Try to open the file as an OPeNDAP url and chunk it"""
+        if url and not url.startswith("file"):
+            r = requests.get(url + ".dds")
+            if r.status_code == 200 and r.content.decode().startswith("Dataset"):
+                ds = xr.open_dataset(url)
+                chunks = chunk_dataset(ds, max_size=1000000)
+                ds = ds.chunk(chunks)
+                self.write_log("Opened dataset as an OPeNDAP url: {}".format(url))
+                return ds
+            else:
+                self.write_log("Downloading dataset for url: {}".format(url))
+
+    def log_file_path(self):
+        return os.path.join(self.workdir, 'log.txt')
+
+    def write_log(self, message):
+        open(self.log_file_path(), "a").write(message + "\n")
+        LOGGER.info(message)
+
     def _handler(self, request, response):
-        # init_process_logger('log.txt')
-        with open(os.path.join(self.workdir, 'log.txt'), 'w') as fp:
-            fp.write('not used ... sorry.\n')
-            response.outputs['output_log'].file = fp.name
+        response.outputs['output_log'].file = self.log_file_path()
+        self.write_log("Processing started")
 
-        # Process inputs
+        self.write_log("Preparing inputs")
         kwds = {}
-        for name, obj in request.inputs.items():
-            if isinstance(obj[0], ComplexInput):
-                fn = obj[0].file  # eggshell.general.utils.archiveextract(resource=eggshell.general.utils.rename_complexinputs(obj)) # noqa
-                ds = xr.open_mfdataset(fn)
-                kwds[name] = ds.data_vars[self.varname]
+        LOGGER.debug("received inputs: " + ", ".join(request.inputs.keys()))
+        for name, input_queue in request.inputs.items():
+            input = input_queue[0]
+            LOGGER.debug(input_queue)
+            if isinstance(input, BasicComplexInput):
+                ds = self.try_opendap(input.url)
+                if ds is None:
+                    # accessing the file property loads the data in the data property
+                    # and writes it to disk
+                    filename = input.file
+                    # we need to cleanup the data property
+                    # if we don't do this, it will be written in the database and
+                    # to the output status xml file and it can get too large
+                    input._data = ""
 
-            elif isinstance(obj[0], LiteralInput):
-                kwds[name] = obj[0].data
+                    ds = xr.open_dataset(filename)
+                kwds[name] = ds.data_vars[name]
 
-        # Run the computation
+            elif isinstance(input, LiteralInput):
+                LOGGER.debug(input.data)
+                kwds[name] = input.data
+
+        self.write_log("Running computation")
+        LOGGER.debug(kwds)
         out = self.xci(**kwds)
         # Store the output
         out_fn = os.path.join(self.workdir, 'out.nc')
         out.to_netcdf(out_fn)
         response.outputs['output_netcdf'].file = out_fn
         return response
+
+
+def chunk_dataset(ds, max_size=1000000):
+    """Ensures the chunked size of a xarray.Dataset is below a certain size
+
+    Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
+    """
+    chunks = dict(ds.sizes)
+
+    def chunk_size():
+        return reduce(mul, chunks.values())
+
+    for dim in cycle(chunks):
+        if chunk_size() < max_size:
+            break
+        chunks[dim] = max(chunks[dim] // 2, 1)
+
+    return chunks
 
 
 def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC', 'AS-JUL')):
