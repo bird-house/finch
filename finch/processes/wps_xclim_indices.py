@@ -4,6 +4,7 @@ from functools import reduce
 from operator import mul
 from itertools import cycle
 
+from sentry_sdk import configure_scope
 from pywps import Process
 from pywps.inout.basic import ComplexInput as BasicComplexInput
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
@@ -94,7 +95,20 @@ class XclimIndicatorProcess(Process):
         open(self.log_file_path(), "a").write(message + "\n")
         LOGGER.info(message)
 
+    def sentry_configure_scope(self, request):
+        """Add additional data to sentry error messages.
+
+        When sentry is not initialized, this won't add any overhead.
+        """
+        with configure_scope() as scope:
+            scope.set_extra("identifier", self.identifier)
+            scope.set_extra("request_uuid", str(self.uuid))
+            scope.set_extra("remote_addr", request.http_request.remote_addr)
+            scope.set_extra("xml_request", request.http_request.data)
+
     def _handler(self, request, response):
+        self.sentry_configure_scope(request)
+
         response.outputs['output_log'].file = self.log_file_path()
         self.write_log("Processing started")
 

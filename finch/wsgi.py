@@ -1,7 +1,12 @@
 import os
+
+import sentry_sdk
 from pywps.app.Service import Service
 
 from .processes import processes
+
+if os.environ.get("SENTRY_DSN"):
+    sentry_sdk.init(os.environ["SENTRY_DSN"])
 
 
 def create_app(cfgfiles=None):

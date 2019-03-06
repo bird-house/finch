@@ -12,7 +12,7 @@ WORKDIR /code
 
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir gunicorn psycopg2-binary
+    pip install --no-cache-dir -r requirements_prod.txt
 
 COPY . .
 
