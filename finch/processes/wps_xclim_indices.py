@@ -6,7 +6,6 @@ from itertools import cycle
 
 from sentry_sdk import configure_scope
 from pywps import Process
-from pywps.inout.basic import ComplexInput as BasicComplexInput
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
 # import eggshell.general.utils
@@ -44,7 +43,7 @@ class XclimIndicatorProcess(Process):
             self._handler,
             identifier=identifier,
             version='0.1',
-            title=attrs['long_name'],
+            title=unidecode(attrs['long_name']),
             abstract=unidecode(attrs['abstract']),
             inputs=self.load_inputs(eval(attrs['parameters'])),
             outputs=outputs,
