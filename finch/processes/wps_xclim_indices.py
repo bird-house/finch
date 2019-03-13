@@ -117,7 +117,7 @@ class XclimIndicatorProcess(Process):
         for name, input_queue in request.inputs.items():
             input = input_queue[0]
             LOGGER.debug(input_queue)
-            if isinstance(input, BasicComplexInput):
+            if isinstance(input, ComplexInput):
                 ds = self.try_opendap(input.url)
                 if ds is None:
                     # accessing the file property loads the data in the data property
