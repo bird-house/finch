@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /code
 
-COPY requirements.txt requirements.txt
+COPY requirements.txt requirements_prod.txt ./
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir -r requirements_prod.txt
 
