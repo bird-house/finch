@@ -82,17 +82,10 @@ class XclimIndicatorProcess(Process):
                 ds = xr.open_dataset(url)
                 chunks = chunk_dataset(ds, max_size=1000000)
                 ds = ds.chunk(chunks)
-                self.write_log("Opened dataset as an OPeNDAP url: {}".format(url))
                 return ds
-            else:
-                self.write_log("Downloading dataset for url: {}".format(url))
 
     def log_file_path(self):
         return os.path.join(self.workdir, 'log.txt')
-
-    def write_log(self, message):
-        open(self.log_file_path(), "a").write(message + "\n")
-        LOGGER.info(message)
 
     def sentry_configure_scope(self, request):
         """Add additional data to sentry error messages.
@@ -108,18 +101,25 @@ class XclimIndicatorProcess(Process):
     def _handler(self, request, response):
         self.sentry_configure_scope(request)
 
-        response.outputs['output_log'].file = self.log_file_path()
-        self.write_log("Processing started")
+        output_log_file = []
 
-        self.write_log("Preparing inputs")
+        def write_log(message, percentage=None):
+            output_log_file.append(message)
+            LOGGER.info(message)
+            response.update_status(message, status_percentage=percentage)
+
+        write_log("Processing started", 5)
+        write_log("Preparing inputs", 5)
         kwds = {}
         LOGGER.debug("received inputs: " + ", ".join(request.inputs.keys()))
         for name, input_queue in request.inputs.items():
             input = input_queue[0]
-            LOGGER.debug(input_queue)
             if isinstance(input, ComplexInput):
                 ds = self.try_opendap(input.url)
-                if ds is None:
+                if ds:
+                    write_log("Opened dataset as an OPeNDAP url: {}".format(input.url), 6)
+                else:
+                    write_log("Downloading dataset for url: {}".format(input.url), 6)
                     # accessing the file property loads the data in the data property
                     # and writes it to disk
                     filename = input.file
@@ -132,19 +132,22 @@ class XclimIndicatorProcess(Process):
                 kwds[name] = ds.data_vars[name]
 
             elif isinstance(input, LiteralInput):
-                LOGGER.debug(input.data)
                 kwds[name] = input.data
 
-        self.write_log("Running computation")
-        LOGGER.debug(kwds)
+        write_log("Running computation", 10)
+        LOGGER.debug("Calling xclim function with arguments: " + repr(kwds))
         out = self.xci(**kwds)
         out_fn = os.path.join(self.workdir, 'out.nc')
 
-        self.write_log("Writing the output netcdf")
+        write_log("Writing the output netcdf", 15)  # This should be the longest step
         out.to_netcdf(out_fn)
-        response.outputs['output_netcdf'].file = out_fn
 
-        self.write_log("Processing finished successfully")
+        write_log("Processing finished successfully", 98)
+
+        response.outputs['output_netcdf'].file = out_fn
+        response.outputs['output_log'].file = self.log_file_path()
+        open(self.log_file_path(), "w").write("\n".join(output_log_file))
+
         return response
 
 
