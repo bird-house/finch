@@ -1,4 +1,4 @@
-from .wps_xclim_indices import UnivariateXclimIndicatorProcess
+from .wps_xclim_indices import XclimIndicatorProcess
 import xclim.temperature
 import xclim.precip
 
@@ -21,4 +21,4 @@ def get_indicators(*args):
 indicators = get_indicators(xclim.temperature, xclim.precip)
 
 # Instantiate processes
-processes = [UnivariateXclimIndicatorProcess(i) for i in indicators if i._nvar == 1]
+processes = [XclimIndicatorProcess(i) for i in indicators]

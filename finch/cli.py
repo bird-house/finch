@@ -88,8 +88,8 @@ def _run(application, bind_host=None, daemon=False):
         application=application,
         use_debugger=False,
         use_reloader=False,
-        threaded=True,
-        # processes=2,
+        threaded=False,
+        processes=2,
         use_evalex=not daemon,
         static_files=static_files)
 
