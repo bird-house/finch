@@ -123,13 +123,8 @@ class XclimIndicatorProcess(Process):
                     write_log("Opened dataset as an OPeNDAP url: {}".format(input.url), 6)
                 else:
                     write_log("Downloading dataset for url: {}".format(input.url), 6)
-                    # accessing the file property loads the data in the data property
-                    # and writes it to disk
+                    # accessing the file property downloads the file to disk
                     filename = input.file
-                    # we need to cleanup the data property
-                    # if we don't do this, it will be written in the database and
-                    # to the output status xml file and it can get too large
-                    input._data = ""
 
                     ds = xr.open_dataset(filename)
                 kwds[name] = ds.data_vars[name]
