@@ -18,13 +18,20 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class XclimIndicatorProcess(Process):
+    """Dummy xclim indicator process class.
+
+    Set xci to the xclim indicator in order to have a working class"""
+    xci = None
 
     @classmethod
     def make(cls, xci):
-        """Create a WPS Process subclass from an xclim Indicator class instance."""
+        """Create a WPS Process subclass from an xclim `Indicator` class instance."""
         attrs = xci.json()
+
+        # Sanitize name
         name = attrs['identifier'].replace('{', '_').replace('}', '_').replace('__', '_')
-        return type(str(name) + 'Process', (cls,), {'xci': xci, 'identifier': name})
+
+        return type(str(name) + 'Process', (cls,), {'xci': xci, '__doc__': attrs['abstract']})
 
     def __init__(self):
         """Create a WPS process from an xclim indicator class instance."""
@@ -64,7 +71,7 @@ class XclimIndicatorProcess(Process):
         for name, attrs in params.items():
             if name in ['tas', 'tasmin', 'tasmax', 'pr', 'prsn']:
                 inputs.append(make_nc_input(name))
-            elif name in ['tn10', 'tn90']:
+            elif name in ['tn10', 'tn90', 't10', 't90']:
                 inputs.append(make_nc_input(name))
             elif name in ['thresh_tasmin', 'thresh_tasmax']:
                 inputs.append(make_thresh(name, attrs['default'], attrs['desc']))
