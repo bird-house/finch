@@ -17,24 +17,29 @@ import xarray as xr
 LOGGER = logging.getLogger("PYWPS")
 
 
-class XclimIndicatorProcess(Process):
+def make_xclim_indicator_process(xci):
+    """Create a WPS Process subclass from an xclim `Indicator` class instance."""
+    attrs = xci.json()
+
+    # Sanitize name
+    name = attrs['identifier'].replace('{', '_').replace('}', '_').replace('__', '_')
+
+    process_class = type(str(name) + 'Process', (_XclimIndicatorProcess,), {'xci': xci, '__doc__': attrs['abstract']})
+
+    return process_class()
+
+
+class _XclimIndicatorProcess(Process):
     """Dummy xclim indicator process class.
 
     Set xci to the xclim indicator in order to have a working class"""
     xci = None
 
-    @classmethod
-    def make(cls, xci):
-        """Create a WPS Process subclass from an xclim `Indicator` class instance."""
-        attrs = xci.json()
-
-        # Sanitize name
-        name = attrs['identifier'].replace('{', '_').replace('}', '_').replace('__', '_')
-
-        return type(str(name) + 'Process', (cls,), {'xci': xci, '__doc__': attrs['abstract']})
-
     def __init__(self):
         """Create a WPS process from an xclim indicator class instance."""
+
+        if self.xci is None:
+            raise AttributeError("Use the `make_xclim_indicator_process` function instead.")
 
         attrs = self.xci.json()
 
@@ -52,7 +57,7 @@ class XclimIndicatorProcess(Process):
         ]
 
         identifier = attrs['identifier']
-        super(XclimIndicatorProcess, self).__init__(
+        super(_XclimIndicatorProcess, self).__init__(
             self._handler,
             identifier=identifier,
             version='0.1',
