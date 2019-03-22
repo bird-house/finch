@@ -17,7 +17,6 @@ import xarray as xr
 LOGGER = logging.getLogger("PYWPS")
 
 
-
 class XclimIndicatorProcess(Process):
 
     @classmethod
@@ -25,7 +24,7 @@ class XclimIndicatorProcess(Process):
         """Create a WPS Process subclass from an xclim Indicator class instance."""
         attrs = xci.json()
         name = attrs['identifier'].replace('{', '_').replace('}', '_').replace('__', '_')
-        return type(str(name)+'Process', (cls,), {'xci': xci, 'identifier': name})
+        return type(str(name) + 'Process', (cls,), {'xci': xci, 'identifier': name})
 
     def __init__(self):
         """Create a WPS process from an xclim indicator class instance."""

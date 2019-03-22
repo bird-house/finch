@@ -27,6 +27,7 @@ classes = [XclimIndicatorProcess.make(ind) for ind in indicators]
 # Instantiate processes
 processes = [cls() for cls in classes]
 
+
 # Create virtual module for indicators so Sphinx can find it.
 def _build_xclim():
     import sys
@@ -36,5 +37,6 @@ def _build_xclim():
     mod = build_module('finch.processes.xclim', objs, doc="""XCLIM Processes""")
     sys.modules['finch.processes.xclim'] = mod
     return mod
+
 
 xclim = _build_xclim()
