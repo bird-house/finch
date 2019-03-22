@@ -1,5 +1,4 @@
 -e git://github.com/geopython/pywps.git#egg=pywps
--e git://github.com/pydata/xarray.git#egg=xarray
 -e git://github.com/Ouranosinc/xclim.git#egg=xclim
 jinja2
 click
@@ -11,3 +10,4 @@ unidecode
 dask[complete]
 scipy
 requests
+xarray>=0.12
