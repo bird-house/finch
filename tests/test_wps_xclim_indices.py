@@ -17,7 +17,7 @@ WPS, OWS = get_ElementMakerForVersion(VERSION)
 
 
 def test_wps_xclim_indices(tas_data_set):
-    client = client_for(Service(processes=[XclimIndicatorProcess(temperature.tg_mean)], cfgfiles=CFG_FILE))
+    client = client_for(Service(processes=[XclimIndicatorProcess.make(temperature.tg_mean)()], cfgfiles=CFG_FILE))
 
     datainputs = "tas=files@xlink:href=file://{fn};" \
                  "freq={freq}".format(fn=tas_data_set,
@@ -36,8 +36,8 @@ def test_wps_xclim_indices(tas_data_set):
 
 
 def test_wps_xclim_heat_wave_frequency(tasmin_data_set, tasmax_data_set):
-    process = XclimIndicatorProcess(temperature.heat_wave_frequency)
-    client = client_for(Service(processes=[process], cfgfiles=CFG_FILE))
+    process = XclimIndicatorProcess.make(temperature.heat_wave_frequency)
+    client = client_for(Service(processes=[process()], cfgfiles=CFG_FILE))
 
     request_doc = WPS.Execute(
         OWS.Identifier('heat_wave_frequency'),

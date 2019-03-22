@@ -8,8 +8,9 @@ Processes
     :depth: 1
 
 ..
-   import finch
-   for p in finch.processes.processes:
+   from finch.processes import processes
+   processes.sort()
+   for p in processes:
        c = p.__class__
        doc = '.. autoprocess:: {}.{}\n'
        print(doc.format(c.__module__, c.__name__))
