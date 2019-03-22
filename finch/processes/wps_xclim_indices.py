@@ -17,19 +17,26 @@ import xarray as xr
 LOGGER = logging.getLogger("PYWPS")
 
 
+
 class XclimIndicatorProcess(Process):
 
-    def __init__(self, xci):
-        """Create a WPS process from an xclim indicator class instance."""
-        self.xci = xci
-
+    @classmethod
+    def make(cls, xci):
+        """Create a WPS Process subclass from an xclim Indicator class instance."""
         attrs = xci.json()
+        name = attrs['identifier'].replace('{', '_').replace('}', '_').replace('__', '_')
+        return type(str(name)+'Process', (cls,), {'xci': xci, 'identifier': name})
+
+    def __init__(self):
+        """Create a WPS process from an xclim indicator class instance."""
+
+        attrs = self.xci.json()
 
         outputs = [
             ComplexOutput('output_netcdf', 'Function output in netCDF',
                           abstract="The indicator values computed on the original input grid.",
                           as_reference=True,
-                          supported_formats=[FORMATS.NETCDF]
+                          supported_formats=[FORMATS.DODS, FORMATS.NETCDF]
                           ),
 
             ComplexOutput('output_log', 'Logging information',
