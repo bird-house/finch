@@ -6,6 +6,7 @@ docs/
 tests/
 src/
 finch.egg-info/
+**/tmp/*.*
 
 # Any pywps generated log files
 **/*.log
