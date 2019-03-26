@@ -37,8 +37,7 @@ def _write_dataset(variable, cell_methods, standard_name, seed=None):
     """Write a DataSet to disk and return its path"""
     ds = _create_test_dataset(variable, cell_methods, standard_name, seed)
     dir_name = Path(__file__).parent / "tmp"
-    if not dir_name.exists():
-        dir_name.mkdir()
+    dir_name.mkdir(exist_ok=True)
     _, filename = tempfile.mkstemp(f"finch_test_data{variable}.nc", dir=dir_name)
     ds.to_netcdf(filename)
     return filename
