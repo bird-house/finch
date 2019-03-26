@@ -1,5 +1,5 @@
 -e git://github.com/geopython/pywps.git#egg=pywps
--e git://github.com/Ouranosinc/xclim.git#egg=xclim
+-e git://github.com/Ouranosinc/xclim.git@22e805d25f30834ca27459fce99a6f8f122d1bdc#egg=xclim
 jinja2
 click
 psutil
