@@ -3,7 +3,6 @@ from owslib.wps import WPSExecution
 import pytest
 from pywps import Service
 from pywps.tests import client_for, assert_response_success
-from xclim import temperature
 import xarray as xr
 from pywps import get_ElementMakerForVersion
 
@@ -38,7 +37,6 @@ def client():
 
 def _execute_process(client, identifier, inputs) -> xr.Dataset:
     """Execute a process using the test client, and return the 'output_netcdf' output as an xarray.Dataset"""
-    identifier = identifier
     request_doc = WPS.Execute(
         OWS.Identifier(identifier), WPS.DataInputs(*inputs), version="1.0.0"
     )
@@ -85,3 +83,14 @@ def test_heat_wave_frequency(client, tasmin_dataset, tasmax_dataset):
     ds = _execute_process(client, identifier, inputs)
 
     assert ds.heat_wave_frequency.standard_name == _get_output_standard_name(identifier)
+
+
+def test_heat_wave_index(client, tasmax_dataset):
+    identifier = "hwi_{thresh}"
+    inputs = [
+        _wps_input_file("tasmax", tasmax_dataset),
+        _wps_literal_input("thresh", "30"),
+    ]
+    ds = _execute_process(client, identifier, inputs)
+
+    assert ds.hwi_30.standard_name == _get_output_standard_name(identifier)
