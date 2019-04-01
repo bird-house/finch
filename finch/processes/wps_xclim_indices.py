@@ -17,19 +17,37 @@ import xarray as xr
 LOGGER = logging.getLogger("PYWPS")
 
 
-class XclimIndicatorProcess(Process):
+def make_xclim_indicator_process(xci):
+    """Create a WPS Process subclass from an xclim `Indicator` class instance."""
+    attrs = xci.json()
 
-    def __init__(self, xci):
+    # Sanitize name
+    name = attrs['identifier'].replace('{', '_').replace('}', '_').replace('__', '_')
+
+    process_class = type(str(name) + 'Process', (_XclimIndicatorProcess,), {'xci': xci, '__doc__': attrs['abstract']})
+
+    return process_class()
+
+
+class _XclimIndicatorProcess(Process):
+    """Dummy xclim indicator process class.
+
+    Set xci to the xclim indicator in order to have a working class"""
+    xci = None
+
+    def __init__(self):
         """Create a WPS process from an xclim indicator class instance."""
-        self.xci = xci
 
-        attrs = xci.json()
+        if self.xci is None:
+            raise AttributeError("Use the `make_xclim_indicator_process` function instead.")
+
+        attrs = self.xci.json()
 
         outputs = [
             ComplexOutput('output_netcdf', 'Function output in netCDF',
                           abstract="The indicator values computed on the original input grid.",
                           as_reference=True,
-                          supported_formats=[FORMATS.NETCDF]
+                          supported_formats=[FORMATS.DODS, FORMATS.NETCDF]
                           ),
 
             ComplexOutput('output_log', 'Logging information',
@@ -39,7 +57,7 @@ class XclimIndicatorProcess(Process):
         ]
 
         identifier = attrs['identifier']
-        super(XclimIndicatorProcess, self).__init__(
+        super(_XclimIndicatorProcess, self).__init__(
             self._handler,
             identifier=identifier,
             version='0.1',
@@ -58,7 +76,7 @@ class XclimIndicatorProcess(Process):
         for name, attrs in params.items():
             if name in ['tas', 'tasmin', 'tasmax', 'pr', 'prsn']:
                 inputs.append(make_nc_input(name))
-            elif name in ['tn10', 'tn90']:
+            elif name in ['tn10', 'tn90', 't10', 't90']:
                 inputs.append(make_nc_input(name))
             elif name in ['thresh_tasmin', 'thresh_tasmax']:
                 inputs.append(make_thresh(name, attrs['default'], attrs['desc']))
