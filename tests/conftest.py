@@ -1,13 +1,13 @@
 import pytest
+import numpy as np
+import xarray as xr
+import pandas as pd
 
 
 @pytest.fixture
 def create_test_dataset():
     def _create_test_dataset(var='tas', seed=None):
         """Create a synthetic dataset for variable"""
-        import numpy as np
-        import xarray as xr
-        import pandas as pd
 
         rs = np.random.RandomState(seed)
         _vars = {var: ['time', 'lon', 'lat']}
@@ -51,3 +51,17 @@ def tasmax_data_set(create_test_dataset, tmp_path_factory):
     fn = tmp_path_factory.mktemp('data') / 'tasmax.nc'
     ds.to_netcdf(str(fn))
     return str(fn)
+
+
+@pytest.fixture
+def q_dataset(tmp_path_factory):
+    def _q_series(values, start='1/1/2000'):
+        coords = pd.date_range(start, periods=len(values), freq=pd.DateOffset(days=1))
+        da = xr.DataArray(values, coords=[coords, ], dims='time', name='q',
+                            attrs={'standard_name': 'dis',
+                                   'units': 'm3 s-1'})
+        fn = tmp_path_factory.mktemp('data') / 'streamflow.nc'
+        da.to_netcdf(str(fn))
+        return str(fn)
+
+    return _q_series

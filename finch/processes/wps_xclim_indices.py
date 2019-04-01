@@ -17,12 +17,12 @@ import xarray as xr
 LOGGER = logging.getLogger("PYWPS")
 
 
-def make_xclim_indicator_process(xci):
+def make_xclim_indicator_process(name, xci):
     """Create a WPS Process subclass from an xclim `Indicator` class instance."""
     attrs = xci.json()
 
     # Sanitize name
-    name = attrs['identifier'].replace('{', '_').replace('}', '_').replace('__', '_')
+    # name = attrs['identifier'].replace('{', '_').replace('}', '_').replace('__', '_')
 
     process_class = type(str(name) + 'Process', (_XclimIndicatorProcess,), {'xci': xci, '__doc__': attrs['abstract']})
 
@@ -74,7 +74,7 @@ class _XclimIndicatorProcess(Process):
         inputs = []
 
         for name, attrs in params.items():
-            if name in ['tas', 'tasmin', 'tasmax', 'pr', 'prsn']:
+            if name in ['tas', 'tasmin', 'tasmax', 'pr', 'prsn', 'q', 'da']:
                 inputs.append(make_nc_input(name))
             elif name in ['tn10', 'tn90', 't10', 't90']:
                 inputs.append(make_nc_input(name))
@@ -86,6 +86,16 @@ class _XclimIndicatorProcess(Process):
                 inputs.append(make_freq(name, attrs['default']))
             elif name in ['window', ]:
                 inputs.append(make_window(name, attrs['default'], attrs['desc']))
+            elif name in ['mode', ]:
+                inputs.append(make_mode(name, attrs['desc']))
+            elif name in ['op', ]:
+                inputs.append(make_op(name, attrs['desc']))
+            elif name in ['t', ]:
+                inputs.append(make_t(name, attrs['desc']))
+            elif name in ['dist', ]:
+                inputs.append(make_dist(name, attrs['desc']))
+            elif name in ['indexer', ]:
+                inputs.extend(make_indexer())
             else:
                 # raise NotImplementedError(name)
                 LOGGER.warning("not implemented: {}".format(name))
@@ -147,7 +157,13 @@ class _XclimIndicatorProcess(Process):
                     input._data = ""
 
                     ds = xr.open_dataset(filename)
-                kwds[name] = ds.data_vars[name]
+
+                if name in ds.data_vars:
+                    kwds[name] = ds.data_vars[name]
+                else:
+                    for key, val in ds.data_vars.items():
+                        kwds[name] = val
+                        break
 
             elif isinstance(input, LiteralInput):
                 LOGGER.debug(input.data)
@@ -195,7 +211,7 @@ def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC', 'AS-JUL')):
 
 
 def make_thresh(name, default, abstract=''):
-    return LiteralInput(name, 'threshold',
+    return LiteralInput(name, 'Threshold value, including units.',
                         abstract=abstract,
                         data_type='string',
                         min_occurs=0,
@@ -205,7 +221,7 @@ def make_thresh(name, default, abstract=''):
 
 
 def make_window(name, default, abstract=''):
-    return LiteralInput(name, 'window',
+    return LiteralInput(name, 'Window size',
                         abstract=abstract,
                         data_type='integer',
                         min_occurs=0,
@@ -221,3 +237,60 @@ def make_nc_input(name):
                         min_occurs=1,
                         max_occurs=1000,
                         supported_formats=[FORMATS.NETCDF])
+
+
+def make_mode(name, abstract=''):
+    return LiteralInput(name, 'Mode',
+                        abstract=abstract,
+                        data_type='string',
+                        allowed_values=["min", "max"],
+                        min_occurs=1,
+                        max_occurs=1,
+                        )
+
+
+def make_op(name, abstract=''):
+    return LiteralInput(name, 'Operation name',
+                        abstract=abstract,
+                        data_type='string',
+                        allowed_values=['min', 'max', 'mean', 'std', 'var', 'count', 'sum', 'argmax', 'argmin'],
+                        min_occurs=1,
+                        max_occurs=1,
+                        )
+
+
+def make_t(name, abstract=''):
+    return LiteralInput(name, 'Return period',
+                        abstract=abstract,
+                        data_type='integer',
+                        min_occurs=1,
+                        )
+
+# TODO: Set allowed values to scipy.dist
+def make_dist(name, abstract=''):
+    return LiteralInput(name, 'Distribution',
+                        abstract=abstract,
+                        data_type='string',
+                        min_occurs=1,
+                        max_occurs=1,
+                        )
+
+
+def make_indexer():
+    return [LiteralInput('season', 'Season',
+                        abstract='Season selection specification.',
+                        allowed_values=['DJF', 'MAM', 'JJA', 'SON'],
+                        data_type='string',
+                        min_occurs=0,
+                        max_occurs=1,
+                        default=None,
+                        ),
+           LiteralInput('month', 'Month',
+                        abstract='Month selection specification',
+                        data_type='string',
+                        allowed_values=range(1,13),
+                        min_occurs=0,
+                        max_occurs=12,
+                        default=None,
+                        )
+           ]
