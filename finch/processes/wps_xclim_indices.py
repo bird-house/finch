@@ -197,7 +197,7 @@ def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC', 'AS-JUL')):
 def make_thresh(name, default, abstract=''):
     return LiteralInput(name, 'threshold',
                         abstract=abstract,
-                        data_type='float',
+                        data_type='string',
                         min_occurs=0,
                         max_occurs=1,
                         default=default,
