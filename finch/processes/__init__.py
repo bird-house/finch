@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 from .wps_xclim_indices import UnivariateXclimIndicatorProcess
 from .wps_xsubsetbbox import SubsetBboxProcess
+=======
+from .wps_xclim_indices import make_xclim_indicator_process
+from xclim import build_module
+>>>>>>> master
 import xclim.temperature
 import xclim.precip
 
@@ -21,6 +26,20 @@ def get_indicators(*args):
 # List of Indicators that are exposed as WPS processes
 indicators = get_indicators(xclim.temperature, xclim.precip)
 
-# Instantiate processes
-processes = list([UnivariateXclimIndicatorProcess(i) for i in indicators if i._nvar == 1])
+# Create PyWPS.Process subclasses
+processes = [make_xclim_indicator_process(ind) for ind in indicators]
 processes.extend([SubsetBboxProcess(), ])
+
+
+# Create virtual module for indicators so Sphinx can find it.
+def _build_xclim():
+    import sys
+
+    objs = {p.__class__.__name__: p.__class__ for p in processes}
+
+    mod = build_module('finch.processes.xclim', objs, doc="""XCLIM Processes""")
+    sys.modules['finch.processes.xclim'] = mod
+    return mod
+
+
+xclim = _build_xclim()

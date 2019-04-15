@@ -4,18 +4,21 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- pywps=4.1
+# - pywps>=4.2
+- pip
 - jinja2
 - click
 - psutil
-# app
-# - birdhouse-eggshell
-# xclim
-#- xclim
+- bottleneck
+# - xclim
 - netcdf4
 - numpy
+- unidecode
 - dask
-- xarray
+# - xarray
 - scipy
+- sentry-sdk
 - pip:
+  - -e git+https://github.com/geopython/pywps.git#egg=pywps
+  - -e git+https://github.com/pydata/xarray.git#egg=xarray
   - -e git+https://github.com/Ouranosinc/xclim.git#egg=xclim

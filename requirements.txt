@@ -1,6 +1,13 @@
-pywps>=4.0.0
+-e git://github.com/geopython/pywps.git#egg=pywps
+-e git://github.com/pydata/xarray.git#egg=xarray
+-e git://github.com/Ouranosinc/xclim.git@22e805d25f30834ca27459fce99a6f8f122d1bdc#egg=xclim
 jinja2
 click
 psutil
-# app
-xclim
+bottleneck
+netcdf4
+numpy
+unidecode
+dask[complete]
+scipy
+requests
