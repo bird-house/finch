@@ -1,7 +1,8 @@
 from pywps import Process, LiteralInput, ComplexInput, ComplexOutput, FORMATS
 import xarray as xr
 from xclim.utils import subset_bbox
-
+from pathlib import Path
+from pywps.inout.outputs import MetaFile, MetaLink4
 
 class SubsetBboxProcess(Process):
     """Subset a NetCDF file using bounding box geometry."""
@@ -37,25 +38,40 @@ class SubsetBboxProcess(Process):
                          data_type='float',
                          default=90,
                          min_occurs=0,),
-            LiteralInput('dt0',
-                         'Initial datetime',
-                         abstract='Initial datetime for temporal subsetting.',
-                         data_type='dateTime',
+            # LiteralInput('dt0',
+            #              'Initial datetime',
+            #              abstract='Initial datetime for temporal subsetting. Defaults to first date in file.',
+            #              data_type='dateTime',
+            #              default=None,
+            #              min_occurs=0,
+            #              max_occurs=1),
+            # LiteralInput('dt1',
+            #              'Final datetime',
+            #              abstract='Final datetime for temporal subsetting. Defaults to last date in file.',
+            #              data_type='dateTime',
+            #              default=None,
+            #              min_occurs=0,
+            #              max_occurs=1),
+            LiteralInput('y0',
+                         'Initial year',
+                         abstract='Initial year for temporal subsetting. Defaults to first year in file.',
+                         data_type='integer',
                          default=None,
                          min_occurs=0,
                          max_occurs=1),
-            LiteralInput('dt1',
-                         'Final datetime',
-                         abstract='Final datetime for temporal subsetting.',
-                         data_type='dateTime',
+            LiteralInput('y1',
+                         'Final year',
+                         abstract='Final year for temporal subsetting. Defaults to last year in file.',
+                         data_type='integer',
                          default=None,
                          min_occurs=0,
                          max_occurs=1),
             LiteralInput('variable',
                          'Variable',
                          abstract=('Name of the variable in the NetCDF file.'
-                                   'Will be guessed if not provided.'),
+                                   'If not provided, all variables will be subsetted.'),
                          data_type='string',
+                         default=None,
                          min_occurs=0)]
 
         outputs = [
@@ -63,6 +79,10 @@ class SubsetBboxProcess(Process):
                           'netCDF output',
                           as_reference=True,
                           supported_formats=[FORMATS.NETCDF]),
+            ComplexOutput('ref', 'Link to all output files',
+                          abstract="Metalink file storing all references to output file.",
+                          as_reference=False,
+                          supported_formats=[FORMATS.META4])
         ]
 
         super(SubsetBboxProcess, self).__init__(
@@ -81,24 +101,44 @@ class SubsetBboxProcess(Process):
 
     def _handler(self, request, response):
         # This does not work for multiple input files.
-        files = [r.data for r in request.inputs['resource']]
+        files = [r.file for r in request.inputs['resource']]
         lon0 = request.inputs['lon0'][0].data
         lon1 = request.inputs['lon1'][0].data
         lat0 = request.inputs['lat0'][0].data
         lat1 = request.inputs['lat1'][0].data
-        dt0 = request.inputs['dt0'][0].data or None
-        dt1 = request.inputs['dt1'][0].data or None
-        vars = [r.data for r in request.inputs['variable']]
+        # dt0 = request.inputs['dt0'][0].data or None
+        # dt1 = request.inputs['dt1'][0].data or None
+        y0 = request.inputs['y0'][0].data or None
+        y1 = request.inputs['y1'][0].data or None
+        if 'variable' in request.inputs:
+            vars = [r.data for r in request.inputs['variable']]
+        else:
+            vars = None
 
-        if len(files) > 1:
-            raise NotImplementedError
+        meta = MetaLink4('subset_bbox', "Subsetted netCDF files", "Finch", workdir=self.workdir)
 
         for i, f in enumerate(files):
             ds = xr.open_dataset(f)
             if vars:
                 ds = ds[vars]
-            out = subset_bbox(ds, lon_bnds=(lon0, lon1), lat_bnds=(lat0, lat1), start_yr=dt0, end_yr=dt1)
-            out.to_netcdf(self.workdir + '/out.nc')
-            response.outputs['output'].file = self.workdir + '/out_{}.nc'.format(i)
+
+            out = subset_bbox(ds, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_yr=y0, end_yr=y1)
+
+            p = Path(f)
+            out_fn = Path(self.workdir) / (p.stem + '_sub' + p.suffix)
+            out.to_netcdf(out_fn)
+
+            # Save first file to output
+            if i == 0:
+                response.outputs['output'].file = out_fn
+
+            # Metalink reference for all other files
+            mf = MetaFile(identity=p.stem,
+                          description="Subset of file on bounding box lon=({}, {}) lat=({}, {})".format(lon0, lon1,
+                                                                                                        lat0, lat1),
+                          fmt=FORMATS.NETCDF)
+            mf.file = out_fn
+            meta.append(mf)
+
 
         return response

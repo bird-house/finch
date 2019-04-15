@@ -3,9 +3,9 @@ from pywps.inout.outputs import MetaFile, MetaLink4
 import xarray as xr
 from xclim.utils import subset_gridpoint
 from pathlib import Path
+from .wps_xclim_indices import _XclimIndicatorProcess
 
-
-class SubsetGridPointProcess(Process):
+class SubsetGridPointProcess(_XclimIndicatorProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):
@@ -88,6 +88,7 @@ class SubsetGridPointProcess(Process):
 
     def _handler(self, request, response):
         # This does not work for multiple input files.
+
         files = [r.file for r in request.inputs['resource']]
         lon = request.inputs['lon'][0].data
         lat = request.inputs['lat'][0].data
