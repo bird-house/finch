@@ -63,7 +63,7 @@ class SubsetBboxProcess(Process):
                           'netCDF output',
                           as_reference=True,
                           supported_formats=[FORMATS.NETCDF]),
-            ]
+        ]
 
         super(SubsetBboxProcess, self).__init__(
             self._handler,
@@ -98,7 +98,6 @@ class SubsetBboxProcess(Process):
             if vars:
                 ds = ds[vars]
             out = subset_bbox(ds, lon_bnds=(lon0, lon1), lat_bnds=(lat0, lat1), start_yr=dt0, end_yr=dt1)
-            #out = ds.sel(lat=slice(lat0, lat1), lon=slice(lon0, lon1), time=slice(dt0, dt1))
             out.to_netcdf(self.workdir + '/out.nc')
             response.outputs['output'].file = self.workdir + '/out_{}.nc'.format(i)
 

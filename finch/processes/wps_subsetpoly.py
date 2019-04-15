@@ -16,7 +16,7 @@ class SubsetPolyProcess(Process):
             ComplexInput('polygon',
                          'Contour of region of interest',
                          max_occurs=1,
-                         supported_formats=[FORMATS.SHP])
+                         supported_formats=[FORMATS.SHP]),
             LiteralInput('dt0',
                          'Initial datetime',
                          abstract='Initial datetime for temporal subsetting.',
@@ -43,7 +43,7 @@ class SubsetPolyProcess(Process):
                           'netCDF output',
                           as_reference=True,
                           supported_formats=[FORMATS.NETCDF]),
-            ]
+        ]
 
         super(SubsetPolyProcess, self).__init__(
             self._handler,

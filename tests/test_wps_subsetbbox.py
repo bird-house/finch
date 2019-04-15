@@ -19,4 +19,3 @@ def test_wps_xclim_indices(tas_data_set):
             datainputs))
 
     assert_response_success(resp)
-

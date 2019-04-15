@@ -1,4 +1,5 @@
 from .wps_xsubsetbbox import SubsetBboxProcess
+from .wps_xsubsetpoint import SubsetGridPointProcess
 from .wps_xclim_indices import make_xclim_indicator_process
 from xclim import build_module
 import xclim.temperature
