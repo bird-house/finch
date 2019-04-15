@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-from .wps_xclim_indices import UnivariateXclimIndicatorProcess
 from .wps_xsubsetbbox import SubsetBboxProcess
-=======
 from .wps_xclim_indices import make_xclim_indicator_process
 from xclim import build_module
->>>>>>> master
 import xclim.temperature
 import xclim.precip
 
