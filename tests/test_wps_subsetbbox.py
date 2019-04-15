@@ -30,4 +30,3 @@ def test_wps_xclim_indices(tas_data_set):
     ds = xr.open_dataset(out['output'][6:])
     np.testing.assert_array_equal(ds.lat, [2, 3, 4])
     np.testing.assert_array_equal(ds.lon, [3, 4])
-

@@ -1,10 +1,11 @@
-from pywps import Process, LiteralInput, ComplexInput, ComplexOutput, FORMATS
-import xarray as xr
+from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from xclim.utils import subset_bbox
 from pathlib import Path
 from pywps.inout.outputs import MetaFile, MetaLink4
+from .base import FinchProcess
 
-class SubsetBboxProcess(Process):
+
+class SubsetBboxProcess(FinchProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):
@@ -100,8 +101,7 @@ class SubsetBboxProcess(Process):
         )
 
     def _handler(self, request, response):
-        # This does not work for multiple input files.
-        files = [r.file for r in request.inputs['resource']]
+
         lon0 = request.inputs['lon0'][0].data
         lon1 = request.inputs['lon1'][0].data
         lat0 = request.inputs['lat0'][0].data
@@ -117,14 +117,15 @@ class SubsetBboxProcess(Process):
 
         meta = MetaLink4('subset_bbox', "Subsetted netCDF files", "Finch", workdir=self.workdir)
 
-        for i, f in enumerate(files):
-            ds = xr.open_dataset(f)
+        for i, res in enumerate(request.inputs['resource']):
+
+            ds = self.try_opendap(res)
             if vars:
                 ds = ds[vars]
 
             out = subset_bbox(ds, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_yr=y0, end_yr=y1)
 
-            p = Path(f)
+            p = Path(res._file or res._build_file_name(res.url))
             out_fn = Path(self.workdir) / (p.stem + '_sub' + p.suffix)
             out.to_netcdf(out_fn)
 
@@ -139,6 +140,5 @@ class SubsetBboxProcess(Process):
                           fmt=FORMATS.NETCDF)
             mf.file = out_fn
             meta.append(mf)
-
 
         return response

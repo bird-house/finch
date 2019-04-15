@@ -1,20 +1,8 @@
 import os
-import logging
-from functools import reduce
-from operator import mul
-from itertools import cycle
-
-from sentry_sdk import configure_scope
-from pywps import Process
+from .base import FinchProcess, LOGGER
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
-# import eggshell.general.utils
-# from eggshell.log import init_process_logger
 from unidecode import unidecode
-import requests
-import xarray as xr
-
-LOGGER = logging.getLogger("PYWPS")
 
 
 def make_xclim_indicator_process(xci):
@@ -29,7 +17,7 @@ def make_xclim_indicator_process(xci):
     return process_class()
 
 
-class _XclimIndicatorProcess(Process):
+class _XclimIndicatorProcess(FinchProcess):
     """Dummy xclim indicator process class.
 
     Set xci to the xclim indicator in order to have a working class"""
@@ -92,37 +80,6 @@ class _XclimIndicatorProcess(Process):
 
         return inputs
 
-    def try_opendap(self, url):
-        """Try to open the file as an OPeNDAP url and chunk it"""
-        if url and not url.startswith("file"):
-            r = requests.get(url + ".dds")
-            if r.status_code == 200 and r.content.decode().startswith("Dataset"):
-                ds = xr.open_dataset(url)
-                chunks = chunk_dataset(ds, max_size=1000000)
-                ds = ds.chunk(chunks)
-                self.write_log("Opened dataset as an OPeNDAP url: {}".format(url))
-                return ds
-            else:
-                self.write_log("Downloading dataset for url: {}".format(url))
-
-    def log_file_path(self):
-        return os.path.join(self.workdir, 'log.txt')
-
-    def write_log(self, message):
-        open(self.log_file_path(), "a").write(message + "\n")
-        LOGGER.info(message)
-
-    def sentry_configure_scope(self, request):
-        """Add additional data to sentry error messages.
-
-        When sentry is not initialized, this won't add any overhead.
-        """
-        with configure_scope() as scope:
-            scope.set_extra("identifier", self.identifier)
-            scope.set_extra("request_uuid", str(self.uuid))
-            scope.set_extra("remote_addr", request.http_request.remote_addr)
-            scope.set_extra("xml_request", request.http_request.data)
-
     def _handler(self, request, response):
         self.sentry_configure_scope(request)
 
@@ -136,17 +93,7 @@ class _XclimIndicatorProcess(Process):
             input = input_queue[0]
             LOGGER.debug(input_queue)
             if isinstance(input, ComplexInput):
-                ds = self.try_opendap(input.url)
-                if ds is None:
-                    # accessing the file property loads the data in the data property
-                    # and writes it to disk
-                    filename = input.file
-                    # we need to cleanup the data property
-                    # if we don't do this, it will be written in the database and
-                    # to the output status xml file and it can get too large
-                    input._data = ""
-
-                    ds = xr.open_dataset(filename)
+                ds = self.try_opendap(input)
                 kwds[name] = ds.data_vars[name]
 
             elif isinstance(input, LiteralInput):
@@ -164,24 +111,6 @@ class _XclimIndicatorProcess(Process):
 
         self.write_log("Processing finished successfully")
         return response
-
-
-def chunk_dataset(ds, max_size=1000000):
-    """Ensures the chunked size of a xarray.Dataset is below a certain size
-
-    Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
-    """
-    chunks = dict(ds.sizes)
-
-    def chunk_size():
-        return reduce(mul, chunks.values())
-
-    for dim in cycle(chunks):
-        if chunk_size() < max_size:
-            break
-        chunks[dim] = max(chunks[dim] // 2, 1)
-
-    return chunks
 
 
 def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC', 'AS-JUL')):

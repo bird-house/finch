@@ -1,11 +1,11 @@
-from pywps import Process, LiteralInput, ComplexInput, ComplexOutput, FORMATS
+from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.inout.outputs import MetaFile, MetaLink4
-import xarray as xr
 from xclim.utils import subset_gridpoint
 from pathlib import Path
-from .wps_xclim_indices import _XclimIndicatorProcess
+from .base import FinchProcess
 
-class SubsetGridPointProcess(_XclimIndicatorProcess):
+
+class SubsetGridPointProcess(FinchProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):
@@ -89,7 +89,6 @@ class SubsetGridPointProcess(_XclimIndicatorProcess):
     def _handler(self, request, response):
         # This does not work for multiple input files.
 
-        files = [r.file for r in request.inputs['resource']]
         lon = request.inputs['lon'][0].data
         lat = request.inputs['lat'][0].data
         # dt0 = request.inputs['dt0'][0].data or None
@@ -104,14 +103,15 @@ class SubsetGridPointProcess(_XclimIndicatorProcess):
 
         meta = MetaLink4('subset_gridpoint', "Subsetted netCDF files", "Finch", workdir=self.workdir)
 
-        for i, f in enumerate(files):
-            ds = xr.open_dataset(f)
+        for i, res in enumerate(request.inputs['resource']):
+
+            ds = self.try_opendap(res)
             if vars:
                 ds = ds[vars]
 
             out = subset_gridpoint(ds, lon=lon, lat=lat, start_yr=y0, end_yr=y1)
 
-            p = Path(f)
+            p = Path(res._file or res._build_file_name(res.url))
             out_fn = Path(self.workdir) / (p.stem + '_sub' + p.suffix)
             out.to_netcdf(out_fn)
 
