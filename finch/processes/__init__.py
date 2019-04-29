@@ -1,3 +1,5 @@
+from .wps_xsubsetbbox import SubsetBboxProcess
+from .wps_xsubsetpoint import SubsetGridPointProcess
 from .wps_xclim_indices import make_xclim_indicator_process
 from xclim import build_module
 import xclim.temperature
@@ -23,6 +25,7 @@ indicators = get_indicators(xclim.temperature, xclim.precip)
 
 # Create PyWPS.Process subclasses
 processes = [make_xclim_indicator_process(ind) for ind in indicators]
+processes.extend([SubsetBboxProcess(), ])
 
 
 # Create virtual module for indicators so Sphinx can find it.
