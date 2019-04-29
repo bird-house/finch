@@ -17,7 +17,6 @@ dependencies:
 - dask
 # - xarray
 - scipy
-- pandas
 - sentry-sdk
 - pip:
   - -e git+https://github.com/geopython/pywps.git#egg=pywps
