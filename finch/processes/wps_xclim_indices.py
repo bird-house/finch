@@ -1,4 +1,6 @@
 import os
+from dask.diagnostics import ProgressBar
+from dask.diagnostics.progress import format_time
 from .base import FinchProcess, LOGGER
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
@@ -83,10 +85,15 @@ class _XclimIndicatorProcess(FinchProcess):
     def _handler(self, request, response):
         self.sentry_configure_scope(request)
 
-        response.outputs['output_log'].file = self.log_file_path()
-        self.write_log("Processing started")
+        output_log_file = []
 
-        self.write_log("Preparing inputs")
+        def write_log(message, percentage=None):
+            output_log_file.append(message)
+            LOGGER.info(message)
+            response.update_status(message, status_percentage=percentage)
+
+        write_log("Processing started", 5)
+        write_log("Preparing inputs", 5)
         kwds = {}
         LOGGER.debug("received inputs: " + ", ".join(request.inputs.keys()))
         for name, input_queue in request.inputs.items():
@@ -100,17 +107,58 @@ class _XclimIndicatorProcess(FinchProcess):
                 LOGGER.debug(input.data)
                 kwds[name] = input.data
 
-        self.write_log("Running computation")
+        write_log("Running computation", 8)
         LOGGER.debug(kwds)
         out = self.xci(**kwds)
         out_fn = os.path.join(self.workdir, 'out.nc')
 
-        self.write_log("Writing the output netcdf")
-        out.to_netcdf(out_fn)
-        response.outputs['output_netcdf'].file = out_fn
+        write_log("Writing the output netcdf", 10)  # This should be the longest step
 
-        self.write_log("Processing finished successfully")
+        with XClimProgress(write_log, start_percentage=10, width=15, dt=1):
+            out.to_netcdf(out_fn)
+
+        write_log("Processing finished successfully", 99)
+
+        response.outputs['output_netcdf'].file = out_fn
+        response.outputs['output_log'].file = self.log_file_path()
+        open(self.log_file_path(), "w").write("\n".join(output_log_file))
         return response
+
+
+class XClimProgress(ProgressBar):
+    def __init__(self, logging_function, start_percentage, *args, **kwargs):
+        super(XClimProgress, self).__init__(*args, **kwargs)
+        self._logging_function = logging_function
+        self._start_percentage = start_percentage
+
+    def _draw_bar(self, frac, elapsed):
+        start = self._start_percentage / 100
+
+        frac += start - frac * start
+        bar = '#' * int(self._width * frac)
+        percent = int(100 * frac)
+        elapsed = format_time(elapsed)
+        msg = '[{0:<{1}}] | {2}% Done | {3}'.format(bar, self._width, percent, elapsed)
+
+        self._logging_function(msg, percent)
+
+
+def chunk_dataset(ds, max_size=1000000):
+    """Ensures the chunked size of a xarray.Dataset is below a certain size
+
+    Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
+    """
+    chunks = dict(ds.sizes)
+
+    def chunk_size():
+        return reduce(mul, chunks.values())
+
+    for dim in cycle(chunks):
+        if chunk_size() < max_size:
+            break
+        chunks[dim] = max(chunks[dim] // 2, 1)
+
+    return chunks
 
 
 def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC', 'AS-JUL')):
