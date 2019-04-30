@@ -51,8 +51,11 @@ class FinchProcess(Process):
         with configure_scope() as scope:
             scope.set_extra("identifier", self.identifier)
             scope.set_extra("request_uuid", str(self.uuid))
-            scope.set_extra("remote_addr", request.http_request.remote_addr)
-            scope.set_extra("xml_request", request.http_request.data)
+            if request.http_request:
+                # if the request has been put in the `stored_requests` table by pywps
+                # the original request.http_request is not available anymore
+                scope.set_extra("remote_addr", request.http_request.remote_addr)
+                scope.set_extra("xml_request", request.http_request.data)
 
 
 def chunk_dataset(ds, max_size=1000000):
