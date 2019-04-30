@@ -10,7 +10,7 @@ import numpy as np
 from pathlib import Path
 
 
-def test_wps_xclim_indices(tas_data_set):
+def test_wps_xclim_indices(tas_dataset):
     client = client_for(Service(processes=[SubsetBboxProcess()], cfgfiles=CFG_FILE))
 
     datainputs = "resource=files@xlink:href=file://{fn};" \
@@ -19,7 +19,7 @@ def test_wps_xclim_indices(tas_data_set):
                  "lat1={lat1};" \
                  "lon1={lon1};" \
                  "y0={y0};" \
-                 "y1={y1};".format(fn=tas_data_set, lat0=2., lon0=3., lat1=4, lon1=5, y0=2000, y1=2003)
+                 "y1={y1};".format(fn=tas_dataset, lat0=2., lon0=3., lat1=4, lon1=5, y0=2000, y1=2003)
 
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset_bbox&datainputs={}".format(
