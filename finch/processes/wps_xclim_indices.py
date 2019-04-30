@@ -1,6 +1,6 @@
 import os
-from dask.diagnostics import ProgressBar
-from dask.diagnostics.progress import format_time
+
+from finch.processes.base import FinchProgress
 from .base import FinchProcess, LOGGER
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
@@ -114,7 +114,7 @@ class _XclimIndicatorProcess(FinchProcess):
 
         write_log("Writing the output netcdf", 10)  # This should be the longest step
 
-        with XClimProgress(write_log, start_percentage=10, width=15, dt=1):
+        with FinchProgress(write_log, start_percentage=10, width=15, dt=1):
             out.to_netcdf(out_fn)
 
         write_log("Processing finished successfully", 99)
@@ -123,24 +123,6 @@ class _XclimIndicatorProcess(FinchProcess):
         response.outputs['output_log'].file = self.log_file_path()
         open(self.log_file_path(), "w").write("\n".join(output_log_file))
         return response
-
-
-class XClimProgress(ProgressBar):
-    def __init__(self, logging_function, start_percentage, *args, **kwargs):
-        super(XClimProgress, self).__init__(*args, **kwargs)
-        self._logging_function = logging_function
-        self._start_percentage = start_percentage
-
-    def _draw_bar(self, frac, elapsed):
-        start = self._start_percentage / 100
-
-        frac += start - frac * start
-        bar = '#' * int(self._width * frac)
-        percent = int(100 * frac)
-        elapsed = format_time(elapsed)
-        msg = '[{0:<{1}}] | {2}% Done | {3}'.format(bar, self._width, percent, elapsed)
-
-        self._logging_function(msg, percent)
 
 
 def chunk_dataset(ds, max_size=1000000):
