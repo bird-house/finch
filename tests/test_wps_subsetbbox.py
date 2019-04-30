@@ -10,7 +10,7 @@ import numpy as np
 from pathlib import Path
 
 
-def test_wps_xclim_indices(tas_dataset):
+def test_wps_subsetbbox(tas_dataset):
     client = client_for(Service(processes=[SubsetBboxProcess()], cfgfiles=CFG_FILE))
 
     datainputs = "resource=files@xlink:href=file://{fn};" \
