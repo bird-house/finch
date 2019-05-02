@@ -11,3 +11,5 @@ dask[complete]
 scipy
 requests
 xarray>=0.12
+sentry-sdk
+siphon
