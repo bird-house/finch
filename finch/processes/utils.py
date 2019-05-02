@@ -21,7 +21,7 @@ def get_opendap_datasets(catalog_url, variable, rcp):
         if variable in dataset.name and rcp in dataset.name:
             urls.append(dataset.access_urls["OPENDAP"])
 
-        ## using requests (a bit slower, and the Thredds server didn't seem to like it)
+        # using requests (a bit slower, and the Thredds server didn't seem to like it)
         # opendap_url = dataset.access_urls["OPENDAP"]
         # r = requests.get(opendap_url + ".das").content.decode()
         # for line in r.split("\n"):
@@ -30,7 +30,7 @@ def get_opendap_datasets(catalog_url, variable, rcp):
         #         urls.append(opendap_url)
         #         print(opendap_url)
 
-        ## using xarray (still a bit slower, like 2 secs per dataset)
+        # using xarray (still a bit slower, like 2 secs per dataset)
         # ds = xr.open_dataset(opendap_url, decode_times=False)
         # rcps = [r for r in ds.attrs.get('driving_experiment_id', '').split(',') if 'rcp' in r]
         # if rcp in rcps and variable in ds.data_vars:
