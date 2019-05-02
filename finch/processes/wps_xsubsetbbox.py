@@ -170,7 +170,7 @@ class SubsetBboxProcess(FinchProcess):
             )
 
             if not all(out.dims.values()):
-                LOGGER.debug(f"Subsample is empty for dataset: {res.url}")
+                LOGGER.debug(f"Subset is empty for dataset: {res.url}")
                 continue
 
             p = Path(res._file or res._build_file_name(res.url))

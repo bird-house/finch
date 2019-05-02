@@ -155,7 +155,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
         metalink = self.subset(request.inputs, response, start_percentage=7, end_percentage=85)
         self.write_log("Subset done, crating zip file", response, 85)
 
-        output_filename = Path(self.workdir) / f"BCCAQv2_subsample_{rcp}_{variable}.zip"
+        output_filename = Path(self.workdir) / f"BCCAQv2_subset_{rcp}_{variable}.zip"
 
         with zipfile.ZipFile(output_filename, mode="w") as z:
             n_files = len(metalink.files)
