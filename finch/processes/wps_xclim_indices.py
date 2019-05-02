@@ -1,10 +1,14 @@
 import os
 
 from finch.processes.base import FinchProgress
-from .base import FinchProcess, LOGGER
+from .base import FinchProcess
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
 from unidecode import unidecode
+import logging
+
+
+LOGGER = logging.getLogger("PYWPS")
 
 
 def make_xclim_indicator_process(xci):
@@ -85,15 +89,8 @@ class _XclimIndicatorProcess(FinchProcess):
     def _handler(self, request, response):
         self.sentry_configure_scope(request)
 
-        output_log_file = []
-
-        def write_log(message, percentage=None):
-            output_log_file.append(message)
-            LOGGER.info(message)
-            response.update_status(message, status_percentage=percentage)
-
-        write_log("Processing started", 5)
-        write_log("Preparing inputs", 5)
+        self.write_log("Processing started", 5)
+        self.write_log("Preparing inputs", 5)
         kwds = {}
         LOGGER.debug("received inputs: " + ", ".join(request.inputs.keys()))
         for name, input_queue in request.inputs.items():
@@ -107,21 +104,23 @@ class _XclimIndicatorProcess(FinchProcess):
                 LOGGER.debug(input.data)
                 kwds[name] = input.data
 
-        write_log("Running computation", 8)
+        self.write_log("Running computation", 8)
         LOGGER.debug(kwds)
         out = self.xci(**kwds)
         out_fn = os.path.join(self.workdir, 'out.nc')
 
-        write_log("Writing the output netcdf", 10)  # This should be the longest step
+        self.write_log("Writing the output netcdf", 10)  # This should be the longest step
+
+        def write_log(message, percentage):
+            self.write_log(message, response, percentage)
 
         with FinchProgress(write_log, start_percentage=10, width=15, dt=1):
             out.to_netcdf(out_fn)
 
-        write_log("Processing finished successfully", 99)
+        self.write_log("Processing finished successfully", 99)
 
         response.outputs['output_netcdf'].file = out_fn
         response.outputs['output_log'].file = self.log_file_path()
-        open(self.log_file_path(), "w").write("\n".join(output_log_file))
         return response
 
 
