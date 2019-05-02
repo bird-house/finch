@@ -4,6 +4,13 @@ from pathlib import Path
 import pytest
 import tempfile
 
+from pywps import Service
+from pywps.tests import client_for
+
+import finch
+import finch.processes
+from tests.common import CFG_FILE
+
 
 def _create_test_dataset(variable, cell_methods, stardard_name, seed=None):
     """Create a synthetic dataset for variable"""
@@ -71,3 +78,8 @@ def tasmin_dataset(request):
     filename = _write_dataset(*variable_descriptions["tasmin"])
     request.addfinalizer(lambda: os.remove(filename))
     return filename
+
+
+@pytest.fixture(scope="module")
+def client():
+    return client_for(Service(processes=finch.processes.processes, cfgfiles=CFG_FILE))
