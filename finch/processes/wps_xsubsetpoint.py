@@ -1,3 +1,5 @@
+from contextlib import suppress
+
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.inout.outputs import MetaFile, MetaLink4
 from xclim.utils import subset_gridpoint
@@ -117,8 +119,12 @@ class SubsetGridPointProcess(FinchProcess):
         lat = request.inputs["lat"][0].data
         # dt0 = request.inputs['dt0'][0].data or None
         # dt1 = request.inputs['dt1'][0].data or None
-        y0 = request.inputs["y0"][0].data or None
-        y1 = request.inputs["y1"][0].data or None
+
+        y0, y1 = None, None
+        with suppress(KeyError):
+            y0 = request.inputs["y0"][0].data
+        with suppress(KeyError):
+            y1 = request.inputs["y1"][0].data
 
         variables = [r.data for r in request.inputs.get("variable", [])]
 

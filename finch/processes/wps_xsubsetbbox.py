@@ -4,6 +4,7 @@ from pathlib import Path
 from pywps.inout.outputs import MetaFile, MetaLink4
 from .base import FinchProcess
 import logging
+from contextlib import suppress
 
 
 LOGGER = logging.getLogger("PYWPS")
@@ -137,14 +138,12 @@ class SubsetBboxProcess(FinchProcess):
         lat1 = wps_inputs["lat1"][0].data
         # dt0 = wps_inputs['dt0'][0].data or None
         # dt1 = wps_inputs['dt1'][0].data or None
-        try:
-            y0 = wps_inputs["y0"][0].data or None
-        except KeyError:
-            y0 = None
-        try:
-            y1 = wps_inputs["y1"][0].data or None
-        except KeyError:
-            y1 = None
+
+        y0, y1 = None, None
+        with suppress(KeyError):
+            y0 = wps_inputs["y0"][0].data
+        with suppress(KeyError):
+            y1 = wps_inputs["y1"][0].data
 
         variables = [r.data for r in wps_inputs.get("variable", [])]
 
