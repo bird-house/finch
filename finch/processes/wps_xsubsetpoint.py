@@ -161,7 +161,7 @@ class SubsetGridPointProcess(FinchProcess):
 
         self.write_log("Processing finished successfully", response, 99)
 
-        response.outputs["output"].file = metalink.files[0]
+        response.outputs["output"].file = metalink.files[0].file
         response.outputs["ref"].data = metalink.xml
 
         return response
