@@ -7,7 +7,6 @@ from pywps.app.Common import Metadata
 from unidecode import unidecode
 import logging
 
-
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -129,6 +128,10 @@ def chunk_dataset(ds, max_size=1000000):
 
     Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
     """
+    from functools import reduce
+    from itertools import cycle
+    from operator import mul
+
     chunks = dict(ds.sizes)
 
     def chunk_size():
