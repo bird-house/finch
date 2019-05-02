@@ -89,8 +89,8 @@ class _XclimIndicatorProcess(FinchProcess):
     def _handler(self, request, response):
         self.sentry_configure_scope(request)
 
-        self.write_log("Processing started", 5)
-        self.write_log("Preparing inputs", 5)
+        self.write_log("Processing started", response, 5)
+        self.write_log("Preparing inputs", response, 5)
         kwds = {}
         LOGGER.debug("received inputs: " + ", ".join(request.inputs.keys()))
         for name, input_queue in request.inputs.items():
@@ -104,12 +104,12 @@ class _XclimIndicatorProcess(FinchProcess):
                 LOGGER.debug(input.data)
                 kwds[name] = input.data
 
-        self.write_log("Running computation", 8)
+        self.write_log("Running computation", response, 8)
         LOGGER.debug(kwds)
         out = self.xci(**kwds)
         out_fn = os.path.join(self.workdir, 'out.nc')
 
-        self.write_log("Writing the output netcdf", 10)  # This should be the longest step
+        self.write_log("Writing the output netcdf", response, 10)  # This should be the longest step
 
         def write_log(message, percentage):
             self.write_log(message, response, percentage)
@@ -117,7 +117,7 @@ class _XclimIndicatorProcess(FinchProcess):
         with FinchProgress(write_log, start_percentage=10, width=15, dt=1):
             out.to_netcdf(out_fn)
 
-        self.write_log("Processing finished successfully", 99)
+        self.write_log("Processing finished successfully", response, 99)
 
         response.outputs['output_netcdf'].file = out_fn
         response.outputs['output_log'].file = self.log_file_path()
