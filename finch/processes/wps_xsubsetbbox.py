@@ -157,7 +157,7 @@ class SubsetBboxProcess(FinchProcess):
         n_files = len(wps_inputs["resource"])
 
         for n, res in enumerate(wps_inputs["resource"]):
-            percentage = start_percentage + n // n_files * (end_percentage - start_percentage)
+            percentage = start_percentage + int(n / n_files * (end_percentage - start_percentage))
             self.write_log(f"Processing file {n + 1} of {n_files}", response, percentage)
 
             ds = self.try_opendap(res)
