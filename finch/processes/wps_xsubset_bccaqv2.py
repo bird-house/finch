@@ -35,7 +35,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 "NetCDF resource",
                 abstract=(
                     "NetCDF files, can be OPEnDAP urls."
-                    "If missing, the process will scan all BBBAQv2 data."
+                    "If missing, the process will scan all BCCAQv2 data."
                 ),
                 min_occurs=0,
                 supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
