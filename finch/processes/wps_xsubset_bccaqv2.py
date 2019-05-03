@@ -163,7 +163,6 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 percentage = 85 + n // n_files * 14
                 self.write_log(f"Zipping file {n + 1} of {n_files}", response, percentage)
                 z.write(mf.file, arcname=Path(mf.file).name)
-                os.unlink(mf.file)  # cleanup
 
         self.write_log("Processing finished successfully", response, 99)
 
