@@ -43,7 +43,7 @@ def get_bcca2v2_opendap_datasets(
         opendap_url = dataset.access_urls["OPENDAP"]
 
         if method == ParsingMethod.filename:
-            if variable in dataset.name and dataset.name.startswith(rcp):
+            if rcp in dataset.name and dataset.name.startswith(variable):
                 urls.append(opendap_url)
 
         elif method == ParsingMethod.opendap_das:
