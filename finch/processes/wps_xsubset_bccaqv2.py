@@ -6,7 +6,7 @@ from pathlib import Path
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS, Process
 
 from finch.processes import SubsetBboxProcess
-from finch.processes.utils import get_opendap_datasets
+from finch.processes.utils import get_bcca2v2_opendap_datasets
 
 
 class SubsetBCCAQV2Process(SubsetBboxProcess):
@@ -146,7 +146,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
             resource_input = [r for r in self.inputs if r.identifier == "resource"][0]
 
             self.write_log("Fetching BCCAQv2 datasets", response, 6)
-            for url in get_opendap_datasets(self.bccaqv2_link, variable, rcp):
+            for url in get_bcca2v2_opendap_datasets(self.bccaqv2_link, variable, rcp):
                 input_ = deepcopy(resource_input)
                 input_.url = url
                 request.inputs["resource"].append(input_)

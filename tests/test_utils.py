@@ -1,4 +1,4 @@
-from finch.processes.utils import get_opendap_datasets
+from finch.processes.utils import get_bcca2v2_opendap_datasets
 from finch.processes.wps_xsubset_bccaqv2 import SubsetBCCAQV2Process
 import pytest
 
@@ -9,5 +9,5 @@ def test_get_opendap_datasets_bccaqv2():
     variable = "tasmin"
     rcp = "rcp26"
 
-    urls = get_opendap_datasets(url, variable, rcp)
+    urls = get_bcca2v2_opendap_datasets(url, variable, rcp)
     assert len(urls) == 27
