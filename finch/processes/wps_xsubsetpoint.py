@@ -97,7 +97,7 @@ class SubsetGridPointProcess(FinchProcess):
         super(SubsetGridPointProcess, self).__init__(
             self._handler,
             identifier="subset_gridpoint",
-            title="Subset",
+            title="Subset with a grid point",
             version="0.1",
             abstract=(
                 "Return the data for which grid cells includes the "

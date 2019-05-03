@@ -118,7 +118,7 @@ class SubsetBboxProcess(FinchProcess):
         super(SubsetBboxProcess, self).__init__(
             self._handler,
             identifier="subset_bbox",
-            title="Subset",
+            title="Subset with bounding box",
             version="0.1",
             abstract=(
                 "Return the data for which grid cells intersect the "

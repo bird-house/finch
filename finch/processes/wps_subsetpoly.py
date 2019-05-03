@@ -48,7 +48,7 @@ class SubsetPolyProcess(Process):
         super(SubsetPolyProcess, self).__init__(
             self._handler,
             identifier='subset_polygon',
-            title='Subset',
+            title='Subset with a polygon',
             version='0.1',
             abstract=('Return the data for which grid cells intersect the polygon '
                       'for each input dataset as well as the time range selected.'),

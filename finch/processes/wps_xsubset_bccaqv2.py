@@ -117,12 +117,12 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
             self,
             self._handler,
             identifier="subset_ensemble_BCCAQv2",
-            title="Subset of BCCAQv2",
+            title="Subset of BCCAQv2 datasets",
             version="0.1",
             abstract=(
                 "For the BCCAQv2 datasets, "
                 "return the data for which grid cells intersect the "
-                "bounding box for each input dataset as well as"
+                "bounding box for each input dataset as well as "
                 "the time range selected."
             ),
             inputs=inputs,
