@@ -20,7 +20,7 @@ class ParsingMethod(Enum):
     filename = 1
     # parse each Data Attribute Structure (DAS) by appending .das to the url
     # One request for each dataset, so lots of small requests to the Thredds server
-    netcdf_das = 2
+    opendap_das = 2
     # open the dataset using xarray and look at the file attributes
     # safer, but slower and lots of small requests are made to the Thredds server
     xarray = 3
@@ -46,7 +46,7 @@ def get_bcca2v2_opendap_datasets(
             if variable in dataset.name and dataset.name.startswith(rcp):
                 urls.append(opendap_url)
 
-        elif method == ParsingMethod.netcdf_das:
+        elif method == ParsingMethod.opendap_das:
             re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
             lines = requests.get(opendap_url + ".das").content.decode().split("\n")
 
