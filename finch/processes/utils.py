@@ -1,4 +1,7 @@
+import re
+
 from typing import List
+from enum import Enum
 
 import requests
 from siphon.catalog import TDSCatalog
@@ -12,7 +15,20 @@ def is_opendap_url(url):
     return False
 
 
-def get_bcca2v2_opendap_datasets(catalog_url, variable, rcp) -> List[str]:
+class ParsingMethod(Enum):
+    # parse the filename directly (faster and simpler, more likely to fail)
+    filename = 1
+    # parse each Data Attribute Structure (DAS) by appending .das to the url
+    # One request for each dataset, so lots of small requests to the Thredds server
+    netcdf_das = 2
+    # open the dataset using xarray and look at the file attributes
+    # safer, but slower and lots of small requests are made to the Thredds server
+    xarray = 3
+
+
+def get_bcca2v2_opendap_datasets(
+    catalog_url, variable, rcp, method: ParsingMethod = ParsingMethod.filename
+) -> List[str]:
     """Get a list of urls corresponding to variable and rcp on a Thredds server.
 
     We assume that the files are named in a certain way on the Thredds server.
@@ -26,21 +42,30 @@ def get_bcca2v2_opendap_datasets(catalog_url, variable, rcp) -> List[str]:
     for dataset in catalog.datasets.values():
         opendap_url = dataset.access_urls["OPENDAP"]
 
-        if variable in dataset.name and dataset.name.startswith(rcp):
-            urls.append(opendap_url)
+        if method == ParsingMethod.filename:
+            if variable in dataset.name and dataset.name.startswith(rcp):
+                urls.append(opendap_url)
 
-        # using requests (a bit slower, and the Thredds server didn't seem to like it)
-        # r = requests.get(opendap_url + ".das").content.decode()
-        # for line in r.split("\n"):
-        #     match = re.search(r'String driving_experiment_id "(.+)"', line)
-        #     if match and rcp in match.group(1).split(","):
-        #         urls.append(opendap_url)
-        #         print(opendap_url)
+        elif method == ParsingMethod.netcdf_das:
+            re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
+            lines = requests.get(opendap_url + ".das").content.decode().split("\n")
 
-        # using xarray (still a bit slower, like 2 secs per dataset)
-        # ds = xr.open_dataset(opendap_url, decode_times=False)
-        # rcps = [r for r in ds.attrs.get('driving_experiment_id', '').split(',') if 'rcp' in r]
-        # if rcp in rcps and variable in ds.data_vars:
-        #     urls.append(opendap_url)
+            has_variable = any(line.startswith(f"    {variable} {{") for line in lines)
+            is_good_rcp = False
+            for line in lines:
+                match = re_experiment.search(line)
+                if match and rcp in match.group(1).split(","):
+                    is_good_rcp = True
+
+            if has_variable and is_good_rcp:
+                urls.append(opendap_url)
+
+        elif method == ParsingMethod.xarray:
+            import xarray as xr
+
+            ds = xr.open_dataset(opendap_url, decode_times=False)
+            rcps = [r for r in ds.attrs.get('driving_experiment_id', '').split(',') if 'rcp' in r]
+            if rcp in rcps and variable in ds.data_vars:
+                urls.append(opendap_url)
 
     return urls
