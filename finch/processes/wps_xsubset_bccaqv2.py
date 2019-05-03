@@ -38,6 +38,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                     "If missing, the process will scan all BCCAQv2 data."
                 ),
                 min_occurs=0,
+                max_occurs=1000,
                 supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
             ),
             LiteralInput(

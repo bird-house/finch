@@ -19,7 +19,7 @@ class SubsetBboxProcess(FinchProcess):
                 "resource",
                 "NetCDF resource",
                 abstract="NetCDF files, can be OPEnDAP urls.",
-                max_occurs=1,
+                max_occurs=1000,
                 supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
             ),
             LiteralInput(
