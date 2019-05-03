@@ -99,6 +99,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 "Final year",
                 abstract="Final year for temporal subsetting. Defaults to last year in file.",
                 data_type="integer",
+                default=None,
                 min_occurs=0,
             ),
         ]
