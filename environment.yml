@@ -4,6 +4,7 @@ channels:
 - conda-forge
 - defaults
 dependencies:
+- python>=3.6
 # - pywps>=4.2
 - pip
 - jinja2
@@ -15,10 +16,10 @@ dependencies:
 - numpy
 - unidecode
 - dask
-# - xarray
+- xarray>=0.12
 - scipy
 - sentry-sdk
+- siphon
 - pip:
-  - -e git+https://github.com/geopython/pywps.git#egg=pywps
-  - -e git+https://github.com/pydata/xarray.git#egg=xarray
-  - -e git+https://github.com/Ouranosinc/xclim.git#egg=xclim
+  - git+https://github.com/geopython/pywps.git#egg=pywps
+  - git+https://github.com/Ouranosinc/xclim.git#egg=xclim

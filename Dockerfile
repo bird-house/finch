@@ -1,7 +1,7 @@
 # vim:set ft=dockerfile:
-FROM python:3.6-slim-stretch
+FROM continuumio/miniconda3
 MAINTAINER https://github.com/bird-house/finch
-LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.1.0"
+LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.2.1"
 
 # Update Debian system
 RUN apt-get update && apt-get install -y \
@@ -10,13 +10,15 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /code
 
-COPY requirements.txt requirements_prod.txt ./
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir -r requirements_prod.txt
+COPY environment.yml .
+RUN conda config --add channels conda-forge \
+    && conda env create -n finch -f environment.yml \
+    && conda install -c conda-forge -n finch gunicorn psycopg2 \
+    && rm -rf /opt/conda/pkgs/*
 
 COPY . .
 
-RUN pip install --no-dependencies -e .
+ENV PATH /opt/conda/envs/finch/bin:$PATH
 
 EXPOSE 5000
 

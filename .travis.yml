@@ -29,5 +29,5 @@ before_script:
   - finch start --daemon --bind-host 0.0.0.0 --port 5000
   - sleep 2
 script:
-  - pytest
+  - pytest -m "not online"
   - flake8
