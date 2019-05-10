@@ -3,6 +3,9 @@ import zipfile
 from copy import deepcopy
 
 from pathlib import Path
+from pywps.response.execute import ExecuteResponse
+from pywps.app.exceptions import ProcessError
+from pywps.app import WPSRequest
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS, Process
 
 from finch.processes import SubsetBboxProcess
@@ -133,7 +136,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
             store_supported=True,
         )
 
-    def _handler(self, request, response):
+    def _handler(self, request: WPSRequest, response: ExecuteResponse):
         self.sentry_configure_scope(request)
 
         self.write_log("Processing started", response, 5)
@@ -158,6 +161,10 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
         self.write_log("Subset done, crating zip file", response, 85)
 
         output_filename = Path(self.workdir) / f"BCCAQv2_subset_{rcp}_{variable}.zip"
+
+        if not metalink.files:
+            message = "No data was produced when subsetting using the provided bounds."
+            raise ProcessError(message)
 
         with zipfile.ZipFile(output_filename, mode="w") as z:
             n_files = len(metalink.files)
