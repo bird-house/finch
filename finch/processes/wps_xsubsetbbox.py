@@ -1,5 +1,5 @@
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
-from xclim.utils import subset_bbox
+from xclim.subset import subset_bbox
 from pathlib import Path
 from pywps.inout.outputs import MetaFile, MetaLink4
 from .base import FinchProcess

@@ -2,15 +2,12 @@ from .wps_xsubsetbbox import SubsetBboxProcess
 from .wps_xsubsetpoint import SubsetGridPointProcess
 from .wps_xsubset_bccaqv2 import SubsetBCCAQV2Process
 from .wps_xclim_indices import make_xclim_indicator_process
-from xclim import build_module
-import xclim.temperature
-import xclim.precip
+import xclim
 
 
 def get_indicators(*args):
     """For all modules or classes listed, return the children that are instances of xclim.utils.Indicator."""
     from xclim.utils import Indicator
-    #  from xclim.temperature import Tas
 
     out = []
     for obj in args:
@@ -22,7 +19,7 @@ def get_indicators(*args):
 
 
 # List of Indicators that are exposed as WPS processes
-indicators = get_indicators(xclim.temperature, xclim.precip)
+indicators = get_indicators(xclim.indices)
 
 # Create PyWPS.Process subclasses
 processes = [make_xclim_indicator_process(ind) for ind in indicators]
@@ -35,7 +32,7 @@ def _build_xclim():
 
     objs = {p.__class__.__name__: p.__class__ for p in processes}
 
-    mod = build_module('finch.processes.xclim', objs, doc="""XCLIM Processes""")
+    mod = xclim.build_module('finch.processes.xclim', objs, doc="""XCLIM Processes""")
     sys.modules['finch.processes.xclim'] = mod
     return mod
 
