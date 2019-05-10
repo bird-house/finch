@@ -49,7 +49,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 "Minimum longitude",
                 abstract="Minimum longitude.",
                 data_type="float",
-                default=0,
+                default=-180,
                 min_occurs=0,
             ),
             LiteralInput(
@@ -57,7 +57,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 "Maximum longitude",
                 abstract="Maximum longitude.",
                 data_type="float",
-                default=360,
+                default=180,
                 min_occurs=0,
             ),
             LiteralInput(
