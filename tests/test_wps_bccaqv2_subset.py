@@ -1,3 +1,4 @@
+import zipfile
 from unittest import mock
 
 import pytest
@@ -17,7 +18,13 @@ def test_bccaqv2_subset(mock_bccaq_subset, mock_datasets, client):
     ]
 
     metalink = mock.MagicMock()
-    metalink.files = []
+    metalink_file = mock.MagicMock()
+    tmp = Path(__file__).parent / "tmp"
+    metalink_file.file = tmp / "some_file.txt"
+    if not tmp.exists():
+        tmp.mkdir()
+    metalink_file.file.write_text("dummy data")
+    metalink.files = [metalink_file]
 
     mock_datasets.return_value = ["dataset1", "dataset2"]
     mock_bccaq_subset.return_value = metalink
@@ -28,6 +35,9 @@ def test_bccaqv2_subset(mock_bccaq_subset, mock_datasets, client):
     assert len(outputs) == 1
     assert output_file.endswith("zip")
     assert Path(output_file).exists()
+
+    data = zipfile.ZipFile(output_file).open("some_file.txt").read()
+    assert data == b"dummy data"
 
     assert len(mock_bccaq_subset.call_args[0][0]["resource"]) == 2
 
