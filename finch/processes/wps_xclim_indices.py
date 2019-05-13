@@ -1,8 +1,13 @@
 import os
-from .base import FinchProcess, LOGGER
+
+from finch.processes.base import FinchProgress
+from .base import FinchProcess
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
 from unidecode import unidecode
+import logging
+
+LOGGER = logging.getLogger("PYWPS")
 
 
 def make_xclim_indicator_process(xci):
@@ -35,7 +40,7 @@ class _XclimIndicatorProcess(FinchProcess):
             ComplexOutput('output_netcdf', 'Function output in netCDF',
                           abstract="The indicator values computed on the original input grid.",
                           as_reference=True,
-                          supported_formats=[FORMATS.DODS, FORMATS.NETCDF]
+                          supported_formats=[FORMATS.NETCDF, ]  # To support FORMATS.DODS we need to get the URL.
                           ),
 
             ComplexOutput('output_log', 'Logging information',
@@ -83,10 +88,8 @@ class _XclimIndicatorProcess(FinchProcess):
     def _handler(self, request, response):
         self.sentry_configure_scope(request)
 
-        response.outputs['output_log'].file = self.log_file_path()
-        self.write_log("Processing started")
-
-        self.write_log("Preparing inputs")
+        self.write_log("Processing started", response, 5)
+        self.write_log("Preparing inputs", response, 5)
         kwds = {}
         LOGGER.debug("received inputs: " + ", ".join(request.inputs.keys()))
         for name, input_queue in request.inputs.items():
@@ -100,17 +103,46 @@ class _XclimIndicatorProcess(FinchProcess):
                 LOGGER.debug(input.data)
                 kwds[name] = input.data
 
-        self.write_log("Running computation")
+        self.write_log("Running computation", response, 8)
         LOGGER.debug(kwds)
         out = self.xci(**kwds)
         out_fn = os.path.join(self.workdir, 'out.nc')
 
-        self.write_log("Writing the output netcdf")
-        out.to_netcdf(out_fn)
-        response.outputs['output_netcdf'].file = out_fn
+        self.write_log("Writing the output netcdf", response, 10)  # This should be the longest step
 
-        self.write_log("Processing finished successfully")
+        def write_log(message, percentage):
+            self.write_log(message, response, percentage)
+
+        with FinchProgress(write_log, start_percentage=10, width=15, dt=1):
+            out.to_netcdf(out_fn)
+
+        self.write_log("Processing finished successfully", response, 99)
+
+        response.outputs['output_netcdf'].file = out_fn
+        response.outputs['output_log'].file = self.log_file_path()
         return response
+
+
+def chunk_dataset(ds, max_size=1000000):
+    """Ensures the chunked size of a xarray.Dataset is below a certain size
+
+    Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
+    """
+    from functools import reduce
+    from itertools import cycle
+    from operator import mul
+
+    chunks = dict(ds.sizes)
+
+    def chunk_size():
+        return reduce(mul, chunks.values())
+
+    for dim in cycle(chunks):
+        if chunk_size() < max_size:
+            break
+        chunks[dim] = max(chunks[dim] // 2, 1)
+
+    return chunks
 
 
 def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC', 'AS-JUL')):
@@ -148,5 +180,5 @@ def make_nc_input(name):
                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
                         metadata=[Metadata('Info')],
                         min_occurs=1,
-                        max_occurs=1000,
+                        max_occurs=1,
                         supported_formats=[FORMATS.NETCDF])
