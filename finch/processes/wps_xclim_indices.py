@@ -40,7 +40,7 @@ class _XclimIndicatorProcess(FinchProcess):
             ComplexOutput('output_netcdf', 'Function output in netCDF',
                           abstract="The indicator values computed on the original input grid.",
                           as_reference=True,
-                          supported_formats=[FORMATS.DODS, FORMATS.NETCDF]
+                          supported_formats=[FORMATS.NETCDF, ]  # To support FORMATS.DODS we need to get the URL.
                           ),
 
             ComplexOutput('output_log', 'Logging information',
@@ -180,5 +180,5 @@ def make_nc_input(name):
                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
                         metadata=[Metadata('Info')],
                         min_occurs=1,
-                        max_occurs=1000,
+                        max_occurs=1,
                         supported_formats=[FORMATS.NETCDF])
