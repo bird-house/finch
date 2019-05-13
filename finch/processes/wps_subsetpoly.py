@@ -61,9 +61,9 @@ class SubsetPolyProcess(Process):
     def _handler(self, request, response):
         # This does not work for multiple input files.
         files = [r.data for r in request.inputs['resource']]
-        poly = request.inputs['polygon'][0].file
-        dt0 = request.inputs['dt0'][0].data or None
-        dt1 = request.inputs['dt1'][0].data or None
+        # poly = request.inputs['polygon'][0].file
+        # dt0 = request.inputs['dt0'][0].data or None
+        # dt1 = request.inputs['dt1'][0].data or None
         vars = [r.data for r in request.inputs['variable']]
 
         if len(files) > 1:
@@ -75,7 +75,7 @@ class SubsetPolyProcess(Process):
                 ds = ds[vars]
 
             # out = subset_poly(ds, poly=poly, start_yr=dt0, end_yr=dt1)
-            out.to_netcdf(self.workdir + '/out.nc')
+            # out.to_netcdf(self.workdir + '/out.nc')
             response.outputs['output'].file = self.workdir + '/out_{}.nc'.format(i)
 
         return response
