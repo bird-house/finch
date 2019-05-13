@@ -2,7 +2,7 @@ from contextlib import suppress
 
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.inout.outputs import MetaFile, MetaLink4
-from xclim.utils import subset_gridpoint
+from xclim.subset import subset_gridpoint
 from pathlib import Path
 from .base import FinchProcess
 
