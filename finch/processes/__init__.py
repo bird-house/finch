@@ -3,8 +3,7 @@ from .wps_xsubsetpoint import SubsetGridPointProcess
 from .wps_xsubset_bccaqv2 import SubsetBCCAQV2Process
 from .wps_xclim_indices import make_xclim_indicator_process
 from xclim import build_module
-import xclim.temperature
-import xclim.precip
+import xclim.atmos
 
 
 def get_indicators(*args):
@@ -22,7 +21,7 @@ def get_indicators(*args):
 
 
 # List of Indicators that are exposed as WPS processes
-indicators = get_indicators(xclim.temperature, xclim.precip)
+indicators = get_indicators(xclim.atmos)
 
 # Create PyWPS.Process subclasses
 processes = [make_xclim_indicator_process(ind) for ind in indicators]

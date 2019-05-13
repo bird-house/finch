@@ -1,6 +1,6 @@
 from pywps import Process, LiteralInput, ComplexInput, ComplexOutput, FORMATS
 import xarray as xr
-from xclim.utils import subset_poly
+# from xclim.subset import subset_poly
 
 
 class SubsetPolyProcess(Process):
@@ -74,7 +74,7 @@ class SubsetPolyProcess(Process):
             if vars:
                 ds = ds[vars]
 
-            out = subset_poly(ds, poly=poly, start_yr=dt0, end_yr=dt1)
+            # out = subset_poly(ds, poly=poly, start_yr=dt0, end_yr=dt1)
             out.to_netcdf(self.workdir + '/out.nc')
             response.outputs['output'].file = self.workdir + '/out_{}.nc'.format(i)
 
