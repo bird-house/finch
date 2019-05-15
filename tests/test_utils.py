@@ -1,5 +1,4 @@
-from finch.processes.utils import get_bcca2v2_opendap_datasets
-from finch.processes.wps_xsubset_bccaqv2 import SubsetBCCAQV2Process
+from finch.processes.utils import get_bcca2v2_opendap_datasets, bccaqv2_link
 import pytest
 from unittest import mock
 
@@ -15,7 +14,7 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp85_r1i1p1_19500101-21001231.nc",
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp45_r1i1p1_19500101-21001231.",
     ]
-    url = SubsetBCCAQV2Process.bccaqv2_link
+    url = bccaqv2_link
     variable = "tasmin"
     rcp = "rcp45"
 
