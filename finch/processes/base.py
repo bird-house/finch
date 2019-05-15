@@ -1,5 +1,8 @@
+import zipfile
+
 from dask.diagnostics import ProgressBar
 from dask.diagnostics.progress import format_time
+from pathlib import Path
 from pywps import Process
 from sentry_sdk import configure_scope
 import xarray as xr
@@ -67,6 +70,14 @@ class FinchProcess(Process):
                 # the original request.http_request is not available anymore
                 scope.set_extra("remote_addr", request.http_request.remote_addr)
                 scope.set_extra("xml_request", request.http_request.data)
+
+    def zip_metalink(self, output_filename, metalink, response, start_percentage=90):
+        with zipfile.ZipFile(output_filename, mode="w") as z:
+            n_files = len(metalink.files)
+            for n, mf in enumerate(metalink.files):
+                percentage = start_percentage + int(n / n_files * (100 - start_percentage))
+                self.write_log(f"Zipping file {n + 1} of {n_files}", response, percentage)
+                z.write(mf.file, arcname=Path(mf.file).name)
 
 
 def chunk_dataset(ds, max_size=1000000):
