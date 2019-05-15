@@ -2,9 +2,10 @@ from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
 from pywps.app import WPSRequest
-from pywps import LiteralInput, ComplexOutput, FORMATS, Process
+from pywps import LiteralInput, ComplexOutput, FORMATS
 
 from finch.processes import SubsetBboxProcess
+from finch.processes.subset import SubsetProcess
 from finch.processes.utils import get_bccaqv2_inputs
 
 
@@ -101,7 +102,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
             )
         ]
 
-        Process.__init__(
+        SubsetProcess.__init__(
             self,
             self._handler,
             identifier="subset_ensemble_BCCAQv2",
@@ -121,7 +122,6 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
 
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
         self.write_log("Processing started", response, 5)
-        self.write_log("Reading inputs", response, 5)
 
         variable = request.inputs["variable"][0].data
         rcp = request.inputs["rcp"][0].data
