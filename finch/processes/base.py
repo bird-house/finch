@@ -17,15 +17,15 @@ LOGGER = logging.getLogger("PYWPS")
 
 class FinchProcess(Process):
     def __init__(self, *args, **kwargs):
-        def handler_wrapper(f):
-            """Wrap the handler to call sentry initialization first."""
-            @wraps(f)
-            def wrapper(self_, request, response):
-                self.sentry_configure_scope(request)
-                return f(self_, request, response)
-            return wrapper
+        handler = args[0]
 
-        args = (handler_wrapper(args[0]), *args[1:])
+        @wraps(handler)
+        def handler_wrapper(request, response):
+            """Wrap the handler to call sentry initialization first."""
+            self.sentry_configure_scope(request)
+            return handler(request, response)
+
+        args = (handler_wrapper, *args[1:])
         super().__init__(*args, **kwargs)
 
     def try_opendap(self, input, chunks=None):
