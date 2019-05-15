@@ -1,16 +1,11 @@
-import os
-import zipfile
-from copy import deepcopy
-
 from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
 from pywps.app import WPSRequest
-from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS, Process
+from pywps import LiteralInput, ComplexOutput, FORMATS, Process
 
 from finch.processes import SubsetBboxProcess
-from finch.processes.utils import get_bcca2v2_opendap_datasets
-from .base import bccaqv2_link
+from finch.processes.utils import get_bccaqv2_inputs
 
 
 class SubsetBCCAQV2Process(SubsetBboxProcess):
@@ -31,17 +26,6 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 abstract="Name of the variable in the NetCDF file.",
                 data_type="string",
                 allowed_values=["tasmin", "tasmax", "pr"],
-            ),
-            ComplexInput(
-                "resource",
-                "NetCDF resource",
-                abstract=(
-                    "NetCDF files, can be OPEnDAP urls."
-                    "If missing, the process will scan all BCCAQv2 data."
-                ),
-                min_occurs=0,
-                max_occurs=1000,
-                supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
             ),
             LiteralInput(
                 "lon0",
@@ -142,18 +126,11 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
         variable = request.inputs["variable"][0].data
         rcp = request.inputs["rcp"][0].data
 
-        if "resource" not in request.inputs:
-            request.inputs["resource"] = []
-
-            resource_input = [r for r in self.inputs if r.identifier == "resource"][0]
-
-            self.write_log("Fetching BCCAQv2 datasets", response, 6)
-            for url in get_bcca2v2_opendap_datasets(bccaqv2_link, variable, rcp):
-                input_ = deepcopy(resource_input)
-                input_.url = url
-                request.inputs["resource"].append(input_)
+        self.write_log("Fetching BCCAQv2 datasets", response, 6)
+        request.inputs = get_bccaqv2_inputs(request.inputs, variable, rcp)
 
         self.write_log("Running subset", response, 7)
+
         metalink = self.subset(request.inputs, response, start_percentage=7, end_percentage=90)
 
         if not metalink.files:

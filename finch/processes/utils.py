@@ -1,10 +1,14 @@
 import re
+from copy import deepcopy
 
 from typing import List
 from enum import Enum
 
 import requests
+from pywps import ComplexInput, FORMATS
 from siphon.catalog import TDSCatalog
+
+from finch.processes.base import bccaqv2_link
 
 
 def is_opendap_url(url):
@@ -69,3 +73,26 @@ def get_bcca2v2_opendap_datasets(
                 urls.append(opendap_url)
 
     return urls
+
+
+def get_bccaqv2_inputs(wps_inputs, variable, rcp, catalog_url=bccaqv2_link):
+    """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
+    new_inputs = deepcopy(wps_inputs)
+
+    new_inputs["resource"] = []
+    for url in get_bcca2v2_opendap_datasets(catalog_url, variable, rcp):
+        resource = _make_bccaqv2_resource_input(url)
+        new_inputs["resource"].append(resource)
+
+    return new_inputs
+
+
+def _make_bccaqv2_resource_input(url):
+    input = ComplexInput(
+        "resource",
+        "NetCDF resource",
+        max_occurs=1000,
+        supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
+    )
+    input.url = url
+    return input
