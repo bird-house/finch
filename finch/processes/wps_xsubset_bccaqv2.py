@@ -16,8 +16,6 @@ from .base import bccaqv2_link
 class SubsetBCCAQV2Process(SubsetBboxProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
-    bccaqv2_link = "https://boreas.ouranos.ca/thredds/catalog/birdhouse/pcic/BCCAQv2/catalog.xml"
-
     def __init__(self):
         inputs = [
             LiteralInput(
@@ -150,7 +148,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
             resource_input = [r for r in self.inputs if r.identifier == "resource"][0]
 
             self.write_log("Fetching BCCAQv2 datasets", response, 6)
-            for url in get_bcca2v2_opendap_datasets(self.bccaqv2_link, variable, rcp):
+            for url in get_bcca2v2_opendap_datasets(bccaqv2_link, variable, rcp):
                 input_ = deepcopy(resource_input)
                 input_.url = url
                 request.inputs["resource"].append(input_)
