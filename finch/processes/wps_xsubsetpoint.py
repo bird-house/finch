@@ -110,21 +110,21 @@ class SubsetGridPointProcess(FinchProcess):
             store_supported=True,
         )
 
-    def _handler(self, request, response):
+    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85):
         self.write_log("Processing started", response, 5)
 
-        lon = request.inputs["lon"][0].data
-        lat = request.inputs["lat"][0].data
-        # dt0 = request.inputs['dt0'][0].data or None
-        # dt1 = request.inputs['dt1'][0].data or None
+        lon = wps_inputs["lon"][0].data
+        lat = wps_inputs["lat"][0].data
+        # dt0 = wps_inputs['dt0'][0].data or None
+        # dt1 = wps_inputs['dt1'][0].data or None
 
         y0, y1 = None, None
         with suppress(KeyError):
-            y0 = request.inputs["y0"][0].data
+            y0 = wps_inputs["y0"][0].data
         with suppress(KeyError):
-            y1 = request.inputs["y1"][0].data
+            y1 = wps_inputs["y1"][0].data
 
-        variables = [r.data for r in request.inputs.get("variable", [])]
+        variables = [r.data for r in wps_inputs.get("variable", [])]
 
         metalink = MetaLink4(
             identity="subset_bbox",
@@ -133,9 +133,9 @@ class SubsetGridPointProcess(FinchProcess):
             workdir=self.workdir,
         )
 
-        n_files = len(request.inputs["resource"])
+        n_files = len(wps_inputs["resource"])
 
-        for n, res in enumerate(request.inputs["resource"]):
+        for n, res in enumerate(wps_inputs["resource"]):
             percentage = 5 + n // n_files * (99 - 5)
             self.write_log(f"Processing file {n + 1} of {n_files}", response, percentage)
 
@@ -157,9 +157,17 @@ class SubsetGridPointProcess(FinchProcess):
             mf.file = out_fn
             metalink.append(mf)
 
+        return metalink
+
+    def _handler(self, request, response):
+        self.write_log("Processing started", response, 5)
+
+        metalink = self.subset(request.inputs, response)
+
         self.write_log("Processing finished successfully", response, 99)
 
         response.outputs["output"].file = metalink.files[0].file
         response.outputs["ref"].data = metalink.xml
 
         return response
+
