@@ -14,8 +14,6 @@ from finch.processes.utils import is_opendap_url
 
 LOGGER = logging.getLogger("PYWPS")
 
-bccaqv2_link = "https://boreas.ouranos.ca/thredds/catalog/birdhouse/pcic/BCCAQv2/catalog.xml"
-
 
 class FinchProcess(Process):
     def __init__(self, *args, **kwargs):

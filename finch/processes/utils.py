@@ -8,7 +8,7 @@ import requests
 from pywps import ComplexInput, FORMATS
 from siphon.catalog import TDSCatalog
 
-from finch.processes.base import bccaqv2_link
+bccaqv2_link = "https://boreas.ouranos.ca/thredds/catalog/birdhouse/pcic/BCCAQv2/catalog.xml"
 
 
 def is_opendap_url(url):
