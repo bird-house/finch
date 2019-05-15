@@ -8,7 +8,7 @@ from tests.utils import wps_literal_input, execute_process
 from finch.processes.wps_xsubset_bccaqv2 import SubsetBCCAQV2Process
 
 
-@mock.patch("finch.processes.wps_xsubset_bccaqv2.get_bcca2v2_opendap_datasets")
+@mock.patch("finch.processes.wps_xsubset_bccaqv2.get_bccaqv2_opendap_datasets")
 @mock.patch.object(SubsetBCCAQV2Process, "subset")
 def test_bccaqv2_subset(mock_bccaq_subset, mock_datasets, client):
     identifier = "subset_ensemble_BCCAQv2"

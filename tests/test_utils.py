@@ -1,4 +1,4 @@
-from finch.processes.utils import get_bcca2v2_opendap_datasets, bccaqv2_link
+from finch.processes.utils import get_bccaqv2_opendap_datasets, bccaqv2_link
 import pytest
 from unittest import mock
 
@@ -29,5 +29,5 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
 
     mock_catalog.datasets = {name: make_dataset(name) for name in names}
 
-    urls = get_bcca2v2_opendap_datasets(url, variable, rcp)
+    urls = get_bccaqv2_opendap_datasets(url, variable, rcp)
     assert len(urls) == 2

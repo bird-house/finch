@@ -30,7 +30,7 @@ class ParsingMethod(Enum):
     xarray = 3
 
 
-def get_bcca2v2_opendap_datasets(
+def get_bccaqv2_opendap_datasets(
     catalog_url, variable, rcp, method: ParsingMethod = ParsingMethod.filename
 ) -> List[str]:
     """Get a list of urls corresponding to variable and rcp on a Thredds server.
@@ -80,7 +80,7 @@ def get_bccaqv2_inputs(wps_inputs, variable, rcp, catalog_url=bccaqv2_link):
     new_inputs = deepcopy(wps_inputs)
 
     new_inputs["resource"] = []
-    for url in get_bcca2v2_opendap_datasets(catalog_url, variable, rcp):
+    for url in get_bccaqv2_opendap_datasets(catalog_url, variable, rcp):
         resource = _make_bccaqv2_resource_input(url)
         new_inputs["resource"].append(resource)
 
