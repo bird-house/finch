@@ -1,8 +1,8 @@
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
+from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_bbox
-from pathlib import Path
-from pywps.inout.outputs import MetaFile, MetaLink4
-from .base import FinchProcess
+
+from finch.processes.subset import SubsetProcess
 import logging
 from contextlib import suppress
 
@@ -10,7 +10,7 @@ from contextlib import suppress
 LOGGER = logging.getLogger("PYWPS")
 
 
-class SubsetBboxProcess(FinchProcess):
+class SubsetBboxProcess(SubsetProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):
@@ -131,59 +131,36 @@ class SubsetBboxProcess(FinchProcess):
             store_supported=True,
         )
 
-    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85):
+    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85) -> MetaLink4:
         lon0 = wps_inputs["lon0"][0].data
         lon1 = wps_inputs["lon1"][0].data
         lat0 = wps_inputs["lat0"][0].data
         lat1 = wps_inputs["lat1"][0].data
         # dt0 = wps_inputs['dt0'][0].data or None
         # dt1 = wps_inputs['dt1'][0].data or None
-
         y0, y1 = None, None
         with suppress(KeyError):
             y0 = wps_inputs["y0"][0].data
         with suppress(KeyError):
             y1 = wps_inputs["y1"][0].data
-
         variables = [r.data for r in wps_inputs.get("variable", [])]
 
-        metalink = MetaLink4(
-            identity="subset_bbox",
-            description="Subsetted netCDF files",
-            publisher="Finch",
-            workdir=self.workdir,
-        )
+        n_files = len(wps_inputs["resources"])
+        count = 0
 
-        n_files = len(wps_inputs["resource"])
+        def _subset_function(dataset):
+            nonlocal count
 
-        for n, res in enumerate(wps_inputs["resource"]):
-            percentage = start_percentage + int(n / n_files * (end_percentage - start_percentage))
-            self.write_log(f"Processing file {n + 1} of {n_files}", response, percentage)
+            percentage = start_percentage + int(count / n_files * (end_percentage - start_percentage))
+            self.write_log(f"Processing file {count + 1} of {n_files}", response, percentage)
+            count += 1
 
-            ds = self.try_opendap(res)
-            if variables:
-                ds = ds[variables]
-
-            out = subset_bbox(
-                ds, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_yr=y0, end_yr=y1
+            dataset = dataset[variables] if variables else dataset
+            return subset_bbox(
+                dataset, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_yr=y0, end_yr=y1
             )
 
-            if not all(out.dims.values()):
-                LOGGER.debug(f"Subset is empty for dataset: {res.url}")
-                continue
-
-            p = Path(res._file or res._build_file_name(res.url))
-            out_fn = Path(self.workdir) / (p.stem + "_sub" + p.suffix)
-
-            out.to_netcdf(out_fn)
-
-            mf = MetaFile(
-                identity=p.stem,
-                description=f"Subset of file on bounding box lon=({lon0}, {lon1}) lat=({lat0}, {lat1})",
-                fmt=FORMATS.NETCDF,
-            )
-            mf.file = out_fn
-            metalink.append(mf)
+        metalink = self.subset_resources(wps_inputs["resources"], _subset_function)
 
         return metalink
 
