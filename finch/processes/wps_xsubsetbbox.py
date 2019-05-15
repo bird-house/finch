@@ -188,8 +188,6 @@ class SubsetBboxProcess(FinchProcess):
         return metalink
 
     def _handler(self, request, response):
-        self.sentry_configure_scope(request)
-
         self.write_log("Processing started", response, 5)
 
         metalink = self.subset(request.inputs, response)

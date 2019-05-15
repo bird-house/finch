@@ -101,7 +101,7 @@ class SubsetGridPointProcess(FinchProcess):
             version="0.1",
             abstract=(
                 "Return the data for which grid cells includes the "
-                "point coordinates for each input dataset as well as"
+                "point coordinates for each input dataset as well as "
                 "the time range selected."
             ),
             inputs=inputs,
@@ -111,8 +111,6 @@ class SubsetGridPointProcess(FinchProcess):
         )
 
     def _handler(self, request, response):
-        self.sentry_configure_scope(request)
-
         self.write_log("Processing started", response, 5)
 
         lon = request.inputs["lon"][0].data

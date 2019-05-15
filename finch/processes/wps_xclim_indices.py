@@ -86,8 +86,6 @@ class _XclimIndicatorProcess(FinchProcess):
         return inputs
 
     def _handler(self, request, response):
-        self.sentry_configure_scope(request)
-
         self.write_log("Processing started", response, 5)
         self.write_log("Preparing inputs", response, 5)
         kwds = {}

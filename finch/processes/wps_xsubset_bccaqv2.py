@@ -10,6 +10,7 @@ from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS, Process
 
 from finch.processes import SubsetBboxProcess
 from finch.processes.utils import get_bcca2v2_opendap_datasets
+from .base import bccaqv2_link
 
 
 class SubsetBCCAQV2Process(SubsetBboxProcess):
@@ -137,8 +138,6 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
         )
 
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
-        self.sentry_configure_scope(request)
-
         self.write_log("Processing started", response, 5)
         self.write_log("Reading inputs", response, 5)
 

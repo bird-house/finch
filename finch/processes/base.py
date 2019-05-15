@@ -5,6 +5,7 @@ from sentry_sdk import configure_scope
 import xarray as xr
 import logging
 import os
+from functools import wraps
 
 from finch.processes.utils import is_opendap_url
 
@@ -12,6 +13,18 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class FinchProcess(Process):
+    def __init__(self, *args, **kwargs):
+        def handler_wrapper(f):
+            """Wrap the handler to call sentry initialization first."""
+            @wraps(f)
+            def wrapper(self_, request, response):
+                self.sentry_configure_scope(request)
+                return f(self_, request, response)
+            return wrapper
+
+        args = (handler_wrapper(args[0]), *args[1:])
+        super().__init__(*args, **kwargs)
+
     def try_opendap(self, input, chunks=None):
         """Try to open the file as an OPeNDAP url and chunk it. If OPeNDAP fails, access the file directly. In both
         cases, return an xarray.Dataset.
