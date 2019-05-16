@@ -72,6 +72,6 @@ def test_bccaqv2_heatwave_online(client):
         wps_literal_input("freq", "YS"),
     ]
 
-    outputs = execute_process(client, identifier, inputs, output_names=["zip"])
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
 
     print(outputs)
