@@ -31,7 +31,7 @@ class ParsingMethod(Enum):
 
 
 def get_bccaqv2_opendap_datasets(
-    catalog_url, variable, rcp, method: ParsingMethod = ParsingMethod.filename
+    catalog_url, variable, rcp=None, method: ParsingMethod = ParsingMethod.filename
 ) -> List[str]:
     """Get a list of urls corresponding to variable and rcp on a Thredds server.
 
@@ -46,36 +46,39 @@ def get_bccaqv2_opendap_datasets(
     for dataset in catalog.datasets.values():
         opendap_url = dataset.access_urls["OPENDAP"]
 
+        variable_ok = False
+        rcp_ok = rcp is None
+
         if method == ParsingMethod.filename:
-            if rcp in dataset.name and dataset.name.startswith(variable):
-                urls.append(opendap_url)
+            variable_ok = dataset.name.startswith(variable)
+            rcp_ok = rcp in dataset.name or rcp_ok
 
         elif method == ParsingMethod.opendap_das:
             re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
             lines = requests.get(opendap_url + ".das").content.decode().split("\n")
 
-            has_variable = any(line.startswith(f"    {variable} {{") for line in lines)
-            is_good_rcp = False
-            for line in lines:
-                match = re_experiment.search(line)
-                if match and rcp in match.group(1).split(","):
-                    is_good_rcp = True
-
-            if has_variable and is_good_rcp:
-                urls.append(opendap_url)
+            variable_ok = any(line.startswith(f"    {variable} {{") for line in lines)
+            if not rcp_ok:
+                for line in lines:
+                    match = re_experiment.search(line)
+                    if match and rcp in match.group(1).split(","):
+                        rcp_ok = True
 
         elif method == ParsingMethod.xarray:
             import xarray as xr
 
             ds = xr.open_dataset(opendap_url, decode_times=False)
             rcps = [r for r in ds.attrs.get('driving_experiment_id', '').split(',') if 'rcp' in r]
-            if rcp in rcps and variable in ds.data_vars:
-                urls.append(opendap_url)
+            variable_ok = variable in ds.data_vars
+            rcp_ok = rcp in rcps or rcp_ok
+
+        if variable_ok and rcp_ok:
+            urls.append(opendap_url)
 
     return urls
 
 
-def get_bccaqv2_inputs(wps_inputs, variable, rcp, catalog_url=bccaqv2_link):
+def get_bccaqv2_inputs(wps_inputs, variable, rcp=None, catalog_url=bccaqv2_link):
     """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
     new_inputs = deepcopy(wps_inputs)
 
