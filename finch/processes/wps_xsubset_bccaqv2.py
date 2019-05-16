@@ -137,7 +137,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
             message = "No data was produced when subsetting using the provided bounds."
             raise ProcessError(message)
 
-        self.write_log("Subset done, crating zip file", response)
+        self.write_log("Subset done, creating zip file", response)
 
         output_zip = Path(self.workdir) / f"BCCAQv2_subset_{rcp}_{variable}.zip"
         self.zip_metalink(output_zip, metalink, response, 90)
