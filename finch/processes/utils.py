@@ -8,7 +8,9 @@ import requests
 from pywps import ComplexInput, FORMATS
 from siphon.catalog import TDSCatalog
 
-bccaqv2_link = "https://boreas.ouranos.ca/thredds/catalog/birdhouse/pcic/BCCAQv2/catalog.xml"
+bccaqv2_link = (
+    "https://boreas.ouranos.ca/thredds/catalog/birdhouse/pcic/BCCAQv2/catalog.xml"
+)
 BCCAQV2_LIMIT = 3  # Todo: remove-me. Temporary limit the number of datasets to request
 
 
@@ -58,7 +60,9 @@ def get_bccaqv2_opendap_datasets(
             re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
             lines = requests.get(opendap_url + ".das").content.decode().split("\n")
 
-            variable_ok = variable_ok or any(line.startswith(f"    {variable} {{") for line in lines)
+            variable_ok = variable_ok or any(
+                line.startswith(f"    {variable} {{") for line in lines
+            )
             if not rcp_ok:
                 for line in lines:
                     match = re_experiment.search(line)
@@ -69,7 +73,11 @@ def get_bccaqv2_opendap_datasets(
             import xarray as xr
 
             ds = xr.open_dataset(opendap_url, decode_times=False)
-            rcps = [r for r in ds.attrs.get('driving_experiment_id', '').split(',') if 'rcp' in r]
+            rcps = [
+                r
+                for r in ds.attrs.get("driving_experiment_id", "").split(",")
+                if "rcp" in r
+            ]
             variable_ok = variable_ok or variable in ds.data_vars
             rcp_ok = rcp_ok or rcp in rcps
 
