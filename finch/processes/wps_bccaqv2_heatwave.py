@@ -168,7 +168,7 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             inputs["tasmax"] = deque([make_nc_input("tasmax")], maxlen=1)
             inputs["tasmax"][0].file = str(tasmax)
 
-            out = self.compute_indices(self.indices_process, inputs)
+            out = self.compute_indices(self.indices_process.xci, inputs)
             out_fn = Path(self.workdir) / tasmin.name.replace(
                 "tasmin", "heat_wave_frequency"
             )
