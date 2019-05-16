@@ -1,6 +1,7 @@
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
+from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaLink4
-from xclim.subset import subset_bbox
+from xclim.subset import subset_bbox, subset_gridpoint
 
 from finch.processes.subset import SubsetProcess
 import logging
@@ -145,6 +146,10 @@ class SubsetBboxProcess(SubsetProcess):
             y1 = wps_inputs["y1"][0].data
         variables = [r.data for r in wps_inputs.get("variable", [])]
 
+        nones = [lat1 is None, lon1 is None]
+        if any(nones) and not all(nones):
+            raise ProcessError("lat1 and lon1 must be both omitted or provided")
+
         n_files = len(wps_inputs["resource"])
         count = 0
 
@@ -156,9 +161,12 @@ class SubsetBboxProcess(SubsetProcess):
             count += 1
 
             dataset = dataset[variables] if variables else dataset
-            return subset_bbox(
-                dataset, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_yr=y0, end_yr=y1
-            )
+            if lat1 is None and lon1 is None:
+                return subset_gridpoint(dataset, lon=lon0, lat=lat0, start_yr=y0, end_yr=y1)
+            else:
+                return subset_bbox(
+                    dataset, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_yr=y0, end_yr=y1
+                )
 
         metalink = self.subset_resources(wps_inputs["resource"], _subset_function)
 
