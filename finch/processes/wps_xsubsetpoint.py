@@ -150,4 +150,3 @@ class SubsetGridPointProcess(SubsetProcess):
         response.outputs["ref"].data = metalink.xml
 
         return response
-

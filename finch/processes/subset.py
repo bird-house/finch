@@ -41,4 +41,3 @@ class SubsetProcess(FinchProcess):
             metalink.append(mf)
 
         return metalink
-
