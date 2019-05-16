@@ -119,7 +119,7 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         output_filename = f"BCCAQv2_subset_heat_wave_frequency_{lat}_{lon}"
 
         if output_format == "csv":
-            output_csv = Path(self.workdir) / output_filename + ".csv"
+            output_csv = Path(self.workdir) / (output_filename + ".csv")
             output_csv.write_text("Sorry, csv file output is not implemented yet.")
             response.outputs["output"].file = output_csv
             return response
@@ -176,7 +176,7 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             output_netcdf.append(out_fn)
 
         self.write_log("Computation done, creating zip file", response)
-        output_zip = Path(self.workdir) / output_filename + ".zip"
+        output_zip = Path(self.workdir) / (output_filename + ".zip")
 
         self.zip_files(output_zip, output_netcdf, response, 95)
 

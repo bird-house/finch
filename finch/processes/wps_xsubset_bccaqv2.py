@@ -141,7 +141,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
         output_filename = f"BCCAQv2_subset_{rcp}_{variable}"
 
         if output_format == "csv":
-            output_csv = Path(self.workdir) / output_filename + ".csv"
+            output_csv = Path(self.workdir) / (output_filename + ".csv")
             output_csv.write_text("Sorry, csv file output is not implemented yet.")
             response.outputs["output"].file = output_csv
             return response
@@ -164,7 +164,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
 
         self.write_log("Subset done, creating zip file", response)
 
-        output_zip = Path(self.workdir) / output_filename + ".zip"
+        output_zip = Path(self.workdir) / (output_filename + ".zip")
         files = [mf.file for mf in metalink.files]
         self.zip_files(output_zip, files, response, 90)
 
