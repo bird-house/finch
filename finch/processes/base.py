@@ -81,13 +81,13 @@ class FinchProcess(Process):
                 scope.set_extra("remote_addr", request.http_request.remote_addr)
                 scope.set_extra("xml_request", request.http_request.data)
 
-    def zip_metalink(self, output_filename, metalink, response, start_percentage=90):
+    def zip_files(self, output_filename, files, response, start_percentage=90):
         with zipfile.ZipFile(output_filename, mode="w") as z:
-            n_files = len(metalink.files)
-            for n, mf in enumerate(metalink.files):
+            n_files = len(files)
+            for n, filename in enumerate(files):
                 percentage = start_percentage + int(n / n_files * (100 - start_percentage))
                 self.write_log(f"Zipping file {n + 1} of {n_files}", response, percentage)
-                z.write(mf.file, arcname=Path(mf.file).name)
+                z.write(filename, arcname=Path(filename).name)
 
 
 def chunk_dataset(ds, max_size=1000000):

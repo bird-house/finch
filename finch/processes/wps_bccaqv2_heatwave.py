@@ -93,12 +93,12 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             store_supported=True,
         )
 
-    def _make_tasmin_tasmax_pairs(self, filenames: List[str]):
-        tasmin_files = [f for f in filenames if "tasmin" in f.lower()]
-        tasmax_files = [f for f in filenames if "tasmax" in f.lower()]
+    def _make_tasmin_tasmax_pairs(self, filenames: List[Path]):
+        tasmin_files = [f for f in filenames if "tasmin" in f.name.lower()]
+        tasmax_files = [f for f in filenames if "tasmax" in f.name.lower()]
         for tasmin in tasmin_files[:]:
             for tasmax in tasmax_files[:]:
-                if tasmin.lower() == tasmax.lower().replace("tasmax", "tasmin"):
+                if tasmin.name.lower() == tasmax.name.lower().replace("tasmax", "tasmin"):
                     yield tasmin, tasmax
                     tasmax_files.remove(tasmax)
                     tasmin_files.remove(tasmin)
@@ -129,13 +129,15 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
 
         self.write_log("Subset done, calculating indices", response)
 
-        all_files = [f.file for f in metalink.files]
+        all_files = [Path(f.file) for f in metalink.files]
 
         start_percentage = 50
         end_percentage = 95
 
         pairs = list(self._make_tasmin_tasmax_pairs(all_files))
         n_pairs = len(pairs)
+
+        output_netcdf = []
 
         for n, (tasmin, tasmax) in enumerate(pairs):
             percentage = start_percentage + int(
@@ -152,13 +154,16 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
                     inputs[i].append(i)
 
             tasmin_input = make_nc_input("tasmin")
-            tasmin_input.file = tasmin
+            tasmin_input.file = str(tasmin)
             inputs["tasmin"] = [tasmin_input]
             tasmax_input = make_nc_input("tasmax")
-            tasmax_input.file = tasmax
+            tasmax_input.file = str(tasmax)
             inputs["tasmax"] = [tasmax_input]
 
-            self.compute_indices(self.indices_process, inputs)
+            out = self.compute_indices(self.indices_process, inputs)
+            out_fn = Path(self.workdir) / tasmin.name.replace("tasmin", "heat_wave_frequency")
+            out.to_netcdf(out_fn)
+            output_netcdf.append(out_fn)
 
         self.write_log("Computation done, creating zip file", response)
 
@@ -166,7 +171,8 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         lon = request.inputs["lon"]
         filename = f"BCCAQv2_subset_heat_wave_frequency_{lat}_{lon}.zip"
         output_zip = Path(self.workdir) / filename
-        self.zip_metalink(output_zip, metalink, response, 95)
+
+        self.zip_files(output_zip, output_netcdf, response, 95)
 
         self.write_log("Processing finished successfully", response, 99)
 
