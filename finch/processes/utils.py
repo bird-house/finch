@@ -81,7 +81,7 @@ def get_bccaqv2_opendap_datasets(
 def get_bccaqv2_inputs(wps_inputs, variable, rcp=None, catalog_url=bccaqv2_link):
     """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
     new_inputs = deepcopy(wps_inputs)
-    workdir = next(wps_inputs.values())[0].workdir
+    workdir = next(iter(wps_inputs.values()))[0].workdir
 
     new_inputs["resource"] = []
     for url in get_bccaqv2_opendap_datasets(catalog_url, variable, rcp):
