@@ -51,7 +51,7 @@ def get_bccaqv2_opendap_datasets(
 
         if method == ParsingMethod.filename:
             variable_ok = dataset.name.startswith(variable)
-            rcp_ok = rcp in dataset.name or rcp_ok
+            rcp_ok = rcp_ok or rcp in dataset.name
 
         elif method == ParsingMethod.opendap_das:
             re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
@@ -70,7 +70,7 @@ def get_bccaqv2_opendap_datasets(
             ds = xr.open_dataset(opendap_url, decode_times=False)
             rcps = [r for r in ds.attrs.get('driving_experiment_id', '').split(',') if 'rcp' in r]
             variable_ok = variable in ds.data_vars
-            rcp_ok = rcp in rcps or rcp_ok
+            rcp_ok = rcp_ok or rcp in rcps
 
         if variable_ok and rcp_ok:
             urls.append(opendap_url)
