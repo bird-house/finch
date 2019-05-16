@@ -92,15 +92,24 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 default=None,
                 min_occurs=0,
             ),
+            LiteralInput(
+                "output_format",
+                "Output format choice",
+                abstract="Choose in which format you want to recieve the result",
+                data_type="string",
+                allowed_values=["netcdf", "csv"],
+                default="netcdf",
+                min_occurs=0,
+            ),
         ]
 
         outputs = [
             ComplexOutput(
-                "zip",
-                "Zip file",
-                abstract="A zip file containing all the output files.",
+                "output",
+                "Result",
+                abstract="The format depends on the input parameter 'output_format'",
                 as_reference=True,
-                supported_formats=[FORMATS.ZIP],
+                supported_formats=[FORMATS.NETCDF, FORMATS.TEXT],
             )
         ]
 
@@ -127,6 +136,15 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
 
         variable = request.inputs["variable"][0].data
         rcp = request.inputs["rcp"][0].data
+        output_format = request.inputs["output_format"][0].data
+
+        output_filename = f"BCCAQv2_subset_{rcp}_{variable}"
+
+        if output_format == "csv":
+            output_csv = Path(self.workdir) / output_filename + ".csv"
+            output_csv.write_text("Sorry, csv file output is not implemented yet.")
+            response.outputs["output"].file = output_csv
+            return response
 
         if variable == ALL:
             variable = None
@@ -146,7 +164,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
 
         self.write_log("Subset done, creating zip file", response)
 
-        output_zip = Path(self.workdir) / f"BCCAQv2_subset_{rcp}_{variable}.zip"
+        output_zip = Path(self.workdir) / output_filename + ".zip"
         files = [mf.file for mf in metalink.files]
         self.zip_files(output_zip, files, response, 90)
 
