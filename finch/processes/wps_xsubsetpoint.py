@@ -122,7 +122,7 @@ class SubsetGridPointProcess(SubsetProcess):
             y1 = wps_inputs["y1"][0].data
         variables = [r.data for r in wps_inputs.get("variable", [])]
 
-        n_files = len(wps_inputs["resources"])
+        n_files = len(wps_inputs["resource"])
         count = 0
 
         def _subset_function(dataset):
@@ -135,7 +135,7 @@ class SubsetGridPointProcess(SubsetProcess):
             dataset = dataset[variables] if variables else dataset
             return subset_gridpoint(dataset, lon=lon, lat=lat, start_yr=y0, end_yr=y1)
 
-        metalink = self.subset_resources(wps_inputs["resources"], _subset_function)
+        metalink = self.subset_resources(wps_inputs["resource"], _subset_function)
 
         return metalink
 
