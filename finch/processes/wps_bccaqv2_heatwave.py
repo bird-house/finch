@@ -113,9 +113,16 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
         self.write_log("Processing started", response, 5)
 
+        lat = request.inputs["lat"][0].data
+        lon = request.inputs["lon"][0].data
         output_format = request.inputs["output_format"][0].data
-        if output_format != "netcdf":
-            raise ProcessError(f"Output format not implemented: {output_format}")
+
+        if output_format == "csv":
+            filename = f"BCCAQv2_subset_heat_wave_frequency_{lat}_{lon}.csv"
+            output_csv = Path(self.workdir) / filename
+            output_csv.write_text("Sorry, csv file output is not implemented yet.")
+            response.outputs["output"].file = output_csv
+            return response
 
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
         tasmin_inputs = get_bccaqv2_inputs(request.inputs, "tasmin")["resource"]
@@ -169,9 +176,6 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             output_netcdf.append(out_fn)
 
         self.write_log("Computation done, creating zip file", response)
-
-        lat = request.inputs["lat"][0].data
-        lon = request.inputs["lon"][0].data
         filename = f"BCCAQv2_subset_heat_wave_frequency_{lat}_{lon}.zip"
         output_zip = Path(self.workdir) / filename
 
