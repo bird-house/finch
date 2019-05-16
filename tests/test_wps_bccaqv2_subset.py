@@ -15,6 +15,8 @@ def test_bccaqv2_subset(mock_bccaq_subset, mock_datasets, client):
     inputs = [
         wps_literal_input("variable", "tasmin"),
         wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("lat0", "45.507485"),
+        wps_literal_input("lon0", "-73.541295"),
     ]
 
     metalink = mock.MagicMock()
