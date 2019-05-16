@@ -32,7 +32,7 @@ class ParsingMethod(Enum):
 
 
 def get_bccaqv2_opendap_datasets(
-    catalog_url, variable, rcp=None, method: ParsingMethod = ParsingMethod.filename
+    catalog_url, variable=None, rcp=None, method: ParsingMethod = ParsingMethod.filename
 ) -> List[str]:
     """Get a list of urls corresponding to variable and rcp on a Thredds server.
 
@@ -47,18 +47,18 @@ def get_bccaqv2_opendap_datasets(
     for dataset in catalog.datasets.values():
         opendap_url = dataset.access_urls["OPENDAP"]
 
-        variable_ok = False
+        variable_ok = variable is None
         rcp_ok = rcp is None
 
         if method == ParsingMethod.filename:
-            variable_ok = dataset.name.startswith(variable)
+            variable_ok = variable_ok or dataset.name.startswith(variable)
             rcp_ok = rcp_ok or rcp in dataset.name
 
         elif method == ParsingMethod.opendap_das:
             re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
             lines = requests.get(opendap_url + ".das").content.decode().split("\n")
 
-            variable_ok = any(line.startswith(f"    {variable} {{") for line in lines)
+            variable_ok = variable_ok or any(line.startswith(f"    {variable} {{") for line in lines)
             if not rcp_ok:
                 for line in lines:
                     match = re_experiment.search(line)
@@ -70,7 +70,7 @@ def get_bccaqv2_opendap_datasets(
 
             ds = xr.open_dataset(opendap_url, decode_times=False)
             rcps = [r for r in ds.attrs.get('driving_experiment_id', '').split(',') if 'rcp' in r]
-            variable_ok = variable in ds.data_vars
+            variable_ok = variable_ok or variable in ds.data_vars
             rcp_ok = rcp_ok or rcp in rcps
 
         if variable_ok and rcp_ok:
@@ -79,7 +79,7 @@ def get_bccaqv2_opendap_datasets(
     return urls
 
 
-def get_bccaqv2_inputs(wps_inputs, variable, rcp=None, catalog_url=bccaqv2_link):
+def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=bccaqv2_link):
     """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
     new_inputs = deepcopy(wps_inputs)
     workdir = next(iter(wps_inputs.values()))[0].workdir
