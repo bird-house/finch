@@ -29,7 +29,7 @@ def test_bccaqv2_subset(mock_bccaq_subset, mock_datasets, client):
     mock_datasets.return_value = ["dataset1", "dataset2"]
     mock_bccaq_subset.return_value = metalink
 
-    outputs = execute_process(client, identifier, inputs, output_names=["zip"])
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
 
     output_file = outputs[0]
     assert len(outputs) == 1
@@ -59,6 +59,6 @@ def test_bccaqv2_subset_online(client):
         wps_literal_input("y1", "2010"),
     ]
 
-    outputs = execute_process(client, identifier, inputs, output_names=["zip"])
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
 
     print(outputs)

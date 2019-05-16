@@ -170,5 +170,5 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
 
         self.write_log("Processing finished successfully", response, 99)
 
-        response.outputs["zip"].file = output_zip
+        response.outputs["output"].file = output_zip
         return response
