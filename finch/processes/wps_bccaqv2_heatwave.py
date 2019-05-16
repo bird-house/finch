@@ -1,5 +1,5 @@
 import logging
-from collections import defaultdict
+from collections import deque
 from typing import List
 
 from xclim.atmos import heat_wave_frequency
@@ -98,7 +98,9 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         tasmax_files = [f for f in filenames if "tasmax" in f.name.lower()]
         for tasmin in tasmin_files[:]:
             for tasmax in tasmax_files[:]:
-                if tasmin.name.lower() == tasmax.name.lower().replace("tasmax", "tasmin"):
+                if tasmin.name.lower() == tasmax.name.lower().replace(
+                    "tasmax", "tasmin"
+                ):
                     yield tasmin, tasmax
                     tasmax_files.remove(tasmax)
                     tasmin_files.remove(tasmin)
@@ -110,6 +112,10 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
 
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
         self.write_log("Processing started", response, 5)
+
+        output_format = request.inputs["output_format"][0].data
+        if output_format != "netcdf":
+            raise ProcessError(f"Output format not implemented: {output_format}")
 
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
         tasmin_inputs = get_bccaqv2_inputs(request.inputs, "tasmin")["resource"]
@@ -148,27 +154,24 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             )
 
             compute_inputs = [i.identifier for i in self.indices_process.inputs]
-            inputs = defaultdict(list)
-            for i in request.inputs:
-                if i.identifier in compute_inputs:
-                    inputs[i].append(i)
+            inputs = {k: v for k, v in request.inputs.items() if k in compute_inputs}
 
-            tasmin_input = make_nc_input("tasmin")
-            tasmin_input.file = str(tasmin)
-            inputs["tasmin"] = [tasmin_input]
-            tasmax_input = make_nc_input("tasmax")
-            tasmax_input.file = str(tasmax)
-            inputs["tasmax"] = [tasmax_input]
+            inputs["tasmin"] = deque([make_nc_input("tasmin")], maxlen=1)
+            inputs["tasmin"][0].file = str(tasmin)
+            inputs["tasmax"] = deque([make_nc_input("tasmax")], maxlen=1)
+            inputs["tasmax"][0].file = str(tasmax)
 
             out = self.compute_indices(self.indices_process, inputs)
-            out_fn = Path(self.workdir) / tasmin.name.replace("tasmin", "heat_wave_frequency")
+            out_fn = Path(self.workdir) / tasmin.name.replace(
+                "tasmin", "heat_wave_frequency"
+            )
             out.to_netcdf(out_fn)
             output_netcdf.append(out_fn)
 
         self.write_log("Computation done, creating zip file", response)
 
-        lat = request.inputs["lat"]
-        lon = request.inputs["lon"]
+        lat = request.inputs["lat"][0].data
+        lon = request.inputs["lon"][0].data
         filename = f"BCCAQv2_subset_heat_wave_frequency_{lat}_{lon}.zip"
         output_zip = Path(self.workdir) / filename
 
@@ -176,5 +179,5 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
 
         self.write_log("Processing finished successfully", response, 99)
 
-        response.outputs["zip"].file = output_zip
+        response.outputs["output"].file = output_zip
         return response
