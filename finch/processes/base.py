@@ -3,7 +3,7 @@ import zipfile
 from dask.diagnostics import ProgressBar
 from dask.diagnostics.progress import format_time
 from pathlib import Path
-from pywps import Process
+from pywps import Process, ComplexInput, LiteralInput
 from sentry_sdk import configure_scope
 import xarray as xr
 import logging
@@ -45,6 +45,18 @@ class FinchProcess(Process):
             ds = xr.open_dataset(input.file)
 
         return ds
+
+    def compute_indices(self, func, inputs):
+        kwds = {}
+        for name, input_queue in inputs.items():
+            input = input_queue[0]
+            if isinstance(input, ComplexInput):
+                ds = self.try_opendap(input)
+                kwds[name] = ds.data_vars[name]
+            elif isinstance(input, LiteralInput):
+                kwds[name] = input.data
+
+        return func(**kwds)
 
     def log_file_path(self):
         return os.path.join(self.workdir, "log.txt")
