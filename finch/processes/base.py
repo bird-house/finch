@@ -17,16 +17,16 @@ LOGGER = logging.getLogger("PYWPS")
 
 class FinchProcess(Process):
     def __init__(self, *args, **kwargs):
-        handler = args[0]
-
-        @wraps(handler)
-        def handler_wrapper(request, response):
-            """Wrap the handler to call sentry initialization first."""
-            self.sentry_configure_scope(request)
-            return handler(request, response)
-
-        args = (handler_wrapper, *args[1:])
         super().__init__(*args, **kwargs)
+
+        # Must be assigned to the instance so that
+        # it's also copied over when the process is deepcopied
+        self.old_handler = self.handler
+        self.handler = self._handler_wrapped
+
+    def _handler_wrapped(self, request, response):
+        self.sentry_configure_scope(request)
+        return self.old_handler(request, response)
 
     def try_opendap(self, input, chunks=None):
         """Try to open the file as an OPeNDAP url and chunk it. If OPeNDAP fails, access the file directly. In both
