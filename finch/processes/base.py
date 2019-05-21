@@ -95,6 +95,9 @@ class FinchProcess(Process):
                 self.write_log(f"Zipping file {n + 1} of {n_files}", response, percentage)
                 z.write(filename, arcname=Path(filename).name)
 
+    def netcdf_to_csv(self, output_filename, files):
+        xr.open_mfdataset(files).to_dataframe().to_csv(output_filename)
+
 
 def chunk_dataset(ds, max_size=1000000):
     """Ensures the chunked size of a xarray.Dataset is below a certain size
