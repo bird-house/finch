@@ -8,8 +8,6 @@ from finch.processes import SubsetBboxProcess
 from finch.processes.subset import SubsetProcess
 from finch.processes.utils import get_bccaqv2_inputs
 
-ALL = "ALL"
-
 
 class SubsetBCCAQV2Process(SubsetBboxProcess):
     """Subset a NetCDF file using bounding box geometry."""
@@ -21,16 +19,18 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 "NetCDF Variable",
                 abstract="Name of the variable in the NetCDF file.",
                 data_type="string",
-                default=ALL,
-                allowed_values=[ALL, "tasmin", "tasmax", "pr"],
+                default=None,
+                min_occurs=0,
+                allowed_values=["tasmin", "tasmax", "pr"],
             ),
             LiteralInput(
                 "rcp",
                 "RCP Scenario",
                 abstract="Representative Concentration Pathway (RCP)",
                 data_type="string",
-                default=ALL,
-                allowed_values=[ALL, "rcp26", "rcp45", "rcp85"],
+                default=None,
+                min_occurs=0,
+                allowed_values=["rcp26", "rcp45", "rcp85"],
             ),
             LiteralInput(
                 "lat0",
@@ -134,8 +134,8 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
         self.write_log("Processing started", response, 5)
 
-        variable = request.inputs["variable"][0].data
-        rcp = request.inputs["rcp"][0].data
+        variable = self.get_input_or_none(request.inputs, "variable")
+        rcp = self.get_input_or_none(request.inputs, "rcp")
         output_format = request.inputs["output_format"][0].data
 
         output_filename = f"BCCAQv2_subset_{rcp}_{variable}"
@@ -145,11 +145,6 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
             output_csv.write_text("Sorry, csv file output is not implemented yet.")
             response.outputs["output"].file = output_csv
             return response
-
-        if variable == ALL:
-            variable = None
-        if rcp == ALL:
-            rcp = None
 
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
         request.inputs = get_bccaqv2_inputs(request.inputs, variable, rcp)

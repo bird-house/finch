@@ -28,6 +28,12 @@ class FinchProcess(Process):
         self.sentry_configure_scope(request)
         return self.old_handler(request, response)
 
+    def get_input_or_none(self, inputs, identifier):
+        try:
+            return inputs[identifier][0].data
+        except KeyError:
+            return None
+
     def try_opendap(self, input, chunks=None):
         """Try to open the file as an OPeNDAP url and chunk it. If OPeNDAP fails, access the file directly. In both
         cases, return an xarray.Dataset.

@@ -1,5 +1,3 @@
-from contextlib import suppress
-
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_gridpoint
@@ -115,11 +113,8 @@ class SubsetGridPointProcess(SubsetProcess):
         lat = wps_inputs["lat"][0].data
         # dt0 = wps_inputs['dt0'][0].data or None
         # dt1 = wps_inputs['dt1'][0].data or None
-        y0, y1 = None, None
-        with suppress(KeyError):
-            y0 = wps_inputs["y0"][0].data
-        with suppress(KeyError):
-            y1 = wps_inputs["y1"][0].data
+        y0 = self.get_input_or_none(wps_inputs, "y0")
+        y1 = self.get_input_or_none(wps_inputs, "y1")
         variables = [r.data for r in wps_inputs.get("variable", [])]
 
         n_files = len(wps_inputs["resource"])

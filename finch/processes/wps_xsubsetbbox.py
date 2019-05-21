@@ -5,7 +5,6 @@ from xclim.subset import subset_bbox, subset_gridpoint
 
 from finch.processes.subset import SubsetProcess
 import logging
-from contextlib import suppress
 
 
 LOGGER = logging.getLogger("PYWPS")
@@ -134,16 +133,13 @@ class SubsetBboxProcess(SubsetProcess):
 
     def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85) -> MetaLink4:
         lon0 = wps_inputs["lon0"][0].data
-        lon1 = wps_inputs["lon1"][0].data
         lat0 = wps_inputs["lat0"][0].data
-        lat1 = wps_inputs["lat1"][0].data
+        lon1 = self.get_input_or_none(wps_inputs, "lon1")
+        lat1 = self.get_input_or_none(wps_inputs, "lat1")
         # dt0 = wps_inputs['dt0'][0].data or None
         # dt1 = wps_inputs['dt1'][0].data or None
-        y0, y1 = None, None
-        with suppress(KeyError):
-            y0 = wps_inputs["y0"][0].data
-        with suppress(KeyError):
-            y1 = wps_inputs["y1"][0].data
+        y0 = self.get_input_or_none(wps_inputs, "y0")
+        y1 = self.get_input_or_none(wps_inputs, "y1")
         variables = [r.data for r in wps_inputs.get("variable", [])]
 
         nones = [lat1 is None, lon1 is None]
