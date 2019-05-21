@@ -136,9 +136,11 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
 
         variable = self.get_input_or_none(request.inputs, "variable")
         rcp = self.get_input_or_none(request.inputs, "rcp")
+        lat0 = self.get_input_or_none(request.inputs, "lat0")
+        lon0 = self.get_input_or_none(request.inputs, "lon0")
         output_format = request.inputs["output_format"][0].data
 
-        output_filename = f"BCCAQv2_subset_{rcp}_{variable}"
+        output_filename = f"BCCAQv2_subset_{lat0}_{lon0}"
 
         if output_format == "csv":
             output_csv = Path(self.workdir) / (output_filename + ".csv")
