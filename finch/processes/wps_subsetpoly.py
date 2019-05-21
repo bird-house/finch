@@ -1,9 +1,10 @@
-from pywps import Process, LiteralInput, ComplexInput, ComplexOutput, FORMATS
+from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 import xarray as xr
 # from xclim.subset import subset_poly
+from finch.processes.base import FinchProcess
 
 
-class SubsetPolyProcess(Process):
+class SubsetPolyProcess(FinchProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):

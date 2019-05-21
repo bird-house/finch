@@ -1,79 +1,65 @@
-import os
-import zipfile
-from copy import deepcopy
-
 from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
 from pywps.app import WPSRequest
-from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS, Process
+from pywps import LiteralInput, ComplexOutput, FORMATS
 
 from finch.processes import SubsetBboxProcess
-from finch.processes.utils import get_bcca2v2_opendap_datasets
+from finch.processes.subset import SubsetProcess
+from finch.processes.utils import get_bccaqv2_inputs
 
 
 class SubsetBCCAQV2Process(SubsetBboxProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
-    bccaqv2_link = "https://boreas.ouranos.ca/thredds/catalog/birdhouse/pcic/BCCAQv2/catalog.xml"
-
     def __init__(self):
         inputs = [
-            LiteralInput(
-                "rcp",
-                "RCP Scenario",
-                abstract="Representative Concentration Pathway (RCP)",
-                data_type="string",
-                allowed_values=["rcp26", "rcp45", "rcp85"],
-            ),
             LiteralInput(
                 "variable",
                 "NetCDF Variable",
                 abstract="Name of the variable in the NetCDF file.",
                 data_type="string",
+                default=None,
+                min_occurs=0,
                 allowed_values=["tasmin", "tasmax", "pr"],
             ),
-            ComplexInput(
-                "resource",
-                "NetCDF resource",
-                abstract=(
-                    "NetCDF files, can be OPEnDAP urls."
-                    "If missing, the process will scan all BCCAQv2 data."
-                ),
-                min_occurs=0,
-                max_occurs=1000,
-                supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
-            ),
             LiteralInput(
-                "lon0",
-                "Minimum longitude",
-                abstract="Minimum longitude.",
-                data_type="float",
-                default=-180,
+                "rcp",
+                "RCP Scenario",
+                abstract="Representative Concentration Pathway (RCP)",
+                data_type="string",
+                default=None,
                 min_occurs=0,
-            ),
-            LiteralInput(
-                "lon1",
-                "Maximum longitude",
-                abstract="Maximum longitude.",
-                data_type="float",
-                default=180,
-                min_occurs=0,
+                allowed_values=["rcp26", "rcp45", "rcp85"],
             ),
             LiteralInput(
                 "lat0",
                 "Minimum latitude",
                 abstract="Minimum latitude.",
                 data_type="float",
-                default=-90,
-                min_occurs=0,
+                min_occurs=1,
+            ),
+            LiteralInput(
+                "lon0",
+                "Minimum longitude",
+                abstract="Minimum longitude.",
+                data_type="float",
+                min_occurs=1,
             ),
             LiteralInput(
                 "lat1",
                 "Maximum latitude",
-                abstract="Maximum latitude.",
+                abstract="Maximum latitude. Omit this coordinate to subset for a single grid cell.",
                 data_type="float",
-                default=90,
+                default=None,
+                min_occurs=0,
+            ),
+            LiteralInput(
+                "lon1",
+                "Maximum longitude",
+                abstract="Maximum longitude. Omit this coordinate to subset for a single grid cell.",
+                data_type="float",
+                default=None,
                 min_occurs=0,
             ),
             # LiteralInput('dt0',
@@ -106,19 +92,28 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 default=None,
                 min_occurs=0,
             ),
+            LiteralInput(
+                "output_format",
+                "Output format choice",
+                abstract="Choose in which format you want to recieve the result",
+                data_type="string",
+                allowed_values=["netcdf", "csv"],
+                default="netcdf",
+                min_occurs=0,
+            ),
         ]
 
         outputs = [
             ComplexOutput(
-                "zip",
-                "Zip file",
-                abstract="A zip file containing all the output files.",
+                "output",
+                "Result",
+                abstract="The format depends on the input parameter 'output_format'",
                 as_reference=True,
-                supported_formats=[FORMATS.ZIP],
+                supported_formats=[FORMATS.NETCDF, FORMATS.TEXT],
             )
         ]
 
-        Process.__init__(
+        SubsetProcess.__init__(
             self,
             self._handler,
             identifier="subset_ensemble_BCCAQv2",
@@ -137,43 +132,40 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
         )
 
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
-        self.sentry_configure_scope(request)
-
         self.write_log("Processing started", response, 5)
-        self.write_log("Reading inputs", response, 5)
 
-        variable = request.inputs["variable"][0].data
-        rcp = request.inputs["rcp"][0].data
+        variable = self.get_input_or_none(request.inputs, "variable")
+        rcp = self.get_input_or_none(request.inputs, "rcp")
+        lat0 = self.get_input_or_none(request.inputs, "lat0")
+        lon0 = self.get_input_or_none(request.inputs, "lon0")
+        output_format = request.inputs["output_format"][0].data
 
-        if "resource" not in request.inputs:
-            request.inputs["resource"] = []
+        output_filename = f"BCCAQv2_subset_{lat0}_{lon0}"
 
-            resource_input = [r for r in self.inputs if r.identifier == "resource"][0]
+        if output_format == "csv":
+            output_csv = Path(self.workdir) / (output_filename + ".csv")
+            output_csv.write_text("Sorry, csv file output is not implemented yet.")
+            response.outputs["output"].file = output_csv
+            return response
 
-            self.write_log("Fetching BCCAQv2 datasets", response, 6)
-            for url in get_bcca2v2_opendap_datasets(self.bccaqv2_link, variable, rcp):
-                input_ = deepcopy(resource_input)
-                input_.url = url
-                request.inputs["resource"].append(input_)
+        self.write_log("Fetching BCCAQv2 datasets", response, 6)
+        request.inputs = get_bccaqv2_inputs(request.inputs, variable, rcp)
 
         self.write_log("Running subset", response, 7)
-        metalink = self.subset(request.inputs, response, start_percentage=7, end_percentage=85)
-        self.write_log("Subset done, crating zip file", response, 85)
 
-        output_filename = Path(self.workdir) / f"BCCAQv2_subset_{rcp}_{variable}.zip"
+        metalink = self.subset(request.inputs, response, start_percentage=7, end_percentage=90)
 
         if not metalink.files:
             message = "No data was produced when subsetting using the provided bounds."
             raise ProcessError(message)
 
-        with zipfile.ZipFile(output_filename, mode="w") as z:
-            n_files = len(metalink.files)
-            for n, mf in enumerate(metalink.files):
-                percentage = 85 + n // n_files * 14
-                self.write_log(f"Zipping file {n + 1} of {n_files}", response, percentage)
-                z.write(mf.file, arcname=Path(mf.file).name)
+        self.write_log("Subset done, creating zip file", response)
+
+        output_zip = Path(self.workdir) / (output_filename + ".zip")
+        files = [mf.file for mf in metalink.files]
+        self.zip_files(output_zip, files, response, 90)
 
         self.write_log("Processing finished successfully", response, 99)
 
-        response.outputs["zip"].file = output_filename
+        response.outputs["output"].file = output_zip
         return response

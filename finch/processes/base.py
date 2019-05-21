@@ -1,10 +1,14 @@
+import zipfile
+
 from dask.diagnostics import ProgressBar
 from dask.diagnostics.progress import format_time
-from pywps import Process
+from pathlib import Path
+from pywps import Process, ComplexInput, LiteralInput
 from sentry_sdk import configure_scope
 import xarray as xr
 import logging
 import os
+from functools import wraps
 
 from finch.processes.utils import is_opendap_url
 
@@ -12,6 +16,24 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class FinchProcess(Process):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Must be assigned to the instance so that
+        # it's also copied over when the process is deepcopied
+        self.old_handler = self.handler
+        self.handler = self._handler_wrapped
+
+    def _handler_wrapped(self, request, response):
+        self.sentry_configure_scope(request)
+        return self.old_handler(request, response)
+
+    def get_input_or_none(self, inputs, identifier):
+        try:
+            return inputs[identifier][0].data
+        except KeyError:
+            return None
+
     def try_opendap(self, input, chunks=None):
         """Try to open the file as an OPeNDAP url and chunk it. If OPeNDAP fails, access the file directly. In both
         cases, return an xarray.Dataset.
@@ -29,6 +51,18 @@ class FinchProcess(Process):
             ds = xr.open_dataset(input.file)
 
         return ds
+
+    def compute_indices(self, func, inputs):
+        kwds = {}
+        for name, input_queue in inputs.items():
+            input = input_queue[0]
+            if isinstance(input, ComplexInput):
+                ds = self.try_opendap(input)
+                kwds[name] = ds.data_vars[name]
+            elif isinstance(input, LiteralInput):
+                kwds[name] = input.data
+
+        return func(**kwds)
 
     def log_file_path(self):
         return os.path.join(self.workdir, "log.txt")
@@ -52,6 +86,14 @@ class FinchProcess(Process):
                 # the original request.http_request is not available anymore
                 scope.set_extra("remote_addr", request.http_request.remote_addr)
                 scope.set_extra("xml_request", request.http_request.data)
+
+    def zip_files(self, output_filename, files, response, start_percentage=90):
+        with zipfile.ZipFile(output_filename, mode="w") as z:
+            n_files = len(files)
+            for n, filename in enumerate(files):
+                percentage = start_percentage + int(n / n_files * (100 - start_percentage))
+                self.write_log(f"Zipping file {n + 1} of {n_files}", response, percentage)
+                z.write(filename, arcname=Path(filename).name)
 
 
 def chunk_dataset(ds, max_size=1000000):

@@ -1,16 +1,16 @@
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
-from xclim.subset import subset_bbox
-from pathlib import Path
-from pywps.inout.outputs import MetaFile, MetaLink4
-from .base import FinchProcess
+from pywps.app.exceptions import ProcessError
+from pywps.inout.outputs import MetaLink4
+from xclim.subset import subset_bbox, subset_gridpoint
+
+from finch.processes.subset import SubsetProcess
 import logging
-from contextlib import suppress
 
 
 LOGGER = logging.getLogger("PYWPS")
 
 
-class SubsetBboxProcess(FinchProcess):
+class SubsetBboxProcess(SubsetProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):
@@ -131,65 +131,44 @@ class SubsetBboxProcess(FinchProcess):
             store_supported=True,
         )
 
-    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85):
+    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85) -> MetaLink4:
         lon0 = wps_inputs["lon0"][0].data
-        lon1 = wps_inputs["lon1"][0].data
         lat0 = wps_inputs["lat0"][0].data
-        lat1 = wps_inputs["lat1"][0].data
+        lon1 = self.get_input_or_none(wps_inputs, "lon1")
+        lat1 = self.get_input_or_none(wps_inputs, "lat1")
         # dt0 = wps_inputs['dt0'][0].data or None
         # dt1 = wps_inputs['dt1'][0].data or None
-
-        y0, y1 = None, None
-        with suppress(KeyError):
-            y0 = wps_inputs["y0"][0].data
-        with suppress(KeyError):
-            y1 = wps_inputs["y1"][0].data
-
+        y0 = self.get_input_or_none(wps_inputs, "y0")
+        y1 = self.get_input_or_none(wps_inputs, "y1")
         variables = [r.data for r in wps_inputs.get("variable", [])]
 
-        metalink = MetaLink4(
-            identity="subset_bbox",
-            description="Subsetted netCDF files",
-            publisher="Finch",
-            workdir=self.workdir,
-        )
+        nones = [lat1 is None, lon1 is None]
+        if any(nones) and not all(nones):
+            raise ProcessError("lat1 and lon1 must be both omitted or provided")
 
         n_files = len(wps_inputs["resource"])
+        count = 0
 
-        for n, res in enumerate(wps_inputs["resource"]):
-            percentage = start_percentage + int(n / n_files * (end_percentage - start_percentage))
-            self.write_log(f"Processing file {n + 1} of {n_files}", response, percentage)
+        def _subset_function(dataset):
+            nonlocal count
 
-            ds = self.try_opendap(res)
-            if variables:
-                ds = ds[variables]
+            percentage = start_percentage + int(count / n_files * (end_percentage - start_percentage))
+            self.write_log(f"Processing file {count + 1} of {n_files}", response, percentage)
+            count += 1
 
-            out = subset_bbox(
-                ds, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_yr=y0, end_yr=y1
-            )
+            dataset = dataset[variables] if variables else dataset
+            if lat1 is None and lon1 is None:
+                return subset_gridpoint(dataset, lon=lon0, lat=lat0, start_yr=y0, end_yr=y1)
+            else:
+                return subset_bbox(
+                    dataset, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_yr=y0, end_yr=y1
+                )
 
-            if not all(out.dims.values()):
-                LOGGER.debug(f"Subset is empty for dataset: {res.url}")
-                continue
-
-            p = Path(res._file or res._build_file_name(res.url))
-            out_fn = Path(self.workdir) / (p.stem + "_sub" + p.suffix)
-
-            out.to_netcdf(out_fn)
-
-            mf = MetaFile(
-                identity=p.stem,
-                description=f"Subset of file on bounding box lon=({lon0}, {lon1}) lat=({lat0}, {lat1})",
-                fmt=FORMATS.NETCDF,
-            )
-            mf.file = out_fn
-            metalink.append(mf)
+        metalink = self.subset_resources(wps_inputs["resource"], _subset_function)
 
         return metalink
 
     def _handler(self, request, response):
-        self.sentry_configure_scope(request)
-
         self.write_log("Processing started", response, 5)
 
         metalink = self.subset(request.inputs, response)

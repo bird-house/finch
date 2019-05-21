@@ -8,13 +8,15 @@ from tests.utils import wps_literal_input, execute_process
 from finch.processes.wps_xsubset_bccaqv2 import SubsetBCCAQV2Process
 
 
-@mock.patch("finch.processes.wps_xsubset_bccaqv2.get_bcca2v2_opendap_datasets")
+@mock.patch("finch.processes.utils.get_bccaqv2_opendap_datasets")
 @mock.patch.object(SubsetBCCAQV2Process, "subset")
 def test_bccaqv2_subset(mock_bccaq_subset, mock_datasets, client):
     identifier = "subset_ensemble_BCCAQv2"
     inputs = [
         wps_literal_input("variable", "tasmin"),
         wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("lat0", "45.507485"),
+        wps_literal_input("lon0", "-73.541295"),
     ]
 
     metalink = mock.MagicMock()
@@ -29,7 +31,7 @@ def test_bccaqv2_subset(mock_bccaq_subset, mock_datasets, client):
     mock_datasets.return_value = ["dataset1", "dataset2"]
     mock_bccaq_subset.return_value = metalink
 
-    outputs = execute_process(client, identifier, inputs, output_names=["zip"])
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
 
     output_file = outputs[0]
     assert len(outputs) == 1
@@ -59,6 +61,6 @@ def test_bccaqv2_subset_online(client):
         wps_literal_input("y1", "2010"),
     ]
 
-    outputs = execute_process(client, identifier, inputs, output_names=["zip"])
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
 
     print(outputs)

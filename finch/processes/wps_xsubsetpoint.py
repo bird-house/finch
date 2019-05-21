@@ -1,13 +1,11 @@
-from contextlib import suppress
-
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
-from pywps.inout.outputs import MetaFile, MetaLink4
+from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_gridpoint
-from pathlib import Path
-from .base import FinchProcess
+
+from finch.processes.subset import SubsetProcess
 
 
-class SubsetGridPointProcess(FinchProcess):
+class SubsetGridPointProcess(SubsetProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):
@@ -101,7 +99,7 @@ class SubsetGridPointProcess(FinchProcess):
             version="0.1",
             abstract=(
                 "Return the data for which grid cells includes the "
-                "point coordinates for each input dataset as well as"
+                "point coordinates for each input dataset as well as "
                 "the time range selected."
             ),
             inputs=inputs,
@@ -110,54 +108,36 @@ class SubsetGridPointProcess(FinchProcess):
             store_supported=True,
         )
 
-    def _handler(self, request, response):
-        self.sentry_configure_scope(request)
+    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85) -> MetaLink4:
+        lon = wps_inputs["lon"][0].data
+        lat = wps_inputs["lat"][0].data
+        # dt0 = wps_inputs['dt0'][0].data or None
+        # dt1 = wps_inputs['dt1'][0].data or None
+        y0 = self.get_input_or_none(wps_inputs, "y0")
+        y1 = self.get_input_or_none(wps_inputs, "y1")
+        variables = [r.data for r in wps_inputs.get("variable", [])]
 
+        n_files = len(wps_inputs["resource"])
+        count = 0
+
+        def _subset_function(dataset):
+            nonlocal count
+
+            percentage = start_percentage + int(count / n_files * (end_percentage - start_percentage))
+            self.write_log(f"Processing file {count + 1} of {n_files}", response, percentage)
+            count += 1
+
+            dataset = dataset[variables] if variables else dataset
+            return subset_gridpoint(dataset, lon=lon, lat=lat, start_yr=y0, end_yr=y1)
+
+        metalink = self.subset_resources(wps_inputs["resource"], _subset_function)
+
+        return metalink
+
+    def _handler(self, request, response):
         self.write_log("Processing started", response, 5)
 
-        lon = request.inputs["lon"][0].data
-        lat = request.inputs["lat"][0].data
-        # dt0 = request.inputs['dt0'][0].data or None
-        # dt1 = request.inputs['dt1'][0].data or None
-
-        y0, y1 = None, None
-        with suppress(KeyError):
-            y0 = request.inputs["y0"][0].data
-        with suppress(KeyError):
-            y1 = request.inputs["y1"][0].data
-
-        variables = [r.data for r in request.inputs.get("variable", [])]
-
-        metalink = MetaLink4(
-            identity="subset_bbox",
-            description="Subsetted netCDF files",
-            publisher="Finch",
-            workdir=self.workdir,
-        )
-
-        n_files = len(request.inputs["resource"])
-
-        for n, res in enumerate(request.inputs["resource"]):
-            percentage = 5 + n // n_files * (99 - 5)
-            self.write_log(f"Processing file {n + 1} of {n_files}", response, percentage)
-
-            ds = self.try_opendap(res)
-            if variables:
-                ds = ds[variables]
-
-            out = subset_gridpoint(ds, lon=lon, lat=lat, start_yr=y0, end_yr=y1)
-
-            p = Path(res._file or res._build_file_name(res.url))
-            out_fn = Path(self.workdir) / (p.stem + "_sub" + p.suffix)
-            out.to_netcdf(out_fn)
-
-            mf = MetaFile(
-                identity=p.stem,
-                description="Subset of file at lon={}, lat={}".format(lon, lat),
-                fmt=FORMATS.NETCDF,
-            )
-            mf.file = out_fn
-            metalink.append(mf)
+        metalink = self.subset(request.inputs, response)
 
         self.write_log("Processing finished successfully", response, 99)
 

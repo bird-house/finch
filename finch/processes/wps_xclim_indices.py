@@ -86,29 +86,12 @@ class _XclimIndicatorProcess(FinchProcess):
         return inputs
 
     def _handler(self, request, response):
-        self.sentry_configure_scope(request)
-
         self.write_log("Processing started", response, 5)
-        self.write_log("Preparing inputs", response, 5)
-        kwds = {}
-        LOGGER.debug("received inputs: " + ", ".join(request.inputs.keys()))
-        for name, input_queue in request.inputs.items():
-            input = input_queue[0]
-            LOGGER.debug(input_queue)
-            if isinstance(input, ComplexInput):
-                ds = self.try_opendap(input)
-                kwds[name] = ds.data_vars[name]
+        out = self.compute_indices(self.xci, request.inputs)
 
-            elif isinstance(input, LiteralInput):
-                LOGGER.debug(input.data)
-                kwds[name] = input.data
-
-        self.write_log("Running computation", response, 8)
-        LOGGER.debug(kwds)
-        out = self.xci(**kwds)
         out_fn = os.path.join(self.workdir, 'out.nc')
 
-        self.write_log("Writing the output netcdf", response, 10)  # This should be the longest step
+        self.write_log("Computing the output netcdf", response, 10)
 
         def write_log(message, percentage):
             self.write_log(message, response, percentage)
