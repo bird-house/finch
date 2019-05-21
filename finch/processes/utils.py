@@ -110,3 +110,31 @@ def _make_bccaqv2_resource_input(url):
     )
     input.url = url
     return input
+
+
+def to_csv(ds):
+    """Convert an xarray Dataset to a CSV string."""
+
+    objs = [({'': ds}, 'Global attributes'), (ds.coords, 'Coordinates'), (ds.data_vars, 'Data variables')]
+
+    out = ''
+    for obj, name in objs:
+        out += '# ' + name
+        tab = '' if name == 'Global attributes' else '  '
+        for key, val in obj.items():
+            out += fmt_attrs(val, key, tab=tab)
+        out += '\n#\n'
+
+    # TODO: add data csv output after header.  
+    #data = ds.to_dataframe().to_csv()
+    return out
+
+
+def fmt_attrs(obj, name='', comment='# ', tab=' '):
+    """Return string of an object's attribute."""
+    lines = ['', name, ]
+    for key, val in obj.attrs.items():
+        lines.append(tab + key + ':: ' + str(val).replace('\n', '\n' + comment + tab + '  '))
+
+    out = ('\n' + comment + tab).join(lines)
+    return out
