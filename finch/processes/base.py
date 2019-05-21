@@ -88,7 +88,7 @@ class FinchProcess(Process):
                 scope.set_extra("xml_request", request.http_request.data)
 
     def zip_files(self, output_filename, files, response, start_percentage=90):
-        with zipfile.ZipFile(output_filename, mode="w") as z:
+        with zipfile.ZipFile(output_filename, mode="w", compression=zipfile.ZIP_DEFLATED) as z:
             n_files = len(files)
             for n, filename in enumerate(files):
                 percentage = start_percentage + int(n / n_files * (100 - start_percentage))
