@@ -51,7 +51,7 @@ def test_netcdf_to_csv_to_zip():
     zip_files(output_zip, files)
 
     with zipfile.ZipFile(output_zip) as z:
-        assert len(z.infolist()) == 82
-        assert sum(1 for f in z.infolist() if f.filename.startswith("metadata")) == 78
+        assert len(z.infolist()) == 237
+        assert sum(1 for f in z.infolist() if f.filename.startswith("metadata")) == 233
 
 
