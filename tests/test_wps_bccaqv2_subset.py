@@ -11,6 +11,7 @@ from finch.processes.wps_xsubset_bccaqv2 import SubsetBCCAQV2Process
 @mock.patch("finch.processes.utils.get_bccaqv2_opendap_datasets")
 @mock.patch.object(SubsetBCCAQV2Process, "subset")
 def test_bccaqv2_subset(mock_bccaq_subset, mock_datasets, client):
+    # --- given ---
     identifier = "subset_ensemble_BCCAQv2"
     inputs = [
         wps_literal_input("variable", "tasmin"),
@@ -31,8 +32,10 @@ def test_bccaqv2_subset(mock_bccaq_subset, mock_datasets, client):
     mock_datasets.return_value = ["dataset1", "dataset2"]
     mock_bccaq_subset.return_value = metalink
 
+    # --- when ---
     outputs = execute_process(client, identifier, inputs, output_names=["output"])
 
+    # --- then ---
     output_file = outputs[0]
     assert len(outputs) == 1
     assert output_file.endswith("zip")

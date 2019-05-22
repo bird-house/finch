@@ -87,17 +87,6 @@ class FinchProcess(Process):
                 scope.set_extra("remote_addr", request.http_request.remote_addr)
                 scope.set_extra("xml_request", request.http_request.data)
 
-    def zip_files(self, output_filename, files, response, start_percentage=90):
-        with zipfile.ZipFile(output_filename, mode="w", compression=zipfile.ZIP_DEFLATED) as z:
-            n_files = len(files)
-            for n, filename in enumerate(files):
-                percentage = start_percentage + int(n / n_files * (100 - start_percentage))
-                self.write_log(f"Zipping file {n + 1} of {n_files}", response, percentage)
-                z.write(filename, arcname=Path(filename).name)
-
-    def netcdf_to_csv(self, output_filename, files):
-        xr.open_mfdataset(files).to_dataframe().to_csv(output_filename)
-
 
 def chunk_dataset(ds, max_size=1000000):
     """Ensures the chunked size of a xarray.Dataset is below a certain size

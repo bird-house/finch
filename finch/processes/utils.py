@@ -1,9 +1,13 @@
 import re
+import zipfile
 from copy import deepcopy
+from pathlib import Path
 
-from typing import List
+from typing import List, Tuple
 from enum import Enum
 
+import pandas as pd
+import xarray as xr
 import requests
 from pywps import ComplexInput, FORMATS
 from siphon.catalog import TDSCatalog
@@ -112,6 +116,55 @@ def _make_bccaqv2_resource_input(url):
     return input
 
 
+def netcdf_to_csv(
+    netcdf_files, output_folder, filename_prefix
+) -> Tuple[List[str], str]:
+    """Write csv files for a list of netcdf files.
+
+    Produces one csv file per calendar type, along with a metadata folder in
+    the output_folder."""
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    metadata = {}
+    concat_by_calendar = {}
+    for file in netcdf_files:
+        ds = xr.open_dataset(file, decode_times=False)
+        calendar = ds.time.calendar
+        ds["time"] = xr.decode_cf(ds).time
+
+        for variable in ds.data_vars:
+            model = ds.attrs["driving_model_id"]
+            experiment = ds.attrs["driving_experiment_id"].replace(",", "_")
+            output_variable = f"{variable}_{model}_{experiment}"
+            ds = ds.rename({variable: output_variable})
+
+            df = ds.to_dataframe()[["lat", "lon", output_variable]]
+            # most runs have timestamp with hour == 12 a few hour == 0 .. make uniform
+            df.index = df.index.map(lambda x: x.replace(hour=12))
+
+            if calendar not in concat_by_calendar:
+                concat_by_calendar[calendar] = [df]
+            else:
+                concat_by_calendar[calendar].append(df[output_variable])
+
+            metadata[output_variable] = format_metadata(ds)
+
+    output_csv_list = []
+    for calendar_type, data in concat_by_calendar.items():
+        output_csv = output_folder / f"{filename_prefix}_{calendar_type}.csv"
+        pd.concat(data, axis=1).to_csv(output_csv)
+        output_csv_list.append(output_csv)
+
+    metadata_folder = output_folder / "metadata"
+    metadata_folder.mkdir(parents=True, exist_ok=True)
+    for output_variable, info in metadata.items():
+        metadata_file = metadata_folder / f"{output_variable}.csv"
+        metadata_file.write_text(info)
+
+    return output_csv_list, metadata_folder
+
+
 def format_metadata(ds) -> str:
     """For an xarray dataset, return its formatted metadata."""
 
@@ -140,3 +193,38 @@ def format_metadata(ds) -> str:
             out += _fmt_attrs(val, key, tab=tab)
         out += "\n#\n"
     return out
+
+
+def zip_files(output_filename, files=None, log_function=None, start_percentage=90):
+    """Create a zipfile from a list of files or folders.
+
+    log_function is a function that receives a message and a percentage."""
+    with zipfile.ZipFile(
+        output_filename, mode="w", compression=zipfile.ZIP_DEFLATED
+    ) as z:
+        all_files = []
+        for file in files:
+            file = Path(file)
+            if file.is_dir():
+                all_files += list(file.rglob("*.*"))
+            else:
+                all_files.append(file)
+
+        common_folder = None
+        all_parents = [list(reversed(file.parents)) for file in all_files]
+        for parents in zip(*all_parents):
+            if len(set(parents)) == 1:
+                common_folder = parents[0]
+            else:
+                break
+
+        n_files = len(all_files)
+        for n, filename in enumerate(all_files):
+            if log_function is not None:
+                percentage = start_percentage + int(
+                    n / n_files * (100 - start_percentage)
+                )
+                message = f"Zipping file {n + 1} of {n_files}"
+                log_function(message, percentage)
+            arcname = filename.relative_to(common_folder) if common_folder else None
+            z.write(filename, arcname=arcname)

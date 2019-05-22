@@ -12,9 +12,8 @@ import sentry_sdk
 
 from finch.processes import make_xclim_indicator_process, SubsetGridPointProcess
 from finch.processes.subset import SubsetProcess
-from finch.processes.utils import get_bccaqv2_inputs
+from finch.processes.utils import get_bccaqv2_inputs, netcdf_to_csv, zip_files
 from finch.processes.wps_xclim_indices import make_nc_input
-
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -144,7 +143,7 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         pairs = list(self._make_tasmin_tasmax_pairs(all_files))
         n_pairs = len(pairs)
 
-        output_netcdf_files = []
+        output_files = []
 
         for n, (tasmin, tasmax) in enumerate(pairs):
             percentage = start_percentage + int(
@@ -167,16 +166,23 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
                 "tasmin", "heat_wave_frequency"
             )
             out.to_netcdf(out_fn)
-            output_netcdf_files.append(out_fn)
+            output_files.append(out_fn)
 
         if output_format == "csv":
-            output_csv = Path(self.workdir) / (output_filename + ".csv")
-            self.netcdf_to_csv(output_csv, output_netcdf_files)
-            response.outputs["output"].file = output_csv
-        else:
-            output_zip = Path(self.workdir) / (output_filename + ".zip")
-            self.zip_files(output_zip, output_netcdf_files, response, 95)
-            response.outputs["output"].file = output_zip
+            csv_files, metadata_folder = netcdf_to_csv(
+                output_files,
+                output_folder=Path(self.workdir),
+                filename_prefix=output_filename,
+            )
+            output_files = csv_files + [metadata_folder]
+
+        output_zip = Path(self.workdir) / (output_filename + ".zip")
+
+        def log(message_, percentage_):
+            self.write_log(message_, response, percentage_)
+
+        zip_files(output_zip, output_files, log_function=log, start_percentage=90)
+        response.outputs["output"].file = output_zip
 
         self.write_log("Processing finished successfully", response, 99)
         return response
