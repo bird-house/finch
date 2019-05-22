@@ -115,24 +115,28 @@ def _make_bccaqv2_resource_input(url):
 def format_metadata(ds) -> str:
     """For an xarray dataset, return its formatted metadata."""
 
-    def _fmt_attrs(obj, name='', comment='# ', tab=' '):
+    def _fmt_attrs(obj, name="", comment="# ", tab=" "):
         """Return string of an object's attribute."""
-        lines = ['', name, ]
+        lines = ["", name]
         for key, val in obj.attrs.items():
-            lines.append(tab + key + ':: ' + str(val).replace('\n', '\n' + comment + tab + '  '))
+            lines.append(
+                tab + key + ":: " + str(val).replace("\n", "\n" + comment + tab + "  ")
+            )
 
-        out = ('\n' + comment + tab).join(lines)
+        out = ("\n" + comment + tab).join(lines)
         return out
 
-    objs = [({'': ds}, 'Global attributes'), (ds.coords, 'Coordinates'), (ds.data_vars, 'Data variables')]
+    objs = [
+        ({"": ds}, "Global attributes"),
+        (ds.coords, "Coordinates"),
+        (ds.data_vars, "Data variables"),
+    ]
 
-    out = ''
+    out = ""
     for obj, name in objs:
-        out += '# ' + name
-        tab = '' if name == 'Global attributes' else '  '
+        out += "# " + name
+        tab = "" if name == "Global attributes" else "  "
         for key, val in obj.items():
             out += _fmt_attrs(val, key, tab=tab)
-        out += '\n#\n'
+        out += "\n#\n"
     return out
-
-
