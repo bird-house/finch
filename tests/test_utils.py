@@ -39,7 +39,7 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
 
 def test_netcdf_to_csv_to_zip():
     here = Path(__file__).parent
-    folder = here / "data" / "tasmin_bccaqv2"
+    folder = here / "data" / "bccaqv2_single_cell"
     output_folder = here / "tmp" / "tasmin_csvs"
     shutil.rmtree(output_folder, ignore_errors=True)
 
