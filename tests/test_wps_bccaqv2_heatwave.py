@@ -66,9 +66,6 @@ def test_bccaqv2_heat_wave_frequency_sample_data():
     tasmin = list(sorted(folder.glob("tasmin*.nc")))[0]
     tasmax = list(sorted(folder.glob("tasmax*.nc")))[0]
 
-    print(tasmin)
-    print(tasmax)
-
     tasmin_input = make_nc_input("tasmin")
     tasmin_input.file = tasmin
     tasmax_input = make_nc_input("tasmax")
