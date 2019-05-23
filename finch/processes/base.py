@@ -54,15 +54,20 @@ class FinchProcess(Process):
 
     def compute_indices(self, func, inputs):
         kwds = {}
+        global_attributes = None
         for name, input_queue in inputs.items():
             input = input_queue[0]
             if isinstance(input, ComplexInput):
                 ds = self.try_opendap(input)
+                global_attributes = ds.attrs
                 kwds[name] = ds.data_vars[name]
             elif isinstance(input, LiteralInput):
                 kwds[name] = input.data
 
-        return func(**kwds)
+        out = func(**kwds)
+        output_dataset = xr.Dataset(data_vars=None, coords=out.coords, attrs=global_attributes)
+        output_dataset[out.name] = out
+        return output_dataset
 
     def log_file_path(self):
         return os.path.join(self.workdir, "log.txt")
