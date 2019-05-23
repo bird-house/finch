@@ -1,9 +1,12 @@
+import tempfile
 from unittest import mock
 
 import pytest
 from pathlib import Path
+import xarray as xr
 
 from finch.processes import BCCAQV2HeatWave
+from finch.processes.wps_xclim_indices import make_nc_input
 from tests.utils import wps_literal_input, execute_process
 
 
@@ -55,6 +58,33 @@ def test_bccaqv2_heatwave(
     assert Path(output_file).exists()
 
     assert len(mock_bccaq_subset.call_args[0][0]["resource"]) == 4
+
+
+def test_bccaqv2_heat_wave_frequency_sample_data():
+    here = Path(__file__).parent
+    folder = here / "data" / "bccaqv2_single_cell"
+    tasmin = list(sorted(folder.glob("tasmin*.nc")))[0]
+    tasmax = list(sorted(folder.glob("tasmax*.nc")))[0]
+
+    tasmin_input = make_nc_input("tasmin")
+    tasmin_input.file = tasmin
+    tasmax_input = make_nc_input("tasmax")
+    tasmax_input.file = tasmax
+
+    inputs = {
+        "tasmin": [tasmin_input],
+        "tasmax": [tasmax_input],
+    }
+    process = BCCAQV2HeatWave()
+    process.workdir = tempfile.mkdtemp()
+    out = process.compute_indices(process.indices_process.xci, inputs)
+
+    input_attrs = xr.open_dataset(tasmin).attrs
+    del input_attrs["creation_date"]
+    output_attrs = out.attrs
+    del output_attrs["creation_date"]
+
+    assert output_attrs == input_attrs
 
 
 @pytest.mark.online

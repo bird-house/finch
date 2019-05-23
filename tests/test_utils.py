@@ -1,4 +1,8 @@
-from finch.processes.utils import get_bccaqv2_opendap_datasets, bccaqv2_link
+import shutil
+import zipfile
+from pathlib import Path
+
+from finch.processes.utils import get_bccaqv2_opendap_datasets, bccaqv2_link, netcdf_to_csv, zip_files
 import pytest
 from unittest import mock
 
@@ -31,3 +35,21 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
 
     urls = get_bccaqv2_opendap_datasets(url, variable, rcp)
     assert len(urls) == 2
+
+
+def test_netcdf_to_csv_to_zip():
+    here = Path(__file__).parent
+    folder = here / "data" / "bccaqv2_single_cell"
+    output_folder = here / "tmp" / "tasmin_csvs"
+    shutil.rmtree(output_folder, ignore_errors=True)
+
+    netcdf_files = list(folder.glob("*.nc"))
+    csv_files, metadata = netcdf_to_csv(netcdf_files, output_folder, "file_prefix")
+
+    output_zip = output_folder / "output.zip"
+    files = csv_files + [metadata]
+    zip_files(output_zip, files)
+
+    with zipfile.ZipFile(output_zip) as z:
+        assert len(z.infolist()) == 237
+        assert sum(1 for f in z.infolist() if f.filename.startswith("metadata")) == 233

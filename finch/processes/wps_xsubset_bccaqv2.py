@@ -6,7 +6,7 @@ from pywps import LiteralInput, ComplexOutput, FORMATS
 
 from finch.processes import SubsetBboxProcess
 from finch.processes.subset import SubsetProcess
-from finch.processes.utils import get_bccaqv2_inputs
+from finch.processes.utils import get_bccaqv2_inputs, netcdf_to_csv, zip_files
 
 
 class SubsetBCCAQV2Process(SubsetBboxProcess):
@@ -142,18 +142,14 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
 
         output_filename = f"BCCAQv2_subset_{lat0}_{lon0}"
 
-        if output_format == "csv":
-            output_csv = Path(self.workdir) / (output_filename + ".csv")
-            output_csv.write_text("Sorry, csv file output is not implemented yet.")
-            response.outputs["output"].file = output_csv
-            return response
-
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
         request.inputs = get_bccaqv2_inputs(request.inputs, variable, rcp)
 
         self.write_log("Running subset", response, 7)
 
-        metalink = self.subset(request.inputs, response, start_percentage=7, end_percentage=90)
+        metalink = self.subset(
+            request.inputs, response, start_percentage=7, end_percentage=90
+        )
 
         if not metalink.files:
             message = "No data was produced when subsetting using the provided bounds."
@@ -161,11 +157,23 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
 
         self.write_log("Subset done, creating zip file", response)
 
+        output_files = [mf.file for mf in metalink.files]
+
+        if output_format == "csv":
+            csv_files, metadata_folder = netcdf_to_csv(
+                output_files,
+                output_folder=Path(self.workdir),
+                filename_prefix=output_filename,
+            )
+            output_files = csv_files + [metadata_folder]
+
         output_zip = Path(self.workdir) / (output_filename + ".zip")
-        files = [mf.file for mf in metalink.files]
-        self.zip_files(output_zip, files, response, 90)
+
+        def log(message_, percentage_):
+            self.write_log(message_, response, percentage_)
+
+        zip_files(output_zip, output_files, log_function=log, start_percentage=90)
+        response.outputs["output"].file = output_zip
 
         self.write_log("Processing finished successfully", response, 99)
-
-        response.outputs["output"].file = output_zip
         return response

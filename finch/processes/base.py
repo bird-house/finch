@@ -54,15 +54,20 @@ class FinchProcess(Process):
 
     def compute_indices(self, func, inputs):
         kwds = {}
+        global_attributes = None
         for name, input_queue in inputs.items():
             input = input_queue[0]
             if isinstance(input, ComplexInput):
                 ds = self.try_opendap(input)
+                global_attributes = ds.attrs
                 kwds[name] = ds.data_vars[name]
             elif isinstance(input, LiteralInput):
                 kwds[name] = input.data
 
-        return func(**kwds)
+        out = func(**kwds)
+        output_dataset = xr.Dataset(data_vars=None, coords=out.coords, attrs=global_attributes)
+        output_dataset[out.name] = out
+        return output_dataset
 
     def log_file_path(self):
         return os.path.join(self.workdir, "log.txt")
@@ -86,14 +91,6 @@ class FinchProcess(Process):
                 # the original request.http_request is not available anymore
                 scope.set_extra("remote_addr", request.http_request.remote_addr)
                 scope.set_extra("xml_request", request.http_request.data)
-
-    def zip_files(self, output_filename, files, response, start_percentage=90):
-        with zipfile.ZipFile(output_filename, mode="w") as z:
-            n_files = len(files)
-            for n, filename in enumerate(files):
-                percentage = start_percentage + int(n / n_files * (100 - start_percentage))
-                self.write_log(f"Zipping file {n + 1} of {n_files}", response, percentage)
-                z.write(filename, arcname=Path(filename).name)
 
 
 def chunk_dataset(ds, max_size=1000000):

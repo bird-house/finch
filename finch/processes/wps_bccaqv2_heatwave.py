@@ -12,9 +12,8 @@ import sentry_sdk
 
 from finch.processes import make_xclim_indicator_process, SubsetGridPointProcess
 from finch.processes.subset import SubsetProcess
-from finch.processes.utils import get_bccaqv2_inputs
+from finch.processes.utils import get_bccaqv2_inputs, netcdf_to_csv, zip_files
 from finch.processes.wps_xclim_indices import make_nc_input
-
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -118,12 +117,6 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         output_format = request.inputs["output_format"][0].data
         output_filename = f"BCCAQv2_subset_heat_wave_frequency_{lat}_{lon}"
 
-        if output_format == "csv":
-            output_csv = Path(self.workdir) / (output_filename + ".csv")
-            output_csv.write_text("Sorry, csv file output is not implemented yet.")
-            response.outputs["output"].file = output_csv
-            return response
-
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
         tasmin_inputs = get_bccaqv2_inputs(request.inputs, "tasmin")["resource"]
         tasmax_inputs = get_bccaqv2_inputs(request.inputs, "tasmax")["resource"]
@@ -150,7 +143,7 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         pairs = list(self._make_tasmin_tasmax_pairs(all_files))
         n_pairs = len(pairs)
 
-        output_netcdf = []
+        output_files = []
 
         for n, (tasmin, tasmax) in enumerate(pairs):
             percentage = start_percentage + int(
@@ -173,14 +166,23 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
                 "tasmin", "heat_wave_frequency"
             )
             out.to_netcdf(out_fn)
-            output_netcdf.append(out_fn)
+            output_files.append(out_fn)
 
-        self.write_log("Computation done, creating zip file", response)
+        if output_format == "csv":
+            csv_files, metadata_folder = netcdf_to_csv(
+                output_files,
+                output_folder=Path(self.workdir),
+                filename_prefix=output_filename,
+            )
+            output_files = csv_files + [metadata_folder]
+
         output_zip = Path(self.workdir) / (output_filename + ".zip")
 
-        self.zip_files(output_zip, output_netcdf, response, 95)
+        def log(message_, percentage_):
+            self.write_log(message_, response, percentage_)
+
+        zip_files(output_zip, output_files, log_function=log, start_percentage=90)
+        response.outputs["output"].file = output_zip
 
         self.write_log("Processing finished successfully", response, 99)
-
-        response.outputs["output"].file = output_zip
         return response
