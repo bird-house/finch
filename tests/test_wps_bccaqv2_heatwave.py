@@ -63,8 +63,11 @@ def test_bccaqv2_heatwave(
 def test_bccaqv2_heat_wave_frequency_sample_data():
     here = Path(__file__).parent
     folder = here / "data" / "bccaqv2_single_cell"
-    tasmin = list(folder.glob("tasmin*.nc"))[0]
-    tasmax = list(folder.glob("tasmax*.nc"))[0]
+    tasmin = list(sorted(folder.glob("tasmin*.nc")))[0]
+    tasmax = list(sorted(folder.glob("tasmax*.nc")))[0]
+
+    print(tasmin)
+    print(tasmax)
 
     tasmin_input = make_nc_input("tasmin")
     tasmin_input.file = tasmin
