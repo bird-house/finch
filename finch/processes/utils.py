@@ -136,7 +136,9 @@ def netcdf_to_csv(
         for variable in ds.data_vars:
             model = ds.attrs["driving_model_id"]
             experiment = ds.attrs["driving_experiment_id"].replace(",", "_")
-            output_variable = f"{variable}_{model}_{experiment}"
+            units = ds[variable].units
+
+            output_variable = f"{variable}_{model}_{experiment}_({units})"
             ds = ds.rename({variable: output_variable})
 
             df = ds.to_dataframe()[["lat", "lon", output_variable]]
