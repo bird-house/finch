@@ -2,7 +2,7 @@ from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
 from pywps.app import WPSRequest
-from pywps import LiteralInput, ComplexOutput, FORMATS
+from pywps import LiteralInput, ComplexOutput, FORMATS, configuration
 
 from finch.processes import SubsetBboxProcess
 from finch.processes.subset import SubsetProcess
@@ -147,8 +147,14 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
 
         self.write_log("Running subset", response, 7)
 
+        threads = int(configuration.get_config_value("finch", "subset_threads"))
+
         metalink = self.subset(
-            request.inputs, response, start_percentage=7, end_percentage=90
+            request.inputs,
+            response,
+            start_percentage=7,
+            end_percentage=90,
+            threads=threads,
         )
 
         if not metalink.files:

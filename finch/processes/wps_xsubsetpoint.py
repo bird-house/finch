@@ -108,7 +108,7 @@ class SubsetGridPointProcess(SubsetProcess):
             store_supported=True,
         )
 
-    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85) -> MetaLink4:
+    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1) -> MetaLink4:
         lon = wps_inputs["lon"][0].data
         lat = wps_inputs["lat"][0].data
         # dt0 = wps_inputs['dt0'][0].data or None
@@ -122,15 +122,15 @@ class SubsetGridPointProcess(SubsetProcess):
 
         def _subset_function(dataset):
             nonlocal count
-
-            percentage = start_percentage + int(count / n_files * (end_percentage - start_percentage))
-            self.write_log(f"Processing file {count + 1} of {n_files}", response, percentage)
             count += 1
+
+            percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
+            self.write_log(f"Processing file {count} of {n_files}", response, percentage)
 
             dataset = dataset[variables] if variables else dataset
             return subset_gridpoint(dataset, lon=lon, lat=lat, start_yr=y0, end_yr=y1)
 
-        metalink = self.subset_resources(wps_inputs["resource"], _subset_function)
+        metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
 
         return metalink
 
