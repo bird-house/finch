@@ -2,7 +2,7 @@ import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 
-from pywps import FORMATS, ComplexInput
+from pywps import FORMATS
 from pywps.inout.outputs import MetaLink4, MetaFile
 
 from finch.processes.base import FinchProcess
