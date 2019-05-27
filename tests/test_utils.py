@@ -2,7 +2,9 @@ import shutil
 import zipfile
 from pathlib import Path
 
-from finch.processes.utils import get_bccaqv2_opendap_datasets, bccaqv2_link, netcdf_to_csv, zip_files
+from pywps import configuration
+
+from finch.processes.utils import get_bccaqv2_opendap_datasets, netcdf_to_csv, zip_files
 import pytest
 from unittest import mock
 
@@ -18,7 +20,7 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp85_r1i1p1_19500101-21001231.nc",
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp45_r1i1p1_19500101-21001231.",
     ]
-    url = bccaqv2_link
+    catalog_url = configuration.get_config_value("finch", "bccaqv2_url")
     variable = "tasmin"
     rcp = "rcp45"
 
@@ -33,7 +35,7 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
 
     mock_catalog.datasets = {name: make_dataset(name) for name in names}
 
-    urls = get_bccaqv2_opendap_datasets(url, variable, rcp)
+    urls = get_bccaqv2_opendap_datasets(catalog_url, variable, rcp)
     assert len(urls) == 2
 
 

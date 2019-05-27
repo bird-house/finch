@@ -13,8 +13,6 @@ from pywps import ComplexInput, FORMATS
 from siphon.catalog import TDSCatalog
 from pywps import configuration
 
-bccaqv2_link = configuration.get_config_value("finch", "bccaqv2_url")
-
 
 def is_opendap_url(url):
     if url and not url.startswith("file"):
@@ -88,8 +86,9 @@ def get_bccaqv2_opendap_datasets(
     return urls
 
 
-def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=bccaqv2_link):
+def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=None):
     """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
+    catalog_url = configuration.get_config_value("finch", "bccaqv2_url")
     new_inputs = deepcopy(wps_inputs)
     workdir = next(iter(wps_inputs.values()))[0].workdir
 
