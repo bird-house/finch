@@ -131,7 +131,7 @@ class SubsetBboxProcess(SubsetProcess):
             store_supported=True,
         )
 
-    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85) -> MetaLink4:
+    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1) -> MetaLink4:
         lon0 = wps_inputs["lon0"][0].data
         lat0 = wps_inputs["lat0"][0].data
         lon1 = self.get_input_or_none(wps_inputs, "lon1")
@@ -151,10 +151,10 @@ class SubsetBboxProcess(SubsetProcess):
 
         def _subset_function(dataset):
             nonlocal count
-
-            percentage = start_percentage + int(count / n_files * (end_percentage - start_percentage))
-            self.write_log(f"Processing file {count + 1} of {n_files}", response, percentage)
             count += 1
+
+            percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
+            self.write_log(f"Processing file {count} of {n_files}", response, percentage)
 
             dataset = dataset[variables] if variables else dataset
             if lat1 is None and lon1 is None:
@@ -164,7 +164,7 @@ class SubsetBboxProcess(SubsetProcess):
                     dataset, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_yr=y0, end_yr=y1
                 )
 
-        metalink = self.subset_resources(wps_inputs["resource"], _subset_function)
+        metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
 
         return metalink
 

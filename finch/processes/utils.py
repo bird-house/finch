@@ -11,11 +11,7 @@ import xarray as xr
 import requests
 from pywps import ComplexInput, FORMATS
 from siphon.catalog import TDSCatalog
-
-bccaqv2_link = (
-    "https://boreas.ouranos.ca/thredds/catalog/birdhouse/pcic/BCCAQv2/catalog.xml"
-)
-BCCAQV2_LIMIT = 3  # Todo: remove-me. Temporary limit the number of datasets to request
+from pywps import configuration
 
 
 def is_opendap_url(url):
@@ -87,12 +83,12 @@ def get_bccaqv2_opendap_datasets(
 
         if variable_ok and rcp_ok:
             urls.append(opendap_url)
-    urls = urls[:BCCAQV2_LIMIT]  # Todo: remove-me
     return urls
 
 
-def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=bccaqv2_link):
+def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=None):
     """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
+    catalog_url = configuration.get_config_value("finch", "bccaqv2_url")
     new_inputs = deepcopy(wps_inputs)
     workdir = next(iter(wps_inputs.values()))[0].workdir
 

@@ -7,7 +7,7 @@ from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
 from pywps.app import WPSRequest
-from pywps import LiteralInput, ComplexOutput, FORMATS
+from pywps import LiteralInput, ComplexOutput, FORMATS, configuration
 import sentry_sdk
 
 from finch.processes import make_xclim_indicator_process, SubsetGridPointProcess
@@ -125,8 +125,14 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
 
         self.write_log("Running subset", response, 7)
 
+        threads = int(configuration.get_config_value("finch", "subset_threads"))
+
         metalink = self.subset(
-            request.inputs, response, start_percentage=7, end_percentage=50
+            request.inputs,
+            response,
+            start_percentage=7,
+            end_percentage=50,
+            threads=threads,
         )
 
         if not metalink.files:
