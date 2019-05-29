@@ -1,10 +1,12 @@
+from threading import Lock
+import logging
+
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_bbox, subset_gridpoint
 
 from finch.processes.subset import SubsetProcess
-import logging
 
 
 LOGGER = logging.getLogger("PYWPS")
@@ -149,12 +151,15 @@ class SubsetBboxProcess(SubsetProcess):
         n_files = len(wps_inputs["resource"])
         count = 0
 
+        lock = Lock()
+
         def _subset_function(dataset):
             nonlocal count
-            count += 1
 
-            percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
-            self.write_log(f"Processing file {count} of {n_files}", response, percentage)
+            with lock:
+                count += 1
+                percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
+                self.write_log(f"Processing file {count} of {n_files}", response=response, percentage=percentage)
 
             dataset = dataset[variables] if variables else dataset
             if lat1 is None and lon1 is None:
