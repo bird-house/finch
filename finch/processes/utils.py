@@ -122,6 +122,14 @@ def netcdf_to_csv(
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
 
+    def get_attrs_fallback(ds, *args):
+        for key in args:
+            try:
+                return ds.attrs[key]
+            except KeyError:
+                continue
+        raise KeyError(f"Couldn't find any attribute in [{', '.join(args)}]")
+
     metadata = {}
     concat_by_calendar = {}
     for file in netcdf_files:
@@ -132,8 +140,8 @@ def netcdf_to_csv(
         for variable in ds.data_vars:
             # for a specific dataset the keys are different:
             # BCCAQv2+ANUSPLIN300_BNU-ESM_historical+rcp85_r1i1p1_19500101-21001231
-            model = ds.attrs.get("driving_model_id", ds.attrs["GCM__model_id"])
-            experiment = ds.attrs.get("driving_experiment_id", ds.attrs["GCM__experiment"])
+            model = get_attrs_fallback(ds, "driving_model_id", "GCM__model_id", "unknown-model")
+            experiment = get_attrs_fallback(ds, "driving_experiment_id", "GCM__experiment", "unknown-experiment")
             experiment = experiment.replace(",", "_")
 
             output_variable = f"{variable}_{model}_{experiment}"
