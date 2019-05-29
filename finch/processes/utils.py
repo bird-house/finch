@@ -130,8 +130,11 @@ def netcdf_to_csv(
         ds["time"] = xr.decode_cf(ds).time
 
         for variable in ds.data_vars:
-            model = ds.attrs["driving_model_id"]
-            experiment = ds.attrs["driving_experiment_id"].replace(",", "_")
+            # for a specific dataset the keys are different:
+            # BCCAQv2+ANUSPLIN300_BNU-ESM_historical+rcp85_r1i1p1_19500101-21001231
+            model = ds.attrs.get("driving_model_id", ds.attrs["GCM__model_id"])
+            experiment = ds.attrs.get("driving_experiment_id", ds.attrs["GCM__experiment"])
+            experiment = experiment.replace(",", "_")
 
             output_variable = f"{variable}_{model}_{experiment}"
 
