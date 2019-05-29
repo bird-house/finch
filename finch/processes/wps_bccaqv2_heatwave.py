@@ -1,7 +1,10 @@
 import logging
+import os
 from collections import deque
-from typing import List
+from typing import List, Tuple
 
+import xarray as xr
+from xclim.checks import assert_daily
 from xclim.atmos import heat_wave_frequency
 from pathlib import Path
 from pywps.response.execute import ExecuteResponse
@@ -159,6 +162,8 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
                 f"Processing file {n + 1} of {n_pairs}", response, percentage
             )
 
+            tasmin, tasmax = fix_broken_time_indices(tasmin, tasmax)
+
             compute_inputs = [i.identifier for i in self.indices_process.inputs]
             inputs = {k: v for k, v in request.inputs.items() if k in compute_inputs}
 
@@ -192,3 +197,34 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
 
         self.write_log("Processing finished successfully", response, 99)
         return response
+
+
+def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
+    """In a single bccaqv2 dataset, there is an error in the timestamp data.
+
+    2036-10-28 time step coded as 1850-01-01
+    tasmax_day_BCCAQv2+ANUSPLIN300_CESM1-CAM5_historical+rcp85_r1i1p1_19500101-21001231_sub.nc
+    """
+    tasmin_ds = xr.open_dataset(tasmin)
+    tasmax_ds = xr.open_dataset(tasmax)
+
+    def fix(correct_ds, wrong_ds, original_filename):
+        wrong_ds['time'] = correct_ds.time
+        temp_name = original_filename.with_name(original_filename.stem + "_temp")
+        wrong_ds.to_netcdf(temp_name)
+        original_filename.unlink()
+        temp_name.rename(original_filename)
+
+    try:
+        assert_daily(tasmin_ds)
+    except ValueError:
+        fix(tasmax_ds, tasmin_ds, tasmin)
+        return tasmin, tasmax
+
+    try:
+        assert_daily(tasmax_ds)
+    except ValueError:
+        fix(tasmin_ds, tasmax_ds, tasmax)
+        return tasmin, tasmax
+
+    return tasmin, tasmax
