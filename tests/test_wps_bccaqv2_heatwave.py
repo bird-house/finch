@@ -11,10 +11,11 @@ from tests.utils import wps_literal_input, execute_process
 
 
 @mock.patch("finch.processes.utils.get_bccaqv2_opendap_datasets")
+@mock.patch("finch.processes.wps_bccaqv2_heatwave.fix_broken_time_indices")
 @mock.patch.object(BCCAQV2HeatWave, "subset")
 @mock.patch.object(BCCAQV2HeatWave, "compute_indices")
 def test_bccaqv2_heatwave(
-    mock_compute_indices, mock_bccaq_subset, mock_datasets, client
+    mock_compute_indices, mock_bccaq_subset, mock_fix, mock_datasets, client
 ):
     identifier = "BCCAQv2_heat_wave_frequency_gridpoint"
     inputs = [
@@ -42,6 +43,7 @@ def test_bccaqv2_heatwave(
 
     mock_datasets.return_value = ["dataset1", "dataset2"]
     mock_bccaq_subset.return_value = metalink
+    mock_fix.side_effect = lambda *args: args
 
     def write_dummy_data(filename):
         Path(filename).write_text("dummy data")
