@@ -25,6 +25,9 @@ def is_opendap_url(url):
                 time.sleep(60 // retry ** 2)
                 retry -= 1
                 continue
+            except requests.exceptions.MissingSchema:
+                # most likely a local file
+                break
             if r.status_code == 200 and r.content.decode().startswith("Dataset"):
                 return True
     return False
@@ -41,6 +44,17 @@ class ParsingMethod(Enum):
     xarray = 3
 
 
+def get_bccaqv2_local_files_datasets(
+    catalog_url, variable=None, rcp=None, method: ParsingMethod = ParsingMethod.filename
+) -> List[str]:
+    """Get a list of filenames corresponding to variable and rcp on a local filesystem."""
+    urls = []
+    for file in Path(catalog_url).glob("*.nc"):
+        if _bccaqv2_filter(method, file.stem, str(file), rcp, variable):
+            urls.append(str(file))
+    return urls
+
+
 def get_bccaqv2_opendap_datasets(
     catalog_url, variable=None, rcp=None, method: ParsingMethod = ParsingMethod.filename
 ) -> List[str]:
@@ -50,48 +64,51 @@ def get_bccaqv2_opendap_datasets(
 
     This is the case for boreas.ouranos.ca/thredds
     For more general use cases, see the `xarray` and `requests` methods below."""
+
     catalog = TDSCatalog(catalog_url)
 
     urls = []
-
     for dataset in catalog.datasets.values():
         opendap_url = dataset.access_urls["OPENDAP"]
-
-        variable_ok = variable is None
-        rcp_ok = rcp is None
-
-        if method == ParsingMethod.filename:
-            variable_ok = variable_ok or dataset.name.startswith(variable)
-            rcp_ok = rcp_ok or rcp in dataset.name
-
-        elif method == ParsingMethod.opendap_das:
-            re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
-            lines = requests.get(opendap_url + ".das").content.decode().split("\n")
-
-            variable_ok = variable_ok or any(
-                line.startswith(f"    {variable} {{") for line in lines
-            )
-            if not rcp_ok:
-                for line in lines:
-                    match = re_experiment.search(line)
-                    if match and rcp in match.group(1).split(","):
-                        rcp_ok = True
-
-        elif method == ParsingMethod.xarray:
-            import xarray as xr
-
-            ds = xr.open_dataset(opendap_url, decode_times=False)
-            rcps = [
-                r
-                for r in ds.attrs.get("driving_experiment_id", "").split(",")
-                if "rcp" in r
-            ]
-            variable_ok = variable_ok or variable in ds.data_vars
-            rcp_ok = rcp_ok or rcp in rcps
-
-        if variable_ok and rcp_ok:
+        if _bccaqv2_filter(method, dataset.name, opendap_url, rcp, variable):
             urls.append(opendap_url)
     return urls
+
+
+def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
+    variable_ok = variable is None
+    rcp_ok = rcp is None
+
+    if method == ParsingMethod.filename:
+        variable_ok = variable_ok or filename.startswith(variable)
+        rcp_ok = rcp_ok or rcp in filename
+
+    elif method == ParsingMethod.opendap_das:
+        re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
+        lines = requests.get(url + ".das").content.decode().split("\n")
+
+        variable_ok = variable_ok or any(
+            line.startswith(f"    {variable} {{") for line in lines
+        )
+        if not rcp_ok:
+            for line in lines:
+                match = re_experiment.search(line)
+                if match and rcp in match.group(1).split(","):
+                    rcp_ok = True
+
+    elif method == ParsingMethod.xarray:
+        import xarray as xr
+
+        ds = xr.open_dataset(url, decode_times=False)
+        rcps = [
+            r
+            for r in ds.attrs.get("driving_experiment_id", "").split(",")
+            if "rcp" in r
+        ]
+        variable_ok = variable_ok or variable in ds.data_vars
+        rcp_ok = rcp_ok or rcp in rcps
+
+    return rcp_ok and variable_ok
 
 
 def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=None):
@@ -101,22 +118,30 @@ def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=None):
     workdir = next(iter(wps_inputs.values()))[0].workdir
 
     new_inputs["resource"] = []
-    for url in get_bccaqv2_opendap_datasets(catalog_url, variable, rcp):
-        resource = _make_bccaqv2_resource_input(url)
-        resource.workdir = workdir
-        new_inputs["resource"].append(resource)
+
+    if catalog_url.startswith("http"):
+        for url in get_bccaqv2_opendap_datasets(catalog_url, variable, rcp):
+            resource = _make_bccaqv2_resource_input()
+            resource.url = url
+            resource.workdir = workdir
+            new_inputs["resource"].append(resource)
+    else:
+        for file in get_bccaqv2_local_files_datasets(catalog_url, variable, rcp):
+            resource = _make_bccaqv2_resource_input()
+            resource.file = file
+            resource.workdir = workdir
+            new_inputs["resource"].append(resource)
 
     return new_inputs
 
 
-def _make_bccaqv2_resource_input(url):
+def _make_bccaqv2_resource_input():
     input = ComplexInput(
         "resource",
         "NetCDF resource",
         max_occurs=1000,
         supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
     )
-    input.url = url
     return input
 
 
