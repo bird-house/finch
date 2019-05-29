@@ -1,4 +1,5 @@
 import re
+import time
 import zipfile
 from copy import deepcopy
 from pathlib import Path
@@ -15,10 +16,17 @@ from pywps import configuration
 
 
 def is_opendap_url(url):
+    retry = 5
     if url and not url.startswith("file"):
-        r = requests.get(url + ".dds")
-        if r.status_code == 200 and r.content.decode().startswith("Dataset"):
-            return True
+        while retry:
+            try:
+                r = requests.get(url + ".dds")
+            except requests.exceptions.ConnectionError:
+                retry -= 1
+                time.sleep(1)
+                continue
+            if r.status_code == 200 and r.content.decode().startswith("Dataset"):
+                return True
     return False
 
 
