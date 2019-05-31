@@ -1,4 +1,5 @@
 import logging
+import warnings
 from collections import deque
 from typing import List, Tuple
 
@@ -155,6 +156,10 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
 
         start_percentage, end_percentage = 70, 95
         output_files = []
+
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        warnings.filterwarnings("ignore", category=UserWarning)
+
         for n, (tasmin, tasmax) in enumerate(pairs):
             percentage = start_percentage + int(
                 n / n_pairs * (end_percentage - start_percentage)
@@ -179,6 +184,9 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             )
             out.to_netcdf(out_fn)
             output_files.append(out_fn)
+
+        warnings.filterwarnings("default", category=FutureWarning)
+        warnings.filterwarnings("default", category=UserWarning)
 
         if output_format == "csv":
             csv_files, metadata_folder = netcdf_to_csv(
