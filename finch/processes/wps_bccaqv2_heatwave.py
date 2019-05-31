@@ -125,8 +125,8 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         output_filename = f"BCCAQv2_subset_heat_wave_frequency_{lat}_{lon}"
 
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
-        tasmin_inputs = get_bccaqv2_inputs(request.inputs, "tasmin")["resource"]
-        tasmax_inputs = get_bccaqv2_inputs(request.inputs, "tasmax")["resource"]
+        tasmin_inputs = get_bccaqv2_inputs(request.inputs, variable="tasmin")["resource"]
+        tasmax_inputs = get_bccaqv2_inputs(request.inputs, variable="tasmax")["resource"]
 
         request.inputs["resource"] = tasmin_inputs + tasmax_inputs
 

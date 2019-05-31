@@ -79,14 +79,53 @@ def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
     variable_ok = variable is None
     rcp_ok = rcp is None
 
+    keep_models = [
+        m.lower()
+        for m in [
+            "BNU-ESM",
+            "CCSM4",
+            "CESM1-CAM5",
+            "CNRM-CM5",
+            "CSIRO-Mk3-6-0",
+            "CanESM2",
+            "FGOALS-g2",
+            "GFDL-CM3",
+            "GFDL-ESM2G",
+            "GFDL-ESM2M",
+            "HadGEM2-AO",
+            "HadGEM2-ES",
+            "IPSL-CM5A-LR",
+            "IPSL-CM5A-MR",
+            "MIROC-ESM-CHEM",
+            "MIROC-ESM",
+            "MIROC5",
+            "MPI-ESM-LR",
+            "MPI-ESM-MR",
+            "MRI-CGCM3",
+            "NorESM1-M",
+            "NorESM1-ME",
+            "bcc-csm1-1-m",
+            "bcc-csm1-1",
+        ]
+    ]
+
     if method == ParsingMethod.filename:
         variable_ok = variable_ok or filename.startswith(variable)
         rcp_ok = rcp_ok or rcp in filename
 
+        filename_lower = filename.lower()
+        if not any(m in filename_lower for m in keep_models):
+            return False
+
+        if "r1i1p1" not in filename:
+            return False
+
     elif method == ParsingMethod.opendap_das:
+
+        raise NotImplementedError("todo: filter models and runs")
+
         re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
         lines = requests.get(url + ".das").content.decode().split("\n")
-
         variable_ok = variable_ok or any(
             line.startswith(f"    {variable} {{") for line in lines
         )
@@ -97,6 +136,9 @@ def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
                     rcp_ok = True
 
     elif method == ParsingMethod.xarray:
+
+        raise NotImplementedError("todo: filter models and runs")
+
         import xarray as xr
 
         ds = xr.open_dataset(url, decode_times=False)
@@ -174,7 +216,9 @@ def netcdf_to_csv(
             # for a specific dataset the keys are different:
             # BCCAQv2+ANUSPLIN300_BNU-ESM_historical+rcp85_r1i1p1_19500101-21001231
             model = get_attrs_fallback(ds, "driving_model_id", "GCM__model_id")
-            experiment = get_attrs_fallback(ds, "driving_experiment_id", "GCM__experiment")
+            experiment = get_attrs_fallback(
+                ds, "driving_experiment_id", "GCM__experiment"
+            )
             experiment = experiment.replace(",", "_")
 
             output_variable = f"{variable}_{model}_{experiment}"
