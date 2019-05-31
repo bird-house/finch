@@ -126,8 +126,8 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         output_filename = f"BCCAQv2_subset_heat_wave_frequency_{lat}_{lon}"
 
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
-        tasmin_inputs = get_bccaqv2_inputs(request.inputs, variable="tasmin")["resource"]
-        tasmax_inputs = get_bccaqv2_inputs(request.inputs, variable="tasmax")["resource"]
+        tasmin_inputs = get_bccaqv2_inputs(request.inputs, "tasmin")["resource"]
+        tasmax_inputs = get_bccaqv2_inputs(request.inputs, "tasmax")["resource"]
 
         request.inputs["resource"] = tasmin_inputs + tasmax_inputs
 
@@ -208,9 +208,9 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         return response
 
 
-def rolling_window_events(da, window, dim='time'):
+def rolling_window_events(da, window, dim="time"):
     window_count = da.rolling(time=window).sum()
-    w = window_count.values[window - 1:] >= window
+    w = window_count.values[window - 1 :] >= window
 
     count = np.count_nonzero(w[1:] > w[:-1]) + w[0]
 
