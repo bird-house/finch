@@ -1,11 +1,12 @@
 import logging
-import os
 from collections import deque
 from typing import List, Tuple
 
+import numpy as np
 import xarray as xr
 from xclim.checks import assert_daily
 from xclim.atmos import heat_wave_frequency
+import xclim.run_length
 from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
@@ -113,6 +114,9 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             )
 
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
+        # monkeypatch windowed_run_events with a faster version
+        xclim.run_length.windowed_run_events = rolling_window_events
+
         self.write_log("Processing started", response, 5)
 
         lat = request.inputs["lat"][0].data
@@ -134,7 +138,7 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             request.inputs,
             response,
             start_percentage=7,
-            end_percentage=50,
+            end_percentage=70,
             threads=threads,
         )
 
@@ -146,14 +150,11 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
 
         all_files = [Path(f.file) for f in metalink.files]
 
-        start_percentage = 50
-        end_percentage = 95
-
         pairs = list(self._make_tasmin_tasmax_pairs(all_files))
         n_pairs = len(pairs)
 
+        start_percentage, end_percentage = 70, 95
         output_files = []
-
         for n, (tasmin, tasmax) in enumerate(pairs):
             percentage = start_percentage + int(
                 n / n_pairs * (end_percentage - start_percentage)
@@ -199,6 +200,19 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         return response
 
 
+def rolling_window_events(da, window, dim='time'):
+    window_count = da.rolling(time=window).sum()
+    w = window_count.values[window - 1:] >= window
+
+    count = np.count_nonzero(w[1:] > w[:-1]) + w[0]
+
+    data = np.array([count], dtype=np.int64)
+    data = data.reshape(())
+    out = xr.DataArray(data, coords={"lon": da.lon, "lat": da.lat})
+
+    return out
+
+
 def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
     """In a single bccaqv2 dataset, there is an error in the timestamp data.
 
@@ -209,7 +223,7 @@ def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
     tasmax_ds = xr.open_dataset(tasmax)
 
     def fix(correct_ds, wrong_ds, original_filename):
-        wrong_ds['time'] = correct_ds.time
+        wrong_ds["time"] = correct_ds.time
         temp_name = original_filename.with_name(original_filename.stem + "_temp")
         wrong_ds.to_netcdf(temp_name)
         original_filename.unlink()
