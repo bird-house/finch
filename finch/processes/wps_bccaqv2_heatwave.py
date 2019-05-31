@@ -115,9 +115,6 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             )
 
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
-        # monkeypatch windowed_run_events with a faster version
-        xclim.run_length.windowed_run_events = rolling_window_events
-
         self.write_log("Processing started", response, 5)
 
         lat = request.inputs["lat"][0].data
@@ -160,30 +157,41 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         warnings.filterwarnings("ignore", category=FutureWarning)
         warnings.filterwarnings("ignore", category=UserWarning)
 
-        for n, (tasmin, tasmax) in enumerate(pairs):
-            percentage = start_percentage + int(
-                n / n_pairs * (end_percentage - start_percentage)
-            )
-            self.write_log(
-                f"Computing indices for file {n + 1} of {n_pairs}", response, percentage
-            )
+        # monkeypatch windowed_run_events with a faster version
+        old_windowed_run_events = xclim.run_length.windowed_run_events
+        xclim.run_length.windowed_run_events = rolling_window_events
 
-            tasmin, tasmax = fix_broken_time_indices(tasmin, tasmax)
+        try:
+            for n, (tasmin, tasmax) in enumerate(pairs):
+                percentage = start_percentage + int(
+                    n / n_pairs * (end_percentage - start_percentage)
+                )
+                self.write_log(
+                    f"Computing indices for file {n + 1} of {n_pairs}",
+                    response,
+                    percentage,
+                )
 
-            compute_inputs = [i.identifier for i in self.indices_process.inputs]
-            inputs = {k: v for k, v in request.inputs.items() if k in compute_inputs}
+                tasmin, tasmax = fix_broken_time_indices(tasmin, tasmax)
 
-            inputs["tasmin"] = deque([make_nc_input("tasmin")], maxlen=1)
-            inputs["tasmin"][0].file = str(tasmin)
-            inputs["tasmax"] = deque([make_nc_input("tasmax")], maxlen=1)
-            inputs["tasmax"][0].file = str(tasmax)
+                compute_inputs = [i.identifier for i in self.indices_process.inputs]
+                inputs = {
+                    k: v for k, v in request.inputs.items() if k in compute_inputs
+                }
 
-            out = self.compute_indices(self.indices_process.xci, inputs)
-            out_fn = Path(self.workdir) / tasmin.name.replace(
-                "tasmin", "heat_wave_frequency"
-            )
-            out.to_netcdf(out_fn)
-            output_files.append(out_fn)
+                inputs["tasmin"] = deque([make_nc_input("tasmin")], maxlen=1)
+                inputs["tasmin"][0].file = str(tasmin)
+                inputs["tasmax"] = deque([make_nc_input("tasmax")], maxlen=1)
+                inputs["tasmax"][0].file = str(tasmax)
+
+                out = self.compute_indices(self.indices_process.xci, inputs)
+                out_fn = Path(self.workdir) / tasmin.name.replace(
+                    "tasmin", "heat_wave_frequency"
+                )
+                out.to_netcdf(out_fn)
+                output_files.append(out_fn)
+        finally:
+            xclim.run_length.windowed_run_events = old_windowed_run_events
 
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
