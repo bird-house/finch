@@ -173,8 +173,8 @@ def netcdf_to_csv(
         for variable in ds.data_vars:
             # for a specific dataset the keys are different:
             # BCCAQv2+ANUSPLIN300_BNU-ESM_historical+rcp85_r1i1p1_19500101-21001231
-            model = get_attrs_fallback(ds, "driving_model_id", "GCM__model_id", "unknown-model")
-            experiment = get_attrs_fallback(ds, "driving_experiment_id", "GCM__experiment", "unknown-experiment")
+            model = get_attrs_fallback(ds, "driving_model_id", "GCM__model_id")
+            experiment = get_attrs_fallback(ds, "driving_experiment_id", "GCM__experiment")
             experiment = experiment.replace(",", "_")
 
             output_variable = f"{variable}_{model}_{experiment}"
