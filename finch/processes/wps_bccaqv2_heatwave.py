@@ -160,7 +160,7 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
                 n / n_pairs * (end_percentage - start_percentage)
             )
             self.write_log(
-                f"Processing file {n + 1} of {n_pairs}", response, percentage
+                f"Computing indices for file {n + 1} of {n_pairs}", response, percentage
             )
 
             tasmin, tasmax = fix_broken_time_indices(tasmin, tasmax)

@@ -159,7 +159,7 @@ class SubsetBboxProcess(SubsetProcess):
             with lock:
                 count += 1
                 percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
-                self.write_log(f"Processing file {count} of {n_files}", response=response, percentage=percentage)
+                self.write_log(f"Subsetting file {count} of {n_files}", response=response, percentage=percentage)
 
             dataset = dataset[variables] if variables else dataset
             if lat1 is None and lon1 is None:
