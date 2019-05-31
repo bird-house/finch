@@ -12,10 +12,10 @@ from unittest import mock
 @mock.patch("finch.processes.utils.TDSCatalog")
 def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
     names = [
-        "tasmin_day_BCCAQv2+ANUSPLIN300_inmcm4_historical+rcp85_r1i1p1_19500101-21001231.nc",
-        "tasmin_day_BCCAQv2+ANUSPLIN300_inmcm4_historical+rcp45_r1i1p1_19500101-21001231.nc",
-        "tasmin_day_BCCAQv2+ANUSPLIN300_MIROC5_historical+rcp45_r3i1p1_19500101-21001231.nc",
-        "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-M_historical+rcp45_r1i1p1_19500101-21001231.nc",
+        "tasmin_day_BCCAQv2+ANUSPLIN300_CNRM-CM5_historical+rcp85_r1i1p1_19500101-21001231.nc",
+        "tasmin_day_BCCAQv2+ANUSPLIN300_CNRM-CM5_historical+rcp45_r1i1p1_19500101-21001231.nc",
+        "tasmin_day_BCCAQv2+ANUSPLIN300_CanESM2_historical+rcp45_r1i1p1_19500101-21001231.nc",
+        "tasmax_day_BCCAQv2+ANUSPLIN300_CanESM2_historical+rcp45_r1i1p1_19500101-21001231.nc",
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-M_historical+rcp26_r1i1p1_19500101-21001231.nc",
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp85_r1i1p1_19500101-21001231.nc",
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp45_r1i1p1_19500101-21001231.",
