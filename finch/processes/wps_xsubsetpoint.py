@@ -127,7 +127,9 @@ class SubsetGridPointProcess(SubsetProcess):
         def _subset_function(resource):
             nonlocal count
 
-            dataset = self.try_opendap(resource)
+            # if not subsetting by time, it's not necessary to decode times
+            decode_times = y0 is None and y1 is None
+            dataset = self.try_opendap(resource, decode_times=decode_times)
 
             with lock:
                 count += 1
