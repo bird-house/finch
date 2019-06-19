@@ -34,21 +34,24 @@ class FinchProcess(Process):
         except KeyError:
             return None
 
-    def try_opendap(self, input, chunks=None):
+    def try_opendap(self, input, chunks=None, decode_times=True):
         """Try to open the file as an OPeNDAP url and chunk it. If OPeNDAP fails, access the file directly. In both
         cases, return an xarray.Dataset.
         """
         url = input.url
         if is_opendap_url(url):
-            ds = xr.open_dataset(url, chunks=chunks)
+            ds = xr.open_dataset(url, chunks=chunks, decode_times=decode_times)
             if not chunks:
                 ds = ds.chunk(chunk_dataset(ds, max_size=1000000))
             self.write_log("Opened dataset as an OPeNDAP url: {}".format(url))
         else:
-            self.write_log("Downloading dataset for url: {}".format(url))
+            if url.startswith("http"):
+                self.write_log("Downloading dataset for url: {}".format(url))
+            else:
+                self.write_log("Opening as local file: {}".format(url))
             # Accessing the file property loads the data in the data property
             # and writes it to disk
-            ds = xr.open_dataset(input.file)
+            ds = xr.open_dataset(input.file, decode_times=decode_times)
 
         return ds
 
