@@ -120,8 +120,11 @@ class SubsetGridPointProcess(SubsetProcess):
         n_files = len(wps_inputs["resource"])
         count = 0
 
-        def _subset_function(dataset):
+        def _subset_function(resource):
             nonlocal count
+
+            dataset = self.try_opendap(resource)
+
             count += 1
 
             percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))

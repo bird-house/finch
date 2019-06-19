@@ -155,8 +155,10 @@ class SubsetBboxProcess(SubsetProcess):
 
         lock = Lock()
 
-        def _subset_function(dataset):
+        def _subset_function(resource):
             nonlocal count
+
+            dataset = self.try_opendap(resource)
 
             with lock:
                 count += 1

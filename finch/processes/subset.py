@@ -23,8 +23,7 @@ class SubsetProcess(FinchProcess):
         )
 
         def process_resource(resource):
-            ds = self.try_opendap(resource)
-            out = subset_function(ds)
+            out = subset_function(resource)
 
             if not all(out.dims.values()):
                 LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
