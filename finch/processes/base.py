@@ -47,10 +47,9 @@ class FinchProcess(Process):
         else:
             if url.startswith("http"):
                 self.write_log("Downloading dataset for url: {}".format(url))
+                # Accessing the file property writes it to disk if it's a url
             else:
                 self.write_log("Opening as local file: {}".format(url))
-            # Accessing the file property loads the data in the data property
-            # and writes it to disk
             ds = xr.open_dataset(input.file, decode_times=decode_times)
 
         return ds
