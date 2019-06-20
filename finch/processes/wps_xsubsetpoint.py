@@ -128,8 +128,8 @@ class SubsetGridPointProcess(SubsetProcess):
             nonlocal count
 
             # if not subsetting by time, it's not necessary to decode times
-            decode_times = y0 is None and y1 is None
-            dataset = self.try_opendap(resource, decode_times=decode_times)
+            time_subset = y0 is not None or y1 is not None
+            dataset = self.try_opendap(resource, decode_times=time_subset)
 
             with lock:
                 count += 1
@@ -138,7 +138,10 @@ class SubsetGridPointProcess(SubsetProcess):
                 self.write_log(f"Subsetting file {count} of {n_files}", response, percentage)
 
             dataset = dataset[variables] if variables else dataset
-            return subset_gridpoint(dataset, lon=lon, lat=lat, start_yr=y0, end_yr=y1)
+            if not time_subset:
+                return dataset.sel(lat=lat, lon=lon, method="nearest")
+            else:
+                return subset_gridpoint(dataset, lon=lon, lat=lat, start_yr=y0, end_yr=y1)
 
         metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
 
