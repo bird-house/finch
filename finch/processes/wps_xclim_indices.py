@@ -106,28 +106,6 @@ class _XclimIndicatorProcess(FinchProcess):
         return response
 
 
-def chunk_dataset(ds, max_size=1000000):
-    """Ensures the chunked size of a xarray.Dataset is below a certain size
-
-    Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
-    """
-    from functools import reduce
-    from itertools import cycle
-    from operator import mul
-
-    chunks = dict(ds.sizes)
-
-    def chunk_size():
-        return reduce(mul, chunks.values())
-
-    for dim in cycle(chunks):
-        if chunk_size() < max_size:
-            break
-        chunks[dim] = max(chunks[dim] // 2, 1)
-
-    return chunks
-
-
 def make_freq(name, default='YS', allowed=('YS', 'MS', 'QS-DEC', 'AS-JUL')):
     return LiteralInput(name, 'Frequency',
                         abstract='Resampling frequency',
