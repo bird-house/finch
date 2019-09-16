@@ -18,8 +18,7 @@ def test_wps_subsetbbox(tas_dataset):
                  "lon0={lon0};" \
                  "lat1={lat1};" \
                  "lon1={lon1};" \
-                 "y0={y0};" \
-                 "y1={y1};".format(fn=tas_dataset, lat0=2., lon0=3., lat1=4, lon1=5, y0=2000, y1=2003)
+                 "start_date={y0};".format(fn=tas_dataset, lat0=2., lon0=3., lat1=4, lon1=5, y0='2000')
 
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset_bbox&datainputs={}".format(

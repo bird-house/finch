@@ -2,6 +2,7 @@ from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_bbox, subset_gridpoint
+from .wpsio import start_date, end_date
 
 from finch.processes.subset import SubsetProcess
 import logging
@@ -54,38 +55,8 @@ class SubsetBboxProcess(SubsetProcess):
                 default=90,
                 min_occurs=0,
             ),
-            # LiteralInput('dt0',
-            #              'Initial datetime',
-            #              abstract='Initial datetime for temporal subsetting. Defaults to first date in file.',
-            #              data_type='dateTime',
-            #              default=None,
-            #              min_occurs=0,
-            #              max_occurs=1),
-            # LiteralInput('dt1',
-            #              'Final datetime',
-            #              abstract='Final datetime for temporal subsetting. Defaults to last date in file.',
-            #              data_type='dateTime',
-            #              default=None,
-            #              min_occurs=0,
-            #              max_occurs=1),
-            LiteralInput(
-                "y0",
-                "Initial year",
-                abstract="Initial year for temporal subsetting. Defaults to first year in file.",
-                data_type="integer",
-                default=None,
-                min_occurs=0,
-                max_occurs=1,
-            ),
-            LiteralInput(
-                "y1",
-                "Final year",
-                abstract="Final year for temporal subsetting. Defaults to last year in file.",
-                data_type="integer",
-                default=None,
-                min_occurs=0,
-                max_occurs=1,
-            ),
+            start_date,
+            end_date,
             LiteralInput(
                 "variable",
                 "Variable",
@@ -138,8 +109,8 @@ class SubsetBboxProcess(SubsetProcess):
         lat1 = self.get_input_or_none(wps_inputs, "lat1")
         # dt0 = wps_inputs['dt0'][0].data or None
         # dt1 = wps_inputs['dt1'][0].data or None
-        y0 = self.get_input_or_none(wps_inputs, "y0")
-        y1 = self.get_input_or_none(wps_inputs, "y1")
+        start = self.get_input_or_none(wps_inputs, "start_date")
+        end = self.get_input_or_none(wps_inputs, "end_date")
         variables = [r.data for r in wps_inputs.get("variable", [])]
 
         nones = [lat1 is None, lon1 is None]
@@ -158,10 +129,10 @@ class SubsetBboxProcess(SubsetProcess):
 
             dataset = dataset[variables] if variables else dataset
             if lat1 is None and lon1 is None:
-                return subset_gridpoint(dataset, lon=lon0, lat=lat0, start_yr=y0, end_yr=y1)
+                return subset_gridpoint(dataset, lon=lon0, lat=lat0, start_date=start, end_date=end)
             else:
                 return subset_bbox(
-                    dataset, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_yr=y0, end_yr=y1
+                    dataset, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_date=start, end_date=end
                 )
 
         metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
