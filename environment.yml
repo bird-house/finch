@@ -20,7 +20,7 @@ dependencies:
 - scipy
 - sentry-sdk
 - siphon
-- xclim>=0.10.10
+- xclim==0.10.10b0
 - pip:
   - git+https://github.com/geopython/pywps.git#egg=pywps
 
