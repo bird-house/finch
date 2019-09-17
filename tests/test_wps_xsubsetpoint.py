@@ -47,5 +47,3 @@ def test_thredds():
     out = get_output(resp.xml)
     links = get_metalinks(lxml.etree.fromstring(out['ref'].encode()))
     assert len(links) == 2
-
-

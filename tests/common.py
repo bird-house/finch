@@ -47,6 +47,7 @@ def get_output(doc):
 
     return output
 
+
 def get_metalinks(doc):
     """Return a dictionary of metaurls found in metalink XML, keyed by their file name.
 
