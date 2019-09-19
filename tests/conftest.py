@@ -9,7 +9,7 @@ from pywps.tests import client_for
 
 import finch
 import finch.processes
-from tests.common import CFG_FILE
+from .common import CFG_FILE
 
 
 def _create_test_dataset(variable, cell_methods, stardard_name, seed=None):

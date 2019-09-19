@@ -46,3 +46,20 @@ def get_output(doc):
             output[identifier_el.text] = data_el[0].text
 
     return output
+
+
+def get_metalinks(doc):
+    """Return a dictionary of metaurls found in metalink XML, keyed by their file name.
+
+    Parameters
+    ----------
+    doc : lxml.etree.Element
+      Metalink XML etree.
+    """
+    output = {}
+    for child in doc.iterchildren():
+        if child.tag == "{urn:ietf:params:xml:ns:metalink}file":
+            url = child.find("{urn:ietf:params:xml:ns:metalink}metaurl")
+            output[child.attrib['name']] = url.text
+
+    return output
