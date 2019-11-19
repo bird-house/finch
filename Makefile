@@ -6,6 +6,7 @@ APP_NAME := finch
 CONDA := $(shell command -v conda 2> /dev/null)
 ANACONDA_HOME := $(shell conda info --base 2> /dev/null)
 CONDA_ENV := $(APP_NAME)
+FINCH_WPS_URL = http://localhost:5000
 
 TEMP_FILES := *.egg-info *.log *.sqlite
 
@@ -107,6 +108,11 @@ distclean: clean
 test: check_conda
 	@echo "Running tests (skip slow and online tests) ..."
 	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);pytest -v -m 'not slow and not online'"
+
+.PHONY: test_nb
+test_nb:
+	@echo "Running notebook-based tests"
+	@bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);env FINCH_WPS_URL=$(RAVEN_WPS_URL) pytest --nbval $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
 
 .PHONY: testall
 testall: check_conda
