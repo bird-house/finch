@@ -3,3 +3,4 @@ flake8
 pytest-flake8
 sphinx>=1.7
 bumpversion
+nbval

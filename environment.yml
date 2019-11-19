@@ -21,6 +21,7 @@ dependencies:
 - sentry-sdk
 - siphon
 - xclim==0.10.10b0
+- nbval
 - pip:
   - git+https://github.com/geopython/pywps.git#egg=pywps
 
