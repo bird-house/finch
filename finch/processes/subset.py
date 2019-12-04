@@ -39,7 +39,7 @@ class SubsetProcess(FinchProcess):
                 identity=p.stem,
                 fmt=FORMATS.NETCDF,
             )
-            mf.file = out_fn
+            mf.file = str(out_fn)
             metalink.append(mf)
 
         if threads > 1:
