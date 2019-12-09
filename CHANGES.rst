@@ -2,6 +2,12 @@ Changes
 *******
 
 
+0.2.7 (2019-12-09)
+==================
+
+* Fix for segmentation fault in libnetcdf (pin version to 4.6.2 until a fix is released)
+
+
 0.2.6 (2019-12-04)
 ==================
 
