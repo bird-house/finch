@@ -32,7 +32,7 @@ def test_heat_wave_frequency(client, tasmin_dataset, tasmax_dataset):
 
 
 def test_heat_wave_index(client, tasmax_dataset):
-    identifier = "hwi_{thresh}"
+    identifier = "heat_wave_index"
     inputs = [
         wps_input_file("tasmax", tasmax_dataset),
         wps_literal_input("thresh", "30 degC"),
@@ -40,4 +40,4 @@ def test_heat_wave_index(client, tasmax_dataset):
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
 
-    assert ds["hwi_30 degC"].standard_name == _get_output_standard_name(identifier)
+    assert ds["heat_wave_index"].standard_name == _get_output_standard_name(identifier)

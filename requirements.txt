@@ -1,5 +1,5 @@
--e git://github.com/geopython/pywps.git#egg=pywps
--e git://github.com/ouranosinc/xclim.git#egg=xclim
+pywps>=4.2.3
+xclim>=0.12.2
 jinja2
 click
 psutil
@@ -10,6 +10,5 @@ unidecode
 dask[complete]
 scipy
 requests
-xarray>=0.12
 sentry-sdk
 siphon

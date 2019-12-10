@@ -3,7 +3,7 @@ from threading import Lock
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_gridpoint
-
+from .wpsio import start_date, end_date
 from finch.processes.subset import SubsetProcess
 
 
@@ -33,38 +33,8 @@ class SubsetGridPointProcess(SubsetProcess):
                 data_type="float",
                 min_occurs=1,
             ),
-            # LiteralInput('dt0',
-            #              'Initial datetime',
-            #              abstract='Initial datetime for temporal subsetting. Defaults to first date in file.',
-            #              data_type='dateTime',
-            #              default=None,
-            #              min_occurs=0,
-            #              max_occurs=1),
-            # LiteralInput('dt1',
-            #              'Final datetime',
-            #              abstract='Final datetime for temporal subsetting. Defaults to last date in file.',
-            #              data_type='dateTime',
-            #              default=None,
-            #              min_occurs=0,
-            #              max_occurs=1),
-            LiteralInput(
-                "year0",
-                "Initial year",
-                abstract="Initial year for temporal subsetting. Defaults to first year in file.",
-                data_type="integer",
-                default=None,
-                min_occurs=0,
-                max_occurs=1,
-            ),
-            LiteralInput(
-                "year1",
-                "Final year",
-                abstract="Final year for temporal subsetting. Defaults to last year in file.",
-                data_type="integer",
-                default=None,
-                min_occurs=0,
-                max_occurs=1,
-            ),
+            start_date,
+            end_date,
             LiteralInput(
                 "variable",
                 "Variable",
@@ -115,8 +85,8 @@ class SubsetGridPointProcess(SubsetProcess):
         lat = wps_inputs["lat"][0].data
         # dt0 = wps_inputs['dt0'][0].data or None
         # dt1 = wps_inputs['dt1'][0].data or None
-        y0 = self.get_input_or_none(wps_inputs, "y0")
-        y1 = self.get_input_or_none(wps_inputs, "y1")
+        start = self.get_input_or_none(wps_inputs, "start_date")
+        end = self.get_input_or_none(wps_inputs, "end_date")
         variables = [r.data for r in wps_inputs.get("variable", [])]
 
         n_files = len(wps_inputs["resource"])
@@ -141,7 +111,7 @@ class SubsetGridPointProcess(SubsetProcess):
             if not time_subset:
                 return dataset.sel(lat=lat, lon=lon, method="nearest")
             else:
-                return subset_gridpoint(dataset, lon=lon, lat=lat, start_yr=y0, end_yr=y1)
+                return subset_gridpoint(dataset, lon=lon, lat=lat, start_date=y0, end_date=y1)
 
         metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
 

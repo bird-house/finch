@@ -4,15 +4,14 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- python=3.6
-# - pywps>=4.2
+- python>=3.6
 - pip
 - jinja2
 - click
 - psutil
 - bottleneck
-# - xclim
 - netcdf4
+- libnetcdf==4.6.2
 - numpy
 - unidecode
 - dask
@@ -20,6 +19,6 @@ dependencies:
 - scipy
 - sentry-sdk
 - siphon
-- pip:
-  - git+https://github.com/geopython/pywps.git#egg=pywps
-  - git+https://github.com/Ouranosinc/xclim.git@8438b0e5001c4014d0a318b974863e2b4dc4cc41#egg=xclim
+- xclim>=0.12.2
+- pywps>=4.2.3
+
