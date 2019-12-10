@@ -108,10 +108,7 @@ class SubsetGridPointProcess(SubsetProcess):
                 self.write_log(f"Subsetting file {count} of {n_files}", response, percentage)
 
             dataset = dataset[variables] if variables else dataset
-            if not time_subset:
-                return dataset.sel(lat=lat, lon=lon, method="nearest")
-            else:
-                return subset_gridpoint(dataset, lon=lon, lat=lat, start_date=y0, end_date=y1)
+            return subset_gridpoint(dataset, lon=lon, lat=lat, start_date=y0, end_date=y1)
 
         metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
 

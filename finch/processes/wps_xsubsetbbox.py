@@ -146,12 +146,9 @@ class SubsetBboxProcess(SubsetProcess):
 
             dataset = dataset[variables] if variables else dataset
             if lat1 is None and lon1 is None:
-                if not time_subset:
-                    return dataset.sel(lat=lat0, lon=lon0, method="nearest")
-                else:
-                    return subset_gridpoint(
-                        dataset, lon=lon0, lat=lat0, start_date=y0, end_date=y1
-                    )
+                return subset_gridpoint(
+                    dataset, lon=lon0, lat=lat0, start_date=y0, end_date=y1
+                )
             else:
                 return subset_bbox(
                     dataset,
