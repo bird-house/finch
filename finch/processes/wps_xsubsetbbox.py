@@ -130,7 +130,7 @@ class SubsetBboxProcess(SubsetProcess):
             nonlocal count
 
             # if not subsetting by time, it's not necessary to decode times
-            time_subset = y0 is not None or y1 is not None
+            time_subset = start is not None or end is not None
             dataset = self.try_opendap(resource, decode_times=time_subset)
 
             with lock:
@@ -147,15 +147,15 @@ class SubsetBboxProcess(SubsetProcess):
             dataset = dataset[variables] if variables else dataset
             if lat1 is None and lon1 is None:
                 return subset_gridpoint(
-                    dataset, lon=lon0, lat=lat0, start_date=y0, end_date=y1
+                    dataset, lon=lon0, lat=lat0, start_date=start, end_date=end
                 )
             else:
                 return subset_bbox(
                     dataset,
                     lon_bnds=[lon0, lon1],
                     lat_bnds=[lat0, lat1],
-                    start_date=y0,
-                    end_date=y1,
+                    start_date=start,
+                    end_date=end,
                 )
 
         metalink = self.subset_resources(
