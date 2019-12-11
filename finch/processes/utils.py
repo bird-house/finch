@@ -16,6 +16,18 @@ from pywps import configuration
 
 
 def is_opendap_url(url):
+    """
+    Check if a provided url is an OpenDAP url.
+
+    The OpenDAP server should provide a Dataset Descriptor Structure (DDS) at the *.dds url.
+    We try to get this url by appending the suffix, and inspect the reponse to see if it's an OpenDAP response.
+    One downside of this method is that the provided url could contain query parameters, or special
+    OpenDAP syntax after the filename, so appending .dds will not create a valid url.
+
+    Sometimes, a Thredds server can become unresponsive when we send too many requests.
+    In those cases, we get a requests.exceptions.ConnectionError.
+    We retry a couple times with exponential backoff.
+    """
     retry = 3
     if url and not url.startswith("file"):
         while retry:
