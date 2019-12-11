@@ -1,3 +1,6 @@
+from threading import Lock
+import logging
+
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaLink4
@@ -5,7 +8,6 @@ from xclim.subset import subset_bbox, subset_gridpoint
 from .wpsio import start_date, end_date
 
 from finch.processes.subset import SubsetProcess
-import logging
 
 
 LOGGER = logging.getLogger("PYWPS")
@@ -102,7 +104,9 @@ class SubsetBboxProcess(SubsetProcess):
             store_supported=True,
         )
 
-    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1) -> MetaLink4:
+    def subset(
+        self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1
+    ) -> MetaLink4:
         lon0 = wps_inputs["lon0"][0].data
         lat0 = wps_inputs["lat0"][0].data
         lon1 = self.get_input_or_none(wps_inputs, "lon1")
@@ -120,22 +124,43 @@ class SubsetBboxProcess(SubsetProcess):
         n_files = len(wps_inputs["resource"])
         count = 0
 
-        def _subset_function(dataset):
-            nonlocal count
-            count += 1
+        lock = Lock()
 
-            percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
-            self.write_log(f"Processing file {count} of {n_files}", response, percentage)
+        def _subset_function(resource):
+            nonlocal count
+
+            # if not subsetting by time, it's not necessary to decode times
+            time_subset = start is not None or end is not None
+            dataset = self.try_opendap(resource, decode_times=time_subset)
+
+            with lock:
+                count += 1
+                percentage = start_percentage + int(
+                    (count - 1) / n_files * (end_percentage - start_percentage)
+                )
+                self.write_log(
+                    f"Subsetting file {count} of {n_files}",
+                    response=response,
+                    percentage=percentage,
+                )
 
             dataset = dataset[variables] if variables else dataset
             if lat1 is None and lon1 is None:
-                return subset_gridpoint(dataset, lon=lon0, lat=lat0, start_date=start, end_date=end)
+                return subset_gridpoint(
+                    dataset, lon=lon0, lat=lat0, start_date=start, end_date=end
+                )
             else:
                 return subset_bbox(
-                    dataset, lon_bnds=[lon0, lon1], lat_bnds=[lat0, lat1], start_date=start, end_date=end
+                    dataset,
+                    lon_bnds=[lon0, lon1],
+                    lat_bnds=[lat0, lat1],
+                    start_date=start,
+                    end_date=end,
                 )
 
-        metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
+        metalink = self.subset_resources(
+            wps_inputs["resource"], _subset_function, threads=threads
+        )
 
         return metalink
 

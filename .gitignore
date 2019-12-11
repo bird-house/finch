@@ -42,6 +42,9 @@ unit_tests/testdata.json
 # PyCharm
 *.idea
 
+# vscode
+*.vscode
+
 # Kate
 *.kate-swp
 

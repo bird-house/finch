@@ -1,3 +1,5 @@
+from threading import Lock
+
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_gridpoint
@@ -90,12 +92,20 @@ class SubsetGridPointProcess(SubsetProcess):
         n_files = len(wps_inputs["resource"])
         count = 0
 
-        def _subset_function(dataset):
-            nonlocal count
-            count += 1
+        lock = Lock()
 
-            percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
-            self.write_log(f"Processing file {count} of {n_files}", response, percentage)
+        def _subset_function(resource):
+            nonlocal count
+
+            # if not subsetting by time, it's not necessary to decode times
+            time_subset = start is not None or end is not None
+            dataset = self.try_opendap(resource, decode_times=time_subset)
+
+            with lock:
+                count += 1
+
+                percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
+                self.write_log(f"Subsetting file {count} of {n_files}", response, percentage)
 
             dataset = dataset[variables] if variables else dataset
             return subset_gridpoint(dataset, lon=lon, lat=lat, start_date=start, end_date=end)
