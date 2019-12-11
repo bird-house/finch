@@ -77,7 +77,7 @@ class FinchProcess(Process):
     def write_log(self, message, response=None, percentage=None):
         open(self.log_file_path(), "a").write(message + "\n")
         LOGGER.info(message)
-        if response:
+        if response is not None:
             response.update_status(message, status_percentage=percentage)
 
     def sentry_configure_scope(self, request):

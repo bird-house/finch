@@ -16,13 +16,13 @@ from pywps import configuration
 
 
 def is_opendap_url(url):
-    retry = 7
+    retry = 3
     if url and not url.startswith("file"):
         while retry:
             try:
-                r = requests.get(url + ".dds")
+                r = requests.get(url + ".dds", timeout=2)
             except requests.exceptions.ConnectionError:
-                time.sleep(60 // retry ** 2)
+                time.sleep(10 // retry ** 2)
                 retry -= 1
                 continue
             except requests.exceptions.MissingSchema:
@@ -30,6 +30,7 @@ def is_opendap_url(url):
                 break
             if r.status_code == 200 and r.content.decode().startswith("Dataset"):
                 return True
+            break
     return False
 
 
