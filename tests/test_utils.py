@@ -67,7 +67,7 @@ def test_netcdf_to_csv_to_zip():
 
 
 def test_is_opendap_url():
-    # This test uses online requests, but the links shoudl be pretty stable.
+    # This test uses online requests, but the links should be pretty stable.
     # In case the link are no longer available, we should change the url.
     # This is better than skipping this test in CI.
 
