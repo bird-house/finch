@@ -10,6 +10,8 @@ from enum import Enum
 import pandas as pd
 import xarray as xr
 import requests
+import netCDF4
+from requests.exceptions import MissingSchema, ConnectionError, InvalidSchema
 from pywps import ComplexInput, FORMATS
 from siphon.catalog import TDSCatalog
 from pywps import configuration
@@ -19,31 +21,28 @@ def is_opendap_url(url):
     """
     Check if a provided url is an OpenDAP url.
 
-    The OpenDAP server should provide a Dataset Descriptor Structure (DDS) at the *.dds url.
-    We try to get this url by appending the suffix, and inspect the reponse to see if it's an OpenDAP response.
-    One downside of this method is that the provided url could contain query parameters, or special
-    OpenDAP syntax after the filename, so appending .dds will not create a valid url.
+    The DAP Standard specifies that a specific tag must be included in the
+    Content-Description header of every request. This tag is one of:
+        "dods-dds" | "dods-das" | "dods-data" | "dods-error"
 
-    Sometimes, a Thredds server can become unresponsive when we send too many requests.
-    In those cases, we get a requests.exceptions.ConnectionError.
-    We retry a couple times with exponential backoff.
+    So we can check if the header starts with `dods`.
+
+    Even then, some OpenDAP servers seem to not include the specified header...
+    So we need to let the netCDF4 library actually open the file.
     """
-    retry = 3
-    if url and not url.startswith("file"):
-        while retry:
-            try:
-                r = requests.get(url + ".dds", timeout=2)
-            except requests.exceptions.ConnectionError:
-                time.sleep(10 // retry ** 2)
-                retry -= 1
-                continue
-            except requests.exceptions.MissingSchema:
-                # most likely a local file
-                break
-            if r.status_code == 200 and r.content.decode().startswith("Dataset"):
-                return True
-            break
-    return False
+    try:
+        content_description = requests.head(url, timeout=5).headers.get("Content-Description")
+    except (ConnectionError, MissingSchema, InvalidSchema):
+        return False
+
+    if content_description:
+        return content_description.lower().startswith("dods")
+    else:
+        try:
+            dataset = netCDF4.Dataset(url)
+        except OSError:
+            return False
+        return dataset.disk_format in ('DAP2', 'DAP4')
 
 
 class ParsingMethod(Enum):
