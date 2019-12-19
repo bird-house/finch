@@ -2,6 +2,7 @@ from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
 from pywps.app import WPSRequest
+from .wpsio import start_date, end_date
 from pywps import LiteralInput, ComplexOutput, FORMATS, configuration
 
 from finch.processes import SubsetBboxProcess
@@ -62,36 +63,8 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 default=None,
                 min_occurs=0,
             ),
-            # LiteralInput('dt0',
-            #              'Initial datetime',
-            #              abstract='Initial datetime for temporal subsetting. Defaults to first date in file.',
-            #              data_type='dateTime',
-            #              default=None,
-            #              min_occurs=0,
-            #              max_occurs=1),
-            # LiteralInput('dt1',
-            #              'Final datetime',
-            #              abstract='Final datetime for temporal subsetting. Defaults to last date in file.',
-            #              data_type='dateTime',
-            #              default=None,
-            #              min_occurs=0,
-            #              max_occurs=1),
-            LiteralInput(
-                "y0",
-                "Initial year",
-                abstract="Initial year for temporal subsetting. Defaults to first year in file.",
-                data_type="integer",
-                default=None,
-                min_occurs=0,
-            ),
-            LiteralInput(
-                "y1",
-                "Final year",
-                abstract="Final year for temporal subsetting. Defaults to last year in file.",
-                data_type="integer",
-                default=None,
-                min_occurs=0,
-            ),
+            start_date,
+            end_date,
             LiteralInput(
                 "output_format",
                 "Output format choice",

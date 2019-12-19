@@ -111,8 +111,6 @@ class SubsetBboxProcess(SubsetProcess):
         lat0 = wps_inputs["lat0"][0].data
         lon1 = self.get_input_or_none(wps_inputs, "lon1")
         lat1 = self.get_input_or_none(wps_inputs, "lat1")
-        # dt0 = wps_inputs['dt0'][0].data or None
-        # dt1 = wps_inputs['dt1'][0].data or None
         start = self.get_input_or_none(wps_inputs, "start_date")
         end = self.get_input_or_none(wps_inputs, "end_date")
         variables = [r.data for r in wps_inputs.get("variable", [])]
