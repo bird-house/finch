@@ -5,20 +5,23 @@ from pywps.app import WPSRequest
 from .wpsio import start_date, end_date
 from pywps import LiteralInput, ComplexOutput, FORMATS, configuration
 
-from finch.processes import SubsetBboxProcess
+from finch.processes import SubsetGridPointProcess
 from finch.processes.subset import SubsetProcess
 from finch.processes.utils import get_bccaqv2_inputs, netcdf_to_csv, zip_files
 
 
-class SubsetBCCAQV2Process(SubsetBboxProcess):
-    """Subset a NetCDF file using bounding box geometry."""
+class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
+    """Subset a NetCDF file using a single grid point."""
 
     def __init__(self):
         inputs = [
             LiteralInput(
                 "variable",
                 "NetCDF Variable",
-                abstract="Name of the variable in the NetCDF file.",
+                abstract=(
+                    "Name of the variable in the NetCDF file."
+                    "If not provided, all variables will be subsetted."
+                ),
                 data_type="string",
                 default=None,
                 min_occurs=0,
@@ -35,33 +38,17 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
             ),
             LiteralInput(
                 "lat0",
-                "Minimum latitude",
-                abstract="Minimum latitude.",
+                "Latitude",
+                abstract="Latitude",
                 data_type="float",
                 min_occurs=1,
             ),
             LiteralInput(
                 "lon0",
-                "Minimum longitude",
-                abstract="Minimum longitude.",
+                "Longitude",
+                abstract="Longitude",
                 data_type="float",
                 min_occurs=1,
-            ),
-            LiteralInput(
-                "lat1",
-                "Maximum latitude",
-                abstract="Maximum latitude. Omit this coordinate to subset for a single grid cell.",
-                data_type="float",
-                default=None,
-                min_occurs=0,
-            ),
-            LiteralInput(
-                "lon1",
-                "Maximum longitude",
-                abstract="Maximum longitude. Omit this coordinate to subset for a single grid cell.",
-                data_type="float",
-                default=None,
-                min_occurs=0,
             ),
             start_date,
             end_date,
@@ -90,13 +77,12 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
             self,
             self._handler,
             identifier="subset_ensemble_BCCAQv2",
-            title="Subset of BCCAQv2 datasets",
+            title="Subset of BCCAQv2 datasets, using a single grid point",
             version="0.1",
             abstract=(
                 "For the BCCAQv2 datasets, "
-                "return the data for which grid cells intersect the "
-                "bounding box for each input dataset as well as "
-                "the time range selected."
+                "return the closest grid cell for each provided coordinates pair, "
+                "for the time range selected."
             ),
             inputs=inputs,
             outputs=outputs,
@@ -113,7 +99,7 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
         lon0 = self.get_input_or_none(request.inputs, "lon0")
         output_format = request.inputs["output_format"][0].data
 
-        output_filename = f"BCCAQv2_subset_{lat0}_{lon0}"
+        output_filename = f"BCCAQv2_subset_grid_cells_{lat0:.3f}_{lon0:.3f}"
 
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
         request.inputs = get_bccaqv2_inputs(request.inputs, variable, rcp)

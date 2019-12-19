@@ -5,12 +5,13 @@ import pytest
 from pathlib import Path
 
 from tests.utils import wps_literal_input, execute_process
-from finch.processes.wps_xsubset_bccaqv2 import SubsetBCCAQV2Process
+from finch.processes.wps_xsubsetpoint_bccaqv2 import SubsetGridPointBCCAQV2Process
+from finch.processes.wps_xsubsetbbox_bccaqv2 import SubsetBboxBCCAQV2Process
 
 
 @mock.patch("finch.processes.utils.get_bccaqv2_opendap_datasets")
-@mock.patch.object(SubsetBCCAQV2Process, "subset")
-def test_bccaqv2_subset(mock_bccaq_subset, mock_datasets, client):
+@mock.patch.object(SubsetGridPointBCCAQV2Process, "subset")
+def test_bccaqv2_subset_point(mock_bccaq_subset, mock_datasets, client):
     # --- given ---
     identifier = "subset_ensemble_BCCAQv2"
     inputs = [
