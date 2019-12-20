@@ -83,8 +83,6 @@ class SubsetGridPointProcess(SubsetProcess):
     def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1) -> MetaLink4:
         lon = wps_inputs["lon"][0].data
         lat = wps_inputs["lat"][0].data
-        # dt0 = wps_inputs['dt0'][0].data or None
-        # dt1 = wps_inputs['dt1'][0].data or None
         start = self.get_input_or_none(wps_inputs, "start_date")
         end = self.get_input_or_none(wps_inputs, "end_date")
         variables = [r.data for r in wps_inputs.get("variable", [])]
