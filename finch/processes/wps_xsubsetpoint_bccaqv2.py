@@ -37,18 +37,32 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
                 allowed_values=["rcp26", "rcp45", "rcp85"],
             ),
             LiteralInput(
-                "lat0",
+                "lat",
                 "Latitude",
                 abstract="Latitude",
                 data_type="float",
-                min_occurs=1,
+                min_occurs=0,  # Set to 1 when lat0 is removed
             ),
             LiteralInput(
-                "lon0",
+                "lon",
                 "Longitude",
                 abstract="Longitude",
                 data_type="float",
-                min_occurs=1,
+                min_occurs=0,  # Set to 1 when lon0 is removed
+            ),
+            LiteralInput(
+                "lat0",
+                "Latitude (deprecated, use 'lat')",
+                abstract="Latitude (deprecated, use 'lat')",
+                data_type="float",
+                min_occurs=0,
+            ),
+            LiteralInput(
+                "lon0",
+                "Longitude (deprecated, use 'lon')",
+                abstract="Longitude (deprecated, use 'lon')",
+                data_type="float",
+                min_occurs=0,
             ),
             start_date,
             end_date,
@@ -93,13 +107,22 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
         self.write_log("Processing started", response, 5)
 
+        # Temporary backward-compatibility adjustment. 
+        # Remove me when lon0 and lat0 are removed
+        lon, lat, lon0, lat0 = [self.get_input_or_none(request.inputs, var) for var in "lon lat lon0 lat0".split()]
+        if not (lon and lat or lon0 and lat0):
+            raise ProcessError("Provide both lat and lon or both lon0 and lat0.")
+        request.inputs['lon'] = request.inputs.get('lon',  request.inputs['lon0'])
+        request.inputs['lat'] = request.inputs.get('lat',  request.inputs['lat0'])
+        # End of 'remove me'
+
         variable = self.get_input_or_none(request.inputs, "variable")
         rcp = self.get_input_or_none(request.inputs, "rcp")
-        lat0 = self.get_input_or_none(request.inputs, "lat0")
-        lon0 = self.get_input_or_none(request.inputs, "lon0")
+        lat = self.get_input_or_none(request.inputs, "lat")
+        lon = self.get_input_or_none(request.inputs, "lon")
         output_format = request.inputs["output_format"][0].data
 
-        output_filename = f"BCCAQv2_subset_grid_cells_{lat0:.3f}_{lon0:.3f}"
+        output_filename = f"BCCAQv2_subset_grid_cells_{lat:.3f}_{lon:.3f}"
 
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
         request.inputs = get_bccaqv2_inputs(request.inputs, variable, rcp)
