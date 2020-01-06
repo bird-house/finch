@@ -1,5 +1,6 @@
 from threading import Lock
 
+import xarray as xr
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_gridpoint
@@ -106,8 +107,14 @@ class SubsetGridPointProcess(SubsetProcess):
                 self.write_log(f"Subsetting file {count} of {n_files}", response, percentage)
 
             dataset = dataset[variables] if variables else dataset
-            lon, lat = longitudes[0], latitudes[0]  # Todo: temporarily process only the first coordinate
-            return subset_gridpoint(dataset, lon=lon, lat=lat, start_date=start, end_date=end)
+
+            datasets = []
+            for lon, lat in zip(longitudes, latitudes):
+                grid_subset = subset_gridpoint(dataset, lon=lon, lat=lat, start_date=start, end_date=end)
+                grid_subset = grid_subset.expand_dims(['lat', 'lon'])
+                datasets.append(grid_subset)
+
+            return xr.merge(datasets)
 
         metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
 

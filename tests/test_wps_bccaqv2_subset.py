@@ -42,7 +42,51 @@ def test_bccaqv2_subset_point(mock_local_datasets, client):
     assert len(zf.namelist()) == 1
     ds = Dataset('inmemory.nc', memory=zf.read(zf.namelist()[0]))
     dims = {d.name: d.size for d in ds.dimensions.values()}
-    assert dims == {'time': 100}
+    assert dims == {'lat': 1, 'lon': 1, 'time': 100}
+
+
+def test_bccaqv2_subset_point_multiple(mock_local_datasets, client):
+    # --- given ---
+    identifier = "subset_ensemble_BCCAQv2"
+    inputs = [
+        wps_literal_input("variable", "tasmin"),
+        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("lat", "46.0, 46.1, 46.1"),
+        wps_literal_input("lon", "-72.8, -72.7, -72.9"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert len(outputs) == 1
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 1
+    ds = Dataset('inmemory.nc', memory=zf.read(zf.namelist()[0]))
+    dims = {d.name: d.size for d in ds.dimensions.values()}
+    assert dims == {'lat': 2, 'lon': 3, 'time': 100}
+
+
+def test_bccaqv2_subset_point_multiple_same_cell(mock_local_datasets, client):
+    # --- given ---
+    identifier = "subset_ensemble_BCCAQv2"
+    inputs = [
+        wps_literal_input("variable", "tasmin"),
+        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("lat", "46.0, 46.0"),  # The coordinates pairs are the same
+        wps_literal_input("lon", "-72.8, -72.8"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert len(outputs) == 1
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 1
+    ds = Dataset('inmemory.nc', memory=zf.read(zf.namelist()[0]))
+    dims = {d.name: d.size for d in ds.dimensions.values()}
+    assert dims == {'lat': 1, 'lon': 1, 'time': 100}  
 
 
 def test_bccaqv2_subset_point_lat0_lon0_deprecation(mock_local_datasets, client):
@@ -60,9 +104,9 @@ def test_bccaqv2_subset_point_lat0_lon0_deprecation(mock_local_datasets, client)
 
     # --- then ---
     zf = zipfile.ZipFile(outputs[0])
-    dimensions = Dataset('inmemory.nc', memory=zf.read(zf.namelist()[0])).dimensions
-    dims = {d.name: d.size for d in dimensions.values()}
-    assert dims == {'time': 100}
+    ds = Dataset('inmemory.nc', memory=zf.read(zf.namelist()[0]))
+    dims = {d.name: d.size for d in ds.dimensions.values()}
+    assert dims == {'lat': 1, 'lon': 1, 'time': 100}
 
 
 def test_bccaqv2_subset_bbox_process(mock_local_datasets, client):
