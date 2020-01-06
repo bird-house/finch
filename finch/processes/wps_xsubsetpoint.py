@@ -22,15 +22,15 @@ class SubsetGridPointProcess(SubsetProcess):
             LiteralInput(
                 "lon",
                 "Longitude",
-                abstract="Longitude coordinate",
-                data_type="float",
+                abstract="Longitude coordinate. Accepts a comma separated list of floats for multiple grid cells.",
+                data_type="string",
                 min_occurs=1,
             ),
             LiteralInput(
                 "lat",
                 "Latitude",
-                abstract="Latitude coordinate.",
-                data_type="float",
+                abstract="Latitude coordinate. Accepts a comma separated list of floats for multiple grid cells.",
+                data_type="string",
                 min_occurs=1,
             ),
             start_date,
@@ -81,8 +81,8 @@ class SubsetGridPointProcess(SubsetProcess):
         )
 
     def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1) -> MetaLink4:
-        lon = wps_inputs["lon"][0].data
-        lat = wps_inputs["lat"][0].data
+        longitudes = [float(lon) for lon in wps_inputs["lon"][0].data.split(',')]
+        latitudes = [float(lat) for lat in wps_inputs["lat"][0].data.split(',')]
         start = self.get_input_or_none(wps_inputs, "start_date")
         end = self.get_input_or_none(wps_inputs, "end_date")
         variables = [r.data for r in wps_inputs.get("variable", [])]
@@ -106,6 +106,7 @@ class SubsetGridPointProcess(SubsetProcess):
                 self.write_log(f"Subsetting file {count} of {n_files}", response, percentage)
 
             dataset = dataset[variables] if variables else dataset
+            lon, lat = longitudes[0], latitudes[0]  # Todo: temporarily process only the first coordinate
             return subset_gridpoint(dataset, lon=lon, lat=lat, start_date=start, end_date=end)
 
         metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)

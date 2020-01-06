@@ -110,12 +110,12 @@ class SubsetBboxBCCAQV2Process(SubsetBboxProcess):
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
         self.write_log("Processing started", response, 5)
 
+        # Build output filename
         variable = self.get_input_or_none(request.inputs, "variable")
         rcp = self.get_input_or_none(request.inputs, "rcp")
         lat0 = self.get_input_or_none(request.inputs, "lat0")
         lon0 = self.get_input_or_none(request.inputs, "lon0")
         output_format = request.inputs["output_format"][0].data
-
         output_filename = f"BCCAQv2_subset_bbox_{lat0:.3f}_{lon0:.3f}"
 
         self.write_log("Fetching BCCAQv2 datasets", response, 6)

@@ -39,29 +39,35 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
             LiteralInput(
                 "lat",
                 "Latitude",
-                abstract="Latitude",
-                data_type="float",
+                abstract="Latitude. Accepts a comma separated list of floats for multiple grid cells.",
+                data_type="string",
                 min_occurs=0,  # Set to 1 when lat0 is removed
             ),
             LiteralInput(
                 "lon",
                 "Longitude",
-                abstract="Longitude",
-                data_type="float",
+                abstract="Longitude. Accepts a comma separated list of floats for multiple grid cells.",
+                data_type="string",
                 min_occurs=0,  # Set to 1 when lon0 is removed
             ),
             LiteralInput(
                 "lat0",
                 "Latitude (deprecated, use 'lat')",
-                abstract="Latitude (deprecated, use 'lat')",
-                data_type="float",
+                abstract=(
+                    "Latitude (deprecated, use 'lat'). Accepts a comma "
+                    "separated list of floats for multiple grid cells."
+                ),
+                data_type="string",
                 min_occurs=0,
             ),
             LiteralInput(
                 "lon0",
                 "Longitude (deprecated, use 'lon')",
-                abstract="Longitude (deprecated, use 'lon')",
-                data_type="float",
+                abstract=(
+                    "Latitude (deprecated, use 'lon'). Accepts a comma "
+                    "separated list of floats for multiple grid cells."
+                ),
+                data_type="string",
                 min_occurs=0,
             ),
             start_date,
@@ -107,22 +113,22 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
         self.write_log("Processing started", response, 5)
 
-        # Temporary backward-compatibility adjustment. 
+        # Temporary backward-compatibility adjustment.
         # Remove me when lon0 and lat0 are removed
         lon, lat, lon0, lat0 = [self.get_input_or_none(request.inputs, var) for var in "lon lat lon0 lat0".split()]
         if not (lon and lat or lon0 and lat0):
             raise ProcessError("Provide both lat and lon or both lon0 and lat0.")
-        request.inputs['lon'] = request.inputs.get('lon',  request.inputs['lon0'])
-        request.inputs['lat'] = request.inputs.get('lat',  request.inputs['lat0'])
+        request.inputs['lon'] = request.inputs.get('lon', request.inputs['lon0'])
+        request.inputs['lat'] = request.inputs.get('lat', request.inputs['lat0'])
         # End of 'remove me'
 
+        # Build output filename
         variable = self.get_input_or_none(request.inputs, "variable")
         rcp = self.get_input_or_none(request.inputs, "rcp")
-        lat = self.get_input_or_none(request.inputs, "lat")
-        lon = self.get_input_or_none(request.inputs, "lon")
+        lat = self.get_input_or_none(request.inputs, "lat").split(',')[0]
+        lon = self.get_input_or_none(request.inputs, "lon").split(',')[0]
         output_format = request.inputs["output_format"][0].data
-
-        output_filename = f"BCCAQv2_subset_grid_cells_{lat:.3f}_{lon:.3f}"
+        output_filename = f"BCCAQv2_subset_grid_cells_{float(lat):.3f}_{float(lon):.3f}"
 
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
         request.inputs = get_bccaqv2_inputs(request.inputs, variable, rcp)
