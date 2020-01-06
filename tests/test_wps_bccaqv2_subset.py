@@ -18,8 +18,8 @@ def test_bccaqv2_subset_point(mock_datasets, client):
     inputs = [
         wps_literal_input("variable", "tasmin"),
         wps_literal_input("rcp", "rcp26"),
-        wps_literal_input("lat0", "46.0"),
-        wps_literal_input("lon0", "-72.8"),
+        wps_literal_input("lat", "46.0"),
+        wps_literal_input("lon", "-72.8"),
     ]
 
     from pywps.configuration import CONFIG
@@ -37,6 +37,33 @@ def test_bccaqv2_subset_point(mock_datasets, client):
     assert len(zf.namelist()) == 1
     ds = Dataset('inmemory.nc', memory=zf.read(zf.namelist()[0]))
     dims = {d.name: d.size for d in ds.dimensions.values()}
+    assert dims == {'time': 100}
+
+
+@mock.patch("finch.processes.utils.get_bccaqv2_local_files_datasets")
+def test_bccaqv2_subset_point_lat0_lon0_deprecation(mock_datasets, client):
+    # --- given ---
+    identifier = "subset_ensemble_BCCAQv2"
+    inputs = [
+        wps_literal_input("variable", "tasmin"),
+        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("lat0", "46.0"),
+        wps_literal_input("lon0", "-72.8"),
+    ]
+
+    from pywps.configuration import CONFIG
+
+    CONFIG.set("finch", "bccaqv2_url", '/mock_local/path')
+    test_data = Path(__file__).parent / "data" / "bccaqv2_subset_sample" / "tasmin_subset.nc"
+    mock_datasets.return_value = [f"{test_data}"]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    zf = zipfile.ZipFile(outputs[0])
+    dimensions = Dataset('inmemory.nc', memory=zf.read(zf.namelist()[0])).dimensions
+    dims = {d.name: d.size for d in dimensions.values()}
     assert dims == {'time': 100}
 
 

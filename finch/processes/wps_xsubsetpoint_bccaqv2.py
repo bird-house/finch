@@ -118,8 +118,8 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
         lon, lat, lon0, lat0 = [self.get_input_or_none(request.inputs, var) for var in "lon lat lon0 lat0".split()]
         if not (lon and lat or lon0 and lat0):
             raise ProcessError("Provide both lat and lon or both lon0 and lat0.")
-        request.inputs['lon'] = request.inputs.get('lon', request.inputs['lon0'])
-        request.inputs['lat'] = request.inputs.get('lat', request.inputs['lat0'])
+        request.inputs.setdefault('lon', request.inputs.get('lon0'))
+        request.inputs.setdefault('lat', request.inputs.get('lat0'))
         # End of 'remove me'
 
         # Build output filename
