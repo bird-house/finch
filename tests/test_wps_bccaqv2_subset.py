@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 import xarray as xr
+from netCDF4 import Dataset
 
 from tests.utils import wps_literal_input, execute_process
 from finch.processes.wps_xsubsetpoint_bccaqv2 import SubsetGridPointBCCAQV2Process
@@ -31,16 +32,12 @@ def test_bccaqv2_subset_point(mock_datasets, client):
     outputs = execute_process(client, identifier, inputs, output_names=["output"])
 
     # --- then ---
-    output_file = outputs[0]
     assert len(outputs) == 1
-
-    zf = zipfile.ZipFile(output_file)
-    infolist = zf.infolist()
-    assert len(infolist) == 1
-    tmp = Path(__file__).parent / "tmp"
-    zf.extract(infolist[0], tmp)
-    ds = xr.open_dataset(str(tmp / infolist[0].filename))
-    assert dict(ds.dims) == {'time': 100}
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 1
+    ds = Dataset('inmemory.nc', memory=zf.read(zf.namelist()[0]))
+    dims = {d.name: d.size for d in ds.dimensions.values()}
+    assert dims == {'time': 100}
 
 
 @mock.patch("finch.processes.utils.get_bccaqv2_local_files_datasets")
@@ -66,17 +63,12 @@ def test_bccaqv2_subset_bbox_process(mock_datasets, client):
     outputs = execute_process(client, identifier, inputs, output_names=["output"])
 
     # --- then ---
-    output_file = outputs[0]
-
     assert len(outputs) == 1
-
-    zf = zipfile.ZipFile(output_file)
-    infolist = zf.infolist()
-    assert len(infolist) == 1
-    tmp = Path(__file__).parent / "tmp"
-    zf.extract(infolist[0], tmp)
-    ds = xr.open_dataset(str(tmp / infolist[0].filename))
-    assert dict(ds.dims) == {'lat': 2, 'lon': 2, 'time': 100}
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 1
+    ds = Dataset('inmemory.nc', memory=zf.read(zf.namelist()[0]))
+    dims = {d.name: d.size for d in ds.dimensions.values()}
+    assert dims == {'lat': 2, 'lon': 2, 'time': 100}
 
 
 @pytest.mark.online
