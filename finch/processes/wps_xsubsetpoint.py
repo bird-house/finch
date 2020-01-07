@@ -108,13 +108,16 @@ class SubsetGridPointProcess(SubsetProcess):
 
             dataset = dataset[variables] if variables else dataset
 
+            global_attributes = dataset.attrs
             datasets = []
             for lon, lat in zip(longitudes, latitudes):
                 grid_subset = subset_gridpoint(dataset, lon=lon, lat=lat, start_date=start, end_date=end)
                 grid_subset = grid_subset.expand_dims(['lat', 'lon'])
                 datasets.append(grid_subset)
 
-            return xr.merge(datasets)
+            output_ds = xr.merge(datasets)
+            output_ds.attrs = global_attributes
+            return output_ds
 
         metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
 
