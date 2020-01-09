@@ -19,6 +19,6 @@ dependencies:
 - scipy
 - sentry-sdk
 - siphon
-- xclim>=0.12.2
+- xclim==0.12.2
 - pywps>=4.2.3
 

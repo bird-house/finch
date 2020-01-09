@@ -1,13 +1,19 @@
 from threading import Lock
+import logging
 
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
+from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaLink4
-from xclim.subset import subset_gridpoint
-from .wpsio import start_date, end_date
+from xclim.subset import subset_shape
+from .wpsio import start_date, end_date, shape
+
 from finch.processes.subset import SubsetProcess
 
 
-class SubsetGridPointProcess(SubsetProcess):
+LOGGER = logging.getLogger("PYWPS")
+
+
+class SubsetPolygonProcess(SubsetProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):
@@ -19,20 +25,7 @@ class SubsetGridPointProcess(SubsetProcess):
                 max_occurs=1000,
                 supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
             ),
-            LiteralInput(
-                "lon",
-                "Longitude",
-                abstract="Longitude coordinate",
-                data_type="float",
-                min_occurs=1,
-            ),
-            LiteralInput(
-                "lat",
-                "Latitude",
-                abstract="Latitude coordinate.",
-                data_type="float",
-                min_occurs=1,
-            ),
+            shape,
             start_date,
             end_date,
             LiteralInput(
@@ -64,14 +57,14 @@ class SubsetGridPointProcess(SubsetProcess):
             ),
         ]
 
-        super(SubsetGridPointProcess, self).__init__(
+        super(SubsetPolygonProcess, self).__init__(
             self._handler,
-            identifier="subset_gridpoint",
-            title="Subset with a grid point",
+            identifier="subset_polygon",
+            title="Subset with one or more polygons",
             version="0.1",
             abstract=(
-                "Return the data for which grid cells includes the "
-                "point coordinates for each input dataset as well as "
+                "Return the data for which grid cells center are within the "
+                "polygon for each input dataset as well as "
                 "the time range selected."
             ),
             inputs=inputs,
@@ -80,11 +73,10 @@ class SubsetGridPointProcess(SubsetProcess):
             store_supported=True,
         )
 
-    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1) -> MetaLink4:
-        lon = wps_inputs["lon"][0].data
-        lat = wps_inputs["lat"][0].data
-        # dt0 = wps_inputs['dt0'][0].data or None
-        # dt1 = wps_inputs['dt1'][0].data or None
+    def subset(
+        self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1
+    ) -> MetaLink4:
+        shape = self.get_shape(wps_inputs)
         start = self.get_input_or_none(wps_inputs, "start_date")
         end = self.get_input_or_none(wps_inputs, "end_date")
         variables = [r.data for r in wps_inputs.get("variable", [])]
@@ -103,14 +95,22 @@ class SubsetGridPointProcess(SubsetProcess):
 
             with lock:
                 count += 1
-
-                percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
-                self.write_log(f"Subsetting file {count} of {n_files}", response, percentage)
+                percentage = start_percentage + int(
+                    (count - 1) / n_files * (end_percentage - start_percentage)
+                )
+                self.write_log(
+                    f"Subsetting file {count} of {n_files}",
+                    response=response,
+                    percentage=percentage,
+                )
 
             dataset = dataset[variables] if variables else dataset
-            return subset_gridpoint(dataset, lon=lon, lat=lat, start_date=start, end_date=end)
+            return subset_shape(dataset, shape, start_date=start, end_date=end)
 
-        metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
+
+        metalink = self.subset_resources(
+            wps_inputs["resource"], _subset_function, threads=threads
+        )
 
         return metalink
 
