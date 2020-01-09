@@ -18,6 +18,7 @@ from .wps_xsubsetpoint_dataset import (
     SubsetGridPointBCCAQV2Process,
     SubsetGridPointDatasetProcess,
 )
+from .wps_subset_polygon import SubsetPolygonProcess
 
 logger = logging.getLogger("PYWPS")
 
@@ -85,6 +86,7 @@ def get_processes(all_processes=False):
     processes += [
         SubsetBboxProcess(),
         SubsetGridPointProcess(),
+        SubsetPolygonProcess(),
     ]
 
     return processes
