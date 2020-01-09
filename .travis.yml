@@ -31,3 +31,4 @@ before_script:
 script:
   - pytest -m "not online"
   - flake8
+  - make test_nb

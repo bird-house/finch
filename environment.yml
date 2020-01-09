@@ -4,10 +4,11 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- python>=3.6
+- python
 - pip
 - jinja2
 - click
+- birdy
 - psutil
 - bottleneck
 - netcdf4
@@ -22,5 +23,6 @@ dependencies:
 - nbval
 - xclim>=0.12.2
 - pywps>=4.2.3
+-
 
 

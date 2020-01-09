@@ -112,7 +112,7 @@ test: check_conda
 .PHONY: test_nb
 test_nb:
 	@echo "Running notebook-based tests"
-	@bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);env FINCH_WPS_URL=$(RAVEN_WPS_URL) pytest --nbval $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
+	@bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);env FINCH_WPS_URL=$(FINCH_WPS_URL) pytest --nbval $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
 
 .PHONY: testall
 testall: check_conda
