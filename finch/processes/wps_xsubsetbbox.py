@@ -164,5 +164,14 @@ class SubsetBboxProcess(SubsetProcess):
 
         return metalink
 
+    def _handler(self, request, response):
+        self.write_log("Processing started", response, 5)
 
+        metalink = self.subset(request.inputs, response)
 
+        self.write_log("Processing finished successfully", response, 99)
+
+        response.outputs["output"].file = metalink.files[0].file
+        response.outputs["ref"].data = metalink.xml
+
+        return response

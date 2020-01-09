@@ -1,6 +1,6 @@
 """Module storing inputs and outputs used in multiple processes. """
 
-from pywps import LiteralInput, ComplexInput, FORMATS
+from pywps import LiteralInput, ComplexOutput, FORMATS
 
 start_date = LiteralInput(
     "start_date",
@@ -21,13 +21,4 @@ end_date = LiteralInput(
     default=None,
     min_occurs=0,
     max_occurs=1,
-)
-
-shape = ComplexInput(
-    "shape",
-    "Polygon shape",
-    abstract="Polygon contour",
-    supported_formats=[FORMATS.GEOJSON,],
-    min_occurs=1,
-    max_occurs=1
 )

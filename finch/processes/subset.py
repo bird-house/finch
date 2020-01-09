@@ -41,7 +41,6 @@ class SubsetProcess(FinchProcess):
             mf.file = str(out_fn)
             metalink.append(mf)
 
-        # Loop through all resources
         if threads > 1:
             pool = ThreadPool(processes=threads)
             list(pool.imap_unordered(process_resource, resources))
@@ -50,21 +49,3 @@ class SubsetProcess(FinchProcess):
                 process_resource(r)
 
         return metalink
-
-    def get_shape(self, wps_inputs):
-        return wps_inputs['shape'][0].data
-
-    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1) -> MetaLink4:
-        """Subclass"""
-
-    def _handler(self, request, response):
-        self.write_log("Processing started", response, 5)
-
-        metalink = self.subset(request.inputs, response)
-
-        self.write_log("Processing finished successfully", response, 99)
-
-        response.outputs["output"].file = metalink.files[0].file
-        response.outputs["ref"].data = metalink.xml
-
-        return response

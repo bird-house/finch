@@ -1,6 +1,5 @@
 from .wps_xsubsetbbox import SubsetBboxProcess
 from .wps_xsubsetpoint import SubsetGridPointProcess
-from .wps_subset_polygon import SubsetPolygonProcess
 from .wps_xsubset_bccaqv2 import SubsetBCCAQV2Process
 from .wps_xclim_indices import make_xclim_indicator_process
 from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
@@ -30,7 +29,6 @@ processes.extend(
     [
         SubsetBboxProcess(),
         SubsetGridPointProcess(),
-        SubsetPolygonProcess(),
         SubsetBCCAQV2Process(),
         BCCAQV2HeatWave(),
     ]
