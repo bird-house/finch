@@ -34,21 +34,23 @@ class FinchProcess(Process):
         except KeyError:
             return None
 
-    def try_opendap(self, input, chunks=None):
+    def try_opendap(self, input, chunks=None, decode_times=True):
         """Try to open the file as an OPeNDAP url and chunk it. If OPeNDAP fails, access the file directly. In both
         cases, return an xarray.Dataset.
         """
         url = input.url
         if is_opendap_url(url):
-            ds = xr.open_dataset(url, chunks=chunks)
+            ds = xr.open_dataset(url, chunks=chunks, decode_times=decode_times)
             if not chunks:
                 ds = ds.chunk(chunk_dataset(ds, max_size=1000000))
             self.write_log("Opened dataset as an OPeNDAP url: {}".format(url))
         else:
-            self.write_log("Downloading dataset for url: {}".format(url))
-            # Accessing the file property loads the data in the data property
-            # and writes it to disk
-            ds = xr.open_dataset(input.file)
+            if url.startswith("http"):
+                self.write_log("Downloading dataset for url: {}".format(url))
+                # Accessing the file property writes it to disk if it's a url
+            else:
+                self.write_log("Opening as local file: {}".format(input.file))
+            ds = xr.open_dataset(input.file, decode_times=decode_times)
 
         return ds
 
@@ -75,7 +77,7 @@ class FinchProcess(Process):
     def write_log(self, message, response=None, percentage=None):
         open(self.log_file_path(), "a").write(message + "\n")
         LOGGER.info(message)
-        if response:
+        if response is not None:
             response.update_status(message, status_percentage=percentage)
 
     def sentry_configure_scope(self, request):
@@ -89,6 +91,7 @@ class FinchProcess(Process):
             if request.http_request:
                 # if the request has been put in the `stored_requests` table by pywps
                 # the original request.http_request is not available anymore
+                scope.set_extra("host", request.http_request.host)
                 scope.set_extra("remote_addr", request.http_request.remote_addr)
                 scope.set_extra("xml_request", request.http_request.data)
 

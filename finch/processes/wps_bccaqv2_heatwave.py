@@ -1,8 +1,13 @@
 import logging
+import warnings
 from collections import deque
-from typing import List
+from typing import List, Tuple
 
+import numpy as np
+import xarray as xr
+from xclim.checks import assert_daily
 from xclim.atmos import heat_wave_frequency
+import xclim.run_length
 from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
@@ -131,7 +136,7 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             request.inputs,
             response,
             start_percentage=7,
-            end_percentage=50,
+            end_percentage=70,
             threads=threads,
         )
 
@@ -143,36 +148,53 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
 
         all_files = [Path(f.file) for f in metalink.files]
 
-        start_percentage = 50
-        end_percentage = 95
-
         pairs = list(self._make_tasmin_tasmax_pairs(all_files))
         n_pairs = len(pairs)
 
+        start_percentage, end_percentage = 70, 95
         output_files = []
 
-        for n, (tasmin, tasmax) in enumerate(pairs):
-            percentage = start_percentage + int(
-                n / n_pairs * (end_percentage - start_percentage)
-            )
-            self.write_log(
-                f"Processing file {n + 1} of {n_pairs}", response, percentage
-            )
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        warnings.filterwarnings("ignore", category=UserWarning)
 
-            compute_inputs = [i.identifier for i in self.indices_process.inputs]
-            inputs = {k: v for k, v in request.inputs.items() if k in compute_inputs}
+        # monkeypatch windowed_run_events with a faster version
+        old_windowed_run_events = xclim.run_length.windowed_run_events
+        xclim.run_length.windowed_run_events = rolling_window_events
 
-            inputs["tasmin"] = deque([make_nc_input("tasmin")], maxlen=1)
-            inputs["tasmin"][0].file = str(tasmin)
-            inputs["tasmax"] = deque([make_nc_input("tasmax")], maxlen=1)
-            inputs["tasmax"][0].file = str(tasmax)
+        try:
+            for n, (tasmin, tasmax) in enumerate(pairs):
+                percentage = start_percentage + int(
+                    n / n_pairs * (end_percentage - start_percentage)
+                )
+                self.write_log(
+                    f"Computing indices for file {n + 1} of {n_pairs}",
+                    response,
+                    percentage,
+                )
 
-            out = self.compute_indices(self.indices_process.xci, inputs)
-            out_fn = Path(self.workdir) / tasmin.name.replace(
-                "tasmin", "heat_wave_frequency"
-            )
-            out.to_netcdf(out_fn)
-            output_files.append(out_fn)
+                tasmin, tasmax = fix_broken_time_indices(tasmin, tasmax)
+
+                compute_inputs = [i.identifier for i in self.indices_process.inputs]
+                inputs = {
+                    k: v for k, v in request.inputs.items() if k in compute_inputs
+                }
+
+                inputs["tasmin"] = deque([make_nc_input("tasmin")], maxlen=1)
+                inputs["tasmin"][0].file = str(tasmin)
+                inputs["tasmax"] = deque([make_nc_input("tasmax")], maxlen=1)
+                inputs["tasmax"][0].file = str(tasmax)
+
+                out = self.compute_indices(self.indices_process.xci, inputs)
+                out_fn = Path(self.workdir) / tasmin.name.replace(
+                    "tasmin", "heat_wave_frequency"
+                )
+                out.to_netcdf(out_fn)
+                output_files.append(out_fn)
+        finally:
+            xclim.run_length.windowed_run_events = old_windowed_run_events
+
+        warnings.filterwarnings("default", category=FutureWarning)
+        warnings.filterwarnings("default", category=UserWarning)
 
         if output_format == "csv":
             csv_files, metadata_folder = netcdf_to_csv(
@@ -192,3 +214,47 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
 
         self.write_log("Processing finished successfully", response, 99)
         return response
+
+
+def rolling_window_events(da, window, dim="time"):
+    window_count = da.rolling(time=window).sum()
+    w = window_count.values[window - 1 :] >= window
+
+    count = np.count_nonzero(w[1:] > w[:-1]) + w[0]
+
+    data = np.array([count], dtype=np.int64)
+    data = data.reshape(())
+    out = xr.DataArray(data, coords={"lon": da.lon, "lat": da.lat})
+
+    return out
+
+
+def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
+    """In a single bccaqv2 dataset, there is an error in the timestamp data.
+
+    2036-10-28 time step coded as 1850-01-01
+    tasmax_day_BCCAQv2+ANUSPLIN300_CESM1-CAM5_historical+rcp85_r1i1p1_19500101-21001231_sub.nc
+    """
+    tasmin_ds = xr.open_dataset(tasmin)
+    tasmax_ds = xr.open_dataset(tasmax)
+
+    def fix(correct_ds, wrong_ds, original_filename):
+        wrong_ds["time"] = correct_ds.time
+        temp_name = original_filename.with_name(original_filename.stem + "_temp")
+        wrong_ds.to_netcdf(temp_name)
+        original_filename.unlink()
+        temp_name.rename(original_filename)
+
+    try:
+        assert_daily(tasmin_ds)
+    except ValueError:
+        fix(tasmax_ds, tasmin_ds, tasmin)
+        return tasmin, tasmax
+
+    try:
+        assert_daily(tasmax_ds)
+    except ValueError:
+        fix(tasmin_ds, tasmax_ds, tasmax)
+        return tasmin, tasmax
+
+    return tasmin, tasmax

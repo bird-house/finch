@@ -1,4 +1,5 @@
 import re
+import time
 import zipfile
 from copy import deepcopy
 from pathlib import Path
@@ -9,17 +10,39 @@ from enum import Enum
 import pandas as pd
 import xarray as xr
 import requests
+import netCDF4
+from requests.exceptions import MissingSchema, ConnectionError, InvalidSchema
 from pywps import ComplexInput, FORMATS
 from siphon.catalog import TDSCatalog
 from pywps import configuration
 
 
 def is_opendap_url(url):
-    if url and not url.startswith("file"):
-        r = requests.get(url + ".dds")
-        if r.status_code == 200 and r.content.decode().startswith("Dataset"):
-            return True
-    return False
+    """
+    Check if a provided url is an OpenDAP url.
+
+    The DAP Standard specifies that a specific tag must be included in the
+    Content-Description header of every request. This tag is one of:
+        "dods-dds" | "dods-das" | "dods-data" | "dods-error"
+
+    So we can check if the header starts with `dods`.
+
+    Even then, some OpenDAP servers seem to not include the specified header...
+    So we need to let the netCDF4 library actually open the file.
+    """
+    try:
+        content_description = requests.head(url, timeout=5).headers.get("Content-Description")
+    except (ConnectionError, MissingSchema, InvalidSchema):
+        return False
+
+    if content_description:
+        return content_description.lower().startswith("dods")
+    else:
+        try:
+            dataset = netCDF4.Dataset(url)
+        except OSError:
+            return False
+        return dataset.disk_format in ('DAP2', 'DAP4')
 
 
 class ParsingMethod(Enum):
@@ -33,6 +56,17 @@ class ParsingMethod(Enum):
     xarray = 3
 
 
+def get_bccaqv2_local_files_datasets(
+    catalog_url, variable=None, rcp=None, method: ParsingMethod = ParsingMethod.filename
+) -> List[str]:
+    """Get a list of filenames corresponding to variable and rcp on a local filesystem."""
+    urls = []
+    for file in Path(catalog_url).glob("*.nc"):
+        if _bccaqv2_filter(method, file.stem, str(file), rcp, variable):
+            urls.append(str(file))
+    return urls
+
+
 def get_bccaqv2_opendap_datasets(
     catalog_url, variable=None, rcp=None, method: ParsingMethod = ParsingMethod.filename
 ) -> List[str]:
@@ -42,48 +76,93 @@ def get_bccaqv2_opendap_datasets(
 
     This is the case for boreas.ouranos.ca/thredds
     For more general use cases, see the `xarray` and `requests` methods below."""
+
     catalog = TDSCatalog(catalog_url)
 
     urls = []
-
     for dataset in catalog.datasets.values():
         opendap_url = dataset.access_urls["OPENDAP"]
-
-        variable_ok = variable is None
-        rcp_ok = rcp is None
-
-        if method == ParsingMethod.filename:
-            variable_ok = variable_ok or dataset.name.startswith(variable)
-            rcp_ok = rcp_ok or rcp in dataset.name
-
-        elif method == ParsingMethod.opendap_das:
-            re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
-            lines = requests.get(opendap_url + ".das").content.decode().split("\n")
-
-            variable_ok = variable_ok or any(
-                line.startswith(f"    {variable} {{") for line in lines
-            )
-            if not rcp_ok:
-                for line in lines:
-                    match = re_experiment.search(line)
-                    if match and rcp in match.group(1).split(","):
-                        rcp_ok = True
-
-        elif method == ParsingMethod.xarray:
-            import xarray as xr
-
-            ds = xr.open_dataset(opendap_url, decode_times=False)
-            rcps = [
-                r
-                for r in ds.attrs.get("driving_experiment_id", "").split(",")
-                if "rcp" in r
-            ]
-            variable_ok = variable_ok or variable in ds.data_vars
-            rcp_ok = rcp_ok or rcp in rcps
-
-        if variable_ok and rcp_ok:
+        if _bccaqv2_filter(method, dataset.name, opendap_url, rcp, variable):
             urls.append(opendap_url)
     return urls
+
+
+def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
+    variable_ok = variable is None
+    rcp_ok = rcp is None
+
+    keep_models = [
+        m.lower()
+        for m in [
+            "BNU-ESM",
+            "CCSM4",
+            "CESM1-CAM5",
+            "CNRM-CM5",
+            "CSIRO-Mk3-6-0",
+            "CanESM2",
+            "FGOALS-g2",
+            "GFDL-CM3",
+            "GFDL-ESM2G",
+            "GFDL-ESM2M",
+            "HadGEM2-AO",
+            "HadGEM2-ES",
+            "IPSL-CM5A-LR",
+            "IPSL-CM5A-MR",
+            "MIROC-ESM-CHEM",
+            "MIROC-ESM",
+            "MIROC5",
+            "MPI-ESM-LR",
+            "MPI-ESM-MR",
+            "MRI-CGCM3",
+            "NorESM1-M",
+            "NorESM1-ME",
+            "bcc-csm1-1-m",
+            "bcc-csm1-1",
+        ]
+    ]
+
+    if method == ParsingMethod.filename:
+        variable_ok = variable_ok or filename.startswith(variable)
+        rcp_ok = rcp_ok or rcp in filename
+
+        filename_lower = filename.lower()
+        if not any(m in filename_lower for m in keep_models):
+            return False
+
+        if "r1i1p1" not in filename:
+            return False
+
+    elif method == ParsingMethod.opendap_das:
+
+        raise NotImplementedError("todo: filter models and runs")
+
+        re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
+        lines = requests.get(url + ".das").content.decode().split("\n")
+        variable_ok = variable_ok or any(
+            line.startswith(f"    {variable} {{") for line in lines
+        )
+        if not rcp_ok:
+            for line in lines:
+                match = re_experiment.search(line)
+                if match and rcp in match.group(1).split(","):
+                    rcp_ok = True
+
+    elif method == ParsingMethod.xarray:
+
+        raise NotImplementedError("todo: filter models and runs")
+
+        import xarray as xr
+
+        ds = xr.open_dataset(url, decode_times=False)
+        rcps = [
+            r
+            for r in ds.attrs.get("driving_experiment_id", "").split(",")
+            if "rcp" in r
+        ]
+        variable_ok = variable_ok or variable in ds.data_vars
+        rcp_ok = rcp_ok or rcp in rcps
+
+    return rcp_ok and variable_ok
 
 
 def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=None):
@@ -93,22 +172,30 @@ def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=None):
     workdir = next(iter(wps_inputs.values()))[0].workdir
 
     new_inputs["resource"] = []
-    for url in get_bccaqv2_opendap_datasets(catalog_url, variable, rcp):
-        resource = _make_bccaqv2_resource_input(url)
-        resource.workdir = workdir
-        new_inputs["resource"].append(resource)
+
+    if catalog_url.startswith("http"):
+        for url in get_bccaqv2_opendap_datasets(catalog_url, variable, rcp):
+            resource = _make_bccaqv2_resource_input()
+            resource.url = url
+            resource.workdir = workdir
+            new_inputs["resource"].append(resource)
+    else:
+        for file in get_bccaqv2_local_files_datasets(catalog_url, variable, rcp):
+            resource = _make_bccaqv2_resource_input()
+            resource.file = file
+            resource.workdir = workdir
+            new_inputs["resource"].append(resource)
 
     return new_inputs
 
 
-def _make_bccaqv2_resource_input(url):
+def _make_bccaqv2_resource_input():
     input = ComplexInput(
         "resource",
         "NetCDF resource",
         max_occurs=1000,
         supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
     )
-    input.url = url
     return input
 
 
@@ -122,6 +209,14 @@ def netcdf_to_csv(
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
 
+    def get_attrs_fallback(ds, *args):
+        for key in args:
+            try:
+                return ds.attrs[key]
+            except KeyError:
+                continue
+        raise KeyError(f"Couldn't find any attribute in [{', '.join(args)}]")
+
     metadata = {}
     concat_by_calendar = {}
     for file in netcdf_files:
@@ -130,8 +225,13 @@ def netcdf_to_csv(
         ds["time"] = xr.decode_cf(ds).time
 
         for variable in ds.data_vars:
-            model = ds.attrs["driving_model_id"]
-            experiment = ds.attrs["driving_experiment_id"].replace(",", "_")
+            # for a specific dataset the keys are different:
+            # BCCAQv2+ANUSPLIN300_BNU-ESM_historical+rcp85_r1i1p1_19500101-21001231
+            model = get_attrs_fallback(ds, "driving_model_id", "GCM__model_id")
+            experiment = get_attrs_fallback(
+                ds, "driving_experiment_id", "GCM__experiment"
+            )
+            experiment = experiment.replace(",", "_")
 
             output_variable = f"{variable}_{model}_{experiment}"
 
