@@ -11,7 +11,7 @@ from finch.processes.utils import get_bccaqv2_inputs, netcdf_to_csv, zip_files
 
 
 class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
-    """Subset a NetCDF file using a single grid point."""
+    """Subset a NetCDF file grid cells using a list of coordinates."""
 
     def __init__(self):
         inputs = [
@@ -97,7 +97,7 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
             self,
             self._handler,
             identifier="subset_ensemble_BCCAQv2",
-            title="Subset of BCCAQv2 datasets, using a single grid point",
+            title="Subset of BCCAQv2 datasets grid cells using a list of coordinates",
             version="0.1",
             abstract=(
                 "For the BCCAQv2 datasets, "

@@ -93,7 +93,7 @@ class SubsetBboxBCCAQV2Process(SubsetBboxProcess):
             self,
             self._handler,
             identifier="subset_ensemble_bbox_BCCAQv2",
-            title="Subset of BCCAQv2 datasets, using a bouding box",
+            title="Subset of BCCAQv2 datasets, using a bounding box",
             version="0.1",
             abstract=(
                 "For the BCCAQv2 datasets, "
