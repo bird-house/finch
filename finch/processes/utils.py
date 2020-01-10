@@ -241,7 +241,10 @@ def netcdf_to_csv(
 
             ds = ds.rename({variable: output_variable})
 
-            df = ds.to_dataframe()[["lat", "lon", output_variable]]
+            df = ds.to_dataframe()
+            df = df.reset_index().set_index('time')[["lat", "lon", output_variable]]
+            df = df.dropna()
+
             # most runs have timestamp with hour == 12 a few hour == 0 .. make uniform
             df.index = df.index.map(lambda x: x.replace(hour=12))
 
