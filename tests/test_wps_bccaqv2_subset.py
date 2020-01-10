@@ -63,11 +63,10 @@ def test_bccaqv2_subset_point_csv(mock_local_datasets, client):
     assert len(outputs) == 1
     zf = zipfile.ZipFile(outputs[0])
     assert len(zf.namelist()) == 2  # metadata + data
-    data_filename = [n for n in zf.namelist() if not 'metadata' in n]
+    data_filename = [n for n in zf.namelist() if 'metadata' not in n]
     csv = zf.read(data_filename[0])
     n_lines = csv.count(b'\n') - 1
     assert n_lines == 100
-    
 
 
 def test_bccaqv2_subset_point_multiple(mock_local_datasets, client):
@@ -110,7 +109,7 @@ def test_bccaqv2_subset_point_multiple_csv(mock_local_datasets, client):
     assert len(outputs) == 1
     zf = zipfile.ZipFile(outputs[0])
     assert len(zf.namelist()) == 2  # metadata + data
-    data_filename = [n for n in zf.namelist() if not 'metadata' in n]
+    data_filename = [n for n in zf.namelist() if 'metadata' not in n]
     csv = zf.read(data_filename[0])
     n_lines = csv.count(b'\n') - 1
     assert n_lines == 300
@@ -135,7 +134,7 @@ def test_bccaqv2_subset_point_multiple_same_cell(mock_local_datasets, client):
     assert len(zf.namelist()) == 1
     ds = Dataset('inmemory.nc', memory=zf.read(zf.namelist()[0]))
     dims = {d.name: d.size for d in ds.dimensions.values()}
-    assert dims == {'lat': 1, 'lon': 1, 'time': 100}  
+    assert dims == {'lat': 1, 'lon': 1, 'time': 100}
 
 
 def test_bccaqv2_subset_point_lat0_lon0_deprecation(mock_local_datasets, client):
@@ -202,7 +201,7 @@ def test_bccaqv2_subset_bbox_process_csv(mock_local_datasets, client):
     assert len(outputs) == 1
     zf = zipfile.ZipFile(outputs[0])
     assert len(zf.namelist()) == 2  # metadata + data
-    data_filename = [n for n in zf.namelist() if not 'metadata' in n]
+    data_filename = [n for n in zf.namelist() if 'metadata' not in n]
     csv = zf.read(data_filename[0])
     n_lines = csv.count(b'\n') - 1
     assert n_lines == 400
