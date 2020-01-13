@@ -9,7 +9,7 @@ from finch.processes.subset import SubsetProcess
 
 
 class SubsetGridPointProcess(SubsetProcess):
-    """Subset a NetCDF file using a single grid point."""
+    """Subset a NetCDF file grid cells using a list of coordinates."""
 
     def __init__(self):
         inputs = [
