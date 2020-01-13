@@ -241,7 +241,7 @@ def netcdf_to_csv(
                 output_variable += f"_({units})"
 
             ds = ds.rename({variable: output_variable})
-            
+
             # most runs have timestamp with hour == 12 a few hour == 0 ... make uniform
             if not np.all(ds.time.dt.hour == 12):
                 attrs = ds.time.attrs

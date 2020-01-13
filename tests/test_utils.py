@@ -82,7 +82,7 @@ def test_netcdf_to_csv_to_zip():
             elif "standard" in filename:
                 assert n_lines == 366
                 assert n_columns == 1
-            
+
 
 def test_is_opendap_url():
     # This test uses online requests, but the links should be pretty stable.
