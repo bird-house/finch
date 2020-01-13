@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Tuple
 from enum import Enum
 
+import numpy as np
 import pandas as pd
 import xarray as xr
 import requests
@@ -240,13 +241,14 @@ def netcdf_to_csv(
                 output_variable += f"_({units})"
 
             ds = ds.rename({variable: output_variable})
+            
+            # most runs have timestamp with hour == 12 a few hour == 0 ... make uniform
+            if not np.all(ds.time.dt.hour == 12):
+                ds['time'] = [y.replace(hour=12) for y in ds.time.values]
 
             df = ds.to_dataframe()
             df = df.reset_index().set_index('time')[["lat", "lon", output_variable]]
             df = df.dropna()
-
-            # most runs have timestamp with hour == 12 a few hour == 0 .. make uniform
-            df.index = df.index.map(lambda x: x.replace(hour=12))
 
             if calendar not in concat_by_calendar:
                 concat_by_calendar[calendar] = [df]
