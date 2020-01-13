@@ -64,7 +64,25 @@ def test_netcdf_to_csv_to_zip():
         n_files = 15
         assert len(z.infolist()) == n_files + n_calendar_types
         assert sum(1 for f in z.infolist() if f.filename.startswith("metadata")) == n_files
+        data_filename = [n for n in z.namelist() if 'metadata' not in n]
+        for filename in data_filename:
+            csv_lines = z.read(filename).decode().split('\n')[1:]
+            n_lines = len(csv_lines) - 1  # ending newline
+            n_columns = csv_lines[0].count(',') - 2
 
+            if "proleptic_gregorian" in filename:
+                assert n_lines == 366
+                assert n_columns == 2
+            elif "365_day" in filename:
+                assert n_lines == 365
+                assert n_columns == 9
+            elif "360_day" in filename:
+                assert n_lines == 360
+                assert n_columns == 3
+            elif "standard" in filename:
+                assert n_lines == 366
+                assert n_columns == 1
+            
 
 def test_is_opendap_url():
     # This test uses online requests, but the links should be pretty stable.

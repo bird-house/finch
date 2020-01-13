@@ -244,11 +244,12 @@ def netcdf_to_csv(
             
             # most runs have timestamp with hour == 12 a few hour == 0 ... make uniform
             if not np.all(ds.time.dt.hour == 12):
+                attrs = ds.time.attrs
                 ds['time'] = [y.replace(hour=12) for y in ds.time.values]
+                ds.time.attrs = attrs
 
             df = ds.to_dataframe()
             df = df.reset_index().set_index('time')[["lat", "lon", output_variable]]
-            df = df.dropna()
 
             if calendar not in concat_by_calendar:
                 concat_by_calendar[calendar] = [df]
@@ -260,7 +261,8 @@ def netcdf_to_csv(
     output_csv_list = []
     for calendar_type, data in concat_by_calendar.items():
         output_csv = output_folder / f"{filename_prefix}_{calendar_type}.csv"
-        pd.concat(data, axis=1).to_csv(output_csv)
+        dropna_threshold = 3  # lat + lon + at least one value
+        pd.concat(data, axis=1).dropna(axis=1, thresh=dropna_threshold).to_csv(output_csv)
         output_csv_list.append(output_csv)
 
     metadata_folder = output_folder / "metadata"
