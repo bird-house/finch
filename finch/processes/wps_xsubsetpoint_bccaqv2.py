@@ -98,7 +98,7 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
             self._handler,
             identifier="subset_ensemble_BCCAQv2",
             title="Subset of BCCAQv2 datasets grid cells using a list of coordinates",
-            version="0.1",
+            version="0.2",
             abstract=(
                 "For the BCCAQv2 datasets, "
                 "return the closest grid cell for each provided coordinates pair, "
@@ -115,18 +115,21 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
 
         # Temporary backward-compatibility adjustment.
         # Remove me when lon0 and lat0 are removed
-        lon, lat, lon0, lat0 = [self.get_input_or_none(request.inputs, var) for var in "lon lat lon0 lat0".split()]
+        lon, lat, lon0, lat0 = [
+            self.get_input_or_none(request.inputs, var)
+            for var in "lon lat lon0 lat0".split()
+        ]
         if not (lon and lat or lon0 and lat0):
             raise ProcessError("Provide both lat and lon or both lon0 and lat0.")
-        request.inputs.setdefault('lon', request.inputs.get('lon0'))
-        request.inputs.setdefault('lat', request.inputs.get('lat0'))
+        request.inputs.setdefault("lon", request.inputs.get("lon0"))
+        request.inputs.setdefault("lat", request.inputs.get("lat0"))
         # End of 'remove me'
 
         # Build output filename
         variable = self.get_input_or_none(request.inputs, "variable")
         rcp = self.get_input_or_none(request.inputs, "rcp")
-        lat = self.get_input_or_none(request.inputs, "lat").split(',')[0]
-        lon = self.get_input_or_none(request.inputs, "lon").split(',')[0]
+        lat = self.get_input_or_none(request.inputs, "lat").split(",")[0]
+        lon = self.get_input_or_none(request.inputs, "lon").split(",")[0]
         output_format = request.inputs["output_format"][0].data
         output_filename = f"BCCAQv2_subset_grid_cells_{float(lat):.3f}_{float(lon):.3f}"
 

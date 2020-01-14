@@ -69,7 +69,7 @@ class SubsetGridPointProcess(SubsetProcess):
             self._handler,
             identifier="subset_gridpoint",
             title="Subset with a grid point",
-            version="0.1",
+            version="0.2",
             abstract=(
                 "Return the data for which grid cells includes the "
                 "point coordinates for each input dataset as well as "
