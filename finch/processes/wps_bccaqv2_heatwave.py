@@ -7,7 +7,6 @@ import numpy as np
 import xarray as xr
 from xclim.checks import assert_daily
 from xclim.atmos import heat_wave_frequency
-import xclim.run_length
 from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
@@ -157,41 +156,32 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         warnings.filterwarnings("ignore", category=FutureWarning)
         warnings.filterwarnings("ignore", category=UserWarning)
 
-        # monkeypatch windowed_run_events with a faster version
-        old_windowed_run_events = xclim.run_length.windowed_run_events
-        xclim.run_length.windowed_run_events = rolling_window_events
+        for n, (tasmin, tasmax) in enumerate(pairs):
+            percentage = start_percentage + int(
+                n / n_pairs * (end_percentage - start_percentage)
+            )
+            self.write_log(
+                f"Computing indices for file {n + 1} of {n_pairs}",
+                response,
+                percentage,
+            )
 
-        try:
-            for n, (tasmin, tasmax) in enumerate(pairs):
-                percentage = start_percentage + int(
-                    n / n_pairs * (end_percentage - start_percentage)
-                )
-                self.write_log(
-                    f"Computing indices for file {n + 1} of {n_pairs}",
-                    response,
-                    percentage,
-                )
+            tasmin, tasmax = fix_broken_time_indices(tasmin, tasmax)
 
-                tasmin, tasmax = fix_broken_time_indices(tasmin, tasmax)
+            compute_inputs = [i.identifier for i in self.indices_process.inputs]
+            inputs = {k: v for k, v in request.inputs.items() if k in compute_inputs}
 
-                compute_inputs = [i.identifier for i in self.indices_process.inputs]
-                inputs = {
-                    k: v for k, v in request.inputs.items() if k in compute_inputs
-                }
+            inputs["tasmin"] = deque([make_nc_input("tasmin")], maxlen=1)
+            inputs["tasmin"][0].file = str(tasmin)
+            inputs["tasmax"] = deque([make_nc_input("tasmax")], maxlen=1)
+            inputs["tasmax"][0].file = str(tasmax)
 
-                inputs["tasmin"] = deque([make_nc_input("tasmin")], maxlen=1)
-                inputs["tasmin"][0].file = str(tasmin)
-                inputs["tasmax"] = deque([make_nc_input("tasmax")], maxlen=1)
-                inputs["tasmax"][0].file = str(tasmax)
-
-                out = self.compute_indices(self.indices_process.xci, inputs)
-                out_fn = Path(self.workdir) / tasmin.name.replace(
-                    "tasmin", "heat_wave_frequency"
-                )
-                out.to_netcdf(out_fn)
-                output_files.append(out_fn)
-        finally:
-            xclim.run_length.windowed_run_events = old_windowed_run_events
+            out = self.compute_indices(self.indices_process.xci, inputs)
+            out_fn = Path(self.workdir) / tasmin.name.replace(
+                "tasmin", "heat_wave_frequency"
+            )
+            out.to_netcdf(out_fn)
+            output_files.append(out_fn)
 
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
@@ -214,19 +204,6 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
 
         self.write_log("Processing finished successfully", response, 99)
         return response
-
-
-def rolling_window_events(da, window, dim="time"):
-    window_count = da.rolling(time=window).sum()
-    w = window_count.values[window - 1 :] >= window
-
-    count = np.count_nonzero(w[1:] > w[:-1]) + w[0]
-
-    data = np.array([count], dtype=np.int64)
-    data = data.reshape(())
-    out = xr.DataArray(data, coords={"lon": da.lon, "lat": da.lat})
-
-    return out
 
 
 def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
