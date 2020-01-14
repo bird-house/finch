@@ -81,9 +81,11 @@ class SubsetGridPointProcess(SubsetProcess):
             store_supported=True,
         )
 
-    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1) -> MetaLink4:
-        longitudes = [float(lon) for lon in wps_inputs["lon"][0].data.split(',')]
-        latitudes = [float(lat) for lat in wps_inputs["lat"][0].data.split(',')]
+    def subset(
+        self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1
+    ) -> MetaLink4:
+        longitudes = [float(lon) for lon in wps_inputs["lon"][0].data.split(",")]
+        latitudes = [float(lat) for lat in wps_inputs["lat"][0].data.split(",")]
         start = self.get_input_or_none(wps_inputs, "start_date")
         end = self.get_input_or_none(wps_inputs, "end_date")
         variables = [r.data for r in wps_inputs.get("variable", [])]
@@ -103,8 +105,12 @@ class SubsetGridPointProcess(SubsetProcess):
             with lock:
                 count += 1
 
-                percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
-                self.write_log(f"Subsetting file {count} of {n_files}", response, percentage)
+                percentage = start_percentage + int(
+                    (count - 1) / n_files * (end_percentage - start_percentage)
+                )
+                self.write_log(
+                    f"Subsetting file {count} of {n_files}", response, percentage
+                )
 
             dataset = dataset[variables] if variables else dataset
 
@@ -119,7 +125,9 @@ class SubsetGridPointProcess(SubsetProcess):
 
             return output
 
-        metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
+        metalink = self.subset_resources(
+            wps_inputs["resource"], _subset_function, threads=threads
+        )
 
         return metalink
 

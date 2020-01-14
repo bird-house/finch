@@ -32,7 +32,9 @@ def is_opendap_url(url):
     So we need to let the netCDF4 library actually open the file.
     """
     try:
-        content_description = requests.head(url, timeout=5).headers.get("Content-Description")
+        content_description = requests.head(url, timeout=5).headers.get(
+            "Content-Description"
+        )
     except (ConnectionError, MissingSchema, InvalidSchema):
         return False
 
@@ -43,7 +45,7 @@ def is_opendap_url(url):
             dataset = netCDF4.Dataset(url)
         except OSError:
             return False
-        return dataset.disk_format in ('DAP2', 'DAP4')
+        return dataset.disk_format in ("DAP2", "DAP4")
 
 
 class ParsingMethod(Enum):
@@ -245,7 +247,7 @@ def netcdf_to_csv(
             # most runs have timestamp with hour == 12 a few hour == 0 ... make uniform
             if not np.all(ds.time.dt.hour == 12):
                 attrs = ds.time.attrs
-                ds['time'] = [y.replace(hour=12) for y in ds.time.values]
+                ds["time"] = [y.replace(hour=12) for y in ds.time.values]
                 ds.time.attrs = attrs
 
             df = ds.to_dataframe()
