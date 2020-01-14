@@ -2,7 +2,7 @@ from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
 from pywps.app import WPSRequest
-from .wpsio import start_date, end_date
+from .wpsio import start_date, end_date, lat0, lat1, lon0, lon1
 from pywps import LiteralInput, ComplexOutput, FORMATS, configuration
 
 from finch.processes import SubsetBboxProcess
@@ -36,36 +36,10 @@ class SubsetBboxBCCAQV2Process(SubsetBboxProcess):
                 min_occurs=0,
                 allowed_values=["rcp26", "rcp45", "rcp85"],
             ),
-            LiteralInput(
-                "lat0",
-                "Minimum latitude",
-                abstract="Minimum latitude.",
-                data_type="float",
-                min_occurs=1,
-            ),
-            LiteralInput(
-                "lon0",
-                "Minimum longitude",
-                abstract="Minimum longitude.",
-                data_type="float",
-                min_occurs=1,
-            ),
-            LiteralInput(
-                "lat1",
-                "Maximum latitude",
-                abstract="Maximum latitude",
-                data_type="float",
-                default=None,
-                min_occurs=0,
-            ),
-            LiteralInput(
-                "lon1",
-                "Maximum longitude",
-                abstract="Maximum longitude",
-                data_type="float",
-                default=None,
-                min_occurs=0,
-            ),
+            lon0,
+            lon1,
+            lat0,
+            lat1,
             start_date,
             end_date,
             LiteralInput(
