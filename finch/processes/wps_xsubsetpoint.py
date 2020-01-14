@@ -108,15 +108,16 @@ class SubsetGridPointProcess(SubsetProcess):
 
             dataset = dataset[variables] if variables else dataset
 
-            global_attributes = dataset.attrs
-            output_ds = None
+            subsets = []
             for lon, lat in zip(longitudes, latitudes):
-                subset = subset_gridpoint(dataset, lon=lon, lat=lat, start_date=start, end_date=end)
-                subset = subset.expand_dims(["lat", "lon"])
-                output_ds = output_ds.combine_first(subset) if output_ds is not None else subset
+                subset = subset_gridpoint(
+                    dataset, lon=lon, lat=lat, start_date=start, end_date=end
+                )
+                subsets.append(subset)
 
-            output_ds.attrs = global_attributes
-            return output_ds
+            output = xr.concat(subsets, dim="region")
+
+            return output
 
         metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
 

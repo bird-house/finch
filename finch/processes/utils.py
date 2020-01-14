@@ -202,7 +202,7 @@ def _make_bccaqv2_resource_input():
 
 def netcdf_to_csv(
     netcdf_files, output_folder, filename_prefix
-) -> Tuple[List[str], str]:
+) -> Tuple[List[str], Path]:
     """Write csv files for a list of netcdf files.
 
     Produces one csv file per calendar type, along with a metadata folder in
@@ -249,9 +249,10 @@ def netcdf_to_csv(
                 ds.time.attrs = attrs
 
             df = ds.to_dataframe()
-            df = df.reset_index().set_index('time')[["lat", "lon", output_variable]]
 
             if calendar not in concat_by_calendar:
+                if "lat" in df.index.names and "lon" in df.index.names:
+                    df = df.reset_index(["lat", "lon"])
                 concat_by_calendar[calendar] = [df]
             else:
                 concat_by_calendar[calendar].append(df[output_variable])
@@ -262,7 +263,14 @@ def netcdf_to_csv(
     for calendar_type, data in concat_by_calendar.items():
         output_csv = output_folder / f"{filename_prefix}_{calendar_type}.csv"
         dropna_threshold = 3  # lat + lon + at least one value
-        pd.concat(data, axis=1).dropna(axis=1, thresh=dropna_threshold).to_csv(output_csv)
+        concat = pd.concat(data, axis=1).dropna(thresh=dropna_threshold)
+
+        try:
+            concat = concat.reset_index().set_index("time").drop(columns="region")
+        except KeyError:
+            pass
+
+        concat.to_csv(output_csv)
         output_csv_list.append(output_csv)
 
     metadata_folder = output_folder / "metadata"
