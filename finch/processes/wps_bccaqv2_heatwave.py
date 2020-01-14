@@ -38,13 +38,13 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
                 "lon",
                 "Longitude of point",
                 abstract="Longitude located inside the grid-cell to extract.",
-                data_type="float",
+                data_type="string",
             ),
             LiteralInput(
                 "lat",
                 "Latitude of point",
                 abstract="Latitude located inside the grid-cell to extract.",
-                data_type="float",
+                data_type="string",
             ),
             LiteralInput(
                 "y0",
