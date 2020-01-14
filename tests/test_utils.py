@@ -61,14 +61,16 @@ def test_netcdf_to_csv_to_zip():
 
     with zipfile.ZipFile(output_zip) as z:
         n_calendar_types = 4
-        n_files = 15
-        assert len(z.infolist()) == n_files + n_calendar_types
-        assert sum(1 for f in z.infolist() if f.filename.startswith("metadata")) == n_files
-        data_filename = [n for n in z.namelist() if 'metadata' not in n]
-        for filename in data_filename:
-            csv_lines = z.read(filename).decode().split('\n')[1:]
-            n_lines = len(csv_lines) - 1  # ending newline
-            n_columns = csv_lines[0].count(',') - 2
+        n_files = len(netcdf_files)
+        data_filenames = [n for n in z.namelist() if "metadata" not in n]
+        metadata_filenames = [n for n in z.namelist() if "metadata" in n]
+
+        assert len(z.namelist()) == n_files + n_calendar_types
+        assert len(metadata_filenames) == n_files
+        for filename in data_filenames:
+            csv_lines = z.read(filename).decode().split("\n")[1:-1]
+            n_lines = len(csv_lines)
+            n_columns = len(csv_lines[0].split(",")) - 3
 
             if "proleptic_gregorian" in filename:
                 assert n_lines == 366
@@ -82,6 +84,8 @@ def test_netcdf_to_csv_to_zip():
             elif "standard" in filename:
                 assert n_lines == 366
                 assert n_columns == 1
+            else:
+                assert False, "Unknown calendar type"
 
 
 def test_is_opendap_url():

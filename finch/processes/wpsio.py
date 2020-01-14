@@ -59,4 +59,3 @@ lat1 = LiteralInput(
     default=90,
     min_occurs=0,
 )
-

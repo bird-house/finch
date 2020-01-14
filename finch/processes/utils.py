@@ -204,7 +204,7 @@ def _make_bccaqv2_resource_input():
 
 def netcdf_to_csv(
     netcdf_files, output_folder, filename_prefix
-) -> Tuple[List[str], Path]:
+) -> Tuple[List[str], str]:
     """Write csv files for a list of netcdf files.
 
     Produces one csv file per calendar type, along with a metadata folder in
@@ -283,7 +283,7 @@ def netcdf_to_csv(
         metadata_file = metadata_folder / f"{output_variable}.csv"
         metadata_file.write_text(info)
 
-    return output_csv_list, metadata_folder
+    return output_csv_list, str(metadata_folder)
 
 
 def format_metadata(ds) -> str:
