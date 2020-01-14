@@ -264,13 +264,15 @@ def netcdf_to_csv(
     output_csv_list = []
     for calendar_type, data in concat_by_calendar.items():
         output_csv = output_folder / f"{filename_prefix}_{calendar_type}.csv"
-        dropna_threshold = 3  # lat + lon + at least one value
-        concat = pd.concat(data, axis=1).dropna(thresh=dropna_threshold)
+        concat = pd.concat(data, axis=1)
 
         try:
             concat = concat.reset_index().set_index("time").drop(columns="region")
         except KeyError:
             pass
+
+        dropna_threshold = 3  # lat + lon + at least one value
+        concat.dropna(thresh=dropna_threshold, inplace=True)
 
         concat.to_csv(output_csv)
         output_csv_list.append(output_csv)
