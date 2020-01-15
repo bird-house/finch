@@ -4,7 +4,7 @@ import xarray as xr
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_gridpoint
-from .wpsio import start_date, end_date
+from .wpsio import start_date, end_date, lon, lat
 from finch.processes.subset import SubsetProcess
 
 
@@ -20,20 +20,8 @@ class SubsetGridPointProcess(SubsetProcess):
                 max_occurs=1000,
                 supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
             ),
-            LiteralInput(
-                "lon",
-                "Longitude",
-                abstract="Longitude coordinate. Accepts a comma separated list of floats for multiple grid cells.",
-                data_type="string",
-                min_occurs=1,
-            ),
-            LiteralInput(
-                "lat",
-                "Latitude",
-                abstract="Latitude coordinate. Accepts a comma separated list of floats for multiple grid cells.",
-                data_type="string",
-                min_occurs=1,
-            ),
+            lon,
+            lat,
             start_date,
             end_date,
             LiteralInput(

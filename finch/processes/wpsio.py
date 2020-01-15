@@ -1,6 +1,6 @@
 """Module storing inputs and outputs used in multiple processes. """
 
-from pywps import LiteralInput, ComplexOutput, FORMATS
+from pywps import LiteralInput
 
 start_date = LiteralInput(
     "start_date",
@@ -22,6 +22,22 @@ end_date = LiteralInput(
     default=None,
     min_occurs=0,
     max_occurs=1,
+)
+
+lon = LiteralInput(
+    "lon",
+    "Longitude",
+    abstract="Longitude coordinate. Accepts a comma separated list of floats for multiple grid cells.",
+    data_type="string",
+    min_occurs=1,
+)
+
+lat = LiteralInput(
+    "lat",
+    "Latitude",
+    abstract="Latitude coordinate. Accepts a comma separated list of floats for multiple grid cells.",
+    data_type="string",
+    min_occurs=1,
 )
 
 lon0 = LiteralInput(

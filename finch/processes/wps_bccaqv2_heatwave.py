@@ -11,6 +11,7 @@ from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
 from pywps.app import WPSRequest
+from .wpsio import lat, lon
 from pywps import LiteralInput, ComplexOutput, FORMATS, configuration
 import sentry_sdk
 
@@ -33,18 +34,8 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             if i.identifier not in ["tasmin", "tasmax"]
         ]
         inputs += [
-            LiteralInput(
-                "lon",
-                "Longitude of point",
-                abstract="Longitude located inside the grid-cell to extract.",
-                data_type="string",
-            ),
-            LiteralInput(
-                "lat",
-                "Latitude of point",
-                abstract="Latitude located inside the grid-cell to extract.",
-                data_type="string",
-            ),
+            lon,
+            lat,
             LiteralInput(
                 "y0",
                 "Initial year",
