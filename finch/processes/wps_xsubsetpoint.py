@@ -103,9 +103,9 @@ class SubsetGridPointProcess(SubsetProcess):
             dataset = dataset[variables] if variables else dataset
 
             subsets = []
-            for lon, lat in zip(longitudes, latitudes):
+            for longitude, latitude in zip(longitudes, latitudes):
                 subset = subset_gridpoint(
-                    dataset, lon=lon, lat=lat, start_date=start, end_date=end
+                    dataset, lon=longitude, lat=latitude, start_date=start, end_date=end
                 )
                 subsets.append(subset)
 
