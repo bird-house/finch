@@ -20,6 +20,7 @@ install:
   # Packages for testing
   - conda install pytest flake8
   - pip install --no-deps -e .
+  # install some python 2.7 backports required by pywps... necessary for `make start` to work
   - pip install flufl.enum pathlib
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
