@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Tuple
 from enum import Enum
 
+import numpy as np
 import pandas as pd
 import xarray as xr
 import requests
@@ -31,7 +32,9 @@ def is_opendap_url(url):
     So we need to let the netCDF4 library actually open the file.
     """
     try:
-        content_description = requests.head(url, timeout=5).headers.get("Content-Description")
+        content_description = requests.head(url, timeout=5).headers.get(
+            "Content-Description"
+        )
     except (ConnectionError, MissingSchema, InvalidSchema):
         return False
 
@@ -42,7 +45,7 @@ def is_opendap_url(url):
             dataset = netCDF4.Dataset(url)
         except OSError:
             return False
-        return dataset.disk_format in ('DAP2', 'DAP4')
+        return dataset.disk_format in ("DAP2", "DAP4")
 
 
 class ParsingMethod(Enum):
@@ -241,11 +244,17 @@ def netcdf_to_csv(
 
             ds = ds.rename({variable: output_variable})
 
-            df = ds.to_dataframe()[["lat", "lon", output_variable]]
-            # most runs have timestamp with hour == 12 a few hour == 0 .. make uniform
-            df.index = df.index.map(lambda x: x.replace(hour=12))
+            # most runs have timestamp with hour == 12 a few hour == 0 ... make uniform
+            if not np.all(ds.time.dt.hour == 12):
+                attrs = ds.time.attrs
+                ds["time"] = [y.replace(hour=12) for y in ds.time.values]
+                ds.time.attrs = attrs
+
+            df = ds.to_dataframe()
 
             if calendar not in concat_by_calendar:
+                if "lat" in df.index.names and "lon" in df.index.names:
+                    df = df.reset_index(["lat", "lon"])
                 concat_by_calendar[calendar] = [df]
             else:
                 concat_by_calendar[calendar].append(df[output_variable])
@@ -255,7 +264,17 @@ def netcdf_to_csv(
     output_csv_list = []
     for calendar_type, data in concat_by_calendar.items():
         output_csv = output_folder / f"{filename_prefix}_{calendar_type}.csv"
-        pd.concat(data, axis=1).to_csv(output_csv)
+        concat = pd.concat(data, axis=1)
+
+        try:
+            concat = concat.reset_index().set_index("time").drop(columns="region")
+        except KeyError:
+            pass
+
+        dropna_threshold = 3  # lat + lon + at least one value
+        concat.dropna(thresh=dropna_threshold, inplace=True)
+
+        concat.to_csv(output_csv)
         output_csv_list.append(output_csv)
 
     metadata_folder = output_folder / "metadata"
@@ -264,7 +283,7 @@ def netcdf_to_csv(
         metadata_file = metadata_folder / f"{output_variable}.csv"
         metadata_file.write_text(info)
 
-    return output_csv_list, metadata_folder
+    return output_csv_list, str(metadata_folder)
 
 
 def format_metadata(ds) -> str:
