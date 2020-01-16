@@ -1,6 +1,7 @@
 from pywps import get_ElementMakerForVersion
 
 import xarray as xr
+from lxml import etree
 from owslib.wps import WPSExecution
 from pywps.tests import assert_response_success
 
@@ -32,7 +33,11 @@ def execute_process(
         OWS.Identifier(identifier), WPS.DataInputs(*inputs), version="1.0.0"
     )
     response = client.post_xml(doc=request_doc)
-    assert_response_success(response)
+    try:
+        assert_response_success(response)
+    except AssertionError as e:
+        message = response.xpath('//ows:ExceptionText')[0].text
+        raise AssertionError(message) from e
 
     execution = WPSExecution()
     execution.parseResponse(response.xml)

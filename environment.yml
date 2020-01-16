@@ -1,24 +1,23 @@
 name: finch
 channels:
-- birdhouse
-- conda-forge
-- defaults
+  - birdhouse
+  - conda-forge
+  - defaults
 dependencies:
-- python>=3.6
-- pip
-- jinja2
-- click
-- psutil
-- bottleneck
-- netcdf4
-- libnetcdf==4.6.2
-- numpy
-- unidecode
-- dask
-- xarray>=0.12
-- scipy
-- sentry-sdk
-- siphon
-- xclim>=0.12.2
-- pywps>=4.2.3
-
+  - python>=3.6
+  - pip
+  - jinja2
+  - click
+  - psutil
+  - bottleneck
+  - netcdf4
+  - libnetcdf==4.6.2
+  - numpy
+  - unidecode
+  - dask
+  - xarray>=0.12
+  - scipy
+  - sentry-sdk
+  - siphon
+  - xclim>=0.12.2
+  - pywps~=4.2.3

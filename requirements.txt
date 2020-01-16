@@ -1,4 +1,4 @@
-pywps>=4.2.3
+pywps~=4.2.3
 xclim>=0.12.2
 jinja2
 click

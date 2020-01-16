@@ -89,7 +89,7 @@ def test_bccaqv2_heat_wave_frequency_sample_data():
     assert output_attrs == input_attrs
 
 
-@pytest.mark.online
+@pytest.mark.skip('Skipping: subset using real data is too long.')
 def test_bccaqv2_heatwave_online(client):
     identifier = "BCCAQv2_heat_wave_frequency_gridpoint"
     up_right = 45.507485, -73.541295
