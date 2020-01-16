@@ -25,7 +25,7 @@ conda create -n finch python=$TRAVIS_PYTHON_VERSION
 conda env update -f environment.yml
 source activate finch
 conda install pytest flake8
-python setup.py install
+pip install -e .
 finch start --daemon --bind-host 0.0.0.0 --port 5000
 sleep 2
 pytest -m \"not online\"
