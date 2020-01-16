@@ -14,7 +14,8 @@ dependencies:
 - libnetcdf==4.6.2
 - numpy
 - unidecode
-- dask
+- dask>=2.9
+- distributed
 - xarray>=0.14
 - scipy
 - sentry-sdk
