@@ -23,9 +23,10 @@ install:
   # Packages for testing
   - conda install pytest flake8
   - pip install --no-deps -e .
+  - pip install flufl.enum pathlib
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
-  - finch start --daemon --bind-host 0.0.0.0 --port 5000
+  - make start
   - sleep 2
 script:
   - pytest -m "not online"
