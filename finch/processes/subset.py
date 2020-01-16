@@ -45,6 +45,8 @@ class SubsetProcess(FinchProcess):
         if threads > 1:
             pool = ThreadPool(processes=threads)
             list(pool.imap_unordered(process_resource, resources))
+            pool.close()
+            pool.join()
         else:
             for r in resources:
                 process_resource(r)

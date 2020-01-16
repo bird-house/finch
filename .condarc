@@ -1,0 +1,5 @@
+channel_priority: strict
+channels:
+  - birdhouse
+  - conda-forge
+  - defaults

@@ -15,18 +15,16 @@ install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
-  # Prepare env with Python version
-  - conda create -n finch python=$TRAVIS_PYTHON_VERSION
-  # Update now the env with our environment
-  - conda env update -f environment.yml
+  - conda env create -f environment.yml
   - source activate finch
   # Packages for testing
   - conda install pytest flake8
-  # Install Emu WPS
-  - python setup.py install
+  - pip install --no-deps -e .
+  # install some python 2.7 backports required by pywps... necessary for `make start` to work
+  - pip install flufl.enum pathlib
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
-  - finch start --daemon --bind-host 0.0.0.0 --port 5000
+  - make start
   - sleep 2
 script:
   - pytest -m "not online"

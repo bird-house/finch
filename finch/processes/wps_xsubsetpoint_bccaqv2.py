@@ -2,22 +2,26 @@ from pathlib import Path
 from pywps.response.execute import ExecuteResponse
 from pywps.app.exceptions import ProcessError
 from pywps.app import WPSRequest
+from .wpsio import start_date, end_date
 from pywps import LiteralInput, ComplexOutput, FORMATS, configuration
 
-from finch.processes import SubsetBboxProcess
+from finch.processes import SubsetGridPointProcess
 from finch.processes.subset import SubsetProcess
 from finch.processes.utils import get_bccaqv2_inputs, netcdf_to_csv, zip_files
 
 
-class SubsetBCCAQV2Process(SubsetBboxProcess):
-    """Subset a NetCDF file using bounding box geometry."""
+class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
+    """Subset a NetCDF file grid cells using a list of coordinates."""
 
     def __init__(self):
         inputs = [
             LiteralInput(
                 "variable",
                 "NetCDF Variable",
-                abstract="Name of the variable in the NetCDF file.",
+                abstract=(
+                    "Name of the variable in the NetCDF file."
+                    "If not provided, all variables will be subsetted."
+                ),
                 data_type="string",
                 default=None,
                 min_occurs=0,
@@ -33,65 +37,41 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
                 allowed_values=["rcp26", "rcp45", "rcp85"],
             ),
             LiteralInput(
+                "lat",
+                "Latitude",
+                abstract="Latitude. Accepts a comma separated list of floats for multiple grid cells.",
+                data_type="string",
+                min_occurs=0,  # Set to 1 when lat0 is removed
+            ),
+            LiteralInput(
+                "lon",
+                "Longitude",
+                abstract="Longitude. Accepts a comma separated list of floats for multiple grid cells.",
+                data_type="string",
+                min_occurs=0,  # Set to 1 when lon0 is removed
+            ),
+            LiteralInput(
                 "lat0",
-                "Minimum latitude",
-                abstract="Minimum latitude.",
-                data_type="float",
-                min_occurs=1,
+                "Latitude (deprecated, use 'lat')",
+                abstract=(
+                    "Latitude (deprecated, use 'lat'). Accepts a comma "
+                    "separated list of floats for multiple grid cells."
+                ),
+                data_type="string",
+                min_occurs=0,
             ),
             LiteralInput(
                 "lon0",
-                "Minimum longitude",
-                abstract="Minimum longitude.",
-                data_type="float",
-                min_occurs=1,
-            ),
-            LiteralInput(
-                "lat1",
-                "Maximum latitude",
-                abstract="Maximum latitude. Omit this coordinate to subset for a single grid cell.",
-                data_type="float",
-                default=None,
+                "Longitude (deprecated, use 'lon')",
+                abstract=(
+                    "Latitude (deprecated, use 'lon'). Accepts a comma "
+                    "separated list of floats for multiple grid cells."
+                ),
+                data_type="string",
                 min_occurs=0,
             ),
-            LiteralInput(
-                "lon1",
-                "Maximum longitude",
-                abstract="Maximum longitude. Omit this coordinate to subset for a single grid cell.",
-                data_type="float",
-                default=None,
-                min_occurs=0,
-            ),
-            # LiteralInput('dt0',
-            #              'Initial datetime',
-            #              abstract='Initial datetime for temporal subsetting. Defaults to first date in file.',
-            #              data_type='dateTime',
-            #              default=None,
-            #              min_occurs=0,
-            #              max_occurs=1),
-            # LiteralInput('dt1',
-            #              'Final datetime',
-            #              abstract='Final datetime for temporal subsetting. Defaults to last date in file.',
-            #              data_type='dateTime',
-            #              default=None,
-            #              min_occurs=0,
-            #              max_occurs=1),
-            LiteralInput(
-                "y0",
-                "Initial year",
-                abstract="Initial year for temporal subsetting. Defaults to first year in file.",
-                data_type="integer",
-                default=None,
-                min_occurs=0,
-            ),
-            LiteralInput(
-                "y1",
-                "Final year",
-                abstract="Final year for temporal subsetting. Defaults to last year in file.",
-                data_type="integer",
-                default=None,
-                min_occurs=0,
-            ),
+            start_date,
+            end_date,
             LiteralInput(
                 "output_format",
                 "Output format choice",
@@ -117,13 +97,12 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
             self,
             self._handler,
             identifier="subset_ensemble_BCCAQv2",
-            title="Subset of BCCAQv2 datasets",
-            version="0.1",
+            title="Subset of BCCAQv2 datasets grid cells using a list of coordinates",
+            version="0.2",
             abstract=(
                 "For the BCCAQv2 datasets, "
-                "return the data for which grid cells intersect the "
-                "bounding box for each input dataset as well as "
-                "the time range selected."
+                "return the closest grid cell for each provided coordinates pair, "
+                "for the time range selected."
             ),
             inputs=inputs,
             outputs=outputs,
@@ -134,13 +113,25 @@ class SubsetBCCAQV2Process(SubsetBboxProcess):
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
         self.write_log("Processing started", response, 5)
 
+        # Temporary backward-compatibility adjustment.
+        # Remove me when lon0 and lat0 are removed
+        lon, lat, lon0, lat0 = [
+            self.get_input_or_none(request.inputs, var)
+            for var in "lon lat lon0 lat0".split()
+        ]
+        if not (lon and lat or lon0 and lat0):
+            raise ProcessError("Provide both lat and lon or both lon0 and lat0.")
+        request.inputs.setdefault("lon", request.inputs.get("lon0"))
+        request.inputs.setdefault("lat", request.inputs.get("lat0"))
+        # End of 'remove me'
+
+        # Build output filename
         variable = self.get_input_or_none(request.inputs, "variable")
         rcp = self.get_input_or_none(request.inputs, "rcp")
-        lat0 = self.get_input_or_none(request.inputs, "lat0")
-        lon0 = self.get_input_or_none(request.inputs, "lon0")
+        lat = self.get_input_or_none(request.inputs, "lat").split(",")[0]
+        lon = self.get_input_or_none(request.inputs, "lon").split(",")[0]
         output_format = request.inputs["output_format"][0].data
-
-        output_filename = f"BCCAQv2_subset_{lat0}_{lon0}"
+        output_filename = f"BCCAQv2_subset_grid_cells_{float(lat):.3f}_{float(lon):.3f}"
 
         self.write_log("Fetching BCCAQv2 datasets", response, 6)
         request.inputs = get_bccaqv2_inputs(request.inputs, variable, rcp)
