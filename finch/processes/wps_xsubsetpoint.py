@@ -1,14 +1,15 @@
 from threading import Lock
 
+import xarray as xr
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_gridpoint
-from .wpsio import start_date, end_date
+from .wpsio import start_date, end_date, lon, lat
 from finch.processes.subset import SubsetProcess
 
 
 class SubsetGridPointProcess(SubsetProcess):
-    """Subset a NetCDF file using bounding box geometry."""
+    """Subset a NetCDF file grid cells using a list of coordinates."""
 
     def __init__(self):
         inputs = [
@@ -19,20 +20,8 @@ class SubsetGridPointProcess(SubsetProcess):
                 max_occurs=1000,
                 supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
             ),
-            LiteralInput(
-                "lon",
-                "Longitude",
-                abstract="Longitude coordinate",
-                data_type="float",
-                min_occurs=1,
-            ),
-            LiteralInput(
-                "lat",
-                "Latitude",
-                abstract="Latitude coordinate.",
-                data_type="float",
-                min_occurs=1,
-            ),
+            lon,
+            lat,
             start_date,
             end_date,
             LiteralInput(
@@ -68,7 +57,7 @@ class SubsetGridPointProcess(SubsetProcess):
             self._handler,
             identifier="subset_gridpoint",
             title="Subset with a grid point",
-            version="0.1",
+            version="0.2",
             abstract=(
                 "Return the data for which grid cells includes the "
                 "point coordinates for each input dataset as well as "
@@ -80,11 +69,11 @@ class SubsetGridPointProcess(SubsetProcess):
             store_supported=True,
         )
 
-    def subset(self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1) -> MetaLink4:
-        lon = wps_inputs["lon"][0].data
-        lat = wps_inputs["lat"][0].data
-        # dt0 = wps_inputs['dt0'][0].data or None
-        # dt1 = wps_inputs['dt1'][0].data or None
+    def subset(
+        self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1
+    ) -> MetaLink4:
+        longitudes = [float(lon) for lon in wps_inputs["lon"][0].data.split(",")]
+        latitudes = [float(lat) for lat in wps_inputs["lat"][0].data.split(",")]
         start = self.get_input_or_none(wps_inputs, "start_date")
         end = self.get_input_or_none(wps_inputs, "end_date")
         variables = [r.data for r in wps_inputs.get("variable", [])]
@@ -104,13 +93,29 @@ class SubsetGridPointProcess(SubsetProcess):
             with lock:
                 count += 1
 
-                percentage = start_percentage + int((count - 1) / n_files * (end_percentage - start_percentage))
-                self.write_log(f"Subsetting file {count} of {n_files}", response, percentage)
+                percentage = start_percentage + int(
+                    (count - 1) / n_files * (end_percentage - start_percentage)
+                )
+                self.write_log(
+                    f"Subsetting file {count} of {n_files}", response, percentage
+                )
 
             dataset = dataset[variables] if variables else dataset
-            return subset_gridpoint(dataset, lon=lon, lat=lat, start_date=start, end_date=end)
 
-        metalink = self.subset_resources(wps_inputs["resource"], _subset_function, threads=threads)
+            subsets = []
+            for longitude, latitude in zip(longitudes, latitudes):
+                subset = subset_gridpoint(
+                    dataset, lon=longitude, lat=latitude, start_date=start, end_date=end
+                )
+                subsets.append(subset)
+
+            output = xr.concat(subsets, dim="region")
+
+            return output
+
+        metalink = self.subset_resources(
+            wps_inputs["resource"], _subset_function, threads=threads
+        )
 
         return metalink
 
