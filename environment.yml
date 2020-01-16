@@ -1,8 +1,8 @@
 name: finch
 channels:
-- birdhouse
-- conda-forge
-- defaults
+  - birdhouse
+  - conda-forge
+  - defaults
 dependencies:
 - python>=3.6
 - pip
@@ -22,4 +22,3 @@ dependencies:
 - siphon
 - xclim>=0.13.0
 - pywps>=4.2.3
-
