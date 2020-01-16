@@ -15,10 +15,10 @@ dependencies:
 - numpy
 - unidecode
 - dask
-- xarray>=0.12
+- xarray>=0.14
 - scipy
 - sentry-sdk
 - siphon
-- xclim>=0.12.2
+- xclim>=0.13.0
 - pywps>=4.2.3
 
