@@ -11,7 +11,7 @@ INSTANCE="travisci/ci-sardonyx:packer-1554885359-f909ac5"
 docker run --name $BUILDID -dit $INSTANCE /sbin/init
 
 travis_commands='\
-git clone --depth=50 --branch=xclim13 https://github.com/bird-house/finch.git bird-house/finch
+git clone --depth=50 --branch=master https://github.com/bird-house/finch.git bird-house/finch
 cd bird-house/finch
 source ~/virtualenv/python3.6/bin/activate
 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
