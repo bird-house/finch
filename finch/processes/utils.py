@@ -1,5 +1,3 @@
-import re
-import time
 import zipfile
 from copy import deepcopy
 from pathlib import Path
@@ -139,31 +137,31 @@ def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
 
         raise NotImplementedError("todo: filter models and runs")
 
-        re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
-        lines = requests.get(url + ".das").content.decode().split("\n")
-        variable_ok = variable_ok or any(
-            line.startswith(f"    {variable} {{") for line in lines
-        )
-        if not rcp_ok:
-            for line in lines:
-                match = re_experiment.search(line)
-                if match and rcp in match.group(1).split(","):
-                    rcp_ok = True
+        # re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
+        # lines = requests.get(url + ".das").content.decode().split("\n")
+        # variable_ok = variable_ok or any(
+        #     line.startswith(f"    {variable} {{") for line in lines
+        # )
+        # if not rcp_ok:
+        #     for line in lines:
+        #         match = re_experiment.search(line)
+        #         if match and rcp in match.group(1).split(","):
+        #             rcp_ok = True
 
     elif method == ParsingMethod.xarray:
 
         raise NotImplementedError("todo: filter models and runs")
 
-        import xarray as xr
+        # import xarray as xr
 
-        ds = xr.open_dataset(url, decode_times=False)
-        rcps = [
-            r
-            for r in ds.attrs.get("driving_experiment_id", "").split(",")
-            if "rcp" in r
-        ]
-        variable_ok = variable_ok or variable in ds.data_vars
-        rcp_ok = rcp_ok or rcp in rcps
+        # ds = xr.open_dataset(url, decode_times=False)
+        # rcps = [
+        #     r
+        #     for r in ds.attrs.get("driving_experiment_id", "").split(",")
+        #     if "rcp" in r
+        # ]
+        # variable_ok = variable_ok or variable in ds.data_vars
+        # rcp_ok = rcp_ok or rcp in rcps
 
     return rcp_ok and variable_ok
 
@@ -247,7 +245,13 @@ def netcdf_to_csv(
             # most runs have timestamp with hour == 12 a few hour == 0 ... make uniform
             if not np.all(ds.time.dt.hour == 12):
                 attrs = ds.time.attrs
-                ds["time"] = [y.replace(hour=12) for y in ds.time.values]
+
+                # np.datetime64 doesn't have the 'replace' method
+                time_values = ds.time.values
+                if not hasattr(time_values[0], "replace"):
+                    time_values = pd.to_datetime(time_values)
+
+                ds["time"] = [y.replace(hour=12) for y in time_values]
                 ds.time.attrs = attrs
 
             df = ds.to_dataframe()
