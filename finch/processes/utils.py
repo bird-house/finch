@@ -137,31 +137,31 @@ def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
 
         raise NotImplementedError("todo: filter models and runs")
 
-        re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
-        lines = requests.get(url + ".das").content.decode().split("\n")
-        variable_ok = variable_ok or any(
-            line.startswith(f"    {variable} {{") for line in lines
-        )
-        if not rcp_ok:
-            for line in lines:
-                match = re_experiment.search(line)
-                if match and rcp in match.group(1).split(","):
-                    rcp_ok = True
+        # re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
+        # lines = requests.get(url + ".das").content.decode().split("\n")
+        # variable_ok = variable_ok or any(
+        #     line.startswith(f"    {variable} {{") for line in lines
+        # )
+        # if not rcp_ok:
+        #     for line in lines:
+        #         match = re_experiment.search(line)
+        #         if match and rcp in match.group(1).split(","):
+        #             rcp_ok = True
 
     elif method == ParsingMethod.xarray:
 
         raise NotImplementedError("todo: filter models and runs")
 
-        import xarray as xr
+        # import xarray as xr
 
-        ds = xr.open_dataset(url, decode_times=False)
-        rcps = [
-            r
-            for r in ds.attrs.get("driving_experiment_id", "").split(",")
-            if "rcp" in r
-        ]
-        variable_ok = variable_ok or variable in ds.data_vars
-        rcp_ok = rcp_ok or rcp in rcps
+        # ds = xr.open_dataset(url, decode_times=False)
+        # rcps = [
+        #     r
+        #     for r in ds.attrs.get("driving_experiment_id", "").split(",")
+        #     if "rcp" in r
+        # ]
+        # variable_ok = variable_ok or variable in ds.data_vars
+        # rcp_ok = rcp_ok or rcp in rcps
 
     return rcp_ok and variable_ok
 
