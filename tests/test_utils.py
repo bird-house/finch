@@ -2,6 +2,8 @@ import shutil
 import zipfile
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 from pywps import configuration
 
 from finch.processes.utils import (
@@ -86,6 +88,33 @@ def test_netcdf_to_csv_to_zip():
                 assert n_columns == 1
             else:
                 assert False, "Unknown calendar type"
+
+
+def test_netcdf_to_csv_bad_hours():
+    here = Path(__file__).parent
+    folder = here / "data" / "bccaqv2_single_cell"
+    output_folder = here / "tmp" / "tasmin_csvs"
+    shutil.rmtree(output_folder, ignore_errors=True)
+
+    # these files contain an hour somewhere at 0 (midnight) it should be 12h
+    bad_hours = [
+        "pr_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp26_r1i1p1_19500101-21001231_sub.nc",
+        "pr_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp45_r1i1p1_19500101-21001231_sub.nc",
+        "pr_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp85_r1i1p1_19500101-21001231_sub.nc",
+        "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp26_r1i1p1_19500101-21001231_sub.nc",
+        "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp45_r1i1p1_19500101-21001231_sub.nc",
+        "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp85_r1i1p1_19500101-21001231_sub.nc",
+        "tasmin_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp26_r1i1p1_19500101-21001231_sub.nc",
+        "tasmin_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp45_r1i1p1_19500101-21001231_sub.nc",
+        "tasmin_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp85_r1i1p1_19500101-21001231_sub.nc",
+    ]
+    netcdf_files = [folder / bad for bad in bad_hours]
+
+    csv_files, _ = netcdf_to_csv(netcdf_files, output_folder, "file_prefix")
+
+    for csv in csv_files:
+        df = pd.read_csv(csv, parse_dates=["time"])
+        assert np.all(df.time.dt.hour == 12)
 
 
 def test_is_opendap_url():

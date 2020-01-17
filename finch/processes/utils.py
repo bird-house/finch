@@ -1,5 +1,3 @@
-import re
-import time
 import zipfile
 from copy import deepcopy
 from pathlib import Path
@@ -247,7 +245,13 @@ def netcdf_to_csv(
             # most runs have timestamp with hour == 12 a few hour == 0 ... make uniform
             if not np.all(ds.time.dt.hour == 12):
                 attrs = ds.time.attrs
-                ds["time"] = [y.replace(hour=12) for y in ds.time.values]
+
+                # np.datetime64 doesn't have the 'replace' method
+                time_values = ds.time.values
+                if not hasattr(time_values[0], "replace"):
+                    time_values = pd.to_datetime(time_values)
+
+                ds["time"] = [y.replace(hour=12) for y in time_values]
                 ds.time.attrs = attrs
 
             df = ds.to_dataframe()
