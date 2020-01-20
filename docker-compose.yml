@@ -1,12 +1,10 @@
-version: '3'
+version: "3"
 services:
-  emu:
+  wps:
     build: .
     image: bird-house/finch
     ports:
       - "5000:5000"
-
-
 # docker-compose build
 # docker-compose up
 # docker-compose down

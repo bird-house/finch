@@ -12,7 +12,7 @@ from jinja2 import Environment, PackageLoader
 from pywps import configuration
 
 from . import wsgi
-from six.moves.urllib.parse import urlparse
+from urllib.parse import urlparse
 
 PID_FILE = os.path.abspath(os.path.join(os.path.curdir, "pywps.pid"))
 
@@ -88,8 +88,8 @@ def _run(application, bind_host=None, daemon=False):
         application=application,
         use_debugger=False,
         use_reloader=False,
-        threaded=False,
-        processes=2,
+        threaded=True,
+        # processes=2,
         use_evalex=not daemon,
         static_files=static_files)
 
