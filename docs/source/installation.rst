@@ -17,35 +17,42 @@ Install from Conda
 Install from GitHub
 -------------------
 
-Check out code from the Finch GitHub repo and start the installation:
+Check out code from the finch GitHub repo and start the installation:
 
-.. code-block:: sh
+.. code-block:: console
 
    $ git clone https://github.com/bird-house/finch.git
    $ cd finch
+
+Create Conda environment named `finch`:
+
+.. code-block:: console
+
    $ conda env create -f environment.yml
    $ source activate finch
-   $ python setup.py develop
 
-... or do it the lazy way
-+++++++++++++++++++++++++
+Install finch app:
 
-The previous installation instructions assume you have Anaconda installed.
-We provide also a ``Makefile`` to run this installation without additional steps:
+.. code-block:: console
 
-.. code-block:: sh
+  $ pip install -e .
+  OR
+  make install
 
-   $ git clone https://github.com/bird-house/finch.git
-   $ cd finch
-   $ make clean    # cleans up a previous Conda environment
-   $ make install  # installs Conda if necessary and runs the above installation steps
+For development you can use this command:
 
-Start Finch PyWPS service
+.. code-block:: console
+
+  $ pip install -e .[dev]
+  OR
+  $ make develop
+
+Start finch PyWPS service
 -------------------------
 
 After successful installation you can start the service using the ``finch`` command-line.
 
-.. code-block:: sh
+.. code-block:: console
 
    $ finch --help # show help
    $ finch start  # start service with default configuration
@@ -64,14 +71,14 @@ http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities.
 
 You can find which process uses a given port using the following command (here for port 5000):
 
-.. code-block:: sh
+.. code-block:: console
 
    $ netstat -nlp | grep :5000
 
 
 Check the log files for errors:
 
-.. code-block:: sh
+.. code-block:: console
 
    $ tail -f  pywps.log
 
@@ -80,7 +87,7 @@ Check the log files for errors:
 
 You can also use the ``Makefile`` to start and stop the service:
 
-.. code-block:: sh
+.. code-block:: console
 
   $ make start
   $ make status
@@ -88,19 +95,19 @@ You can also use the ``Makefile`` to start and stop the service:
   $ make stop
 
 
-Run Finch as Docker container
+Run finch as Docker container
 -----------------------------
 
-You can also run Finch as a Docker container.
+You can also run finch as a Docker container.
 
 .. warning::
 
   TODO: Describe Docker container support.
 
-Use Ansible to deploy Finch on your System
+Use Ansible to deploy finch on your System
 ------------------------------------------
 
-Use the `Ansible playbook`_ for PyWPS to deploy Finch on your system.
+Use the `Ansible playbook`_ for PyWPS to deploy finch on your system.
 
 
 .. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html

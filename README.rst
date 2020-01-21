@@ -1,4 +1,4 @@
-Finch
+finch
 ===============================
 
 .. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
@@ -18,13 +18,28 @@ Finch
     :alt: Join the chat at https://gitter.im/bird-house/birdhouse
 
 
-Finch (the bird)
-  *Finch is a bird ...*
+finch (the bird)
+  *finch is a bird ...*
 
 A Web Processing Service for Climate Indicators
 
-* Free software: Apache Software License 2.0
-* Documentation: https://finch.readthedocs.io.
+Documentation
+-------------
+
+Learn more about finch in its official documentation at
+https://finch.readthedocs.io.
+
+Contributing
+------------
+
+You can find information about contributing in our `Developer Guide`_.
+
+Please use bumpversion_ to release a new version.
+
+License
+-------
+
+Free software: Apache Software License 2.0
 
 Credits
 -------
@@ -33,3 +48,5 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
+.. _`Developer Guide`: https://finch.readthedocs.io/en/latest/dev_guide.html
+.. _bumpversion: https://finch.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version

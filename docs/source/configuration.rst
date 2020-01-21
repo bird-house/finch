@@ -7,7 +7,7 @@ Command-line options
 --------------------
 
 You can overwrite the default `PyWPS`_ configuration by using command-line options.
-See the Finch help which options are available::
+See the finch help which options are available::
 
     $ finch start --help
     --hostname HOSTNAME        hostname in PyWPS configuration.
@@ -26,7 +26,7 @@ Use one of the existing ``sample-*.cfg`` files as example and copy them to ``etc
 
 For example change the hostname (*demo.org*) and logging level:
 
-.. code-block:: sh
+.. code-block:: console
 
    $ cd finch
    $ vim etc/custom.cfg
@@ -40,7 +40,7 @@ For example change the hostname (*demo.org*) and logging level:
 
 Start the service with your custom configuration:
 
-.. code-block:: sh
+.. code-block:: console
 
    # start the service with this configuration
    $ finch start -c etc/custom.cfg

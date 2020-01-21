@@ -1,6 +1,8 @@
+dist: xenial # required for Python >= 3.7
 language: python
 python:
-  - "3.6"
+  - "3.7"
+  - "3.8"
 os:
   - linux
 #  - osx
@@ -12,16 +14,14 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
+  - conda install setuptools
   - conda update -q conda
-  # Useful for debugging any issues with conda
-  - conda info -a
-  - conda env create -f environment.yml
+  - conda create -n finch -c conda-forge python=$TRAVIS_PYTHON_VERSION
+  - conda env update -f environment.yml
   - source activate finch
   # Packages for testing
   - conda install pytest flake8
-  - pip install --no-deps -e .
-  # install some python 2.7 backports required by pywps... necessary for `make start` to work
-  - pip install flufl.enum pathlib
+  - python setup.py install
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
   - make start
