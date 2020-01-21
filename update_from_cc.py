@@ -32,21 +32,21 @@ from cookiecutter.main import cookiecutter
 
 if __name__ == "__main__":
 
-
-    cookiecutter('cookiecutter-birdhouse',
-                 no_input=True,
-                 overwrite_if_exists=True,
-                 extra_context={
-                     "full_name": "David Huard",
-                     "email": "huard.david@ouranos.ca",
-                     "github_username": "bird-house",
-                     "project_name": "finch",
-                     "project_slug": "finch",
-                     "project_repo_name": "finch",
-                     "project_short_description": "A Web Processing Service for Climate Indicators",
-                     "version": "0.1.0",
-                     "open_source_license": "Apache Software License 2.0",
-                     "http_port": "5000",
-                     "timestamp": "2018-04-16"
-                 }
-                 )
+    cookiecutter(
+        "cookiecutter-birdhouse",
+        no_input=True,
+        overwrite_if_exists=True,
+        extra_context={
+            "full_name": "David Huard",
+            "email": "huard.david@ouranos.ca",
+            "github_username": "bird-house",
+            "project_name": "finch",
+            "project_slug": "finch",
+            "project_repo_name": "finch",
+            "project_short_description": "A Web Processing Service for Climate Indicators",
+            "version": "0.1.0",
+            "open_source_license": "Apache Software License 2.0",
+            "http_port": "5000",
+            "timestamp": "2018-04-16",
+        },
+    )

@@ -54,5 +54,5 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=requirements,
-    entry_points={"console_scripts": ["finch=finch.cli:cli",]},
+    entry_points={"console_scripts": ["finch=finch.cli:cli"]},
 )
