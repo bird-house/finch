@@ -1,19 +1,154 @@
-import zipfile
-from copy import deepcopy
+import logging
+from multiprocessing.pool import ThreadPool
 from pathlib import Path
+from pathlib import Path
+from typing import Callable, Dict, Generator, Iterable, List, Tuple, Union, Deque
+import zipfile
 
-from typing import List, Tuple
-from enum import Enum
-
+import netCDF4
 import numpy as np
 import pandas as pd
-import xarray as xr
+from pywps import FORMATS, Process, configuration
+from pywps import BoundingBoxInput, ComplexInput, LiteralInput
+from pywps.inout.outputs import MetaFile, MetaLink4
 import requests
-import netCDF4
-from requests.exceptions import MissingSchema, ConnectionError, InvalidSchema
-from pywps import ComplexInput, FORMATS
-from siphon.catalog import TDSCatalog
-from pywps import configuration
+from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
+import sentry_sdk
+import xarray as xr
+
+LOGGER = logging.getLogger("PYWPS")
+
+PywpsInput = Union[LiteralInput, ComplexInput, BoundingBoxInput]
+RequestInputs = Dict[str, Deque[PywpsInput]]
+
+
+def log_file_path(process: Process) -> Path:
+    """Returns the filepath to write the process logfile."""
+    return Path(process.workdir) / "log.txt"
+
+
+def write_log(process: Process, message: str, level=logging.INFO):
+    """Log the process status.
+
+     - With the logging module
+     - To a log file stored in the process working directory
+     - Update the response document with the message
+    """
+    LOGGER.log(level, message)
+
+    if level >= logging.INFO:
+        log_file_path(process).open("a", encoding="utf8").write(message + "\n")
+        try:
+            process.response.update_status(message, getattr(process, "percentage"))
+        except AttributeError:
+            pass
+
+
+def compute_indices(
+    process: Process, func: Callable, inputs: RequestInputs
+) -> xr.Dataset:
+    kwds = {}
+    global_attributes = None
+    for name, input_queue in inputs.items():
+        input = input_queue[0]
+        if isinstance(input, ComplexInput):
+            ds = try_opendap(input)
+            global_attributes = ds.attrs
+            kwds[name] = ds.data_vars[name]
+        elif isinstance(input, LiteralInput):
+            kwds[name] = input.data
+
+    out = func(**kwds)
+    output_dataset = xr.Dataset(
+        data_vars=None, coords=out.coords, attrs=global_attributes
+    )
+    output_dataset[out.name] = out
+    return output_dataset
+
+
+def try_opendap(
+    input: ComplexInput,
+    *,
+    chunks=None,
+    decode_times=True,
+    logging_function=lambda message: None,
+) -> xr.Dataset:
+    """Try to open the file as an OPeNDAP url and chunk it. 
+    
+    If OPeNDAP fails, access the file directly.
+    """
+    url = input.url
+    if is_opendap_url(url):
+        ds = xr.open_dataset(url, chunks=chunks, decode_times=decode_times)
+        if not chunks:
+            ds = ds.chunk(chunk_dataset(ds, max_size=1000000))
+        logging_function(f"Opened dataset as an OPeNDAP url: {url}")
+    else:
+        if url.startswith("http"):
+            # Accessing the file property writes it to disk if it's a url
+            logging_function(f"Downloading dataset for url: {url}")
+        else:
+            logging_function(f"Opening as local file: {input.file}")
+        ds = xr.open_dataset(input.file, decode_times=decode_times)
+
+    return ds
+
+
+def process_threaded(function: Callable, inputs: Iterable):
+    """Based on the current configuration, process a list threaded or not."""
+
+    threads = int(configuration.get_config_value("finch", "subset_threads"))
+    if threads > 1:
+        pool = ThreadPool(processes=threads)
+        outputs = list(pool.imap_unordered(function, inputs))
+        pool.close()
+        pool.join()
+    else:
+        outputs = [function(r) for r in inputs]
+
+    return outputs
+
+
+def chunk_dataset(ds, max_size=1000000):
+    """Ensures the chunked size of a xarray.Dataset is below a certain size
+
+    Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
+    """
+    from functools import reduce
+    from operator import mul
+    from itertools import cycle
+
+    chunks = dict(ds.sizes)
+
+    def chunk_size():
+        return reduce(mul, chunks.values())
+
+    for dim in cycle(chunks):
+        if chunk_size() < max_size:
+            break
+        chunks[dim] = max(chunks[dim] // 2, 1)
+
+    return chunks
+
+
+def make_metalink_output(
+    process: Process, files: List[Path], description: str = None
+) -> MetaLink4:
+    """Make a metalink output from a list of files"""
+
+    metalink = MetaLink4(
+        identity=process.identifier,
+        description=description,
+        publisher="Finch",
+        workdir=process.workdir,
+    )
+
+    for f in files:
+        mf = MetaFile(identity=f.stem, fmt=FORMATS.NETCDF)
+        mf.file = str(f)
+        metalink.append(mf)
+
+    return metalink
 
 
 def is_opendap_url(url):
@@ -46,158 +181,11 @@ def is_opendap_url(url):
         return dataset.disk_format in ("DAP2", "DAP4")
 
 
-class ParsingMethod(Enum):
-    # parse the filename directly (faster and simpler, more likely to fail)
-    filename = 1
-    # parse each Data Attribute Structure (DAS) by appending .das to the url
-    # One request for each dataset, so lots of small requests to the Thredds server
-    opendap_das = 2
-    # open the dataset using xarray and look at the file attributes
-    # safer, but slower and lots of small requests are made to the Thredds server
-    xarray = 3
-
-
-def get_bccaqv2_local_files_datasets(
-    catalog_url, variable=None, rcp=None, method: ParsingMethod = ParsingMethod.filename
-) -> List[str]:
-    """Get a list of filenames corresponding to variable and rcp on a local filesystem."""
-    urls = []
-    for file in Path(catalog_url).glob("*.nc"):
-        if _bccaqv2_filter(method, file.stem, str(file), rcp, variable):
-            urls.append(str(file))
-    return urls
-
-
-def get_bccaqv2_opendap_datasets(
-    catalog_url, variable=None, rcp=None, method: ParsingMethod = ParsingMethod.filename
-) -> List[str]:
-    """Get a list of urls corresponding to variable and rcp on a Thredds server.
-
-    We assume that the files are named in a certain way on the Thredds server.
-
-    This is the case for boreas.ouranos.ca/thredds
-    For more general use cases, see the `xarray` and `requests` methods below."""
-
-    catalog = TDSCatalog(catalog_url)
-
-    urls = []
-    for dataset in catalog.datasets.values():
-        opendap_url = dataset.access_urls["OPENDAP"]
-        if _bccaqv2_filter(method, dataset.name, opendap_url, rcp, variable):
-            urls.append(opendap_url)
-    return urls
-
-
-def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
-    variable_ok = variable is None
-    rcp_ok = rcp is None
-
-    keep_models = [
-        m.lower()
-        for m in [
-            "BNU-ESM",
-            "CCSM4",
-            "CESM1-CAM5",
-            "CNRM-CM5",
-            "CSIRO-Mk3-6-0",
-            "CanESM2",
-            "FGOALS-g2",
-            "GFDL-CM3",
-            "GFDL-ESM2G",
-            "GFDL-ESM2M",
-            "HadGEM2-AO",
-            "HadGEM2-ES",
-            "IPSL-CM5A-LR",
-            "IPSL-CM5A-MR",
-            "MIROC-ESM-CHEM",
-            "MIROC-ESM",
-            "MIROC5",
-            "MPI-ESM-LR",
-            "MPI-ESM-MR",
-            "MRI-CGCM3",
-            "NorESM1-M",
-            "NorESM1-ME",
-            "bcc-csm1-1-m",
-            "bcc-csm1-1",
-        ]
-    ]
-
-    if method == ParsingMethod.filename:
-        variable_ok = variable_ok or filename.startswith(variable)
-        rcp_ok = rcp_ok or rcp in filename
-
-        filename_lower = filename.lower()
-        if not any(m in filename_lower for m in keep_models):
-            return False
-
-        if "r1i1p1" not in filename:
-            return False
-
-    elif method == ParsingMethod.opendap_das:
-
-        raise NotImplementedError("todo: filter models and runs")
-
-        # re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
-        # lines = requests.get(url + ".das").content.decode().split("\n")
-        # variable_ok = variable_ok or any(
-        #     line.startswith(f"    {variable} {{") for line in lines
-        # )
-        # if not rcp_ok:
-        #     for line in lines:
-        #         match = re_experiment.search(line)
-        #         if match and rcp in match.group(1).split(","):
-        #             rcp_ok = True
-
-    elif method == ParsingMethod.xarray:
-
-        raise NotImplementedError("todo: filter models and runs")
-
-        # import xarray as xr
-
-        # ds = xr.open_dataset(url, decode_times=False)
-        # rcps = [
-        #     r
-        #     for r in ds.attrs.get("driving_experiment_id", "").split(",")
-        #     if "rcp" in r
-        # ]
-        # variable_ok = variable_ok or variable in ds.data_vars
-        # rcp_ok = rcp_ok or rcp in rcps
-
-    return rcp_ok and variable_ok
-
-
-def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=None):
-    """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
-    catalog_url = configuration.get_config_value("finch", "bccaqv2_url")
-    new_inputs = deepcopy(wps_inputs)
-    workdir = next(iter(wps_inputs.values()))[0].workdir
-
-    new_inputs["resource"] = []
-
-    if catalog_url.startswith("http"):
-        for url in get_bccaqv2_opendap_datasets(catalog_url, variable, rcp):
-            resource = _make_bccaqv2_resource_input()
-            resource.url = url
-            resource.workdir = workdir
-            new_inputs["resource"].append(resource)
-    else:
-        for file in get_bccaqv2_local_files_datasets(catalog_url, variable, rcp):
-            resource = _make_bccaqv2_resource_input()
-            resource.file = file
-            resource.workdir = workdir
-            new_inputs["resource"].append(resource)
-
-    return new_inputs
-
-
-def _make_bccaqv2_resource_input():
-    input = ComplexInput(
-        "resource",
-        "NetCDF resource",
-        max_occurs=1000,
-        supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
-    )
-    return input
+def single_input_or_none(inputs, identifier):
+    try:
+        return inputs[identifier][0].data
+    except KeyError:
+        return None
 
 
 def netcdf_to_csv(
@@ -320,10 +308,13 @@ def format_metadata(ds) -> str:
     return out
 
 
-def zip_files(output_filename, files=None, log_function=None, start_percentage=90):
+def zip_files(
+    output_filename, files: Iterable, log_function: Callable[[str, int], None] = None
+):
     """Create a zipfile from a list of files or folders.
 
     log_function is a function that receives a message and a percentage."""
+    log_function = log_function or (lambda *a: None)
     with zipfile.ZipFile(
         output_filename, mode="w", compression=zipfile.ZIP_DEFLATED
     ) as z:
@@ -345,11 +336,30 @@ def zip_files(output_filename, files=None, log_function=None, start_percentage=9
 
         n_files = len(all_files)
         for n, filename in enumerate(all_files):
-            if log_function is not None:
-                percentage = start_percentage + int(
-                    n / n_files * (100 - start_percentage)
-                )
-                message = f"Zipping file {n + 1} of {n_files}"
-                log_function(message, percentage)
+
+            percentage = int(n / n_files * 100)
+            message = f"Zipping file {n + 1} of {n_files}"
+            log_function(message, percentage)
+
             arcname = filename.relative_to(common_folder) if common_folder else None
             z.write(filename, arcname=arcname)
+
+
+def make_tasmin_tasmax_pairs(
+    filenames: List[Path],
+) -> Generator[Tuple[Path, Path], None, None]:
+    """Returns pairs of corresponding tasmin-tasmax files based on their filename"""
+
+    tasmin_files = [f for f in filenames if "tasmin" in f.name.lower()]
+    tasmax_files = [f for f in filenames if "tasmax" in f.name.lower()]
+    for tasmin in tasmin_files[:]:
+        for tasmax in tasmax_files[:]:
+            if tasmin.name.lower() == tasmax.name.lower().replace("tasmax", "tasmin"):
+                yield tasmin, tasmax
+                tasmax_files.remove(tasmax)
+                tasmin_files.remove(tasmin)
+                break
+    for f in tasmax_files + tasmax_files:
+        sentry_sdk.capture_message(
+            f"Couldn't find matching tasmin or tasmax for: {f}", level="error"
+        )

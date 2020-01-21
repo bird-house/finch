@@ -5,10 +5,7 @@ from dask.diagnostics.progress import format_time
 from pathlib import Path
 from pywps import Process, ComplexInput, LiteralInput
 from sentry_sdk import configure_scope
-import xarray as xr
 import logging
-import os
-from functools import wraps
 
 from finch.processes.utils import is_opendap_url
 
@@ -21,64 +18,18 @@ class FinchProcess(Process):
 
         # Must be assigned to the instance so that
         # it's also copied over when the process is deepcopied
-        self.old_handler = self.handler
-        self.handler = self._handler_wrapped
+        self.wrapped_handler = self.handler
+        self.handler = self._handler_wrapper
+        self.response = None
+        self.percentage = None
 
-    def _handler_wrapped(self, request, response):
+    def _handler_wrapper(self, request, response):
         self.sentry_configure_scope(request)
-        return self.old_handler(request, response)
 
-    def get_input_or_none(self, inputs, identifier):
-        try:
-            return inputs[identifier][0].data
-        except KeyError:
-            return None
-
-    def try_opendap(self, input, chunks=None, decode_times=True):
-        """Try to open the file as an OPeNDAP url and chunk it. If OPeNDAP fails, access the file directly. In both
-        cases, return an xarray.Dataset.
-        """
-        url = input.url
-        if is_opendap_url(url):
-            ds = xr.open_dataset(url, chunks=chunks, decode_times=decode_times)
-            if not chunks:
-                ds = ds.chunk(chunk_dataset(ds, max_size=1000000))
-            self.write_log("Opened dataset as an OPeNDAP url: {}".format(url))
-        else:
-            if url.startswith("http"):
-                self.write_log("Downloading dataset for url: {}".format(url))
-                # Accessing the file property writes it to disk if it's a url
-            else:
-                self.write_log("Opening as local file: {}".format(input.file))
-            ds = xr.open_dataset(input.file, decode_times=decode_times)
-
-        return ds
-
-    def compute_indices(self, func, inputs):
-        kwds = {}
-        global_attributes = None
-        for name, input_queue in inputs.items():
-            input = input_queue[0]
-            if isinstance(input, ComplexInput):
-                ds = self.try_opendap(input)
-                global_attributes = ds.attrs
-                kwds[name] = ds.data_vars[name]
-            elif isinstance(input, LiteralInput):
-                kwds[name] = input.data
-
-        out = func(**kwds)
-        output_dataset = xr.Dataset(data_vars=None, coords=out.coords, attrs=global_attributes)
-        output_dataset[out.name] = out
-        return output_dataset
-
-    def log_file_path(self):
-        return os.path.join(self.workdir, "log.txt")
-
-    def write_log(self, message, response=None, percentage=None):
-        open(self.log_file_path(), "a").write(message + "\n")
-        LOGGER.info(message)
-        if response is not None:
-            response.update_status(message, status_percentage=percentage)
+        # The process has been deepcopied, so it's ok to assign it a single response.
+        # We can now update the status document from the process instance itself.
+        self.reponse = response
+        return self.wrapped_handler(request, response)
 
     def sentry_configure_scope(self, request):
         """Add additional data to sentry error messages.
@@ -96,31 +47,9 @@ class FinchProcess(Process):
                 scope.set_extra("xml_request", request.http_request.data)
 
 
-def chunk_dataset(ds, max_size=1000000):
-    """Ensures the chunked size of a xarray.Dataset is below a certain size
-
-    Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
-    """
-    from functools import reduce
-    from operator import mul
-    from itertools import cycle
-
-    chunks = dict(ds.sizes)
-
-    def chunk_size():
-        return reduce(mul, chunks.values())
-
-    for dim in cycle(chunks):
-        if chunk_size() < max_size:
-            break
-        chunks[dim] = max(chunks[dim] // 2, 1)
-
-    return chunks
-
-
-class FinchProgress(ProgressBar):
+class FinchProgressBar(ProgressBar):
     def __init__(self, logging_function, start_percentage, *args, **kwargs):
-        super(FinchProgress, self).__init__(*args, **kwargs)
+        super(FinchProgressBar, self).__init__(*args, **kwargs)
         self._logging_function = logging_function
         self._start_percentage = start_percentage
 

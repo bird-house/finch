@@ -7,14 +7,12 @@ import xarray as xr
 from netCDF4 import Dataset
 
 from tests.utils import wps_literal_input, execute_process
-from finch.processes.wps_xsubsetpoint_bccaqv2 import SubsetGridPointBCCAQV2Process
-from finch.processes.wps_xsubsetbbox_bccaqv2 import SubsetBboxBCCAQV2Process
 
 
 @pytest.fixture
 def mock_local_datasets(monkeypatch):
     from pywps.configuration import CONFIG
-    from finch.processes import utils
+    from finch.processes import bccaqv2
 
     CONFIG.set("finch", "bccaqv2_url", "/mock_local/path")
 
@@ -23,7 +21,7 @@ def mock_local_datasets(monkeypatch):
     )
 
     monkeypatch.setattr(
-        utils, "get_bccaqv2_local_files_datasets", lambda *args: [f"{test_data}"]
+        bccaqv2, "get_bccaqv2_local_files_datasets", lambda *args: [f"{test_data}"]
     )
 
 
