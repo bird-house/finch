@@ -78,6 +78,11 @@ class _XclimIndicatorProcess(FinchProcess):
             store_supported=True,
         )
 
+        self.status_percentage_steps = {
+            "start": 5,
+            "done": 99,
+        }
+
     def load_inputs(self, params):
         # Ideally this would be based on the Parameters docstring section rather than name conventions.
         inputs = []
@@ -102,23 +107,27 @@ class _XclimIndicatorProcess(FinchProcess):
         return inputs
 
     def _handler(self, request, response):
-        write_log(self, "Processing started")
+        write_log(self, "Computing the output netcdf", process_step="start")
+
         out = compute_indices(self, self.xci, request.inputs)
 
         out_fn = os.path.join(self.workdir, "out.nc")
 
-        write_log(self, "Computing the output netcdf")
-
         def _log(message, percentage):
-            write_log(self, message)
+            write_log(self, message, subtask_percentage=percentage)
 
-        with FinchProgressBar(_log, start_percentage=10, width=15, dt=1):
+        with FinchProgressBar(
+            logging_function=_log,
+            start_percentage=self.response.status_percentage,
+            width=15,
+            dt=1,
+        ):
             out.to_netcdf(out_fn)
-
-        write_log(self, "Processing finished successfully")
 
         response.outputs["output_netcdf"].file = out_fn
         response.outputs["output_log"].file = log_file_path(self)
+
+        write_log(self, "Processing finished successfully", process_step="done")
 
         return response
 

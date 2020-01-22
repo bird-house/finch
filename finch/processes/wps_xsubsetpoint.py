@@ -67,8 +67,13 @@ class SubsetGridPointProcess(FinchProcess):
             store_supported=True,
         )
 
+        self.status_percentage_steps = {
+            "start": 5,
+            "done": 99,
+        }
+
     def _handler(self, request, response):
-        write_log(self, "Processing started")
+        write_log(self, "Processing started", process_step="start")
 
         output_files = finch_subset_gridpoint(self, request.inputs)
         metalink = make_metalink_output(self, output_files)
@@ -76,6 +81,6 @@ class SubsetGridPointProcess(FinchProcess):
         response.outputs["output"].file = metalink.files[0].file
         response.outputs["ref"].data = metalink.xml
 
-        write_log(self, "Processing finished successfully")
+        write_log(self, "Processing finished successfully", process_step="done")
 
         return response

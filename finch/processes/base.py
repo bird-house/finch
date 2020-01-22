@@ -1,4 +1,5 @@
 import zipfile
+from typing import Dict
 
 from dask.diagnostics import ProgressBar
 from dask.diagnostics.progress import format_time
@@ -21,14 +22,16 @@ class FinchProcess(Process):
         self.wrapped_handler = self.handler
         self.handler = self._handler_wrapper
         self.response = None
-        self.percentage = None
+        # A dict containing a step description and the percentage at the strat of this step
+        # Each process should overwrite this, and thie values are used in `processes.utils.write_log`
+        self.status_percentage_steps: Dict[str, int] = {}
 
     def _handler_wrapper(self, request, response):
         self.sentry_configure_scope(request)
 
         # The process has been deepcopied, so it's ok to assign it a single response.
         # We can now update the status document from the process instance itself.
-        self.reponse = response
+        self.response = response
         return self.wrapped_handler(request, response)
 
     def sentry_configure_scope(self, request):
@@ -51,12 +54,8 @@ class FinchProgressBar(ProgressBar):
     def __init__(self, logging_function, start_percentage, *args, **kwargs):
         super(FinchProgressBar, self).__init__(*args, **kwargs)
         self._logging_function = logging_function
-        self._start_percentage = start_percentage
 
     def _draw_bar(self, frac, elapsed):
-        start = self._start_percentage / 100
-
-        frac += start - frac * start
         bar = "#" * int(self._width * frac)
         percent = int(100 * frac)
         elapsed = format_time(elapsed)

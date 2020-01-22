@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from typing import List
+from threading import Lock
 
 from pywps import Process, ComplexInput
 from pywps.app.exceptions import ProcessError
@@ -12,6 +13,7 @@ from finch.processes.utils import (
     single_input_or_none,
     try_opendap,
     process_threaded,
+    write_log,
 )
 
 LOGGER = logging.getLogger("PYWPS")
@@ -49,6 +51,8 @@ def finch_subset_gridpoint(process: Process, inputs: RequestInputs) -> List[Path
 
     output_files = []
 
+    lock = Lock()
+
     def _subset(resource: ComplexInput):
         nonlocal count
 
@@ -56,9 +60,13 @@ def finch_subset_gridpoint(process: Process, inputs: RequestInputs) -> List[Path
         time_subset = start_date is not None or end_date is not None
         dataset = try_opendap(resource, decode_times=time_subset)
 
-        count += 1
-
-        percentage = int((count - 1) / n_files)
+        with lock:
+            count += 1
+            write_log(
+                process,
+                f"Subsetting file {count} of {n_files}",
+                subtask_percentage=(count - 1) * 100 // n_files,
+            )
 
         dataset = dataset[variables] if variables else dataset
 
@@ -120,6 +128,8 @@ def finch_subset_bbox(process: Process, inputs: RequestInputs) -> List[Path]:
 
     output_files = []
 
+    lock = Lock()
+
     def _subset(resource):
         nonlocal count
 
@@ -127,9 +137,13 @@ def finch_subset_bbox(process: Process, inputs: RequestInputs) -> List[Path]:
         time_subset = start_date is not None or end_date is not None
         dataset = try_opendap(resource, decode_times=time_subset)
 
-        count += 1
-
-        percentage = int((count - 1) / n_files)
+        with lock:
+            count += 1
+            write_log(
+                process,
+                f"Subsetting file {count} of {n_files}",
+                subtask_percentage=(count - 1) * 100 // n_files,
+            )
 
         dataset = dataset[variables] if variables else dataset
 

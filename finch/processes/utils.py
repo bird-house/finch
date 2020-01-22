@@ -27,19 +27,53 @@ def log_file_path(process: Process) -> Path:
     return Path(process.workdir) / "log.txt"
 
 
-def write_log(process: Process, message: str, level=logging.INFO):
+def write_log(
+    process: Process,
+    message: str,
+    level=logging.INFO,
+    *,
+    process_step: str = None,
+    subtask_percentage: int = None,
+):
     """Log the process status.
 
      - With the logging module
      - To a log file stored in the process working directory
-     - Update the response document with the message
+     - Update the response document with the message and the status percentage
+
+    subtask_percentage: not the percentage of the whole process, but the percent done 
+    in the current processing step. (see `process.status_percentage_steps`)
     """
     LOGGER.log(level, message)
+
+    status_percentage = process.response.status_percentage
+
+    # if a process_step is given, set this as the status percentage
+    if process_step:
+        status_percentage = process.status_percentage_steps.get(
+            process_step, status_percentage
+        )
+
+    # if a subtask percentage is given, add this value to the status_percentage
+    if subtask_percentage is not None:
+        steps_percentages = list(process.status_percentage_steps.values())
+        for n, percent in enumerate(steps_percentages):
+            if status_percentage < percent:
+                next_step_percentage = percent
+                current_step_percentage = steps_percentages[n - 1]
+                break
+        else:
+            current_step_percentage, next_step_percentage = 1, 100
+            if steps_percentages:
+                current_step_percentage = steps_percentages[-1]
+        step_delta = next_step_percentage - current_step_percentage
+        sub_percentage = subtask_percentage / 100 * step_delta
+        status_percentage = current_step_percentage + int(sub_percentage)
 
     if level >= logging.INFO:
         log_file_path(process).open("a", encoding="utf8").write(message + "\n")
         try:
-            process.response.update_status(message, getattr(process, "percentage"))
+            process.response.update_status(message, status_percentage=status_percentage)
         except AttributeError:
             pass
 

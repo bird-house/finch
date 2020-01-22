@@ -91,9 +91,22 @@ class BCCAQV2HeatWave(FinchProcess):
             store_supported=True,
         )
 
+        self.status_percentage_steps = {
+            "start": 5,
+            "subset": 7,
+            "compute_indices": 70,
+            "convert_to_csv": 90,
+            "zip_outputs": 95,
+            "done": 99,
+        }
+
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
-        self.percentage = 5
-        write_log(self, "Processing started")
+
+        convert_to_csv = request.inputs["output_format"][0].data == "csv"
+        if not convert_to_csv:
+            del self.status_percentage_steps["convert_to_csv"]
+
+        write_log(self, "Processing started", process_step="start")
 
         output_filename = make_output_filename(self, request.inputs)
 
@@ -103,8 +116,7 @@ class BCCAQV2HeatWave(FinchProcess):
         rcp = single_input_or_none(request.inputs, "rcp")
         request.inputs = get_bccaqv2_inputs(request.inputs, variable=variable, rcp=rcp)
 
-        self.percentage = 7
-        write_log(self, "Running subset")
+        write_log(self, "Running subset", process_step="subset")
 
         output_files = finch_subset_gridpoint(self, request.inputs)
 
@@ -112,7 +124,9 @@ class BCCAQV2HeatWave(FinchProcess):
             message = "No data was produced when subsetting using the provided bounds."
             raise ProcessError(message)
 
-        write_log(self, "Subset done, calculating indices")
+        write_log(
+            self, "Subset done, calculating indices", process_step="compute_indices"
+        )
 
         pairs = list(make_tasmin_tasmax_pairs(output_files))
         n_pairs = len(pairs)
@@ -123,8 +137,11 @@ class BCCAQV2HeatWave(FinchProcess):
         warnings.filterwarnings("ignore", category=UserWarning)
 
         for n, (tasmin, tasmax) in enumerate(pairs):
-            percentage = int(n / n_pairs * 100)
-            write_log(self, f"Computing indices for file {n + 1} of {n_pairs}")
+            write_log(
+                self,
+                f"Computing indices for file {n + 1} of {n_pairs}",
+                subtask_percentage=n * 100 // n_pairs,
+            )
 
             tasmin, tasmax = fix_broken_time_indices(tasmin, tasmax)
 
@@ -146,7 +163,9 @@ class BCCAQV2HeatWave(FinchProcess):
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
 
-        if request.inputs["output_format"][0].data == "csv":
+        if convert_to_csv:
+            write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
+
             csv_files, metadata_folder = netcdf_to_csv(
                 output_files,
                 output_folder=Path(self.workdir),
@@ -154,14 +173,16 @@ class BCCAQV2HeatWave(FinchProcess):
             )
             output_files = csv_files + [metadata_folder]
 
+        write_log(self, "Zipping outputs", process_step="zip_outputs")
+
         output_zip = Path(self.workdir) / (output_filename + ".zip")
 
-        def _log(message_, percentage_):
-            write_log(self, message_)
+        def _log(message, percentage):
+            write_log(self, message, subtask_percentage=percentage)
 
         zip_files(output_zip, output_files, log_function=_log)
 
         response.outputs["output"].file = output_zip
 
-        write_log(self, "Processing finished successfully")
+        write_log(self, "Processing finished successfully", process_step="done")
         return response

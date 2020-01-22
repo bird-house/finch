@@ -111,9 +111,21 @@ class SubsetGridPointBCCAQV2Process(FinchProcess):
             store_supported=True,
         )
 
+        self.status_percentage_steps = {
+            "start": 5,
+            "subset": 7,
+            "convert_to_csv": 90,
+            "zip_outputs": 95,
+            "done": 99,
+        }
+
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
-        self.percentage = 5
-        write_log(self, "Processing started")
+
+        convert_to_csv = request.inputs["output_format"][0].data == "csv"
+        if not convert_to_csv:
+            del self.status_percentage_steps["convert_to_csv"]
+
+        write_log(self, "Processing started", process_step="start")
 
         # Temporary backward-compatibility adjustment.
         # Remove me when lon0 and lat0 are removed
@@ -135,8 +147,7 @@ class SubsetGridPointBCCAQV2Process(FinchProcess):
         rcp = single_input_or_none(request.inputs, "rcp")
         request.inputs = get_bccaqv2_inputs(request.inputs, variable=variable, rcp=rcp)
 
-        self.percentage = 7
-        write_log(self, "Running subset")
+        write_log(self, "Running subset", process_step="subset")
 
         output_files = finch_subset_gridpoint(self, request.inputs)
 
@@ -144,9 +155,9 @@ class SubsetGridPointBCCAQV2Process(FinchProcess):
             message = "No data was produced when subsetting using the provided bounds."
             raise ProcessError(message)
 
-        write_log(self, "Subset done, creating zip file")
+        if convert_to_csv:
+            write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
 
-        if request.inputs["output_format"][0].data == "csv":
             csv_files, metadata_folder = netcdf_to_csv(
                 output_files,
                 output_folder=Path(self.workdir),
@@ -154,14 +165,16 @@ class SubsetGridPointBCCAQV2Process(FinchProcess):
             )
             output_files = csv_files + [metadata_folder]
 
+        write_log(self, "Zipping outputs", process_step="zip_outputs")
+
         output_zip = Path(self.workdir) / (output_filename + ".zip")
 
-        def _log(message_, percentage_):
-            write_log(self, message_)
+        def _log(message, percentage):
+            write_log(self, message, subtask_percentage=percentage)
 
         zip_files(output_zip, output_files, log_function=_log)
 
         response.outputs["output"].file = output_zip
 
-        write_log(self, "Processing finished successfully")
+        write_log(self, "Processing finished successfully", process_step="done")
         return response
