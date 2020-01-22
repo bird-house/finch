@@ -2,18 +2,17 @@ from threading import Lock
 import logging
 
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
-from pywps.app.exceptions import ProcessError
-from pywps.inout.outputs import MetaLink4
-from xclim.subset import subset_bbox, subset_gridpoint
 from .wpsio import start_date, end_date, lat0, lat1, lon0, lon1
 
-from finch.processes.subset import SubsetProcess
+from finch.processes.base import FinchProcess
+from finch.processes.utils import make_metalink_output, write_log
+from finch.processes.subset import finch_subset_bbox
 
 
 LOGGER = logging.getLogger("PYWPS")
 
 
-class SubsetBboxProcess(SubsetProcess):
+class SubsetBboxProcess(FinchProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):
@@ -60,7 +59,7 @@ class SubsetBboxProcess(SubsetProcess):
             ),
         ]
 
-        super(SubsetBboxProcess, self).__init__(
+        super().__init__(
             self._handler,
             identifier="subset_bbox",
             title="Subset with bounding box",
@@ -76,72 +75,20 @@ class SubsetBboxProcess(SubsetProcess):
             store_supported=True,
         )
 
-    def subset(
-        self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1
-    ) -> MetaLink4:
-        lon0 = wps_inputs["lon0"][0].data
-        lat0 = wps_inputs["lat0"][0].data
-        lon1 = self.get_input_or_none(wps_inputs, "lon1")
-        lat1 = self.get_input_or_none(wps_inputs, "lat1")
-        start = self.get_input_or_none(wps_inputs, "start_date")
-        end = self.get_input_or_none(wps_inputs, "end_date")
-        variables = [r.data for r in wps_inputs.get("variable", [])]
-
-        nones = [lat1 is None, lon1 is None]
-        if any(nones) and not all(nones):
-            raise ProcessError("lat1 and lon1 must be both omitted or provided")
-
-        n_files = len(wps_inputs["resource"])
-        count = 0
-
-        lock = Lock()
-
-        def _subset_function(resource):
-            nonlocal count
-
-            # if not subsetting by time, it's not necessary to decode times
-            time_subset = start is not None or end is not None
-            dataset = self.try_opendap(resource, decode_times=time_subset)
-
-            with lock:
-                count += 1
-                percentage = start_percentage + int(
-                    (count - 1) / n_files * (end_percentage - start_percentage)
-                )
-                self.write_log(
-                    f"Subsetting file {count} of {n_files}",
-                    response=response,
-                    percentage=percentage,
-                )
-
-            dataset = dataset[variables] if variables else dataset
-            if lat1 is None and lon1 is None:
-                return subset_gridpoint(
-                    dataset, lon=lon0, lat=lat0, start_date=start, end_date=end
-                )
-            else:
-                return subset_bbox(
-                    dataset,
-                    lon_bnds=[lon0, lon1],
-                    lat_bnds=[lat0, lat1],
-                    start_date=start,
-                    end_date=end,
-                )
-
-        metalink = self.subset_resources(
-            wps_inputs["resource"], _subset_function, threads=threads
-        )
-
-        return metalink
+        self.status_percentage_steps = {
+            "start": 5,
+            "done": 99,
+        }
 
     def _handler(self, request, response):
-        self.write_log("Processing started", response, 5)
+        write_log(self, "Processing started", process_step="start")
 
-        metalink = self.subset(request.inputs, response)
-
-        self.write_log("Processing finished successfully", response, 99)
+        output_files = finch_subset_bbox(self, request.inputs)
+        metalink = make_metalink_output(self, output_files)
 
         response.outputs["output"].file = metalink.files[0].file
         response.outputs["ref"].data = metalink.xml
+
+        write_log(self, "Processing finished successfully", process_step="done")
 
         return response

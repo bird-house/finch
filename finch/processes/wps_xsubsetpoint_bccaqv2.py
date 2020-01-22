@@ -1,16 +1,18 @@
 from pathlib import Path
-from pywps.response.execute import ExecuteResponse
-from pywps.app.exceptions import ProcessError
+
+from pywps import ComplexOutput, FORMATS, LiteralInput
 from pywps.app import WPSRequest
-from .wpsio import start_date, end_date
-from pywps import LiteralInput, ComplexOutput, FORMATS, configuration
+from pywps.app.exceptions import ProcessError
+from pywps.response.execute import ExecuteResponse
 
-from finch.processes import SubsetGridPointProcess
-from finch.processes.subset import SubsetProcess
-from finch.processes.utils import get_bccaqv2_inputs, netcdf_to_csv, zip_files
+from .base import FinchProcess
+from .bccaqv2 import get_bccaqv2_inputs, make_output_filename
+from .subset import finch_subset_gridpoint
+from .utils import netcdf_to_csv, single_input_or_none, write_log, zip_files
+from .wpsio import end_date, start_date
 
 
-class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
+class SubsetGridPointBCCAQV2Process(FinchProcess):
     """Subset a NetCDF file grid cells using a list of coordinates."""
 
     def __init__(self):
@@ -93,8 +95,7 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
             )
         ]
 
-        SubsetProcess.__init__(
-            self,
+        super().__init__(
             self._handler,
             identifier="subset_ensemble_BCCAQv2",
             title="Subset of BCCAQv2 datasets grid cells using a list of coordinates",
@@ -110,13 +111,26 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
             store_supported=True,
         )
 
+        self.status_percentage_steps = {
+            "start": 5,
+            "subset": 7,
+            "convert_to_csv": 90,
+            "zip_outputs": 95,
+            "done": 99,
+        }
+
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
-        self.write_log("Processing started", response, 5)
+
+        convert_to_csv = request.inputs["output_format"][0].data == "csv"
+        if not convert_to_csv:
+            del self.status_percentage_steps["convert_to_csv"]
+
+        write_log(self, "Processing started", process_step="start")
 
         # Temporary backward-compatibility adjustment.
         # Remove me when lon0 and lat0 are removed
         lon, lat, lon0, lat0 = [
-            self.get_input_or_none(request.inputs, var)
+            single_input_or_none(request.inputs, var)
             for var in "lon lat lon0 lat0".split()
         ]
         if not (lon and lat or lon0 and lat0):
@@ -125,38 +139,25 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
         request.inputs.setdefault("lat", request.inputs.get("lat0"))
         # End of 'remove me'
 
-        # Build output filename
-        variable = self.get_input_or_none(request.inputs, "variable")
-        rcp = self.get_input_or_none(request.inputs, "rcp")
-        lat = self.get_input_or_none(request.inputs, "lat").split(",")[0]
-        lon = self.get_input_or_none(request.inputs, "lon").split(",")[0]
-        output_format = request.inputs["output_format"][0].data
-        output_filename = f"BCCAQv2_subset_grid_cells_{float(lat):.3f}_{float(lon):.3f}"
+        output_filename = make_output_filename(self, request.inputs)
 
-        self.write_log("Fetching BCCAQv2 datasets", response, 6)
-        request.inputs = get_bccaqv2_inputs(request.inputs, variable, rcp)
+        write_log(self, "Fetching BCCAQv2 datasets")
 
-        self.write_log("Running subset", response, 7)
+        variable = single_input_or_none(request.inputs, "variable")
+        rcp = single_input_or_none(request.inputs, "rcp")
+        request.inputs = get_bccaqv2_inputs(request.inputs, variable=variable, rcp=rcp)
 
-        threads = int(configuration.get_config_value("finch", "subset_threads"))
+        write_log(self, "Running subset", process_step="subset")
 
-        metalink = self.subset(
-            request.inputs,
-            response,
-            start_percentage=7,
-            end_percentage=90,
-            threads=threads,
-        )
+        output_files = finch_subset_gridpoint(self, request.inputs)
 
-        if not metalink.files:
+        if not output_files:
             message = "No data was produced when subsetting using the provided bounds."
             raise ProcessError(message)
 
-        self.write_log("Subset done, creating zip file", response)
+        if convert_to_csv:
+            write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
 
-        output_files = [mf.file for mf in metalink.files]
-
-        if output_format == "csv":
             csv_files, metadata_folder = netcdf_to_csv(
                 output_files,
                 output_folder=Path(self.workdir),
@@ -164,13 +165,16 @@ class SubsetGridPointBCCAQV2Process(SubsetGridPointProcess):
             )
             output_files = csv_files + [metadata_folder]
 
+        write_log(self, "Zipping outputs", process_step="zip_outputs")
+
         output_zip = Path(self.workdir) / (output_filename + ".zip")
 
-        def log(message_, percentage_):
-            self.write_log(message_, response, percentage_)
+        def _log(message, percentage):
+            write_log(self, message, subtask_percentage=percentage)
 
-        zip_files(output_zip, output_files, log_function=log, start_percentage=90)
+        zip_files(output_zip, output_files, log_function=_log)
+
         response.outputs["output"].file = output_zip
 
-        self.write_log("Processing finished successfully", response, 99)
+        write_log(self, "Processing finished successfully", process_step="done")
         return response

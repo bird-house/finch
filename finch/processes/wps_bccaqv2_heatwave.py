@@ -1,29 +1,34 @@
-import logging
-import warnings
 from collections import deque
-from typing import List, Tuple
-
-import numpy as np
-import xarray as xr
-from xclim.checks import assert_daily
-from xclim.atmos import heat_wave_frequency
+import logging
 from pathlib import Path
-from pywps.response.execute import ExecuteResponse
-from pywps.app.exceptions import ProcessError
-from pywps.app import WPSRequest
-from .wpsio import lat, lon
-from pywps import LiteralInput, ComplexOutput, FORMATS, configuration
-import sentry_sdk
+import warnings
 
-from finch.processes import make_xclim_indicator_process, SubsetGridPointProcess
-from finch.processes.subset import SubsetProcess
-from finch.processes.utils import get_bccaqv2_inputs, netcdf_to_csv, zip_files
-from finch.processes.wps_xclim_indices import make_nc_input
+from pywps import ComplexOutput, FORMATS, LiteralInput
+from pywps.app import WPSRequest
+from pywps.app.exceptions import ProcessError
+from pywps.response.execute import ExecuteResponse
+from xclim.atmos import heat_wave_frequency
+
+from finch.processes import make_xclim_indicator_process
+
+from .base import FinchProcess
+from .bccaqv2 import get_bccaqv2_inputs, make_output_filename, fix_broken_time_indices
+from .subset import finch_subset_gridpoint
+from .utils import (
+    compute_indices,
+    make_tasmin_tasmax_pairs,
+    netcdf_to_csv,
+    single_input_or_none,
+    write_log,
+    zip_files,
+)
+from .wps_xclim_indices import make_nc_input
+from .wpsio import lat, lon
 
 LOGGER = logging.getLogger("PYWPS")
 
 
-class BCCAQV2HeatWave(SubsetGridPointProcess):
+class BCCAQV2HeatWave(FinchProcess):
     """Subset a NetCDF file using a gridpoint, and then compute the 'heat wave' index."""
 
     def __init__(self):
@@ -71,8 +76,7 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             )
         ]
 
-        SubsetProcess.__init__(
-            self,
+        super().__init__(
             self._handler,
             identifier="BCCAQv2_heat_wave_frequency_gridpoint",
             title="BCCAQv2 grid cell heat wave frequency computation",
@@ -87,74 +91,56 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             store_supported=True,
         )
 
-    def _make_tasmin_tasmax_pairs(self, filenames: List[Path]):
-        tasmin_files = [f for f in filenames if "tasmin" in f.name.lower()]
-        tasmax_files = [f for f in filenames if "tasmax" in f.name.lower()]
-        for tasmin in tasmin_files[:]:
-            for tasmax in tasmax_files[:]:
-                if tasmin.name.lower() == tasmax.name.lower().replace(
-                    "tasmax", "tasmin"
-                ):
-                    yield tasmin, tasmax
-                    tasmax_files.remove(tasmax)
-                    tasmin_files.remove(tasmin)
-                    break
-        for f in tasmax_files + tasmax_files:
-            sentry_sdk.capture_message(
-                f"Couldn't find matching tasmin or tasmax for: {f}", level="error"
-            )
+        self.status_percentage_steps = {
+            "start": 5,
+            "subset": 7,
+            "compute_indices": 70,
+            "convert_to_csv": 90,
+            "zip_outputs": 95,
+            "done": 99,
+        }
 
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
-        self.write_log("Processing started", response, 5)
 
-        lat = request.inputs["lat"][0].data
-        lon = request.inputs["lon"][0].data
-        output_format = request.inputs["output_format"][0].data
-        output_filename = f"BCCAQv2_subset_heat_wave_frequency_{lat}_{lon}"
+        convert_to_csv = request.inputs["output_format"][0].data == "csv"
+        if not convert_to_csv:
+            del self.status_percentage_steps["convert_to_csv"]
 
-        self.write_log("Fetching BCCAQv2 datasets", response, 6)
-        tasmin_inputs = get_bccaqv2_inputs(request.inputs, "tasmin")["resource"]
-        tasmax_inputs = get_bccaqv2_inputs(request.inputs, "tasmax")["resource"]
+        write_log(self, "Processing started", process_step="start")
 
-        request.inputs["resource"] = tasmin_inputs + tasmax_inputs
+        output_filename = make_output_filename(self, request.inputs)
 
-        self.write_log("Running subset", response, 7)
+        write_log(self, "Fetching BCCAQv2 datasets")
 
-        threads = int(configuration.get_config_value("finch", "subset_threads"))
+        variable = single_input_or_none(request.inputs, "variable")
+        rcp = single_input_or_none(request.inputs, "rcp")
+        request.inputs = get_bccaqv2_inputs(request.inputs, variable=variable, rcp=rcp)
 
-        metalink = self.subset(
-            request.inputs,
-            response,
-            start_percentage=7,
-            end_percentage=70,
-            threads=threads,
-        )
+        write_log(self, "Running subset", process_step="subset")
 
-        if not metalink.files:
+        output_files = finch_subset_gridpoint(self, request.inputs)
+
+        if not output_files:
             message = "No data was produced when subsetting using the provided bounds."
             raise ProcessError(message)
 
-        self.write_log("Subset done, calculating indices", response)
+        write_log(
+            self, "Subset done, calculating indices", process_step="compute_indices"
+        )
 
-        all_files = [Path(f.file) for f in metalink.files]
-
-        pairs = list(self._make_tasmin_tasmax_pairs(all_files))
+        pairs = list(make_tasmin_tasmax_pairs(output_files))
         n_pairs = len(pairs)
 
-        start_percentage, end_percentage = 70, 95
         output_files = []
 
         warnings.filterwarnings("ignore", category=FutureWarning)
         warnings.filterwarnings("ignore", category=UserWarning)
 
         for n, (tasmin, tasmax) in enumerate(pairs):
-            percentage = start_percentage + int(
-                n / n_pairs * (end_percentage - start_percentage)
-            )
-            self.write_log(
+            write_log(
+                self,
                 f"Computing indices for file {n + 1} of {n_pairs}",
-                response,
-                percentage,
+                subtask_percentage=n * 100 // n_pairs,
             )
 
             tasmin, tasmax = fix_broken_time_indices(tasmin, tasmax)
@@ -167,7 +153,7 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             inputs["tasmax"] = deque([make_nc_input("tasmax")], maxlen=1)
             inputs["tasmax"][0].file = str(tasmax)
 
-            out = self.compute_indices(self.indices_process.xci, inputs)
+            out = compute_indices(self, self.indices_process.xci, inputs)
             out_fn = Path(self.workdir) / tasmin.name.replace(
                 "tasmin", "heat_wave_frequency"
             )
@@ -177,7 +163,9 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
 
-        if output_format == "csv":
+        if convert_to_csv:
+            write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
+
             csv_files, metadata_folder = netcdf_to_csv(
                 output_files,
                 output_folder=Path(self.workdir),
@@ -185,44 +173,16 @@ class BCCAQV2HeatWave(SubsetGridPointProcess):
             )
             output_files = csv_files + [metadata_folder]
 
+        write_log(self, "Zipping outputs", process_step="zip_outputs")
+
         output_zip = Path(self.workdir) / (output_filename + ".zip")
 
-        def log(message_, percentage_):
-            self.write_log(message_, response, percentage_)
+        def _log(message, percentage):
+            write_log(self, message, subtask_percentage=percentage)
 
-        zip_files(output_zip, output_files, log_function=log, start_percentage=90)
+        zip_files(output_zip, output_files, log_function=_log)
+
         response.outputs["output"].file = output_zip
 
-        self.write_log("Processing finished successfully", response, 99)
+        write_log(self, "Processing finished successfully", process_step="done")
         return response
-
-
-def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
-    """In a single bccaqv2 dataset, there is an error in the timestamp data.
-
-    2036-10-28 time step coded as 1850-01-01
-    tasmax_day_BCCAQv2+ANUSPLIN300_CESM1-CAM5_historical+rcp85_r1i1p1_19500101-21001231_sub.nc
-    """
-    tasmin_ds = xr.open_dataset(tasmin)
-    tasmax_ds = xr.open_dataset(tasmax)
-
-    def fix(correct_ds, wrong_ds, original_filename):
-        wrong_ds["time"] = correct_ds.time
-        temp_name = original_filename.with_name(original_filename.stem + "_temp")
-        wrong_ds.to_netcdf(temp_name)
-        original_filename.unlink()
-        temp_name.rename(original_filename)
-
-    try:
-        assert_daily(tasmin_ds)
-    except ValueError:
-        fix(tasmax_ds, tasmin_ds, tasmin)
-        return tasmin, tasmax
-
-    try:
-        assert_daily(tasmax_ds)
-    except ValueError:
-        fix(tasmin_ds, tasmax_ds, tasmax)
-        return tasmin, tasmax
-
-    return tasmin, tasmax
