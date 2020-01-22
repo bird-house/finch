@@ -5,10 +5,8 @@ from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
 from unidecode import unidecode
 
-from .base import FinchProgressBar, FinchProcess
-from .utils import write_log, log_file_path, compute_indices
-
-from .base import FinchProcess
+from .base import FinchProcess, FinchProgressBar
+from .utils import compute_indices, log_file_path, write_log
 
 LOGGER = logging.getLogger("PYWPS")
 

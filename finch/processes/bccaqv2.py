@@ -1,11 +1,10 @@
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
-from pywps import ComplexInput, Process
+from pywps import ComplexInput, FORMATS, Process
 from pywps import configuration
-from pywps import ComplexInput, FORMATS
 from siphon.catalog import TDSCatalog
 import xarray as xr
 from xclim.checks import assert_daily
@@ -169,13 +168,15 @@ def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=None):
 
 
 def _formatted_coordinate(value) -> Optional[str]:
-    """Returns the first value whether the input is a list of float or a 
-    single float"""
+    """Returns the first float value.
+
+    The value can be a comma separated list of floats or a single float
+    """
     if not value:
         return
     try:
         value = value.split(",")[0]
-    except (AttributeError):
+    except AttributeError:
         pass
     return f"{float(value):.3f}"
 

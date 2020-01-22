@@ -1,8 +1,7 @@
 import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from pathlib import Path
-from typing import Callable, Dict, Generator, Iterable, List, Tuple, Union, Deque
+from typing import Callable, Deque, Dict, Generator, Iterable, List, Tuple, Union
 import zipfile
 
 import netCDF4
@@ -41,7 +40,7 @@ def write_log(
      - To a log file stored in the process working directory
      - Update the response document with the message and the status percentage
 
-    subtask_percentage: not the percentage of the whole process, but the percent done 
+    subtask_percentage: not the percentage of the whole process, but the percent done
     in the current processing step. (see `process.status_percentage_steps`)
     """
     LOGGER.log(level, message)
@@ -107,8 +106,8 @@ def try_opendap(
     decode_times=True,
     logging_function=lambda message: None,
 ) -> xr.Dataset:
-    """Try to open the file as an OPeNDAP url and chunk it. 
-    
+    """Try to open the file as an OPeNDAP url and chunk it.
+
     If OPeNDAP fails, access the file directly.
     """
     url = input.url

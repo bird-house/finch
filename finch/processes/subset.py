@@ -21,7 +21,7 @@ LOGGER = logging.getLogger("PYWPS")
 
 def finch_subset_gridpoint(process: Process, inputs: RequestInputs) -> List[Path]:
     """Parse wps inputs based on their name and execute the correct subset function.
-    
+
     The expected names of the inputs are as followed (taken from `wpsio.py`):
      - resource: ComplexInput files to subset.
      - lat: Latitude coordinate, can be a comma separated list of floats
@@ -101,7 +101,7 @@ def finch_subset_gridpoint(process: Process, inputs: RequestInputs) -> List[Path
 
 def finch_subset_bbox(process: Process, inputs: RequestInputs) -> List[Path]:
     """Parse wps inputs based on their name and execute the correct subset function.
-    
+
     The expected names of the inputs are as followed (taken from `wpsio.py`):
      - resource: ComplexInput files to subset.
      - lat0: Latitude coordinate
