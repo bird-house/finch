@@ -1,16 +1,18 @@
 from pathlib import Path
-from pywps.response.execute import ExecuteResponse
-from pywps.app.exceptions import ProcessError
+
+from pywps import LiteralInput, ComplexOutput, FORMATS
 from pywps.app import WPSRequest
-from .wpsio import start_date, end_date, lat0, lat1, lon0, lon1
-from pywps import LiteralInput, ComplexOutput, FORMATS, configuration
+from pywps.app.exceptions import ProcessError
+from pywps.response.execute import ExecuteResponse
 
-from finch.processes import SubsetBboxProcess
-from finch.processes.subset import SubsetProcess
-from finch.processes.utils import get_bccaqv2_inputs, netcdf_to_csv, zip_files
+from .base import FinchProcess
+from .bccaqv2 import get_bccaqv2_inputs, make_output_filename
+from .subset import finch_subset_bbox
+from .utils import netcdf_to_csv, single_input_or_none, write_log, zip_files
+from .wpsio import end_date, lat0, lat1, lon0, lon1, start_date
 
 
-class SubsetBboxBCCAQV2Process(SubsetBboxProcess):
+class SubsetBboxBCCAQV2Process(FinchProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):
@@ -63,8 +65,7 @@ class SubsetBboxBCCAQV2Process(SubsetBboxProcess):
             )
         ]
 
-        SubsetProcess.__init__(
-            self,
+        super().__init__(
             self._handler,
             identifier="subset_ensemble_bbox_BCCAQv2",
             title="Subset of BCCAQv2 datasets, using a bounding box",
@@ -81,41 +82,41 @@ class SubsetBboxBCCAQV2Process(SubsetBboxProcess):
             store_supported=True,
         )
 
+        self.status_percentage_steps = {
+            "start": 5,
+            "subset": 7,
+            "convert_to_csv": 90,
+            "zip_outputs": 95,
+            "done": 99,
+        }
+
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
-        self.write_log("Processing started", response, 5)
 
-        # Build output filename
-        variable = self.get_input_or_none(request.inputs, "variable")
-        rcp = self.get_input_or_none(request.inputs, "rcp")
-        lat0 = self.get_input_or_none(request.inputs, "lat0")
-        lon0 = self.get_input_or_none(request.inputs, "lon0")
-        output_format = request.inputs["output_format"][0].data
-        output_filename = f"BCCAQv2_subset_bbox_{lat0:.3f}_{lon0:.3f}"
+        convert_to_csv = request.inputs["output_format"][0].data == "csv"
+        if not convert_to_csv:
+            del self.status_percentage_steps["convert_to_csv"]
 
-        self.write_log("Fetching BCCAQv2 datasets", response, 6)
-        request.inputs = get_bccaqv2_inputs(request.inputs, variable, rcp)
+        write_log(self, "Processing started", process_step="start")
 
-        self.write_log("Running subset", response, 7)
+        output_filename = make_output_filename(self, request.inputs)
 
-        threads = int(configuration.get_config_value("finch", "subset_threads"))
+        write_log(self, "Fetching BCCAQv2 datasets")
 
-        metalink = self.subset(
-            request.inputs,
-            response,
-            start_percentage=7,
-            end_percentage=90,
-            threads=threads,
-        )
+        variable = single_input_or_none(request.inputs, "variable")
+        rcp = single_input_or_none(request.inputs, "rcp")
+        request.inputs = get_bccaqv2_inputs(request.inputs, variable=variable, rcp=rcp)
 
-        if not metalink.files:
+        write_log(self, "Running subset", process_step="subset")
+
+        output_files = finch_subset_bbox(self, request.inputs)
+
+        if not output_files:
             message = "No data was produced when subsetting using the provided bounds."
             raise ProcessError(message)
 
-        self.write_log("Subset done, creating zip file", response)
+        if convert_to_csv:
+            write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
 
-        output_files = [mf.file for mf in metalink.files]
-
-        if output_format == "csv":
             csv_files, metadata_folder = netcdf_to_csv(
                 output_files,
                 output_folder=Path(self.workdir),
@@ -123,13 +124,16 @@ class SubsetBboxBCCAQV2Process(SubsetBboxProcess):
             )
             output_files = csv_files + [metadata_folder]
 
+        write_log(self, "Zipping outputs", process_step="zip_outputs")
+
         output_zip = Path(self.workdir) / (output_filename + ".zip")
 
-        def log(message_, percentage_):
-            self.write_log(message_, response, percentage_)
+        def _log(message, percentage):
+            write_log(self, message, subtask_percentage=percentage)
 
-        zip_files(output_zip, output_files, log_function=log, start_percentage=90)
+        zip_files(output_zip, output_files, log_function=_log)
+
         response.outputs["output"].file = output_zip
 
-        self.write_log("Processing finished successfully", response, 99)
+        write_log(self, "Processing finished successfully", process_step="done")
         return response

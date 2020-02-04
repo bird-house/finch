@@ -1,14 +1,12 @@
-from threading import Lock
+from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 
-import xarray as xr
-from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
-from pywps.inout.outputs import MetaLink4
-from xclim.subset import subset_gridpoint
-from .wpsio import start_date, end_date, lon, lat
-from finch.processes.subset import SubsetProcess
+from .base import FinchProcess
+from .subset import finch_subset_gridpoint
+from .utils import make_metalink_output, write_log
+from .wpsio import end_date, lat, lon, start_date
 
 
-class SubsetGridPointProcess(SubsetProcess):
+class SubsetGridPointProcess(FinchProcess):
     """Subset a NetCDF file grid cells using a list of coordinates."""
 
     def __init__(self):
@@ -53,7 +51,7 @@ class SubsetGridPointProcess(SubsetProcess):
             ),
         ]
 
-        super(SubsetGridPointProcess, self).__init__(
+        super().__init__(
             self._handler,
             identifier="subset_gridpoint",
             title="Subset with a grid point",
@@ -69,64 +67,20 @@ class SubsetGridPointProcess(SubsetProcess):
             store_supported=True,
         )
 
-    def subset(
-        self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1
-    ) -> MetaLink4:
-        longitudes = [float(lon) for lon in wps_inputs["lon"][0].data.split(",")]
-        latitudes = [float(lat) for lat in wps_inputs["lat"][0].data.split(",")]
-        start = self.get_input_or_none(wps_inputs, "start_date")
-        end = self.get_input_or_none(wps_inputs, "end_date")
-        variables = [r.data for r in wps_inputs.get("variable", [])]
-
-        n_files = len(wps_inputs["resource"])
-        count = 0
-
-        lock = Lock()
-
-        def _subset_function(resource):
-            nonlocal count
-
-            # if not subsetting by time, it's not necessary to decode times
-            time_subset = start is not None or end is not None
-            dataset = self.try_opendap(resource, decode_times=time_subset)
-
-            with lock:
-                count += 1
-
-                percentage = start_percentage + int(
-                    (count - 1) / n_files * (end_percentage - start_percentage)
-                )
-                self.write_log(
-                    f"Subsetting file {count} of {n_files}", response, percentage
-                )
-
-            dataset = dataset[variables] if variables else dataset
-
-            subsets = []
-            for longitude, latitude in zip(longitudes, latitudes):
-                subset = subset_gridpoint(
-                    dataset, lon=longitude, lat=latitude, start_date=start, end_date=end
-                )
-                subsets.append(subset)
-
-            output = xr.concat(subsets, dim="region")
-
-            return output
-
-        metalink = self.subset_resources(
-            wps_inputs["resource"], _subset_function, threads=threads
-        )
-
-        return metalink
+        self.status_percentage_steps = {
+            "start": 5,
+            "done": 99,
+        }
 
     def _handler(self, request, response):
-        self.write_log("Processing started", response, 5)
+        write_log(self, "Processing started", process_step="start")
 
-        metalink = self.subset(request.inputs, response)
-
-        self.write_log("Processing finished successfully", response, 99)
+        output_files = finch_subset_gridpoint(self, request.inputs)
+        metalink = make_metalink_output(self, output_files)
 
         response.outputs["output"].file = metalink.files[0].file
         response.outputs["ref"].data = metalink.xml
+
+        write_log(self, "Processing finished successfully", process_step="done")
 
         return response

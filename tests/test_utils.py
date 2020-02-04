@@ -6,17 +6,16 @@ import numpy as np
 import pandas as pd
 from pywps import configuration
 
+from finch.processes.bccaqv2 import get_bccaqv2_opendap_datasets
 from finch.processes.utils import (
-    get_bccaqv2_opendap_datasets,
     netcdf_to_csv,
     zip_files,
     is_opendap_url,
 )
-import pytest
 from unittest import mock
 
 
-@mock.patch("finch.processes.utils.TDSCatalog")
+@mock.patch("finch.processes.bccaqv2.TDSCatalog")
 def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
     names = [
         "tasmin_day_BCCAQv2+ANUSPLIN300_CNRM-CM5_historical+rcp85_r1i1p1_19500101-21001231.nc",
