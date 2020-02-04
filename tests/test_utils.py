@@ -2,6 +2,7 @@ import shutil
 import zipfile
 from pathlib import Path
 
+import pytest
 import numpy as np
 import pandas as pd
 from pywps import configuration
@@ -116,10 +117,10 @@ def test_netcdf_to_csv_bad_hours():
         assert np.all(df.time.dt.hour == 12)
 
 
+@pytest.mark.online
 def test_is_opendap_url():
-    # This test uses online requests, but the links should be pretty stable.
-    # In case the link are no longer available, we should change the url.
-    # This is better than skipping this test in CI.
+    # This test uses online requests, and the servers are not as stable as hoped.
+    # We should record these requests so that the tests don't break when the servers are down.
 
     url = (
         "https://boreas.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/"
