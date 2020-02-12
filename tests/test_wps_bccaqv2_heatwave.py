@@ -1,106 +1,77 @@
-from collections import deque
-import tempfile
-from unittest import mock
-
-import pytest
 from pathlib import Path
-import xarray as xr
+import zipfile
 
-from finch.processes import BCCAQV2HeatWave
-from finch.processes.wps_xclim_indices import make_nc_input
-from finch.processes import utils
-from tests.utils import wps_literal_input, execute_process
+from netCDF4 import Dataset
+import pytest
+
+from tests.utils import execute_process, wps_literal_input
 
 
-@mock.patch("finch.processes.bccaqv2.get_bccaqv2_opendap_datasets")
-@mock.patch("finch.processes.wps_bccaqv2_heatwave.fix_broken_time_indices")
-@mock.patch("finch.processes.wps_bccaqv2_heatwave.finch_subset_gridpoint")
-@mock.patch("finch.processes.wps_bccaqv2_heatwave.compute_indices")
-def test_bccaqv2_heatwave(
-    mock_compute_indices, mock_bccaq_subset, mock_fix, mock_datasets, client
-):
+@pytest.fixture
+def mock_local_datasets(monkeypatch):
+    """Mock the get_bccaqv2_local_files_datasets function
+
+    >>> tasmax  # "tasmax_subset.nc"
+    <xarray.Dataset> 
+    Dimensions:  (lat: 12, lon: 12, time: 100)
+    Coordinates:
+    * lon      (lon) float64 -73.46 -73.38 -73.29 -73.21 ... -72.71 -72.63 -72.54
+    * lat      (lat) float64 45.54 45.62 45.71 45.79 ... 46.21 46.29 46.37 46.46
+    * time     (time) object 1950-01-01 12:00:00 ... 1950-04-10 12:00:00
+    Data variables:
+        tasmax   (time, lat, lon) float32 ... 
+    >>> tasmin  # "tasmin_subset.nc"
+    <xarray.Dataset> 
+    Dimensions:  (lat: 12, lon: 12, time: 100)
+    Coordinates:
+    * lon      (lon) float64 -73.46 -73.38 -73.29 -73.21 ... -72.71 -72.63 -72.54
+    * lat      (lat) float64 45.54 45.62 45.71 45.79 ... 46.21 46.29 46.37 46.46
+    * time     (time) object 1950-01-01 12:00:00 ... 1950-04-10 12:00:00
+    Data variables:
+        tasmin   (time, lat, lon) float32 ...
+    """
+    from pywps.configuration import CONFIG
+    from finch.processes import bccaqv2
+
+    CONFIG.set("finch", "bccaqv2_url", "/mock_local/path")
+
+    subset_sample = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
+
+    test_data = [
+        subset_sample / "tasmin_subset.nc",
+        subset_sample / "tasmax_subset.nc",
+    ]
+
+    monkeypatch.setattr(
+        bccaqv2,
+        "get_bccaqv2_local_files_datasets",
+        lambda *args: [str(f) for f in test_data],
+    )
+
+
+def test_bccaqv2_heatwave_frequency(mock_local_datasets, client):
+    # --- given ---
     identifier = "BCCAQv2_heat_wave_frequency_gridpoint"
     inputs = [
         wps_literal_input("output_format", "netcdf"),
-        wps_literal_input("lat", "2"),
-        wps_literal_input("lon", "3"),
+        wps_literal_input("lat", "46"),
+        wps_literal_input("lon", "-72.8"),
         wps_literal_input("thresh_tasmin", "22.0 degC"),
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
-        wps_literal_input("freq", "YS"),
+        wps_literal_input("freq", "MS"),
     ]
 
-    tmp = Path(__file__).parent / "tmp"
-    tmp.mkdir(exist_ok=True)
-
-    temp_file1 = tmp / "tasmin_some_file.nc"
-    temp_file1.write_text("dummy data")
-    temp_file2 = tmp / "tasmax_some_file.nc"
-    temp_file2.write_text("dummy data")
-
-    mock_datasets.return_value = ["dataset1", "dataset2"]
-    mock_bccaq_subset.return_value = [temp_file1, temp_file2]
-    mock_fix.side_effect = lambda *args: args
-
-    def write_dummy_data(filename):
-        Path(filename).write_text("dummy data")
-
-    mock_computed = mock.MagicMock()
-    mock_compute_indices.return_value = mock_computed
-    mock_computed.to_netcdf.side_effect = write_dummy_data
-
+    # --- when ---
     outputs = execute_process(client, identifier, inputs, output_names=["output"])
 
-    output_file = outputs[0]
+    # --- then ---
     assert len(outputs) == 1
-    assert output_file.endswith("zip")
-    assert Path(output_file).exists()
-
-    assert len(mock_bccaq_subset.call_args[0][1]["resource"]) == 2
-
-
-def test_bccaqv2_heat_wave_frequency_sample_data():
-    here = Path(__file__).parent
-    folder = here / "data" / "bccaqv2_single_cell"
-    tasmin = list(sorted(folder.glob("tasmin*.nc")))[0]
-    tasmax = list(sorted(folder.glob("tasmax*.nc")))[0]
-
-    tasmin_input = make_nc_input("tasmin")
-    tasmin_input.file = tasmin
-    tasmax_input = make_nc_input("tasmax")
-    tasmax_input.file = tasmax
-
-    inputs = {
-        "tasmin": deque([tasmin_input]),
-        "tasmax": deque([tasmax_input]),
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 1
+    ds = Dataset("inmemory.nc", memory=zf.read(zf.namelist()[0]))
+    dims = {d.name: d.size for d in ds.dimensions.values()}
+    assert dims == {
+        "region": 1,
+        "time": 4,  # there are roughly 4 months in the test datasets
     }
-    process = BCCAQV2HeatWave()
-    process.workdir = tempfile.mkdtemp()
-    out = utils.compute_indices(process, process.indices_process.xci, inputs)
-
-    input_attrs = xr.open_dataset(tasmin).attrs
-    del input_attrs["creation_date"]
-    output_attrs = out.attrs
-    del output_attrs["creation_date"]
-
-    assert output_attrs == input_attrs
-
-
-@pytest.mark.skip("Skipping: subset using real data is too long.")
-def test_bccaqv2_heatwave_online(client):
-    identifier = "BCCAQv2_heat_wave_frequency_gridpoint"
-    up_right = 45.507485, -73.541295
-
-    inputs = [
-        wps_literal_input("output_format", "netcdf"),
-        wps_literal_input("lat", str(up_right[0])),
-        wps_literal_input("lon", str(up_right[1])),
-        wps_literal_input("thresh_tasmin", "22.0 degC"),
-        wps_literal_input("thresh_tasmax", "30 degC"),
-        wps_literal_input("window", "3"),
-        wps_literal_input("freq", "YS"),
-    ]
-
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
-
-    print(outputs)
