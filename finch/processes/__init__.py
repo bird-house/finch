@@ -24,6 +24,12 @@ def get_indicators(*args):
 # List of Indicators that are exposed as WPS processes
 indicators = get_indicators(xclim.atmos)
 
+# Filter some indicators not implemented yet
+not_implemented = [
+    "DC",  # lat input type is not implemented and start_up_mode argument seems to be missing?
+]
+indicators = [i for i in indicators if i.identifier not in not_implemented]
+
 # Create PyWPS.Process subclasses
 processes = [make_xclim_indicator_process(ind) for ind in indicators]
 processes.extend(
