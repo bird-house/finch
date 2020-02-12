@@ -12,7 +12,11 @@ from xclim.atmos import heat_wave_frequency
 from finch.processes import make_xclim_indicator_process
 
 from .base import FinchProcess
-from .bccaqv2 import get_bccaqv2_inputs, make_output_filename, fix_broken_time_indices
+from .utils_bccaqv2 import (
+    get_bccaqv2_inputs,
+    make_output_filename,
+    fix_broken_time_indices,
+)
 from .subset import finch_subset_gridpoint
 from .utils import (
     compute_indices,

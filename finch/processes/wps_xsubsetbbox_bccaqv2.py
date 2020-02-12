@@ -6,7 +6,7 @@ from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 
 from .base import FinchProcess
-from .bccaqv2 import get_bccaqv2_inputs, make_output_filename
+from .utils_bccaqv2 import get_bccaqv2_inputs, make_output_filename
 from .subset import finch_subset_bbox
 from .utils import netcdf_to_csv, single_input_or_none, write_log, zip_files
 from .wpsio import end_date, lat0, lat1, lon0, lon1, start_date
