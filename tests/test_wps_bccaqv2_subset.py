@@ -12,7 +12,7 @@ def mock_local_datasets(monkeypatch):
     """Mock the get_bccaqv2_local_files_datasets function
 
     >>> tasmin  # "tasmin_subset.nc"
-    <xarray.Dataset> 
+    <xarray.Dataset>
     Dimensions:  (lat: 12, lon: 12, time: 100)
     Coordinates:
     * lon      (lon) float64 -73.46 -73.38 -73.29 -73.21 ... -72.71 -72.63 -72.54

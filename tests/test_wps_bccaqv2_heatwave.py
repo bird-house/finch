@@ -12,16 +12,16 @@ def mock_local_datasets(monkeypatch):
     """Mock the get_bccaqv2_local_files_datasets function
 
     >>> tasmax  # "tasmax_subset.nc"
-    <xarray.Dataset> 
+    <xarray.Dataset>
     Dimensions:  (lat: 12, lon: 12, time: 100)
     Coordinates:
     * lon      (lon) float64 -73.46 -73.38 -73.29 -73.21 ... -72.71 -72.63 -72.54
     * lat      (lat) float64 45.54 45.62 45.71 45.79 ... 46.21 46.29 46.37 46.46
     * time     (time) object 1950-01-01 12:00:00 ... 1950-04-10 12:00:00
     Data variables:
-        tasmax   (time, lat, lon) float32 ... 
+        tasmax   (time, lat, lon) float32 ...
     >>> tasmin  # "tasmin_subset.nc"
-    <xarray.Dataset> 
+    <xarray.Dataset>
     Dimensions:  (lat: 12, lon: 12, time: 100)
     Coordinates:
     * lon      (lon) float64 -73.46 -73.38 -73.29 -73.21 ... -72.71 -72.63 -72.54
