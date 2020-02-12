@@ -75,3 +75,23 @@ lat1 = LiteralInput(
     default=90,
     min_occurs=0,
 )
+
+rcp = LiteralInput(
+    "rcp",
+    "RCP Scenario",
+    abstract="Representative Concentration Pathway (RCP)",
+    data_type="string",
+    default=None,
+    min_occurs=0,
+    allowed_values=["rcp26", "rcp45", "rcp85"],
+)
+
+output_netcdf_csv = LiteralInput(
+    "output_format",
+    "Output format choice",
+    abstract="Choose in which format you want to recieve the result",
+    data_type="string",
+    allowed_values=["netcdf", "csv"],
+    default="netcdf",
+)
+

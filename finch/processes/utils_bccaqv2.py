@@ -1,16 +1,34 @@
+from collections import deque
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Dict
 
 from pywps import ComplexInput, FORMATS, Process
 from pywps import configuration
 from siphon.catalog import TDSCatalog
 import xarray as xr
 from xclim.checks import assert_daily
+from xclim.utils import Indicator
 
-from .utils import PywpsInput
+from .utils import PywpsInput, RequestInputs
 from .utils import single_input_or_none
+from .wps_xclim_indices import make_nc_input
+
+
+xclim_netcdf_variables = {
+    "tasmin",
+    "tasmax",
+    "tas",
+    "pr",
+    "prsn",
+    "tn10",
+    "tn90",
+    "t10",
+    "t90",
+}  # a list of all posible netcdf arguments in xclim
+
+bccaq_variable_types = {"tasmin", "tasmax", "pr"}
 
 
 class ParsingMethod(Enum):
@@ -240,3 +258,75 @@ def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
         return tasmin, tasmax
 
     return tasmin, tasmax
+
+
+def uses_bccaqv2_data(indicator: Indicator) -> bool:
+    """Returns True if the BCCAQv2 data can be used directly with this indicator."""
+
+    incompatible_variable_names = xclim_netcdf_variables - bccaq_variable_types
+
+    params = eval(indicator.json()["parameters"])
+    return not any(p in incompatible_variable_names for p in params)
+
+
+def make_indicator_inputs(
+    indicator: Indicator, wps_inputs: RequestInputs, files_list: List[Path]
+) -> List[RequestInputs]:
+    """From a list of files, make a list of inputs used to call the given xclim indicator."""
+
+    arguments = set(eval(indicator.json()["parameters"]))
+
+    required_args = bccaq_variable_types.intersection(arguments)
+
+    input_list = []
+
+    if len(required_args) == 1:
+        variable_name = list(required_args)[0]
+        for path in files_list:
+            inputs = deepcopy(wps_inputs)
+            inputs[variable_name] = deque([make_nc_input(variable_name)], maxlen=1)
+            inputs[variable_name][0].file = str(path)
+            input_list.append(inputs)
+    else:
+        for input_group in make_file_groups(files_list):
+            inputs = deepcopy(wps_inputs)
+            for variable_name, path in input_group.items():
+                if not variable_name in required_args:
+                    continue
+                inputs[variable_name] = deque([make_nc_input(variable_name)], maxlen=1)
+                inputs[variable_name][0].file = str(path)
+                input_list.append(inputs)
+
+    return input_list
+
+
+def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
+    """Groups files by filenames, changing only the netcdf variable name."""
+    groups = []
+    filenames = {f.name: f for f in files_list}
+
+    for file in files_list:
+        if file.name not in filenames:
+            continue
+        group = {}
+        for variable in bccaq_variable_types:
+            if variable in file.name:
+                for other_var in bccaq_variable_types.difference([variable]):
+                    other_filename = file.name.replace(variable, other_var)
+                    if other_filename in filenames:
+                        group[other_var] = filenames[other_filename]
+                        del filenames[other_filename]
+                if len(group):
+                    # Found a match
+                    group[variable] = file
+                    del filenames[file.name]
+
+                    if "tasmin" in group and "tasmax" in group:
+                        group["tasmin"], group["tasmax"] = fix_broken_time_indices(
+                            group["tasmin"], group["tasmax"]
+                        )
+                    
+                    groups.append(group)
+                    break
+
+    return groups

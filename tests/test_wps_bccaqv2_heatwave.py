@@ -31,7 +31,7 @@ def mock_local_datasets(monkeypatch):
         tasmin   (time, lat, lon) float32 ...
     """
     from pywps.configuration import CONFIG
-    from finch.processes import bccaqv2
+    from finch.processes import utils_bccaqv2
 
     CONFIG.set("finch", "bccaqv2_url", "/mock_local/path")
 
@@ -43,7 +43,7 @@ def mock_local_datasets(monkeypatch):
     ]
 
     monkeypatch.setattr(
-        bccaqv2,
+        utils_bccaqv2,
         "get_bccaqv2_local_files_datasets",
         lambda *args: [str(f) for f in test_data],
     )

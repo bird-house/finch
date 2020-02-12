@@ -26,7 +26,7 @@ from .utils import (
     write_log,
     zip_files,
 )
-from .wps_xclim_indices import make_nc_input
+from .wps_xclim_indices import XclimIndicatorBase, make_nc_input
 from .wpsio import lat, lon
 
 LOGGER = logging.getLogger("PYWPS")
@@ -36,7 +36,11 @@ class BCCAQV2HeatWave(FinchProcess):
     """Subset a NetCDF file using a gridpoint, and then compute the 'heat wave' index."""
 
     def __init__(self):
-        self.indices_process = make_xclim_indicator_process(heat_wave_frequency)
+        self.indices_process = make_xclim_indicator_process(
+            heat_wave_frequency,
+            class_name_suffix="BCCAQV2HeatWave",
+            base_class=XclimIndicatorBase,
+        )
         inputs = [
             i
             for i in self.indices_process.inputs

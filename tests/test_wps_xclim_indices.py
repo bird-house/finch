@@ -1,3 +1,4 @@
+from finch.processes.wps_xclim_indices import XclimIndicatorBase
 from inspect import signature
 
 import xarray as xr
@@ -5,7 +6,7 @@ import xclim
 
 import finch
 import finch.processes
-from finch.processes.wps_xclim_indices import make_xclim_indicator_process
+from finch.processes.base import make_xclim_indicator_process
 from tests.utils import execute_process, wps_input_file, wps_literal_input
 
 
@@ -18,7 +19,10 @@ def _get_output_standard_name(process_identifier):
 def test_indicators_processes_discovery():
     indicators = finch.processes.get_indicators(xclim.atmos)
     indicator_names = [i.identifier for i in indicators]
-    processes = [make_xclim_indicator_process(ind) for ind in indicators]
+    processes = [
+        make_xclim_indicator_process(ind, "Process", XclimIndicatorBase)
+        for ind in indicators
+    ]
     for name, indicator, process in zip(indicator_names, indicators, processes):
         assert name == process.identifier
         sig = signature(indicator.compute)
@@ -32,7 +36,10 @@ def test_indicators_processes_discovery():
 def test_processes(client, netcdf_datasets):
     """Run a dummy calculation for every process, keeping some default parameters."""
     indicators = finch.processes.indicators
-    processes = [make_xclim_indicator_process(ind) for ind in indicators]
+    processes = [
+        make_xclim_indicator_process(ind, "Process", XclimIndicatorBase)
+        for ind in indicators
+    ]
     literal_inputs = {
         "freq": "YS",
         "window": "3",

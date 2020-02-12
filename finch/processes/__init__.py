@@ -1,11 +1,16 @@
-from .wps_xsubsetbbox import SubsetBboxProcess
-from .wps_xsubsetpoint import SubsetGridPointProcess
-from .wps_xsubsetpoint_bccaqv2 import SubsetGridPointBCCAQV2Process
-from .wps_xsubsetbbox_bccaqv2 import SubsetBboxBCCAQV2Process
-from .wps_xclim_indices import make_xclim_indicator_process
-from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
 import xclim
 import xclim.atmos
+
+from finch.processes.utils_bccaqv2 import uses_bccaqv2_data
+from finch.processes.wps_xclim_indices import XclimIndicatorBase
+
+from .base import make_xclim_indicator_process
+from .wps_bccaqv2_gridpoint_indices import XclimBCCAQV2GridPointBase
+from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
+from .wps_xsubsetbbox import SubsetBboxProcess
+from .wps_xsubsetbbox_bccaqv2 import SubsetBboxBCCAQV2Process
+from .wps_xsubsetpoint import SubsetGridPointProcess
+from .wps_xsubsetpoint_bccaqv2 import SubsetGridPointBCCAQV2Process
 
 
 def get_indicators(*args):
@@ -31,7 +36,13 @@ not_implemented = [
 indicators = [i for i in indicators if i.identifier not in not_implemented]
 
 # Create PyWPS.Process subclasses
-processes = [make_xclim_indicator_process(ind) for ind in indicators]
+processes = []
+for ind in indicators:
+    processes.append(
+        make_xclim_indicator_process(ind, "Process", base_class=XclimIndicatorBase)
+    )
+
+
 processes.extend(
     [
         SubsetBboxProcess(),
@@ -41,7 +52,6 @@ processes.extend(
         BCCAQV2HeatWave(),
     ]
 )
-
 
 # Create virtual module for indicators so Sphinx can find it.
 def _build_xclim():

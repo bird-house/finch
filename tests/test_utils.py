@@ -144,3 +144,12 @@ def test_is_opendap_url():
 
     url = "/missing_schema"
     assert not is_opendap_url(url)
+
+
+def test_bccaqv2_make_file_groups():
+    folder = Path(__file__).parent / "data" / "bccaqv2_single_cell"
+    files_list = list(folder.glob("*.nc"))
+    groups = utils_bccaqv2.make_file_groups(files_list)
+
+    assert len(groups) == 85
+    assert all(len(g) == 3 for g in groups)

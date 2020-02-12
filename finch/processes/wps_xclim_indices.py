@@ -5,29 +5,15 @@ from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
 from unidecode import unidecode
 
+from finch.processes.base import convert_xclim_inputs_to_pywps
+
 from .base import FinchProcess, FinchProgressBar
 from .utils import compute_indices, log_file_path, write_log
 
 LOGGER = logging.getLogger("PYWPS")
 
 
-def make_xclim_indicator_process(xci) -> FinchProcess:
-    """Create a WPS Process subclass from an xclim `Indicator` class instance."""
-    attrs = xci.json()
-
-    # Sanitize name
-    name = attrs["identifier"].replace("{", "_").replace("}", "_").replace("__", "_")
-
-    process_class = type(
-        str(name) + "Process",
-        (_XclimIndicatorProcess,),
-        {"xci": xci, "__doc__": attrs["abstract"]},
-    )
-
-    return process_class()
-
-
-class _XclimIndicatorProcess(FinchProcess):
+class XclimIndicatorBase(FinchProcess):
     """Dummy xclim indicator process class.
 
     Set xci to the xclim indicator in order to have a working class"""
@@ -63,14 +49,13 @@ class _XclimIndicatorProcess(FinchProcess):
             ),
         ]
 
-        identifier = attrs["identifier"]
         super().__init__(
             self._handler,
-            identifier=identifier,
+            identifier= attrs["identifier"],
             version="0.1",
             title=unidecode(attrs["long_name"]),
             abstract=unidecode(attrs["abstract"]),
-            inputs=self.load_inputs(eval(attrs["parameters"])),
+            inputs=convert_xclim_inputs_to_pywps(eval(attrs["parameters"])),
             outputs=outputs,
             status_supported=True,
             store_supported=True,
