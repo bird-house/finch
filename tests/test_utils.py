@@ -6,6 +6,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from pywps import configuration
+from finch.processes import utils_bccaqv2
 
 from finch.processes.utils_bccaqv2 import get_bccaqv2_opendap_datasets
 from finch.processes.utils import (
@@ -79,13 +80,13 @@ def test_netcdf_to_csv_to_zip():
                 assert n_columns == 2
             elif "365_day" in filename:
                 assert n_lines == 365
-                assert n_columns == 9
+                assert n_columns == 8
             elif "360_day" in filename:
                 assert n_lines == 360
                 assert n_columns == 3
             elif "standard" in filename:
                 assert n_lines == 366
-                assert n_columns == 1
+                assert n_columns == 2
             else:
                 assert False, "Unknown calendar type"
 
