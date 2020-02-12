@@ -1,27 +1,41 @@
-import zipfile
-from unittest import mock
 from pathlib import Path
+import zipfile
 
-import pytest
-import xarray as xr
 from netCDF4 import Dataset
+import pytest
 
-from tests.utils import wps_literal_input, execute_process
+from tests.utils import execute_process, wps_literal_input
 
 
 @pytest.fixture
 def mock_local_datasets(monkeypatch):
+    """Mock the get_bccaqv2_local_files_datasets function
+
+    >>> tasmin  # "tasmin_subset.nc"
+    <xarray.Dataset> 
+    Dimensions:  (lat: 12, lon: 12, time: 100)
+    Coordinates:
+    * lon      (lon) float64 -73.46 -73.38 -73.29 -73.21 ... -72.71 -72.63 -72.54
+    * lat      (lat) float64 45.54 45.62 45.71 45.79 ... 46.21 46.29 46.37 46.46
+    * time     (time) object 1950-01-01 12:00:00 ... 1950-04-10 12:00:00
+    Data variables:
+        tasmin   (time, lat, lon) float32 ...
+    """
     from pywps.configuration import CONFIG
     from finch.processes import bccaqv2
 
     CONFIG.set("finch", "bccaqv2_url", "/mock_local/path")
 
-    test_data = (
-        Path(__file__).parent / "data" / "bccaqv2_subset_sample" / "tasmin_subset.nc"
-    )
+    subset_sample = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
+
+    test_data = [
+        subset_sample / "tasmin_subset.nc",
+    ]
 
     monkeypatch.setattr(
-        bccaqv2, "get_bccaqv2_local_files_datasets", lambda *args: [f"{test_data}"]
+        bccaqv2,
+        "get_bccaqv2_local_files_datasets",
+        lambda *args: [str(f) for f in test_data],
     )
 
 

@@ -15,7 +15,7 @@ def wps_input_file(identifier, filename):
         OWS.Identifier(identifier),
         WPS.Reference(
             WPS.Body("request body"),
-            {"{http://www.w3.org/1999/xlink}href": "file://" + filename},
+            {"{http://www.w3.org/1999/xlink}href": "file://" + str(filename)},
             method="POST",
         ),
     )
@@ -36,7 +36,7 @@ def execute_process(
     try:
         assert_response_success(response)
     except AssertionError as e:
-        message = response.xpath('//ows:ExceptionText')[0].text
+        message = response.xpath("//ows:ExceptionText")[0].text
         raise AssertionError(message) from e
 
     execution = WPSExecution()

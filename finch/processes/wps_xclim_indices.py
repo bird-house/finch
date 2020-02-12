@@ -11,7 +11,7 @@ from .utils import compute_indices, log_file_path, write_log
 LOGGER = logging.getLogger("PYWPS")
 
 
-def make_xclim_indicator_process(xci):
+def make_xclim_indicator_process(xci) -> FinchProcess:
     """Create a WPS Process subclass from an xclim `Indicator` class instance."""
     attrs = xci.json()
 
