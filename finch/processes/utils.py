@@ -86,8 +86,13 @@ def compute_indices(
         input = input_queue[0]
         if isinstance(input, ComplexInput):
             ds = try_opendap(input)
-            global_attributes = ds.attrs
-            kwds[name] = ds.data_vars[name]
+            global_attributes = global_attributes or ds.attrs
+            try:
+                kwds[name] = ds.data_vars[name]
+            except KeyError as e:
+                raise KeyError(
+                    f"Variable name '{name}' not in data_vars {list(ds.data_vars)}"
+                ) from e
         elif isinstance(input, LiteralInput):
             kwds[name] = input.data
 
