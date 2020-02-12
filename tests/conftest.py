@@ -1,18 +1,20 @@
-import os
 from pathlib import Path
+import tempfile
+from typing import Dict
 
 import pytest
-import tempfile
-
 from pywps import Service
 from pywps.tests import client_for
+import xarray as xr
+from xclim.utils import percentile_doy
 
 import finch
 import finch.processes
+
 from .common import CFG_FILE
 
 
-def _create_test_dataset(variable, cell_methods, stardard_name, seed=None):
+def _create_test_dataset(variable, cell_methods, stardard_name, units, seed=None):
     """Create a synthetic dataset for variable"""
     import numpy as np
     import xarray as xr
@@ -23,7 +25,7 @@ def _create_test_dataset(variable, cell_methods, stardard_name, seed=None):
     _dims = {"time": 365, "lon": 5, "lat": 6}
     _attrs = {
         variable: dict(
-            units="K", cell_methods=cell_methods, standard_name=stardard_name
+            units=units, cell_methods=cell_methods, standard_name=stardard_name
         )
     }
 
@@ -40,44 +42,56 @@ def _create_test_dataset(variable, cell_methods, stardard_name, seed=None):
     return obj
 
 
-def _write_dataset(variable, cell_methods, standard_name, seed=None):
+def _create_and_write_dataset(
+    variable, cell_methods, standard_name, units, seed=None
+) -> Path:
     """Write a DataSet to disk and return its path"""
-    ds = _create_test_dataset(variable, cell_methods, standard_name, seed)
+    ds = _create_test_dataset(variable, cell_methods, standard_name, units, seed)
+    return _write_dataset(variable, ds)
+
+
+def _write_dataset(variable, ds) -> Path:
     dir_name = Path(__file__).parent / "tmp"
     dir_name.mkdir(exist_ok=True)
     _, filename = tempfile.mkstemp(f"finch_test_data{variable}.nc", dir=dir_name)
     ds.to_netcdf(filename)
-    return filename
+    return Path(filename)
 
 
 variable_descriptions = {
-    # variable_name: (variable_name, cell_methods, stardard_name)
-    "tas": ("tas", "time: mean within days", "air_temperature"),
-    "tasmax": ("tasmax", "time: maximum within days", "air_temperature"),
-    "tasmin": ("tasmin", "time: minimum within days", "air_temperature"),
-    "pr": ("pr", "time: mean", "precipitation_flux"),
+    # variable_name: (cell_methods, stardard_name, units)
+    "tas": ("time: mean within days", "air_temperature", "K"),
+    "tasmax": ("time: maximum within days", "air_temperature", "K"),
+    "tasmin": ("time: minimum within days", "air_temperature", "K"),
+    "pr": ("time: mean", "precipitation_flux", "mm/d"),
+    "prsn": ("time: mean", "snowfall_flux", "mm/d"),
 }
 
 
-@pytest.fixture(scope='module')
-def tas_dataset(request):
-    filename = _write_dataset(*variable_descriptions["tas"])
-    request.addfinalizer(lambda: os.remove(filename))
-    return filename
+@pytest.fixture(scope="session")
+def netcdf_datasets(request) -> Dict[str, Path]:
+    """Returns a Dict mapping a variable name to a corresponding netcdf path"""
+    datasets = {}
+    for variable_name, description in variable_descriptions.items():
+        filename = _create_and_write_dataset(variable_name, *description, seed=1)
+        datasets[variable_name] = filename
 
+    tasmin = xr.open_dataset(datasets["tasmin"]).tasmin
+    tas = xr.open_dataset(datasets["tas"]).tas
 
-@pytest.fixture(scope='module')
-def tasmax_dataset(request):
-    filename = _write_dataset(*variable_descriptions["tasmax"])
-    request.addfinalizer(lambda: os.remove(filename))
-    return filename
+    tn10 = percentile_doy(tasmin, per=0.1).to_dataset(name="tn10")
+    datasets["tn10"] = _write_dataset("tn10", tn10)
+    t10 = percentile_doy(tas, per=0.1).to_dataset(name="t10")
+    datasets["t10"] = _write_dataset("t10", t10)
+    t90 = percentile_doy(tas, per=0.9).to_dataset(name="t90")
+    datasets["t90"] = _write_dataset("t90", t90)
 
+    def finalizer():
+        for d in datasets.values():
+            d.unlink()
 
-@pytest.fixture(scope='module')
-def tasmin_dataset(request):
-    filename = _write_dataset(*variable_descriptions["tasmin"])
-    request.addfinalizer(lambda: os.remove(filename))
-    return filename
+    request.addfinalizer(finalizer)
+    return datasets
 
 
 @pytest.fixture(scope="module")
