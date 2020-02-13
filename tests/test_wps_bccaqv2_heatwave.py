@@ -1,55 +1,19 @@
-from pathlib import Path
 import zipfile
+import pytest
 
 from netCDF4 import Dataset
-import pytest
+from .utils import mock_local_datasets
 
 from tests.utils import execute_process, wps_literal_input
 
 
 @pytest.fixture
-def mock_local_datasets(monkeypatch):
-    """Mock the get_bccaqv2_local_files_datasets function
-
-    >>> tasmax  # "tasmax_subset.nc"
-    <xarray.Dataset>
-    Dimensions:  (lat: 12, lon: 12, time: 100)
-    Coordinates:
-    * lon      (lon) float64 -73.46 -73.38 -73.29 -73.21 ... -72.71 -72.63 -72.54
-    * lat      (lat) float64 45.54 45.62 45.71 45.79 ... 46.21 46.29 46.37 46.46
-    * time     (time) object 1950-01-01 12:00:00 ... 1950-04-10 12:00:00
-    Data variables:
-        tasmax   (time, lat, lon) float32 ...
-    >>> tasmin  # "tasmin_subset.nc"
-    <xarray.Dataset>
-    Dimensions:  (lat: 12, lon: 12, time: 100)
-    Coordinates:
-    * lon      (lon) float64 -73.46 -73.38 -73.29 -73.21 ... -72.71 -72.63 -72.54
-    * lat      (lat) float64 45.54 45.62 45.71 45.79 ... 46.21 46.29 46.37 46.46
-    * time     (time) object 1950-01-01 12:00:00 ... 1950-04-10 12:00:00
-    Data variables:
-        tasmin   (time, lat, lon) float32 ...
-    """
-    from pywps.configuration import CONFIG
-    from finch.processes import ensemble_utils
-
-    CONFIG.set("finch", "bccaqv2_url", "/mock_local/path")
-
-    subset_sample = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
-
-    test_data = [
-        subset_sample / "tasmin_subset.nc",
-        subset_sample / "tasmax_subset.nc",
-    ]
-
-    monkeypatch.setattr(
-        ensemble_utils,
-        "get_bccaqv2_local_files_datasets",
-        lambda *args: [str(f) for f in test_data],
-    )
+def mock_datasets(monkeypatch):
+    filenames = ["tasmin_subset.nc", "tasmax_subset.nc"]
+    mock_local_datasets(monkeypatch, filenames=filenames)
 
 
-def test_bccaqv2_heatwave_frequency(mock_local_datasets, client):
+def test_bccaqv2_heatwave_frequency(client, mock_datasets):
     # --- given ---
     identifier = "BCCAQv2_heat_wave_frequency_gridpoint"
     inputs = [

@@ -4,42 +4,16 @@ import zipfile
 from netCDF4 import Dataset
 import pytest
 
-from tests.utils import execute_process, wps_literal_input
+from tests.utils import execute_process, mock_local_datasets, wps_literal_input
 
 
 @pytest.fixture
-def mock_local_datasets(monkeypatch):
-    """Mock the get_bccaqv2_local_files_datasets function
-
-    >>> tasmin  # "tasmin_subset.nc"
-    <xarray.Dataset>
-    Dimensions:  (lat: 12, lon: 12, time: 100)
-    Coordinates:
-    * lon      (lon) float64 -73.46 -73.38 -73.29 -73.21 ... -72.71 -72.63 -72.54
-    * lat      (lat) float64 45.54 45.62 45.71 45.79 ... 46.21 46.29 46.37 46.46
-    * time     (time) object 1950-01-01 12:00:00 ... 1950-04-10 12:00:00
-    Data variables:
-        tasmin   (time, lat, lon) float32 ...
-    """
-    from pywps.configuration import CONFIG
-    from finch.processes import ensemble_utils
-
-    CONFIG.set("finch", "bccaqv2_url", "/mock_local/path")
-
-    subset_sample = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
-
-    test_data = [
-        subset_sample / "tasmin_subset.nc",
-    ]
-
-    monkeypatch.setattr(
-        ensemble_utils,
-        "get_bccaqv2_local_files_datasets",
-        lambda *args: [str(f) for f in test_data],
-    )
+def mock_datasets(monkeypatch):
+    filenames = ["tasmin_subset.nc"]
+    mock_local_datasets(monkeypatch, filenames=filenames)
 
 
-def test_bccaqv2_subset_point(mock_local_datasets, client):
+def test_bccaqv2_subset_point(mock_datasets, client):
     # --- given ---
     identifier = "subset_ensemble_BCCAQv2"
     inputs = [
@@ -61,7 +35,7 @@ def test_bccaqv2_subset_point(mock_local_datasets, client):
     assert dims == {"region": 1, "time": 100}
 
 
-def test_bccaqv2_subset_point_csv(mock_local_datasets, client):
+def test_bccaqv2_subset_point_csv(mock_datasets, client):
     # --- given ---
     identifier = "subset_ensemble_BCCAQv2"
     inputs = [
@@ -85,7 +59,7 @@ def test_bccaqv2_subset_point_csv(mock_local_datasets, client):
     assert n_lines == 100
 
 
-def test_bccaqv2_subset_point_multiple(mock_local_datasets, client):
+def test_bccaqv2_subset_point_multiple(mock_datasets, client):
     # --- given ---
     identifier = "subset_ensemble_BCCAQv2"
     inputs = [
@@ -107,7 +81,7 @@ def test_bccaqv2_subset_point_multiple(mock_local_datasets, client):
     assert dims == {"region": 3, "time": 100}
 
 
-def test_bccaqv2_subset_point_multiple_csv(mock_local_datasets, client):
+def test_bccaqv2_subset_point_multiple_csv(mock_datasets, client):
     # --- given ---
     identifier = "subset_ensemble_BCCAQv2"
     inputs = [
@@ -131,7 +105,7 @@ def test_bccaqv2_subset_point_multiple_csv(mock_local_datasets, client):
     assert n_lines == 300
 
 
-def test_bccaqv2_subset_point_multiple_same_cell(mock_local_datasets, client):
+def test_bccaqv2_subset_point_multiple_same_cell(mock_datasets, client):
     # --- given ---
     identifier = "subset_ensemble_BCCAQv2"
     inputs = [
@@ -155,7 +129,7 @@ def test_bccaqv2_subset_point_multiple_same_cell(mock_local_datasets, client):
     assert dims == {"region": 2, "time": 100}
 
 
-def test_bccaqv2_subset_point_lat0_lon0_deprecation(mock_local_datasets, client):
+def test_bccaqv2_subset_point_lat0_lon0_deprecation(mock_datasets, client):
     # --- given ---
     identifier = "subset_ensemble_BCCAQv2"
     inputs = [
@@ -175,7 +149,7 @@ def test_bccaqv2_subset_point_lat0_lon0_deprecation(mock_local_datasets, client)
     assert dims == {"region": 1, "time": 100}
 
 
-def test_bccaqv2_subset_bbox_process(mock_local_datasets, client):
+def test_bccaqv2_subset_bbox_process(mock_datasets, client):
     # --- given ---
     identifier = "subset_ensemble_bbox_BCCAQv2"
     inputs = [
@@ -199,7 +173,7 @@ def test_bccaqv2_subset_bbox_process(mock_local_datasets, client):
     assert dims == {"lat": 2, "lon": 2, "time": 100}
 
 
-def test_bccaqv2_subset_bbox_process_csv(mock_local_datasets, client):
+def test_bccaqv2_subset_bbox_process_csv(mock_datasets, client):
     # --- given ---
     identifier = "subset_ensemble_bbox_BCCAQv2"
     inputs = [
