@@ -34,7 +34,7 @@ class XclimEnsembleGridPointBase(FinchProcess):
 
         # all other inputs that are not the xarray data (window, threshold, etc.)
         for i in convert_xclim_inputs_to_pywps(eval(attrs["parameters"])):
-            if i not in xclim_netcdf_variables:
+            if i.identifier not in xclim_netcdf_variables:
                 inputs.append(i)
 
         inputs.append(wpsio.output_format_netcdf_csv)
