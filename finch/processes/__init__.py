@@ -6,6 +6,7 @@ from finch.processes.wps_xclim_indices import XclimIndicatorBase
 
 from .wps_base import make_xclim_indicator_process
 from .wps_ensemble_gridpoint_indices import XclimEnsembleGridPointBase
+from .wps_ensemble_bbox_indices import XclimEnsembleBboxBase
 from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
 from .wps_xsubsetbbox import SubsetBboxProcess
 from .wps_xsubsetbbox_bccaqv2 import SubsetBboxBCCAQV2Process
@@ -47,6 +48,11 @@ for ind in indicators:
         processes.append(
             make_xclim_indicator_process(
                 ind, "EnsembleGridPointProcess", base_class=XclimEnsembleGridPointBase
+            )
+        )
+        processes.append(
+            make_xclim_indicator_process(
+                ind, "EnsembleBboxProcess", base_class=XclimEnsembleBboxBase
             )
         )
 
