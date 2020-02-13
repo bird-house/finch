@@ -10,8 +10,17 @@ from pywps.app.exceptions import ProcessError
 from unidecode import unidecode
 
 from finch.processes.subset import finch_subset_gridpoint
-from finch.processes.utils import netcdf_file_list_to_csv, zip_files
-from finch.processes.utils_bccaqv2 import make_indicator_inputs, make_ensemble
+from finch.processes.utils import (
+    dataset_to_dataframe,
+    format_metadata,
+    netcdf_file_list_to_csv,
+    zip_files,
+)
+from finch.processes.utils_bccaqv2 import (
+    ensemble_to_netcdf,
+    make_ensemble,
+    make_indicator_inputs,
+)
 
 from . import wpsio
 from .base import convert_xclim_inputs_to_pywps
@@ -53,10 +62,7 @@ class XclimEnsembleGridPointBase(FinchProcess):
                     "The format depends on the input parameter 'output_format'."
                 ),
                 as_reference=True,
-                supported_formats=[
-                    FORMATS.NETCDF,
-                    FORMATS.TEXT,  # Todo: FORMATS.CSV is missing. Is this required to be csv?
-                ],
+                supported_formats=[FORMATS.NETCDF, FORMATS.ZIP,],
             ),
             ComplexOutput(
                 "output_log",
@@ -94,9 +100,8 @@ class XclimEnsembleGridPointBase(FinchProcess):
         self.status_percentage_steps = {
             "start": 5,
             "subset": 7,
-            "compute_indices": 70,
-            "convert_to_csv": 90,
-            "zip_outputs": 95,
+            "compute_indices": 50,
+            "convert_to_csv": 95,
             "done": 99,
         }
 
@@ -153,29 +158,25 @@ class XclimEnsembleGridPointBase(FinchProcess):
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
 
-        ensemble_output = Path(self.workdir) / (output_filename + "_ensemble.nc")
-        make_ensemble(indices_files, ensemble_output)
+        ensemble_output = Path(self.workdir) / (output_filename + "_ensemble")
+        ensemble = make_ensemble(indices_files)
 
         if convert_to_csv:
-            write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
+            ensemble_csv = ensemble_output.with_suffix(".csv")
+            df = dataset_to_dataframe(ensemble)
+            df.to_csv(ensemble_csv)
 
-            csv_files, metadata_folder = netcdf_file_list_to_csv(
-                output_files,
-                output_folder=Path(self.workdir),
-                filename_prefix=output_filename,
-            )
-            output_files = csv_files + [metadata_folder]
+            metadata = format_metadata(ensemble)
+            metadata_file = ensemble_output.parent / f"{ensemble_csv.stem}_metadata.csv"
+            metadata_file.write_text(metadata)
 
-        write_log(self, "Zipping outputs", process_step="zip_outputs")
+            ensemble_output = Path(self.workdir) / (output_filename + ".zip")
+            zip_files(ensemble_output, [metadata_file, ensemble_csv])
+        else:
+            ensemble_output = ensemble_output.with_suffix(".nc")
+            ensemble_to_netcdf(ensemble, ensemble_output)
 
-        output_zip = Path(self.workdir) / (output_filename + ".zip")
-
-        def _log(message, percentage):
-            write_log(self, message, subtask_percentage=percentage)
-
-        zip_files(output_zip, output_files, log_function=_log)
-
-        response.outputs["output"].file = output_zip
+        response.outputs["output"].file = ensemble_output
 
         write_log(self, "Processing finished successfully", process_step="done")
         return response

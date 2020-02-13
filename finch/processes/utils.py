@@ -268,19 +268,7 @@ def netcdf_file_list_to_csv(
 
             ds = ds.rename({variable: output_variable})
 
-            # most runs have timestamp with hour == 12 a few hour == 0 ... make uniform
-            if not np.all(ds.time.dt.hour == 12):
-                attrs = ds.time.attrs
-
-                # np.datetime64 doesn't have the 'replace' method
-                time_values = ds.time.values
-                if not hasattr(time_values[0], "replace"):
-                    time_values = pd.to_datetime(time_values)
-
-                ds["time"] = [y.replace(hour=12) for y in time_values]
-                ds.time.attrs = attrs
-
-            df = ds.to_dataframe()
+            df = dataset_to_dataframe(ds)
 
             if calendar not in concat_by_calendar:
                 if "lat" in df.index.names and "lon" in df.index.names:
@@ -314,6 +302,22 @@ def netcdf_file_list_to_csv(
         metadata_file.write_text(info)
 
     return output_csv_list, str(metadata_folder)
+
+
+def dataset_to_dataframe(ds: xr.Dataset) -> pd.DataFrame:
+    """Convert a Dataset, while keeping the hour of the day uniform at hour=12"""
+    if not np.all(ds.time.dt.hour == 12):
+        attrs = ds.time.attrs
+
+        # np.datetime64 doesn't have the 'replace' method
+        time_values = ds.time.values
+        if not hasattr(time_values[0], "replace"):
+            time_values = pd.to_datetime(time_values)
+
+        ds["time"] = [y.replace(hour=12) for y in time_values]
+        ds.time.attrs = attrs
+
+    return ds.to_dataframe()
 
 
 def format_metadata(ds) -> str:

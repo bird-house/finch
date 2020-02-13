@@ -10,6 +10,7 @@ from siphon.catalog import TDSCatalog
 import xarray as xr
 from xclim.checks import assert_daily
 from xclim.utils import Indicator
+from xclim import ensembles
 
 from .utils import PywpsInput, RequestInputs
 from .utils import single_input_or_none
@@ -330,3 +331,25 @@ def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
                     break
 
     return groups
+
+
+def make_ensemble(files: List[Path]) -> None:
+    percentiles = [10, 50, 90]
+
+    ensemble = ensembles.create_ensemble(files)
+    # make sure we have data starting in 1950
+    ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
+    ensemble_percentiles = ensembles.ensemble_percentiles(ensemble, values=percentiles)
+
+    return ensemble_percentiles
+
+
+def ensemble_to_netcdf(ensemble: xr.Dataset, output_path: Path) -> None:
+    """Write an ensemble dataset to disk."""
+    compression = {"zlib": True, "complevel": 1}
+
+    encoding = {v: compression for v in ensemble.data_vars}
+    encoding["time"] = {"dtype": "double"}
+
+    ensemble.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)
+
