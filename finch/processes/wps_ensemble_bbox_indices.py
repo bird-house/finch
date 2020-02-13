@@ -2,7 +2,7 @@ import logging
 
 from unidecode import unidecode
 
-from finch.processes.subset import finch_subset_gridpoint
+from finch.processes.subset import finch_subset_bbox
 
 from . import wpsio
 from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
@@ -11,8 +11,8 @@ from .ensemble_utils import ensemble_common_handler, xclim_netcdf_variables
 LOGGER = logging.getLogger("PYWPS")
 
 
-class XclimEnsembleGridPointBase(FinchProcess):
-    """Ensemble with grid point subset base class
+class XclimEnsembleBboxBase(FinchProcess):
+    """Ensemble with bbox subset base class
 
     Set xci to the xclim indicator in order to have a working class"""
 
@@ -28,7 +28,14 @@ class XclimEnsembleGridPointBase(FinchProcess):
 
         attrs = self.xci.json()
 
-        inputs = [wpsio.lat, wpsio.lon, wpsio.start_date, wpsio.end_date]
+        inputs = [
+            wpsio.copy_io(wpsio.lat0, min_occurs=1),
+            wpsio.copy_io(wpsio.lat1, min_occurs=1),
+            wpsio.copy_io(wpsio.lon0, min_occurs=1),
+            wpsio.copy_io(wpsio.lon1, min_occurs=1),
+            wpsio.start_date,
+            wpsio.end_date,
+        ]
         rcp = wpsio.copy_io(wpsio.rcp, min_occurs=1)
         inputs.append(rcp)
 
@@ -41,7 +48,7 @@ class XclimEnsembleGridPointBase(FinchProcess):
 
         outputs = [wpsio.output_netcdf_zip, wpsio.output_log]
 
-        identifier = f"ensemble_grid_point_{attrs['identifier']}"
+        identifier = f"ensemble_bbox_{attrs['identifier']}"
         super().__init__(
             self._handler,
             identifier=identifier,
@@ -63,4 +70,4 @@ class XclimEnsembleGridPointBase(FinchProcess):
         }
 
     def _handler(self, request, response):
-        return ensemble_common_handler(self, request, response, finch_subset_gridpoint)
+        return ensemble_common_handler(self, request, response, finch_subset_bbox)
