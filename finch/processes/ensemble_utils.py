@@ -14,6 +14,7 @@ from xclim import ensembles
 from xclim.checks import assert_daily
 from xclim.utils import Indicator
 
+from . import wpsio
 from .utils import (
     PywpsInput,
     RequestInputs,
@@ -390,7 +391,13 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     write_log(process, "Computing indices", process_step="compute_indices")
 
-    input_groups = make_indicator_inputs(process.xci, request.inputs, subsetted_files)
+    compute_inputs = {
+        k: v
+        for k, v in request.inputs.items()
+        if k in process.compute_inputs_identifiers
+    }
+
+    input_groups = make_indicator_inputs(process.xci, compute_inputs, subsetted_files)
     n_groups = len(input_groups)
 
     indices_files = []
