@@ -78,9 +78,10 @@ class XclimEnsembleGridPointBase(FinchProcess):
 
         inputs.append(wpsio.output_netcdf_csv)
 
+        identifier = f"ensemble_grid_point_{attrs['identifier']}"
         super().__init__(
             self._handler,
-            identifier=attrs["identifier"],
+            identifier=identifier,
             version="0.1",
             title=unidecode(attrs["long_name"]),
             abstract=unidecode(attrs["abstract"]),
