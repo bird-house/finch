@@ -2,18 +2,23 @@ from collections import deque
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Tuple, Dict
+from typing import Dict, List, Optional, Tuple
+import warnings
 
 from pywps import ComplexInput, FORMATS, Process
 from pywps import configuration
+from pywps.app.exceptions import ProcessError
 from siphon.catalog import TDSCatalog
 import xarray as xr
+from xclim import ensembles
 from xclim.checks import assert_daily
 from xclim.utils import Indicator
-from xclim import ensembles
+
+from finch.processes.utils import dataset_to_dataframe, format_metadata, zip_files
 
 from .utils import PywpsInput, RequestInputs
 from .utils import single_input_or_none
+from .utils import compute_indices, single_input_or_none, write_log
 from .wps_xclim_indices import make_nc_input
 
 
@@ -353,3 +358,79 @@ def ensemble_to_netcdf(ensemble: xr.Dataset, output_path: Path) -> None:
 
     ensemble.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)
 
+
+def ensemble_common_handler(process: Process, request, response, subset_function):
+    convert_to_csv = request.inputs["output_format"][0].data == "csv"
+    if not convert_to_csv:
+        del process.status_percentage_steps["convert_to_csv"]
+
+    write_log(process, "Processing started", process_step="start")
+
+    output_filename = make_output_filename(process, request.inputs)
+
+    write_log(process, "Fetching BCCAQv2 datasets")
+
+    rcp = single_input_or_none(request.inputs, "rcp")
+    request.inputs = get_bccaqv2_inputs(request.inputs, rcp=rcp)
+
+    write_log(process, "Running subset", process_step="subset")
+
+    subsetted_files = subset_function(process, request.inputs)
+
+    if not subsetted_files:
+        message = "No data was produced when subsetting using the provided bounds."
+        raise ProcessError(message)
+
+    write_log(process, "Computing indices", process_step="compute_indices")
+
+    input_groups = make_indicator_inputs(process.xci, request.inputs, subsetted_files)
+    n_groups = len(input_groups)
+
+    indices_files = []
+
+    warnings.filterwarnings("ignore", category=FutureWarning)
+    warnings.filterwarnings("ignore", category=UserWarning)
+
+    for n, inputs in enumerate(input_groups):
+        write_log(
+            process,
+            f"Computing indices for file {n + 1} of {n_groups}",
+            subtask_percentage=n * 100 // n_groups,
+        )
+        output_ds = compute_indices(process, process.xci, inputs)
+
+        output_name = f"{output_filename}_{process.identifier}_{n}.nc"
+        for variable in bccaq_variable_types:
+            if variable in inputs:
+                input_name = Path(inputs.get(variable)[0].file).name
+                output_name = input_name.replace(variable, process.identifier)
+
+        output_path = Path(process.workdir) / output_name
+        output_ds.to_netcdf(output_path)
+        indices_files.append(output_path)
+
+    warnings.filterwarnings("default", category=FutureWarning)
+    warnings.filterwarnings("default", category=UserWarning)
+
+    output_basename = Path(process.workdir) / (output_filename + "_ensemble")
+    ensemble = make_ensemble(indices_files)
+
+    if convert_to_csv:
+        ensemble_csv = output_basename.with_suffix(".csv")
+        df = dataset_to_dataframe(ensemble)
+        df.to_csv(ensemble_csv)
+
+        metadata = format_metadata(ensemble)
+        metadata_file = output_basename.parent / f"{ensemble_csv.stem}_metadata.csv"
+        metadata_file.write_text(metadata)
+
+        ensemble_output = Path(process.workdir) / (output_filename + ".zip")
+        zip_files(ensemble_output, [metadata_file, ensemble_csv])
+    else:
+        ensemble_output = output_basename.with_suffix(".nc")
+        ensemble_to_netcdf(ensemble, ensemble_output)
+
+    response.outputs["output"].file = ensemble_output
+
+    write_log(process, "Processing finished successfully", process_step="done")
+    return response

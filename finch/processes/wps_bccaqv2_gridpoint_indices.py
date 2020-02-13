@@ -1,37 +1,12 @@
-from copy import deepcopy
 import logging
-import os
-from pathlib import Path
-import warnings
 
-from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
-from pywps.app.Common import Metadata
-from pywps.app.exceptions import ProcessError
 from unidecode import unidecode
 
 from finch.processes.subset import finch_subset_gridpoint
-from finch.processes.utils import (
-    dataset_to_dataframe,
-    format_metadata,
-    netcdf_file_list_to_csv,
-    zip_files,
-)
-from finch.processes.utils_bccaqv2 import (
-    ensemble_to_netcdf,
-    make_ensemble,
-    make_indicator_inputs,
-)
 
 from . import wpsio
-from .base import convert_xclim_inputs_to_pywps
-from .base import FinchProcess, FinchProgressBar
-from .utils import compute_indices, log_file_path, single_input_or_none, write_log
-from .utils_bccaqv2 import (
-    bccaq_variable_types,
-    get_bccaqv2_inputs,
-    make_output_filename,
-    xclim_netcdf_variables,
-)
+from .base import FinchProcess, convert_xclim_inputs_to_pywps
+from .utils_bccaqv2 import ensemble_common_handler, xclim_netcdf_variables
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -88,77 +63,4 @@ class XclimEnsembleGridPointBase(FinchProcess):
         }
 
     def _handler(self, request, response):
-        convert_to_csv = request.inputs["output_format"][0].data == "csv"
-        if not convert_to_csv:
-            del self.status_percentage_steps["convert_to_csv"]
-
-        write_log(self, "Processing started", process_step="start")
-
-        output_filename = make_output_filename(self, request.inputs)
-
-        write_log(self, "Fetching BCCAQv2 datasets")
-
-        rcp = single_input_or_none(request.inputs, "rcp")
-        request.inputs = get_bccaqv2_inputs(request.inputs, rcp=rcp)
-
-        write_log(self, "Running subset", process_step="subset")
-
-        subsetted_files = finch_subset_gridpoint(self, request.inputs)
-
-        if not subsetted_files:
-            message = "No data was produced when subsetting using the provided bounds."
-            raise ProcessError(message)
-
-        write_log(self, "Computing indices", process_step="compute_indices")
-
-        input_groups = make_indicator_inputs(self.xci, request.inputs, subsetted_files)
-        n_groups = len(input_groups)
-
-        indices_files = []
-
-        warnings.filterwarnings("ignore", category=FutureWarning)
-        warnings.filterwarnings("ignore", category=UserWarning)
-
-        for n, inputs in enumerate(input_groups):
-            write_log(
-                self,
-                f"Computing indices for file {n + 1} of {n_groups}",
-                subtask_percentage=n * 100 // n_groups,
-            )
-            output_ds = compute_indices(self, self.xci, inputs)
-
-            output_name = f"{output_filename}_{self.identifier}_{n}.nc"
-            for variable in bccaq_variable_types:
-                if variable in inputs:
-                    input_name = Path(inputs.get(variable)[0].file).name
-                    output_name = input_name.replace(variable, self.identifier)
-
-            output_path = Path(self.workdir) / output_name
-            output_ds.to_netcdf(output_path)
-            indices_files.append(output_path)
-
-        warnings.filterwarnings("default", category=FutureWarning)
-        warnings.filterwarnings("default", category=UserWarning)
-
-        output_basename = Path(self.workdir) / (output_filename + "_ensemble")
-        ensemble = make_ensemble(indices_files)
-
-        if convert_to_csv:
-            ensemble_csv = output_basename.with_suffix(".csv")
-            df = dataset_to_dataframe(ensemble)
-            df.to_csv(ensemble_csv)
-
-            metadata = format_metadata(ensemble)
-            metadata_file = output_basename.parent / f"{ensemble_csv.stem}_metadata.csv"
-            metadata_file.write_text(metadata)
-
-            ensemble_output = Path(self.workdir) / (output_filename + ".zip")
-            zip_files(ensemble_output, [metadata_file, ensemble_csv])
-        else:
-            ensemble_output = output_basename.with_suffix(".nc")
-            ensemble_to_netcdf(ensemble, ensemble_output)
-
-        response.outputs["output"].file = ensemble_output
-
-        write_log(self, "Processing finished successfully", process_step="done")
-        return response
+        return ensemble_common_handler(self, request, response, finch_subset_gridpoint)
