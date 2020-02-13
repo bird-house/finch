@@ -284,7 +284,7 @@ def make_indicator_inputs(
         variable_name = list(required_args)[0]
         for path in files_list:
             inputs = deepcopy(wps_inputs)
-            inputs[variable_name] = deque([make_nc_input(variable_name)], maxlen=1)
+            inputs[variable_name] = deque([make_nc_input(variable_name)])
             inputs[variable_name][0].file = str(path)
             input_list.append(inputs)
     else:
@@ -293,7 +293,7 @@ def make_indicator_inputs(
             for variable_name, path in input_group.items():
                 if not variable_name in required_args:
                     continue
-                inputs[variable_name] = deque([make_nc_input(variable_name)], maxlen=1)
+                inputs[variable_name] = deque([make_nc_input(variable_name)])
                 inputs[variable_name][0].file = str(path)
                 input_list.append(inputs)
 
@@ -325,7 +325,7 @@ def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
                         group["tasmin"], group["tasmax"] = fix_broken_time_indices(
                             group["tasmin"], group["tasmax"]
                         )
-                    
+
                     groups.append(group)
                     break
 
