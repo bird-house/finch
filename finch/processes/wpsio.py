@@ -14,7 +14,7 @@ def copy_io(
     """Creates a new input or outout with modified parameters.
 
     Use this if you want one of the inputs in this file, but want to modify it.
-    
+
     This is necessary because if we modify the input or output directly,
     every other place where this input is used would be affected.
     """
@@ -122,7 +122,7 @@ output_netcdf_zip = ComplexOutput(
     "Result",
     abstract=("The format depends on the 'output_format' input parameter."),
     as_reference=True,
-    supported_formats=[FORMATS.NETCDF, FORMATS.ZIP,],
+    supported_formats=[FORMATS.NETCDF, FORMATS.ZIP],
 )
 
 output_log = ComplexOutput(
@@ -132,4 +132,3 @@ output_log = ComplexOutput(
     as_reference=True,
     supported_formats=[FORMATS.TEXT],
 )
-

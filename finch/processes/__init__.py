@@ -60,6 +60,7 @@ processes.extend(
     ]
 )
 
+
 # Create virtual module for indicators so Sphinx can find it.
 def _build_xclim():
     import sys

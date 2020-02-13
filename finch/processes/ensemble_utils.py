@@ -14,11 +14,16 @@ from xclim import ensembles
 from xclim.checks import assert_daily
 from xclim.utils import Indicator
 
-from finch.processes.utils import dataset_to_dataframe, format_metadata, zip_files
-
-from .utils import PywpsInput, RequestInputs
-from .utils import single_input_or_none
-from .utils import compute_indices, single_input_or_none, write_log
+from .utils import (
+    PywpsInput,
+    RequestInputs,
+    compute_indices,
+    dataset_to_dataframe,
+    format_metadata,
+    single_input_or_none,
+    write_log,
+    zip_files,
+)
 from .wps_xclim_indices import make_nc_input
 
 
@@ -297,7 +302,7 @@ def make_indicator_inputs(
         for input_group in make_file_groups(files_list):
             inputs = deepcopy(wps_inputs)
             for variable_name, path in input_group.items():
-                if not variable_name in required_args:
+                if variable_name not in required_args:
                     continue
                 inputs[variable_name] = deque([make_nc_input(variable_name)])
                 inputs[variable_name][0].file = str(path)
