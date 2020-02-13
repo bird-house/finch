@@ -226,8 +226,8 @@ def single_input_or_none(inputs, identifier):
         return None
 
 
-def netcdf_to_csv(
-    netcdf_files, output_folder, filename_prefix
+def netcdf_file_list_to_csv(
+    netcdf_files: List[Union[Path, str]], output_folder, filename_prefix
 ) -> Tuple[List[str], str]:
     """Write csv files for a list of netcdf files.
 
@@ -247,7 +247,7 @@ def netcdf_to_csv(
     metadata = {}
     concat_by_calendar = {}
     for file in netcdf_files:
-        ds = xr.open_dataset(file, decode_times=False)
+        ds = xr.open_dataset(str(file), decode_times=False)
         calendar = ds.time.calendar
         ds["time"] = xr.decode_cf(ds).time
 

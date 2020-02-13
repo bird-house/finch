@@ -8,7 +8,7 @@ from pywps.response.execute import ExecuteResponse
 from .base import FinchProcess
 from .utils_bccaqv2 import get_bccaqv2_inputs, make_output_filename
 from .subset import finch_subset_bbox
-from .utils import netcdf_to_csv, single_input_or_none, write_log, zip_files
+from .utils import netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
 from .wpsio import end_date, lat0, lat1, lon0, lon1, start_date
 
 
@@ -117,7 +117,7 @@ class SubsetBboxBCCAQV2Process(FinchProcess):
         if convert_to_csv:
             write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
 
-            csv_files, metadata_folder = netcdf_to_csv(
+            csv_files, metadata_folder = netcdf_file_list_to_csv(
                 output_files,
                 output_folder=Path(self.workdir),
                 filename_prefix=output_filename,

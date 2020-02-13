@@ -10,8 +10,8 @@ from pywps.app.exceptions import ProcessError
 from unidecode import unidecode
 
 from finch.processes.subset import finch_subset_gridpoint
-from finch.processes.utils import netcdf_to_csv, zip_files
-from finch.processes.utils_bccaqv2 import make_indicator_inputs
+from finch.processes.utils import netcdf_file_list_to_csv, zip_files
+from finch.processes.utils_bccaqv2 import make_indicator_inputs, make_ensemble
 
 from . import wpsio
 from .base import convert_xclim_inputs_to_pywps
@@ -116,18 +116,18 @@ class XclimEnsembleGridPointBase(FinchProcess):
 
         write_log(self, "Running subset", process_step="subset")
 
-        output_files = finch_subset_gridpoint(self, request.inputs)
+        subsetted_files = finch_subset_gridpoint(self, request.inputs)
 
-        if not output_files:
+        if not subsetted_files:
             message = "No data was produced when subsetting using the provided bounds."
             raise ProcessError(message)
 
         write_log(self, "Computing indices", process_step="compute_indices")
 
-        input_groups = make_indicator_inputs(self.xci, request.inputs, output_files)
+        input_groups = make_indicator_inputs(self.xci, request.inputs, subsetted_files)
         n_groups = len(input_groups)
 
-        output_files = []
+        indices_files = []
 
         warnings.filterwarnings("ignore", category=FutureWarning)
         warnings.filterwarnings("ignore", category=UserWarning)
@@ -148,15 +148,18 @@ class XclimEnsembleGridPointBase(FinchProcess):
 
             output_path = Path(self.workdir) / output_name
             output_ds.to_netcdf(output_path)
-            output_files.append(output_path)
+            indices_files.append(output_path)
 
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
 
+        ensemble_output = Path(self.workdir) / (output_filename + "_ensemble.nc")
+        make_ensemble(indices_files, ensemble_output)
+
         if convert_to_csv:
             write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
 
-            csv_files, metadata_folder = netcdf_to_csv(
+            csv_files, metadata_folder = netcdf_file_list_to_csv(
                 output_files,
                 output_folder=Path(self.workdir),
                 filename_prefix=output_filename,

@@ -10,7 +10,7 @@ from finch.processes import utils_bccaqv2
 
 from finch.processes.utils_bccaqv2 import get_bccaqv2_opendap_datasets
 from finch.processes.utils import (
-    netcdf_to_csv,
+    netcdf_file_list_to_csv,
     zip_files,
     is_opendap_url,
 )
@@ -47,7 +47,7 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
     assert len(urls) == 2
 
 
-def test_netcdf_to_csv_to_zip():
+def test_netcdf_file_list_to_csv_to_zip():
     here = Path(__file__).parent
     folder = here / "data" / "bccaqv2_single_cell"
     output_folder = here / "tmp" / "tasmin_csvs"
@@ -56,7 +56,7 @@ def test_netcdf_to_csv_to_zip():
     netcdf_files = list(sorted(folder.glob("tasmin*.nc")))
     # only take a small subset of files that have all the calendar types
     netcdf_files = netcdf_files[:5] + netcdf_files[40:50]
-    csv_files, metadata = netcdf_to_csv(netcdf_files, output_folder, "file_prefix")
+    csv_files, metadata = netcdf_file_list_to_csv(netcdf_files, output_folder, "file_prefix")
 
     output_zip = output_folder / "output.zip"
     files = csv_files + [metadata]
@@ -91,7 +91,7 @@ def test_netcdf_to_csv_to_zip():
                 assert False, "Unknown calendar type"
 
 
-def test_netcdf_to_csv_bad_hours():
+def test_netcdf_file_list_to_csv_bad_hours():
     here = Path(__file__).parent
     folder = here / "data" / "bccaqv2_single_cell"
     output_folder = here / "tmp" / "tasmin_csvs"
@@ -111,7 +111,7 @@ def test_netcdf_to_csv_bad_hours():
     ]
     netcdf_files = [folder / bad for bad in bad_hours]
 
-    csv_files, _ = netcdf_to_csv(netcdf_files, output_folder, "file_prefix")
+    csv_files, _ = netcdf_file_list_to_csv(netcdf_files, output_folder, "file_prefix")
 
     for csv in csv_files:
         df = pd.read_csv(csv, parse_dates=["time"])

@@ -21,7 +21,7 @@ from .subset import finch_subset_gridpoint
 from .utils import (
     compute_indices,
     make_tasmin_tasmax_pairs,
-    netcdf_to_csv,
+    netcdf_file_list_to_csv,
     single_input_or_none,
     write_log,
     zip_files,
@@ -174,7 +174,7 @@ class BCCAQV2HeatWave(FinchProcess):
         if convert_to_csv:
             write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
 
-            csv_files, metadata_folder = netcdf_to_csv(
+            csv_files, metadata_folder = netcdf_file_list_to_csv(
                 output_files,
                 output_folder=Path(self.workdir),
                 filename_prefix=output_filename,
