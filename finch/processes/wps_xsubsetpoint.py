@@ -1,6 +1,6 @@
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 
-from .base import FinchProcess
+from .wps_base import FinchProcess
 from .subset import finch_subset_gridpoint
 from .utils import make_metalink_output, write_log
 from .wpsio import end_date, lat, lon, start_date

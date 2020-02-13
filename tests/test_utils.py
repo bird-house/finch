@@ -6,9 +6,9 @@ import pytest
 import numpy as np
 import pandas as pd
 from pywps import configuration
-from finch.processes import utils_bccaqv2
+from finch.processes import ensemble_utils
 
-from finch.processes.utils_bccaqv2 import get_bccaqv2_opendap_datasets
+from finch.processes.ensemble_utils import get_bccaqv2_opendap_datasets
 from finch.processes.utils import (
     netcdf_file_list_to_csv,
     zip_files,
@@ -17,7 +17,7 @@ from finch.processes.utils import (
 from unittest import mock
 
 
-@mock.patch("finch.processes.utils_bccaqv2.TDSCatalog")
+@mock.patch("finch.processes.ensemble_utils.TDSCatalog")
 def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
     names = [
         "tasmin_day_BCCAQv2+ANUSPLIN300_CNRM-CM5_historical+rcp85_r1i1p1_19500101-21001231.nc",
@@ -56,7 +56,9 @@ def test_netcdf_file_list_to_csv_to_zip():
     netcdf_files = list(sorted(folder.glob("tasmin*.nc")))
     # only take a small subset of files that have all the calendar types
     netcdf_files = netcdf_files[:5] + netcdf_files[40:50]
-    csv_files, metadata = netcdf_file_list_to_csv(netcdf_files, output_folder, "file_prefix")
+    csv_files, metadata = netcdf_file_list_to_csv(
+        netcdf_files, output_folder, "file_prefix"
+    )
 
     output_zip = output_folder / "output.zip"
     files = csv_files + [metadata]
@@ -149,7 +151,7 @@ def test_is_opendap_url():
 def test_bccaqv2_make_file_groups():
     folder = Path(__file__).parent / "data" / "bccaqv2_single_cell"
     files_list = list(folder.glob("*.nc"))
-    groups = utils_bccaqv2.make_file_groups(files_list)
+    groups = ensemble_utils.make_file_groups(files_list)
 
     assert len(groups) == 85
     assert all(len(g) == 3 for g in groups)

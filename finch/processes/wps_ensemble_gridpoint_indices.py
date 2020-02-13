@@ -5,8 +5,8 @@ from unidecode import unidecode
 from finch.processes.subset import finch_subset_gridpoint
 
 from . import wpsio
-from .base import FinchProcess, convert_xclim_inputs_to_pywps
-from .utils_bccaqv2 import ensemble_common_handler, xclim_netcdf_variables
+from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
+from .ensemble_utils import ensemble_common_handler, xclim_netcdf_variables
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -23,7 +23,7 @@ class XclimEnsembleGridPointBase(FinchProcess):
 
         if self.xci is None:
             raise AttributeError(
-                "Use the `finch.processes.base.make_xclim_indicator_process` function instead."
+                "Use the `finch.processes.wps_base.make_xclim_indicator_process` function instead."
             )
 
         attrs = self.xci.json()

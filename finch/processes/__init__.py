@@ -1,11 +1,11 @@
 import xclim
 import xclim.atmos
 
-from finch.processes.utils_bccaqv2 import uses_bccaqv2_data
+from finch.processes.ensemble_utils import uses_bccaqv2_data
 from finch.processes.wps_xclim_indices import XclimIndicatorBase
 
-from .base import make_xclim_indicator_process
-from .wps_bccaqv2_gridpoint_indices import XclimEnsembleGridPointBase
+from .wps_base import make_xclim_indicator_process
+from .wps_ensemble_gridpoint_indices import XclimEnsembleGridPointBase
 from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
 from .wps_xsubsetbbox import SubsetBboxProcess
 from .wps_xsubsetbbox_bccaqv2 import SubsetBboxBCCAQV2Process

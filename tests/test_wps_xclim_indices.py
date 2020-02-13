@@ -6,7 +6,7 @@ import xclim
 
 import finch
 import finch.processes
-from finch.processes.base import make_xclim_indicator_process
+from finch.processes.wps_base import make_xclim_indicator_process
 from tests.utils import execute_process, wps_input_file, wps_literal_input
 
 

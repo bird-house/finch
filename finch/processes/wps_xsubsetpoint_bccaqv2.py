@@ -5,8 +5,8 @@ from pywps.app import WPSRequest
 from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 
-from .base import FinchProcess
-from .utils_bccaqv2 import get_bccaqv2_inputs, make_output_filename
+from .wps_base import FinchProcess
+from .ensemble_utils import get_bccaqv2_inputs, make_output_filename
 from .subset import finch_subset_gridpoint
 from .utils import netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
 from .wpsio import end_date, start_date

@@ -4,7 +4,7 @@ import logging
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from .wpsio import start_date, end_date, lat0, lat1, lon0, lon1
 
-from finch.processes.base import FinchProcess
+from finch.processes.wps_base import FinchProcess
 from finch.processes.utils import make_metalink_output, write_log
 from finch.processes.subset import finch_subset_bbox
 

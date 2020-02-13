@@ -5,9 +5,9 @@ from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
 from unidecode import unidecode
 
-from finch.processes.base import convert_xclim_inputs_to_pywps
+from finch.processes.wps_base import convert_xclim_inputs_to_pywps
 
-from .base import FinchProcess, FinchProgressBar
+from .wps_base import FinchProcess, FinchProgressBar
 from .utils import compute_indices, log_file_path, write_log
 
 LOGGER = logging.getLogger("PYWPS")
@@ -51,7 +51,7 @@ class XclimIndicatorBase(FinchProcess):
 
         super().__init__(
             self._handler,
-            identifier= attrs["identifier"],
+            identifier=attrs["identifier"],
             version="0.1",
             title=unidecode(attrs["long_name"]),
             abstract=unidecode(attrs["abstract"]),
