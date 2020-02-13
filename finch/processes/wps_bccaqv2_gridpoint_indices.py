@@ -53,36 +53,18 @@ class XclimEnsembleGridPointBase(FinchProcess):
 
         attrs = self.xci.json()
 
-        outputs = [
-            ComplexOutput(
-                "output",
-                "Result",
-                abstract=(
-                    f"{attrs['standard_name']}."
-                    "The format depends on the input parameter 'output_format'."
-                ),
-                as_reference=True,
-                supported_formats=[FORMATS.NETCDF, FORMATS.ZIP,],
-            ),
-            ComplexOutput(
-                "output_log",
-                "Logging information",
-                abstract="Collected logs during process run.",
-                as_reference=True,
-                supported_formats=[FORMATS.TEXT],
-            ),
-        ]
         inputs = [wpsio.lat, wpsio.lon, wpsio.start_date, wpsio.end_date]
-
-        rcp = deepcopy(wpsio.rcp)
-        rcp.min_occurs = 1
+        rcp = wpsio.copy_io(wpsio.rcp, min_occurs=1)
         inputs.append(rcp)
 
+        # all other inputs that are not the xarray data (window, threshold, etc.)
         for i in convert_xclim_inputs_to_pywps(eval(attrs["parameters"])):
             if i not in xclim_netcdf_variables:
                 inputs.append(i)
 
-        inputs.append(wpsio.output_netcdf_csv)
+        inputs.append(wpsio.output_format_netcdf_csv)
+
+        outputs = [wpsio.output_netcdf_zip, wpsio.output_log]
 
         identifier = f"ensemble_grid_point_{attrs['identifier']}"
         super().__init__(

@@ -8,7 +8,14 @@ import netCDF4
 import numpy as np
 import pandas as pd
 from pywps import FORMATS, Process, configuration
-from pywps import BoundingBoxInput, ComplexInput, LiteralInput
+from pywps import (
+    BoundingBoxInput,
+    BoundingBoxOutput,
+    ComplexInput,
+    ComplexOutput,
+    LiteralInput,
+    LiteralOutput,
+)
 from pywps.inout.outputs import MetaFile, MetaLink4
 import requests
 from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
@@ -18,6 +25,7 @@ import xarray as xr
 LOGGER = logging.getLogger("PYWPS")
 
 PywpsInput = Union[LiteralInput, ComplexInput, BoundingBoxInput]
+PywpsOutput = Union[LiteralOutput, ComplexOutput, BoundingBoxOutput]
 RequestInputs = Dict[str, Deque[PywpsInput]]
 
 
