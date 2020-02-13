@@ -158,22 +158,22 @@ class XclimEnsembleGridPointBase(FinchProcess):
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
 
-        ensemble_output = Path(self.workdir) / (output_filename + "_ensemble")
+        output_basename = Path(self.workdir) / (output_filename + "_ensemble")
         ensemble = make_ensemble(indices_files)
 
         if convert_to_csv:
-            ensemble_csv = ensemble_output.with_suffix(".csv")
+            ensemble_csv = output_basename.with_suffix(".csv")
             df = dataset_to_dataframe(ensemble)
             df.to_csv(ensemble_csv)
 
             metadata = format_metadata(ensemble)
-            metadata_file = ensemble_output.parent / f"{ensemble_csv.stem}_metadata.csv"
+            metadata_file = output_basename.parent / f"{ensemble_csv.stem}_metadata.csv"
             metadata_file.write_text(metadata)
 
             ensemble_output = Path(self.workdir) / (output_filename + ".zip")
             zip_files(ensemble_output, [metadata_file, ensemble_csv])
         else:
-            ensemble_output = ensemble_output.with_suffix(".nc")
+            ensemble_output = output_basename.with_suffix(".nc")
             ensemble_to_netcdf(ensemble, ensemble_output)
 
         response.outputs["output"].file = ensemble_output
