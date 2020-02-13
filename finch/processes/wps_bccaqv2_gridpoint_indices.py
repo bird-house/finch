@@ -27,7 +27,7 @@ from .utils_bccaqv2 import (
 LOGGER = logging.getLogger("PYWPS")
 
 
-class XclimBCCAQV2GridPointBase(FinchProcess):
+class XclimEnsembleGridPointBase(FinchProcess):
     """Dummy xclim indicator process class.
 
     Set xci to the xclim indicator in order to have a working class"""
