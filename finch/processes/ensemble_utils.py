@@ -164,13 +164,13 @@ def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
     return rcp_ok and variable_ok
 
 
-def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=None):
+def get_bccaqv2_inputs(
+    workdir: str, variable=None, rcp=None, catalog_url=None
+) -> List[PywpsInput]:
     """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
     catalog_url = configuration.get_config_value("finch", "bccaqv2_url")
-    new_inputs = deepcopy(wps_inputs)
-    workdir = next(iter(wps_inputs.values()))[0].workdir
 
-    new_inputs["resource"] = []
+    inputs = []
 
     def _make_bccaqv2_resource_input():
         return ComplexInput(
@@ -185,15 +185,15 @@ def get_bccaqv2_inputs(wps_inputs, variable=None, rcp=None, catalog_url=None):
             resource = _make_bccaqv2_resource_input()
             resource.url = url
             resource.workdir = workdir
-            new_inputs["resource"].append(resource)
+            inputs.append(resource)
     else:
         for file in get_bccaqv2_local_files_datasets(catalog_url, variable, rcp):
             resource = _make_bccaqv2_resource_input()
             resource.file = file
             resource.workdir = workdir
-            new_inputs["resource"].append(resource)
+            inputs.append(resource)
 
-    return new_inputs
+    return inputs
 
 
 def _formatted_coordinate(value) -> Optional[str]:
@@ -376,7 +376,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     write_log(process, "Fetching BCCAQv2 datasets")
 
     rcp = single_input_or_none(request.inputs, "rcp")
-    request.inputs = get_bccaqv2_inputs(request.inputs, rcp=rcp)
+    request.inputs["resource"] = get_bccaqv2_inputs(request.inputs, rcp=rcp)
 
     write_log(process, "Running subset", process_step="subset")
 
