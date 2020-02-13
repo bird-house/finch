@@ -376,11 +376,13 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     write_log(process, "Fetching BCCAQv2 datasets")
 
     rcp = single_input_or_none(request.inputs, "rcp")
-    request.inputs["resource"] = get_bccaqv2_inputs(request.inputs, rcp=rcp)
+    bccaqv2_inputs = get_bccaqv2_inputs(process.workdir, rcp=rcp)
 
     write_log(process, "Running subset", process_step="subset")
 
-    subsetted_files = subset_function(process, request.inputs)
+    subsetted_files = subset_function(
+        process, netcdf_inputs=bccaqv2_inputs, request_inputs=request.inputs
+    )
 
     if not subsetted_files:
         message = "No data was produced when subsetting using the provided bounds."

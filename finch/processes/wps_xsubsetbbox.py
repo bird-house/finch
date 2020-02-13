@@ -83,7 +83,11 @@ class SubsetBboxProcess(FinchProcess):
     def _handler(self, request, response):
         write_log(self, "Processing started", process_step="start")
 
-        output_files = finch_subset_bbox(self, request.inputs)
+        output_files = finch_subset_bbox(
+            self,
+            netcdf_inputs=request.inputs["resource"],
+            request_inputs=request.inputs,
+        )
         metalink = make_metalink_output(self, output_files)
 
         response.outputs["output"].file = metalink.files[0].file

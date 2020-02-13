@@ -9,6 +9,7 @@ from xclim.subset import subset_gridpoint, subset_bbox
 import xarray as xr
 
 from finch.processes.utils import (
+    PywpsInput,
     RequestInputs,
     single_input_or_none,
     try_opendap,
@@ -19,8 +20,10 @@ from finch.processes.utils import (
 LOGGER = logging.getLogger("PYWPS")
 
 
-def finch_subset_gridpoint(process: Process, inputs: RequestInputs) -> List[Path]:
-    """Parse wps inputs based on their name and execute the correct subset function.
+def finch_subset_gridpoint(
+    process: Process, netcdf_inputs: List[ComplexInput], request_inputs: RequestInputs
+) -> List[Path]:
+    """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
     The expected names of the inputs are as followed (taken from `wpsio.py`):
      - resource: ComplexInput files to subset.
@@ -30,23 +33,23 @@ def finch_subset_gridpoint(process: Process, inputs: RequestInputs) -> List[Path
      - end_date: Final date for temporal subsetting.
     """
 
-    lon_value = inputs["lon"][0].data
+    lon_value = request_inputs["lon"][0].data
     try:
         longitudes = [float(l) for l in lon_value.split(",")]
     except AttributeError:
         longitudes = [float(lon_value)]
 
-    lat_value = inputs["lat"][0].data
+    lat_value = request_inputs["lat"][0].data
     try:
         latitudes = [float(l) for l in lat_value.split(",")]
     except AttributeError:
         latitudes = [float(lat_value)]
 
-    start_date = single_input_or_none(inputs, "start_date")
-    end_date = single_input_or_none(inputs, "end_date")
-    variables = [r.data for r in inputs.get("variable", [])]
+    start_date = single_input_or_none(request_inputs, "start_date")
+    end_date = single_input_or_none(request_inputs, "end_date")
+    variables = [r.data for r in request_inputs.get("variable", [])]
 
-    n_files = len(inputs["resource"])
+    n_files = len(netcdf_inputs)
     count = 0
 
     output_files = []
@@ -94,15 +97,18 @@ def finch_subset_gridpoint(process: Process, inputs: RequestInputs) -> List[Path
 
         output_files.append(output_filename)
 
-    process_threaded(_subset, inputs["resource"])
+    process_threaded(_subset, netcdf_inputs)
 
     return output_files
 
 
-def finch_subset_bbox(process: Process, inputs: RequestInputs) -> List[Path]:
-    """Parse wps inputs based on their name and execute the correct subset function.
+def finch_subset_bbox(
+    process: Process, netcdf_inputs: List[ComplexInput], request_inputs: RequestInputs
+) -> List[Path]:
+    """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
-    The expected names of the inputs are as followed (taken from `wpsio.py`):
+
+    The expected names of the request_inputs are as followed (taken from `wpsio.py`):
      - resource: ComplexInput files to subset.
      - lat0: Latitude coordinate
      - lon0: Longitude coordinate
@@ -111,19 +117,19 @@ def finch_subset_bbox(process: Process, inputs: RequestInputs) -> List[Path]:
      - start_date: Initial date for temporal subsetting.
      - end_date: Final date for temporal subsetting.
     """
-    lon0 = single_input_or_none(inputs, "lon0")
-    lat0 = single_input_or_none(inputs, "lat0")
-    lon1 = single_input_or_none(inputs, "lon1")
-    lat1 = single_input_or_none(inputs, "lat1")
-    start_date = single_input_or_none(inputs, "start_date")
-    end_date = single_input_or_none(inputs, "end_date")
-    variables = [r.data for r in inputs.get("variable", [])]
+    lon0 = single_input_or_none(request_inputs, "lon0")
+    lat0 = single_input_or_none(request_inputs, "lat0")
+    lon1 = single_input_or_none(request_inputs, "lon1")
+    lat1 = single_input_or_none(request_inputs, "lat1")
+    start_date = single_input_or_none(request_inputs, "start_date")
+    end_date = single_input_or_none(request_inputs, "end_date")
+    variables = [r.data for r in request_inputs.get("variable", [])]
 
     nones = [lat1 is None, lon1 is None]
     if any(nones) and not all(nones):
         raise ProcessError("lat1 and lon1 must be both omitted or provided")
 
-    n_files = len(inputs["resource"])
+    n_files = len(netcdf_inputs)
     count = 0
 
     output_files = []
@@ -166,6 +172,6 @@ def finch_subset_bbox(process: Process, inputs: RequestInputs) -> List[Path]:
 
         output_files.append(output_filename)
 
-    process_threaded(_subset, inputs["resource"])
+    process_threaded(_subset, netcdf_inputs)
 
     return output_files
