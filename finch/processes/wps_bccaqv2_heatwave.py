@@ -9,9 +9,7 @@ from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 from xclim.atmos import heat_wave_frequency
 
-from finch.processes import make_xclim_indicator_process
-
-from .wps_base import FinchProcess
+from .wps_base import FinchProcess, make_xclim_indicator_process
 from .ensemble_utils import (
     get_bccaqv2_inputs,
     make_output_filename,
