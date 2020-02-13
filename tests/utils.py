@@ -3,6 +3,7 @@ from pathlib import Path
 
 import xarray as xr
 from owslib.wps import WPSExecution
+from pywps.app.exceptions import ProcessError
 from pywps.tests import assert_response_success
 
 
@@ -77,8 +78,11 @@ def execute_process(
     try:
         assert_response_success(response)
     except AssertionError as e:
-        message = response.xpath("//ows:ExceptionText")[0].text
-        raise AssertionError(message) from e
+        exception = response.xpath("//ows:Exception")[0]
+        exception_code = exception.get("exceptionCode")
+        message = exception[0].text
+        output_message = f"{exception_code}: {message}"
+        raise ProcessError(output_message) from e
 
     execution = WPSExecution()
     execution.parseResponse(response.xml)
