@@ -235,7 +235,7 @@ def single_input_or_none(inputs, identifier):
 
 
 def netcdf_file_list_to_csv(
-    netcdf_files: List[Union[Path, str]], output_folder, filename_prefix
+    netcdf_files: Union[List[Path], List[str]], output_folder, filename_prefix
 ) -> Tuple[List[str], str]:
     """Write csv files for a list of netcdf files.
 
