@@ -27,16 +27,15 @@ class XclimEnsembleGridPointBase(FinchProcess):
             )
 
         attrs = self.xci.json()
+        xci_inputs = convert_xclim_inputs_to_pywps(eval(attrs["parameters"]))
+        self.xci_inputs_identifiers = [i.identifier for i in xci_inputs]
 
         inputs = [wpsio.lat, wpsio.lon, wpsio.start_date, wpsio.end_date]
         rcp = wpsio.copy_io(wpsio.rcp, min_occurs=1)
         inputs.append(rcp)
 
-        compute_inputs = convert_xclim_inputs_to_pywps(eval(attrs["parameters"]))
-        self.compute_inputs_identifiers = [i.identifier for i in compute_inputs]
-
         # all other inputs that are not the xarray data (window, threshold, etc.)
-        for i in compute_inputs:
+        for i in xci_inputs:
             if i.identifier not in xclim_netcdf_variables:
                 inputs.append(i)
 
