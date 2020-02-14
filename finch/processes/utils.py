@@ -104,6 +104,16 @@ def compute_indices(
         elif isinstance(input, LiteralInput):
             kwds[name] = input.data
 
+    global_attributes.update(
+        {
+            "climateindex_package_id": "https://github.com/Ouranosinc/xclim",
+            "product": "derived climate index",
+            "contact": "Canadian Centre for Climate Services",
+            "institution": "Canadian Centre for Climate Services (CCCS)",
+            "institute_id": "CCCS",
+        }
+    )
+
     out = func(**kwds)
     output_dataset = xr.Dataset(
         data_vars=None, coords=out.coords, attrs=global_attributes
