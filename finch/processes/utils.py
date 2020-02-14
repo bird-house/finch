@@ -425,11 +425,15 @@ def make_tasmin_tasmax_pairs(
         )
 
 
-def dataset_to_netcdf(ds: xr.Dataset, output_path: Path, compression_level=0) -> None:
+def dataset_to_netcdf(
+    ds: xr.Dataset, output_path: Union[Path, str], compression_level=0
+) -> None:
     """Write an :class:`xarray.Dataset` dataset to disk, using compression."""
     encoding = {}
     if "time" in ds.dims:
-        encoding["time"] = {"dtype": "single"}
+        encoding["time"] = {
+            "dtype": "single",  # better compatibility with OpenDAP in thredds
+        }
     if compression_level:
         for v in ds.data_vars:
             encoding[v] = {"zlib": True, "complevel": compression_level}
