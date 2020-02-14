@@ -111,7 +111,10 @@ rcp = LiteralInput(
 percentiles = LiteralInput(
     "percentiles",
     "Ensemble percentiles (comma separated integers)",
-    abstract="Ensemble percentiles to calculate for input climate simulations. Accepts a comma separated list of integers.",
+    abstract=(
+        "Ensemble percentiles to calculate for input climate simulations. "
+        "Accepts a comma separated list of integers."
+    ),
     data_type="string",
     default="10,50,90",
     min_occurs=0,
