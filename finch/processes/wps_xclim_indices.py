@@ -5,10 +5,11 @@ from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
 from unidecode import unidecode
 
+from finch.processes.utils import dataset_to_netcdf
 from finch.processes.wps_base import convert_xclim_inputs_to_pywps
 
-from .wps_base import FinchProcess, FinchProgressBar
 from .utils import compute_indices, log_file_path, write_log
+from .wps_base import FinchProcess, FinchProgressBar
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -105,7 +106,7 @@ class XclimIndicatorBase(FinchProcess):
             width=15,
             dt=1,
         ):
-            out.to_netcdf(out_fn)
+            dataset_to_netcdf(out, out_fn)
 
         response.outputs["output_netcdf"].file = out_fn
         response.outputs["output_log"].file = log_file_path(self)

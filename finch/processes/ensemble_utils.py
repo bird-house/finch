@@ -14,6 +14,8 @@ from xclim import ensembles
 from xclim.checks import assert_daily
 from xclim.utils import Indicator
 
+from finch.processes.utils import dataset_to_netcdf
+
 from . import wpsio
 from .utils import (
     PywpsInput,
@@ -253,7 +255,7 @@ def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
     def fix(correct_ds, wrong_ds, original_filename):
         wrong_ds["time"] = correct_ds.time
         temp_name = original_filename.with_name(original_filename.stem + "_temp")
-        wrong_ds.to_netcdf(temp_name)
+        dataset_to_netcdf(wrong_ds, temp_name)
         original_filename.unlink()
         temp_name.rename(original_filename)
 
@@ -353,16 +355,6 @@ def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
     return ensemble_percentiles
 
 
-def ensemble_to_netcdf(ensemble: xr.Dataset, output_path: Path) -> None:
-    """Write an ensemble dataset to disk."""
-    compression = {"zlib": True, "complevel": 1}
-
-    encoding = {v: compression for v in ensemble.data_vars}
-    encoding["time"] = {"dtype": "double"}
-
-    ensemble.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)
-
-
 def ensemble_common_handler(process: Process, request, response, subset_function):
     convert_to_csv = request.inputs["output_format"][0].data == "csv"
     if not convert_to_csv:
@@ -419,7 +411,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
                 output_name = input_name.replace(variable, process.identifier)
 
         output_path = Path(process.workdir) / output_name
-        output_ds.to_netcdf(output_path)
+        dataset_to_netcdf(output_ds, output_path)
         indices_files.append(output_path)
 
     warnings.filterwarnings("default", category=FutureWarning)
@@ -445,7 +437,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         zip_files(ensemble_output, [metadata_file, ensemble_csv])
     else:
         ensemble_output = output_basename.with_suffix(".nc")
-        ensemble_to_netcdf(ensemble, ensemble_output)
+        dataset_to_netcdf(ensemble, ensemble_output)
 
     response.outputs["output"].file = ensemble_output
 

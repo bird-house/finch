@@ -9,6 +9,8 @@ from pywps.app.exceptions import ProcessError
 import xarray as xr
 from xclim.subset import subset_bbox, subset_gridpoint
 
+from finch.processes.utils import dataset_to_netcdf
+
 from . import wpsio
 from .utils import (
     RequestInputs,
@@ -93,7 +95,7 @@ def finch_subset_gridpoint(
         p = Path(resource._file or resource._build_file_name(resource.url))
         output_filename = Path(process.workdir) / (p.stem + "_sub" + p.suffix)
 
-        subsetted.to_netcdf(output_filename)
+        dataset_to_netcdf(subsetted, output_filename)
 
         output_files.append(output_filename)
 
@@ -167,7 +169,7 @@ def finch_subset_bbox(
         p = Path(resource._file or resource._build_file_name(resource.url))
         output_filename = Path(process.workdir) / (p.stem + "_sub" + p.suffix)
 
-        subsetted.to_netcdf(output_filename)
+        dataset_to_netcdf(subsetted, output_filename)
 
         output_files.append(output_filename)
 

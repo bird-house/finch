@@ -423,3 +423,13 @@ def make_tasmin_tasmax_pairs(
         sentry_sdk.capture_message(
             f"Couldn't find matching tasmin or tasmax for: {f}", level="error"
         )
+
+
+def dataset_to_netcdf(ds: xr.Dataset, output_path: Path, compression_level=0) -> None:
+    """Write an :class:`xarray.Dataset` dataset to disk, using compression."""
+    encoding = {"time": {"dtype": "single"}}
+    if compression_level:
+        for v in ds.data_vars:
+            encoding[v] = {"zlib": True, "complevel": compression_level}
+
+    ds.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)
