@@ -288,12 +288,12 @@ def make_indicator_inputs(
 
     arguments = set(eval(indicator.json()["parameters"]))
 
-    required_args = bccaq_variable_types.intersection(arguments)
+    required_netcdf_args = bccaq_variable_types.intersection(arguments)
 
     input_list = []
 
-    if len(required_args) == 1:
-        variable_name = list(required_args)[0]
+    if len(required_netcdf_args) == 1:
+        variable_name = list(required_netcdf_args)[0]
         for path in files_list:
             inputs = deepcopy(wps_inputs)
             inputs[variable_name] = deque([make_nc_input(variable_name)])
@@ -303,11 +303,11 @@ def make_indicator_inputs(
         for input_group in make_file_groups(files_list):
             inputs = deepcopy(wps_inputs)
             for variable_name, path in input_group.items():
-                if variable_name not in required_args:
+                if variable_name not in required_netcdf_args:
                     continue
                 inputs[variable_name] = deque([make_nc_input(variable_name)])
                 inputs[variable_name][0].file = str(path)
-                input_list.append(inputs)
+            input_list.append(inputs)
 
     return input_list
 

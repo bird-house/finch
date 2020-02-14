@@ -35,7 +35,7 @@ def test_ensemble_heatwave_frequency(mock_datasets, client):
     ds = Dataset(outputs[0])
     dims = {d.name: d.size for d in ds.dimensions.values()}
     assert dims == {
-        "realization": 2,
+        "realization": 1,
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
     }
