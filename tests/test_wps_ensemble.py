@@ -101,3 +101,65 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     for var in ensemble_variables.values():
         variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
         assert variable_dims == {"time": 4, "lat": 2, "lon": 2}
+
+
+def test_ensemble_heatwave_frequency_grid_point_csv(mock_datasets, client):
+    # --- given ---
+    identifier = "ensemble_grid_point_heat_wave_frequency"
+    inputs = [
+        wps_literal_input("lat", "46"),
+        wps_literal_input("lon", "-72.8"),
+        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("thresh_tasmin", "22.0 degC"),
+        wps_literal_input("thresh_tasmax", "30 degC"),
+        wps_literal_input("window", "3"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("percentiles", "20, 50, 80"),
+        wps_literal_input("output_format", "csv"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert len(outputs) == 1
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 2  # metadata + data
+    data_filename = [n for n in zf.namelist() if "metadata" not in n]
+    csv = zf.read(data_filename[0]).decode()
+    lines = csv.split("\n")
+    assert lines[0].startswith("lat,lon,realization,time")
+    n_data_rows = len(lines) - 2
+    assert n_data_rows == 8
+
+
+def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
+    # --- given ---
+    identifier = "ensemble_bbox_heat_wave_frequency"
+    inputs = [
+        wps_literal_input("lat0", "46.0"),
+        wps_literal_input("lat1", "46.2"),
+        wps_literal_input("lon0", "-73.0"),
+        wps_literal_input("lon1", "-72.8"),
+        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("thresh_tasmin", "22.0 degC"),
+        wps_literal_input("thresh_tasmax", "30 degC"),
+        wps_literal_input("window", "3"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("percentiles", "20, 50, 80"),
+        wps_literal_input("output_format", "csv"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert len(outputs) == 1
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 2  # metadata + data
+    data_filename = [n for n in zf.namelist() if "metadata" not in n]
+    csv = zf.read(data_filename[0]).decode()
+    lines = csv.split("\n")
+    assert lines[0].startswith("lat,lon,realization,time")
+    n_data_rows = len(lines) - 2
+    assert n_data_rows == 2 * 2 * 2 * 4  # realizations=2, lat=2, lon=2, time=4

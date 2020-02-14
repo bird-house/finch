@@ -431,10 +431,14 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
         df = dataset_to_dataframe(ensemble)
+        df = df.reset_index().set_index(["lat", "lon", "realization", "time"])
+        if "region" in df.columns:
+            df.drop(columns="region", inplace=True)
+
         df.to_csv(ensemble_csv)
 
         metadata = format_metadata(ensemble)
-        metadata_file = output_basename.parent / f"{ensemble_csv.stem}_metadata.csv"
+        metadata_file = output_basename.parent / f"{ensemble_csv.stem}_metadata.txt"
         metadata_file.write_text(metadata)
 
         ensemble_output = Path(process.workdir) / (output_filename + ".zip")
