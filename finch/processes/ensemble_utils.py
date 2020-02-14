@@ -1,6 +1,7 @@
 from collections import deque
 from copy import deepcopy
 from enum import Enum
+from functools import partial
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import warnings
@@ -10,13 +11,13 @@ from pywps import configuration
 from pywps.app.exceptions import ProcessError
 from siphon.catalog import TDSCatalog
 import xarray as xr
+import xclim
 from xclim import ensembles
 from xclim.checks import assert_daily
 from xclim.utils import Indicator
 
 from finch.processes.utils import dataset_to_netcdf
 
-from . import wpsio
 from .utils import (
     PywpsInput,
     RequestInputs,
@@ -42,7 +43,34 @@ xclim_netcdf_variables = {
     "t90",
 }  # a list of all posible netcdf arguments in xclim
 
-bccaq_variable_types = {"tasmin", "tasmax", "pr"}
+bccaq_variables = {"tasmin", "tasmax", "pr"}
+
+
+def tas(tasmin: xr.Dataset, tasmax: xr.Dataset) -> xr.Dataset:
+    """Compute daily mean temperature, and set attributes in the output Dataset."""
+
+    tas = (tasmin["tasmin"] + tasmax["tasmax"]) / 2
+    tas_ds = tas.to_dataset(name="tas")
+    tas_ds.attrs = tasmin.attrs
+    tas_ds["tas"].attrs = tasmin["tasmin"].attrs
+    tas_ds["tas"].attrs["long_name"] = "Daily Mean Near-Surface Air Temperature"
+    tas_ds["tas"].attrs["cell_methods"] = "time: mean within days"
+    return tas_ds
+
+
+percentile_doy_10 = partial(xclim.utils.percentile_doy, per=0.1)
+percentile_doy_90 = partial(xclim.utils.percentile_doy, per=0.9)
+
+variable_computations = {
+    "tas": {"inputs": ["tasmin", "tasmax"], "function": tas},
+    "tn10": {"inputs": ["tas"], "function": percentile_doy_10},
+    "tn90": {"inputs": ["tas"], "function": percentile_doy_90},
+    "t10": {"inputs": ["tasmin"], "function": percentile_doy_10},
+    "t90": {"inputs": ["tasmin"], "function": percentile_doy_90},
+}
+
+accepted_variables = bccaq_variables.union(variable_computations)
+not_implemented_variables = xclim_netcdf_variables - accepted_variables
 
 
 class ParsingMethod(Enum):
@@ -277,10 +305,8 @@ def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
 def uses_bccaqv2_data(indicator: Indicator) -> bool:
     """Returns True if the BCCAQv2 data can be used directly with this indicator."""
 
-    incompatible_variable_names = xclim_netcdf_variables - bccaq_variable_types
-
     params = eval(indicator.json()["parameters"])
-    return not any(p in incompatible_variable_names for p in params)
+    return not any(p in not_implemented_variables for p in params)
 
 
 def make_indicator_inputs(
@@ -290,7 +316,7 @@ def make_indicator_inputs(
 
     arguments = set(eval(indicator.json()["parameters"]))
 
-    required_netcdf_args = bccaq_variable_types.intersection(arguments)
+    required_netcdf_args = bccaq_variables.intersection(arguments)
 
     input_list = []
 
@@ -323,9 +349,9 @@ def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
         if file.name not in filenames:
             continue
         group = {}
-        for variable in bccaq_variable_types:
+        for variable in bccaq_variables:
             if variable in file.name:
-                for other_var in bccaq_variable_types.difference([variable]):
+                for other_var in bccaq_variables.difference([variable]):
                     other_filename = file.name.replace(variable, other_var)
                     if other_filename in filenames:
                         group[other_var] = filenames[other_filename]
@@ -382,11 +408,11 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         message = "No data was produced when subsetting using the provided bounds."
         raise ProcessError(message)
 
-    write_log(process, "Computing indices", process_step="compute_indices")
-
     compute_inputs = {
         k: v for k, v in request.inputs.items() if k in process.xci_inputs_identifiers
     }
+
+    write_log(process, "Computing indices", process_step="compute_indices")
 
     input_groups = make_indicator_inputs(process.xci, compute_inputs, subsetted_files)
     n_groups = len(input_groups)
@@ -405,7 +431,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         output_ds = compute_indices(process, process.xci, inputs)
 
         output_name = f"{output_filename}_{process.identifier}_{n}.nc"
-        for variable in bccaq_variable_types:
+        for variable in bccaq_variables:
             if variable in inputs:
                 input_name = Path(inputs.get(variable)[0].file).name
                 output_name = input_name.replace(variable, process.identifier)
