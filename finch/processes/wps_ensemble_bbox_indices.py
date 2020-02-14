@@ -43,7 +43,7 @@ class XclimEnsembleBboxBase(FinchProcess):
 
         # all other inputs that are not the xarray data (window, threshold, etc.)
         for i in xci_inputs:
-            if i not in xclim_netcdf_variables:
+            if i.identifier not in xclim_netcdf_variables:
                 inputs.append(i)
 
         inputs.append(wpsio.output_format_netcdf_csv)
