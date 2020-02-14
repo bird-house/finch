@@ -9,7 +9,10 @@ from tests.utils import execute_process, wps_literal_input
 
 @pytest.fixture
 def mock_datasets(monkeypatch):
-    filenames = ["tasmin_subset.nc", "tasmax_subset.nc"]
+    filenames = [
+        "tasmax_inmcm4_subset.nc",
+        "tasmin_inmcm4_subset.nc",
+    ]
     mock_local_datasets(monkeypatch, filenames=filenames)
 
 

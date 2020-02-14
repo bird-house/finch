@@ -9,7 +9,12 @@ from tests.utils import execute_process, wps_literal_input, mock_local_datasets
 
 @pytest.fixture
 def mock_datasets(monkeypatch):
-    filenames = ["tasmin_subset.nc", "tasmax_subset.nc"]
+    filenames = [
+        "tasmax_bcc-csm1-1_subset.nc",
+        "tasmax_inmcm4_subset.nc",
+        "tasmin_bcc-csm1-1_subset.nc",
+        "tasmin_inmcm4_subset.nc",
+    ]
     mock_local_datasets(monkeypatch, filenames=filenames)
 
 
@@ -36,7 +41,7 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
     ds = Dataset(outputs[0])
     dims = {d.name: d.size for d in ds.dimensions.values()}
     assert dims == {
-        "realization": 1,
+        "realization": 2,
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
     }
@@ -79,7 +84,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     ds = Dataset(outputs[0])
     dims = {d.name: d.size for d in ds.dimensions.values()}
     assert dims == {
-        "realization": 1,
+        "realization": 2,
         "lat": 2,
         "lon": 2,
         "time": 4,  # there are roughly 4 months in the test datasets
