@@ -144,9 +144,10 @@ class SubsetGridPointBCCAQV2Process(FinchProcess):
         write_log(self, "Fetching BCCAQv2 datasets")
 
         variable = single_input_or_none(request.inputs, "variable")
+        variable = [variable] if variable is not None else None
         rcp = single_input_or_none(request.inputs, "rcp")
         request.inputs["resource"] = get_bccaqv2_inputs(
-            self.workdir, variable=variable, rcp=rcp
+            self.workdir, variables=variable, rcp=rcp
         )
 
         write_log(self, "Running subset", process_step="subset")

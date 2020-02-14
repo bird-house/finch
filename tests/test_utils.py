@@ -43,7 +43,7 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
 
     mock_catalog.datasets = {name: make_dataset(name) for name in names}
 
-    urls = get_bccaqv2_opendap_datasets(catalog_url, variable, rcp)
+    urls = get_bccaqv2_opendap_datasets(catalog_url, [variable], rcp)
     assert len(urls) == 2
 
 

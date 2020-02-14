@@ -85,18 +85,25 @@ class ParsingMethod(Enum):
 
 
 def get_bccaqv2_local_files_datasets(
-    catalog_url, variable=None, rcp=None, method: ParsingMethod = ParsingMethod.filename
+    catalog_url,
+    variables: List[str] = None,
+    rcp: str = None,
+    method: ParsingMethod = ParsingMethod.filename,
 ) -> List[str]:
     """Get a list of filenames corresponding to variable and rcp on a local filesystem."""
+
     urls = []
     for file in Path(catalog_url).glob("*.nc"):
-        if _bccaqv2_filter(method, file.stem, str(file), rcp, variable):
+        if _bccaqv2_filter(method, file.stem, str(file), rcp, variables):
             urls.append(str(file))
     return urls
 
 
 def get_bccaqv2_opendap_datasets(
-    catalog_url, variable=None, rcp=None, method: ParsingMethod = ParsingMethod.filename
+    catalog_url,
+    variables: List[str] = None,
+    rcp: str = None,
+    method: ParsingMethod = ParsingMethod.filename,
 ) -> List[str]:
     """Get a list of urls corresponding to variable and rcp on a Thredds server.
 
@@ -110,15 +117,17 @@ def get_bccaqv2_opendap_datasets(
     urls = []
     for dataset in catalog.datasets.values():
         opendap_url = dataset.access_urls["OPENDAP"]
-        if _bccaqv2_filter(method, dataset.name, opendap_url, rcp, variable):
+        if _bccaqv2_filter(method, dataset.name, opendap_url, rcp, variables):
             urls.append(opendap_url)
     return urls
 
 
-def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
+def _bccaqv2_filter(
+    method: ParsingMethod, filename, url, rcp, variables: List[str] = None
+):
     """Parse metadata and filter BCCAQV2 datasets"""
 
-    variable_ok = variable is None
+    variable_ok = variables is None
     rcp_ok = rcp is None
 
     keep_models = [
@@ -152,7 +161,7 @@ def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
     ]
 
     if method == ParsingMethod.filename:
-        variable_ok = variable_ok or filename.startswith(variable)
+        variable_ok = variable_ok or any(filename.startswith(v) for v in variables)
         rcp_ok = rcp_ok or rcp in filename
 
         filename_lower = filename.lower()
@@ -196,7 +205,7 @@ def _bccaqv2_filter(method: ParsingMethod, filename, url, rcp, variable):
 
 
 def get_bccaqv2_inputs(
-    workdir: str, variable=None, rcp=None, catalog_url=None
+    workdir: str, variables: Optional[List[str]] = None, rcp=None, catalog_url=None
 ) -> List[PywpsInput]:
     """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
     catalog_url = configuration.get_config_value("finch", "bccaqv2_url")
@@ -212,13 +221,13 @@ def get_bccaqv2_inputs(
         )
 
     if catalog_url.startswith("http"):
-        for url in get_bccaqv2_opendap_datasets(catalog_url, variable, rcp):
+        for url in get_bccaqv2_opendap_datasets(catalog_url, variables, rcp):
             resource = _make_bccaqv2_resource_input()
             resource.url = url
             resource.workdir = workdir
             inputs.append(resource)
     else:
-        for file in get_bccaqv2_local_files_datasets(catalog_url, variable, rcp):
+        for file in get_bccaqv2_local_files_datasets(catalog_url, variables, rcp):
             resource = _make_bccaqv2_resource_input()
             resource.file = file
             resource.workdir = workdir
@@ -382,10 +391,13 @@ def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
 
 
 def ensemble_common_handler(process: Process, request, response, subset_function):
+    xci_input_names = {
+        k: v for k, v in request.inputs.items() if k in process.xci_inputs_identifiers
+    }
+
     convert_to_csv = request.inputs["output_format"][0].data == "csv"
     if not convert_to_csv:
         del process.status_percentage_steps["convert_to_csv"]
-
     percentiles_string = request.inputs["percentiles"][0].data
     percentiles = [int(p.strip()) for p in percentiles_string.split(",")]
 
@@ -408,13 +420,9 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         message = "No data was produced when subsetting using the provided bounds."
         raise ProcessError(message)
 
-    compute_inputs = {
-        k: v for k, v in request.inputs.items() if k in process.xci_inputs_identifiers
-    }
-
     write_log(process, "Computing indices", process_step="compute_indices")
 
-    input_groups = make_indicator_inputs(process.xci, compute_inputs, subsetted_files)
+    input_groups = make_indicator_inputs(process.xci, xci_input_names, subsetted_files)
     n_groups = len(input_groups)
 
     indices_files = []

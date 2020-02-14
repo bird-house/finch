@@ -1,7 +1,17 @@
 import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import Callable, Deque, Dict, Generator, Iterable, List, Tuple, Union
+from typing import (
+    Callable,
+    Deque,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 import zipfile
 
 import netCDF4
@@ -237,7 +247,7 @@ def is_opendap_url(url):
         return dataset.disk_format in ("DAP2", "DAP4")
 
 
-def single_input_or_none(inputs, identifier):
+def single_input_or_none(inputs, identifier) -> Optional[str]:
     try:
         return inputs[identifier][0].data
     except KeyError:
