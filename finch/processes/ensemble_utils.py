@@ -344,9 +344,7 @@ def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
     return groups
 
 
-def make_ensemble(files: List[Path]) -> None:
-    percentiles = [10, 50, 90]
-
+def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
     ensemble = ensembles.create_ensemble(files)
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
@@ -369,6 +367,9 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     convert_to_csv = request.inputs["output_format"][0].data == "csv"
     if not convert_to_csv:
         del process.status_percentage_steps["convert_to_csv"]
+
+    percentiles_string = request.inputs["percentiles"][0].data
+    percentiles = [int(p.strip()) for p in percentiles_string.split(",")]
 
     write_log(process, "Processing started", process_step="start")
 
@@ -425,7 +426,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     warnings.filterwarnings("default", category=UserWarning)
 
     output_basename = Path(process.workdir) / (output_filename + "_ensemble")
-    ensemble = make_ensemble(indices_files)
+    ensemble = make_ensemble(indices_files, percentiles)
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")

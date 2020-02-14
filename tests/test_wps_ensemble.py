@@ -24,6 +24,7 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
         wps_literal_input("freq", "MS"),
+        wps_literal_input("percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
     ]
 
@@ -45,7 +46,9 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
         for k, v in ds.variables.items()
         if k not in "lat lon realization time".split()
     }
-    assert ensemble_variables
+    assert sorted(ensemble_variables) == [
+        f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
+    ]
     for var in ensemble_variables.values():
         variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
         assert variable_dims == {"region": 1, "time": 4}
@@ -64,6 +67,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
         wps_literal_input("freq", "MS"),
+        wps_literal_input("percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
     ]
 
@@ -86,7 +90,9 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
         for k, v in ds.variables.items()
         if k not in "lat lon realization time".split()
     }
-    assert ensemble_variables
+    assert sorted(ensemble_variables) == [
+        f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
+    ]
     for var in ensemble_variables.values():
         variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
         assert variable_dims == {"time": 4, "lat": 2, "lon": 2}

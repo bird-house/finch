@@ -30,7 +30,13 @@ class XclimEnsembleGridPointBase(FinchProcess):
         xci_inputs = convert_xclim_inputs_to_pywps(eval(attrs["parameters"]))
         self.xci_inputs_identifiers = [i.identifier for i in xci_inputs]
 
-        inputs = [wpsio.lat, wpsio.lon, wpsio.start_date, wpsio.end_date]
+        inputs = [
+            wpsio.lat,
+            wpsio.lon,
+            wpsio.start_date,
+            wpsio.end_date,
+            wpsio.percentiles,
+        ]
         rcp = wpsio.copy_io(wpsio.rcp, min_occurs=1)
         inputs.append(rcp)
 

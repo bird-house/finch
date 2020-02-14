@@ -108,6 +108,15 @@ rcp = LiteralInput(
     allowed_values=["rcp26", "rcp45", "rcp85"],
 )
 
+percentiles = LiteralInput(
+    "percentiles",
+    "Ensemble percentiles (comma separated integers)",
+    abstract="Ensemble percentiles to calculate for input climate simulations. Accepts a comma separated list of integers.",
+    data_type="string",
+    default="10,50,90",
+    min_occurs=0,
+)
+
 output_format_netcdf_csv = LiteralInput(
     "output_format",
     "Output format choice",
