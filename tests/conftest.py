@@ -1,6 +1,7 @@
 from pathlib import Path
 import tempfile
 from typing import Dict
+from shutil import rmtree
 
 import pytest
 from pywps import Service
@@ -12,6 +13,19 @@ import finch
 import finch.processes
 
 from .common import CFG_FILE
+
+
+TEMP_DIR = Path(__file__).parent / "tmp"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_temp_data(request):
+    TEMP_DIR.mkdir(exist_ok=True)
+
+    def _cleanup_temp():
+        rmtree(TEMP_DIR, ignore_errors=True)
+
+    request.addfinalizer(_cleanup_temp)
 
 
 def _create_test_dataset(variable, cell_methods, stardard_name, units, seed=None):
@@ -51,9 +65,7 @@ def _create_and_write_dataset(
 
 
 def _write_dataset(variable, ds) -> Path:
-    dir_name = Path(__file__).parent / "tmp"
-    dir_name.mkdir(exist_ok=True)
-    _, filename = tempfile.mkstemp(f"finch_test_data{variable}.nc", dir=dir_name)
+    _, filename = tempfile.mkstemp(f"finch_test_data{variable}.nc", dir=TEMP_DIR)
     ds.to_netcdf(filename)
     return Path(filename)
 
@@ -86,11 +98,6 @@ def netcdf_datasets(request) -> Dict[str, Path]:
     t90 = percentile_doy(tas, per=0.9).to_dataset(name="t90")
     datasets["t90"] = _write_dataset("t90", t90)
 
-    def finalizer():
-        for d in datasets.values():
-            d.unlink()
-
-    request.addfinalizer(finalizer)
     return datasets
 
 
