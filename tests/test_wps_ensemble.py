@@ -31,7 +31,7 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
         wps_literal_input("freq", "MS"),
-        wps_literal_input("percentiles", "20, 50, 80"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
     ]
 
@@ -74,7 +74,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
         wps_literal_input("freq", "MS"),
-        wps_literal_input("percentiles", "20, 50, 80"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
     ]
 
@@ -116,7 +116,7 @@ def test_ensemble_heatwave_frequency_grid_point_csv(mock_datasets, client):
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
         wps_literal_input("freq", "MS"),
-        wps_literal_input("percentiles", "20, 50, 80"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "csv"),
     ]
 
@@ -148,7 +148,7 @@ def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
         wps_literal_input("freq", "MS"),
-        wps_literal_input("percentiles", "20, 50, 80"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "csv"),
     ]
 
@@ -204,7 +204,7 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
         wps_literal_input("rcp", "rcp26"),
         wps_literal_input("window", "6"),
         wps_literal_input("freq", "YS"),
-        wps_literal_input("percentiles", "20, 50, 80"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
     ]
 
@@ -241,7 +241,7 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
         wps_literal_input("rcp", "rcp26"),
-        wps_literal_input("percentiles", "20, 50, 80"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
     ]
 

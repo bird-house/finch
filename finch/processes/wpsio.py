@@ -108,8 +108,8 @@ rcp = LiteralInput(
     allowed_values=["rcp26", "rcp45", "rcp85"],
 )
 
-percentiles = LiteralInput(
-    "percentiles",
+ensemble_percentiles = LiteralInput(
+    "ensemble_percentiles",
     "Ensemble percentiles (comma separated integers)",
     abstract=(
         "Ensemble percentiles to calculate for input climate simulations. "

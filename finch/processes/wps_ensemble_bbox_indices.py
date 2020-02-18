@@ -37,7 +37,7 @@ class XclimEnsembleBboxBase(FinchProcess):
             wpsio.copy_io(wpsio.lon1, min_occurs=1),
             wpsio.start_date,
             wpsio.end_date,
-            wpsio.percentiles,
+            wpsio.ensemble_percentiles,
         ]
         rcp = wpsio.copy_io(wpsio.rcp, min_occurs=1)
         inputs.append(rcp)

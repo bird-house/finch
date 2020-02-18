@@ -461,8 +461,8 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     convert_to_csv = request.inputs["output_format"][0].data == "csv"
     if not convert_to_csv:
         del process.status_percentage_steps["convert_to_csv"]
-    percentiles_string = request.inputs["percentiles"][0].data
-    percentiles = [int(p.strip()) for p in percentiles_string.split(",")]
+    percentiles_string = request.inputs["ensemble_percentiles"][0].data
+    ensemble_percentiles = [int(p.strip()) for p in percentiles_string.split(",")]
 
     write_log(process, "Processing started", process_step="start")
 
@@ -523,7 +523,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     warnings.filterwarnings("default", category=UserWarning)
 
     output_basename = Path(process.workdir) / (output_filename + "_ensemble")
-    ensemble = make_ensemble(indices_files, percentiles)
+    ensemble = make_ensemble(indices_files, ensemble_percentiles)
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
