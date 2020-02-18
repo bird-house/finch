@@ -193,9 +193,6 @@ def test_compute_intermediate_variables(monkeypatch):
     assert sorted(files_outputs) == sorted(expected)
 
 
-@pytest.mark.skip(
-    "Skipping: not sure if there is a problem with xclim.utils.resample_doy"
-)
 def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
     mock_datasets, client
 ):
