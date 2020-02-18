@@ -1,6 +1,7 @@
 import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
+import re
 from typing import (
     Callable,
     Deque,
@@ -99,12 +100,16 @@ def compute_indices(
     process: Process, func: Callable, inputs: RequestInputs
 ) -> xr.Dataset:
     kwds = {}
-    global_attributes = None
+    global_attributes = {}
     for name, input_queue in inputs.items():
         input = input_queue[0]
         if isinstance(input, ComplexInput):
             ds = try_opendap(input)
             global_attributes = global_attributes or ds.attrs
+            if re.match(r"^t[nx]?\d{1,2}$", name):
+                # dayofyear, get the first data_var
+                kwds[name] = list(ds.data_vars.values())[0]
+                continue
             try:
                 kwds[name] = ds.data_vars[name]
             except KeyError as e:

@@ -3,7 +3,7 @@ from copy import deepcopy
 from enum import Enum
 from functools import partial
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Iterable
 import warnings
 
 from pywps import ComplexInput, FORMATS, Process
@@ -46,7 +46,7 @@ xclim_netcdf_variables = {
 bccaq_variables = {"tasmin", "tasmax", "pr"}
 
 
-def tas(tasmin: xr.Dataset, tasmax: xr.Dataset) -> xr.Dataset:
+def _tas(tasmin: xr.Dataset, tasmax: xr.Dataset) -> xr.Dataset:
     """Compute daily mean temperature, and set attributes in the output Dataset."""
 
     tas = (tasmin["tasmin"] + tasmax["tasmax"]) / 2
@@ -58,11 +58,17 @@ def tas(tasmin: xr.Dataset, tasmax: xr.Dataset) -> xr.Dataset:
     return tas_ds
 
 
-percentile_doy_10 = partial(xclim.utils.percentile_doy, per=0.1)
-percentile_doy_90 = partial(xclim.utils.percentile_doy, per=0.9)
+def _percentile_doy(tas: xr.Dataset, per):
+    output = xclim.utils.percentile_doy(tas, per=per)
+    output.tas.attrs = tas.tas.attrs
+    return output
+
+
+percentile_doy_10 = partial(_percentile_doy, per=0.1)
+percentile_doy_90 = partial(_percentile_doy, per=0.9)
 
 variable_computations = {
-    "tas": {"inputs": ["tasmin", "tasmax"], "function": tas},
+    "tas": {"inputs": ["tasmin", "tasmax"], "function": _tas},
     "tn10": {"inputs": ["tas"], "function": percentile_doy_10},
     "tn90": {"inputs": ["tas"], "function": percentile_doy_90},
     "t10": {"inputs": ["tasmin"], "function": percentile_doy_10},
@@ -325,7 +331,7 @@ def make_indicator_inputs(
 
     arguments = set(eval(indicator.json()["parameters"]))
 
-    required_netcdf_args = bccaq_variables.intersection(arguments)
+    required_netcdf_args = accepted_variables.intersection(arguments)
 
     input_list = []
 
@@ -337,9 +343,13 @@ def make_indicator_inputs(
             inputs[variable_name][0].file = str(path)
             input_list.append(inputs)
     else:
-        for input_group in make_file_groups(files_list):
+        for group in make_file_groups(files_list):
+            if "tasmin" in group and "tasmax" in group:
+                group["tasmin"], group["tasmax"] = fix_broken_time_indices(
+                    group["tasmin"], group["tasmax"]
+                )
             inputs = deepcopy(wps_inputs)
-            for variable_name, path in input_group.items():
+            for variable_name, path in group.items():
                 if variable_name not in required_netcdf_args:
                     continue
                 inputs[variable_name] = deque([make_nc_input(variable_name)])
@@ -358,25 +368,18 @@ def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
         if file.name not in filenames:
             continue
         group = {}
-        for variable in bccaq_variables:
-            if variable in file.name:
-                for other_var in bccaq_variables.difference([variable]):
-                    other_filename = file.name.replace(variable, other_var)
+        for variable in accepted_variables:
+            if file.name.startswith(f"{variable}_"):
+                for other_var in accepted_variables.difference([variable]):
+                    other_filename = file.name.replace(variable, other_var, 1)
                     if other_filename in filenames:
                         group[other_var] = filenames[other_filename]
                         del filenames[other_filename]
-                if len(group):
-                    # Found a match
-                    group[variable] = file
-                    del filenames[file.name]
 
-                    if "tasmin" in group and "tasmax" in group:
-                        group["tasmin"], group["tasmax"] = fix_broken_time_indices(
-                            group["tasmin"], group["tasmax"]
-                        )
-
-                    groups.append(group)
-                    break
+                group[variable] = file
+                del filenames[file.name]
+                groups.append(group)
+                break
 
     return groups
 
@@ -390,10 +393,63 @@ def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
     return ensemble_percentiles
 
 
+def compute_intermediate_variables(
+    files_list: List[Path], required_variable_names: Iterable[str], workdir: Path
+) -> List[Path]:
+    """Compute netcdf datasets from a list of required variable names and existing files."""
+
+    output_files_list = []
+
+    file_groups = make_file_groups(files_list)
+
+    for group in file_groups:
+        # add file paths that are required without any computation
+        for variable, path in group.items():
+            if variable in required_variable_names:
+                output_files_list.append(path)
+
+        first_variable = list(group)[0]
+        output_basename = group[first_variable].name.split("_", 1)[1]
+
+        # compute other required variables
+        variables_to_compute = set(required_variable_names) - set(group)
+
+        # add intermediate files to compute (ex: tas is needed for tn10)
+        for variable in list(variables_to_compute):
+            for input_name in variable_computations[variable]["inputs"]:
+                if input_name in variable_computations:
+                    variables_to_compute.add(input_name)
+
+        while variables_to_compute:
+            for variable in list(variables_to_compute):
+                input_names = variable_computations[variable]["inputs"]
+                if all(i in group for i in input_names):
+                    inputs = [xr.open_dataset(group[name]) for name in input_names]
+
+                    output = variable_computations[variable]["function"](*inputs)
+                    output_file = Path(workdir) / f"{variable}_{output_basename}"
+                    dataset_to_netcdf(output, output_file)
+
+                    variables_to_compute.remove(variable)
+                    group[variable] = output_file
+                    if variable in required_variable_names:
+                        output_files_list.append(output_file)
+                    break
+            else:
+                raise RuntimeError(
+                    f"Cant compute intermediate variables {variables_to_compute}"
+                )
+
+    return output_files_list
+
+
 def ensemble_common_handler(process: Process, request, response, subset_function):
-    xci_input_names = {
-        k: v for k, v in request.inputs.items() if k in process.xci_inputs_identifiers
+    xci_inputs = process.xci_inputs_identifiers
+    request_inputs_not_datasets = {
+        k: v for k, v in request.inputs.items() if k in xci_inputs
     }
+    dataset_input_names = accepted_variables.intersection(xci_inputs)
+    source_variable_names = dataset_input_names.intersection(bccaq_variables)
 
     convert_to_csv = request.inputs["output_format"][0].data == "csv"
     if not convert_to_csv:
@@ -408,7 +464,9 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     write_log(process, "Fetching BCCAQv2 datasets")
 
     rcp = single_input_or_none(request.inputs, "rcp")
-    bccaqv2_inputs = get_bccaqv2_inputs(process.workdir, rcp=rcp)
+    bccaqv2_inputs = get_bccaqv2_inputs(
+        process.workdir, variables=list(source_variable_names), rcp=rcp
+    )
 
     write_log(process, "Running subset", process_step="subset")
 
@@ -420,9 +478,15 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         message = "No data was produced when subsetting using the provided bounds."
         raise ProcessError(message)
 
+    subsetted_intermediate_files = compute_intermediate_variables(
+        subsetted_files, dataset_input_names, process.workdir
+    )
+
     write_log(process, "Computing indices", process_step="compute_indices")
 
-    input_groups = make_indicator_inputs(process.xci, xci_input_names, subsetted_files)
+    input_groups = make_indicator_inputs(
+        process.xci, request_inputs_not_datasets, subsetted_intermediate_files
+    )
     n_groups = len(input_groups)
 
     indices_files = []
@@ -439,7 +503,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         output_ds = compute_indices(process, process.xci, inputs)
 
         output_name = f"{output_filename}_{process.identifier}_{n}.nc"
-        for variable in bccaq_variables:
+        for variable in accepted_variables:
             if variable in inputs:
                 input_name = Path(inputs.get(variable)[0].file).name
                 output_name = input_name.replace(variable, process.identifier)
