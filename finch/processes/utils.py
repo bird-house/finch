@@ -1,14 +1,32 @@
 import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import Callable, Deque, Dict, Generator, Iterable, List, Tuple, Union
+import re
+from typing import (
+    Callable,
+    Deque,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 import zipfile
 
 import netCDF4
 import numpy as np
 import pandas as pd
 from pywps import FORMATS, Process, configuration
-from pywps import BoundingBoxInput, ComplexInput, LiteralInput
+from pywps import (
+    BoundingBoxInput,
+    BoundingBoxOutput,
+    ComplexInput,
+    ComplexOutput,
+    LiteralInput,
+    LiteralOutput,
+)
 from pywps.inout.outputs import MetaFile, MetaLink4
 import requests
 from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
@@ -18,6 +36,7 @@ import xarray as xr
 LOGGER = logging.getLogger("PYWPS")
 
 PywpsInput = Union[LiteralInput, ComplexInput, BoundingBoxInput]
+PywpsOutput = Union[LiteralOutput, ComplexOutput, BoundingBoxOutput]
 RequestInputs = Dict[str, Deque[PywpsInput]]
 
 
@@ -81,15 +100,34 @@ def compute_indices(
     process: Process, func: Callable, inputs: RequestInputs
 ) -> xr.Dataset:
     kwds = {}
-    global_attributes = None
+    global_attributes = {}
     for name, input_queue in inputs.items():
         input = input_queue[0]
         if isinstance(input, ComplexInput):
             ds = try_opendap(input)
-            global_attributes = ds.attrs
-            kwds[name] = ds.data_vars[name]
+            global_attributes = global_attributes or ds.attrs
+            if re.match(r"^t[nx]?\d{1,2}$", name):
+                # dayofyear, get the first data_var
+                kwds[name] = list(ds.data_vars.values())[0]
+                continue
+            try:
+                kwds[name] = ds.data_vars[name]
+            except KeyError as e:
+                raise KeyError(
+                    f"Variable name '{name}' not in data_vars {list(ds.data_vars)}"
+                ) from e
         elif isinstance(input, LiteralInput):
             kwds[name] = input.data
+
+    global_attributes.update(
+        {
+            "climateindex_package_id": "https://github.com/Ouranosinc/xclim",
+            "product": "derived climate index",
+            "contact": "Canadian Centre for Climate Services",
+            "institution": "Canadian Centre for Climate Services (CCCS)",
+            "institute_id": "CCCS",
+        }
+    )
 
     out = func(**kwds)
     output_dataset = xr.Dataset(
@@ -214,15 +252,15 @@ def is_opendap_url(url):
         return dataset.disk_format in ("DAP2", "DAP4")
 
 
-def single_input_or_none(inputs, identifier):
+def single_input_or_none(inputs, identifier) -> Optional[str]:
     try:
         return inputs[identifier][0].data
     except KeyError:
         return None
 
 
-def netcdf_to_csv(
-    netcdf_files, output_folder, filename_prefix
+def netcdf_file_list_to_csv(
+    netcdf_files: Union[List[Path], List[str]], output_folder, filename_prefix
 ) -> Tuple[List[str], str]:
     """Write csv files for a list of netcdf files.
 
@@ -242,7 +280,7 @@ def netcdf_to_csv(
     metadata = {}
     concat_by_calendar = {}
     for file in netcdf_files:
-        ds = xr.open_dataset(file, decode_times=False)
+        ds = xr.open_dataset(str(file), decode_times=False)
         calendar = ds.time.calendar
         ds["time"] = xr.decode_cf(ds).time
 
@@ -263,19 +301,7 @@ def netcdf_to_csv(
 
             ds = ds.rename({variable: output_variable})
 
-            # most runs have timestamp with hour == 12 a few hour == 0 ... make uniform
-            if not np.all(ds.time.dt.hour == 12):
-                attrs = ds.time.attrs
-
-                # np.datetime64 doesn't have the 'replace' method
-                time_values = ds.time.values
-                if not hasattr(time_values[0], "replace"):
-                    time_values = pd.to_datetime(time_values)
-
-                ds["time"] = [y.replace(hour=12) for y in time_values]
-                ds.time.attrs = attrs
-
-            df = ds.to_dataframe()
+            df = dataset_to_dataframe(ds)
 
             if calendar not in concat_by_calendar:
                 if "lat" in df.index.names and "lon" in df.index.names:
@@ -309,6 +335,22 @@ def netcdf_to_csv(
         metadata_file.write_text(info)
 
     return output_csv_list, str(metadata_folder)
+
+
+def dataset_to_dataframe(ds: xr.Dataset) -> pd.DataFrame:
+    """Convert a Dataset, while keeping the hour of the day uniform at hour=12"""
+    if not np.all(ds.time.dt.hour == 12):
+        attrs = ds.time.attrs
+
+        # np.datetime64 doesn't have the 'replace' method
+        time_values = ds.time.values
+        if not hasattr(time_values[0], "replace"):
+            time_values = pd.to_datetime(time_values)
+
+        ds["time"] = [y.replace(hour=12) for y in time_values]
+        ds.time.attrs = attrs
+
+    return ds.to_dataframe()
 
 
 def format_metadata(ds) -> str:
@@ -396,3 +438,19 @@ def make_tasmin_tasmax_pairs(
         sentry_sdk.capture_message(
             f"Couldn't find matching tasmin or tasmax for: {f}", level="error"
         )
+
+
+def dataset_to_netcdf(
+    ds: xr.Dataset, output_path: Union[Path, str], compression_level=0
+) -> None:
+    """Write an :class:`xarray.Dataset` dataset to disk, using compression."""
+    encoding = {}
+    if "time" in ds.dims:
+        encoding["time"] = {
+            "dtype": "single",  # better compatibility with OpenDAP in thredds
+        }
+    if compression_level:
+        for v in ds.data_vars:
+            encoding[v] = {"zlib": True, "complevel": compression_level}
+
+    ds.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)

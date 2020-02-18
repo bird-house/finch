@@ -1,31 +1,34 @@
-import pytest
-
-from pywps import Service
-from pywps.tests import client_for, assert_response_success
-
-from .common import get_output, CFG_FILE
-from finch.processes import SubsetBboxProcess
-import xarray as xr
-import numpy as np
 from pathlib import Path
 
+import numpy as np
+import pytest
+from pywps import Service
+from pywps.tests import assert_response_success, client_for
+import xarray as xr
 
-def test_wps_subsetbbox(tas_dataset):
+from finch.processes import SubsetBboxProcess
+
+from .common import CFG_FILE, get_output
+
+
+def test_wps_subsetbbox(netcdf_datasets):
     client = client_for(Service(processes=[SubsetBboxProcess()], cfgfiles=CFG_FILE))
 
-    datainputs = "resource=files@xlink:href=file://{fn};" \
-                 "lat0={lat0};" \
-                 "lon0={lon0};" \
-                 "lat1={lat1};" \
-                 "lon1={lon1};" \
-                 "start_date={y0};".format(fn=tas_dataset, lat0=2., lon0=3., lat1=4, lon1=5, y0='2000')
+    datainputs = (
+        f"resource=files@xlink:href=file://{netcdf_datasets['tas']};"
+        "lat0=2;"
+        "lon0=3;"
+        "lat1=4;"
+        "lon1=5;"
+        "start_date=2000;"
+    )
 
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset_bbox&datainputs={}".format(
-            datainputs))
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset_bbox&datainputs={datainputs}"
+    )
 
     assert_response_success(resp)
     out = get_output(resp.xml)
-    ds = xr.open_dataset(out['output'][6:])
+    ds = xr.open_dataset(out["output"][6:])
     np.testing.assert_array_equal(ds.lat, [2, 3, 4])
     np.testing.assert_array_equal(ds.lon, [3, 4])

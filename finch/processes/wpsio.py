@@ -1,6 +1,28 @@
 """Module storing inputs and outputs used in multiple processes. """
 
-from pywps import LiteralInput
+from copy import deepcopy
+from typing import Union
+
+from pywps import ComplexOutput, FORMATS, LiteralInput
+
+from finch.processes.utils import PywpsInput, PywpsOutput
+
+
+def copy_io(
+    io: Union[PywpsInput, PywpsOutput], **kwargs
+) -> Union[PywpsInput, PywpsOutput]:
+    """Creates a new input or outout with modified parameters.
+
+    Use this if you want one of the inputs in this file, but want to modify it.
+
+    This is necessary because if we modify the input or output directly,
+    every other place where this input is used would be affected.
+    """
+    new_io = deepcopy(io)
+    for k, v in kwargs.items():
+        setattr(new_io, k, v)
+    return new_io
+
 
 start_date = LiteralInput(
     "start_date",
@@ -74,4 +96,51 @@ lat1 = LiteralInput(
     data_type="float",
     default=90,
     min_occurs=0,
+)
+
+rcp = LiteralInput(
+    "rcp",
+    "RCP Scenario",
+    abstract="Representative Concentration Pathway (RCP)",
+    data_type="string",
+    default=None,
+    min_occurs=0,
+    allowed_values=["rcp26", "rcp45", "rcp85"],
+)
+
+ensemble_percentiles = LiteralInput(
+    "ensemble_percentiles",
+    "Ensemble percentiles (comma separated integers)",
+    abstract=(
+        "Ensemble percentiles to calculate for input climate simulations. "
+        "Accepts a comma separated list of integers."
+    ),
+    data_type="string",
+    default="10,50,90",
+    min_occurs=0,
+)
+
+output_format_netcdf_csv = LiteralInput(
+    "output_format",
+    "Output format choice",
+    abstract="Choose in which format you want to recieve the result",
+    data_type="string",
+    allowed_values=["netcdf", "csv"],
+    default="netcdf",
+)
+
+output_netcdf_zip = ComplexOutput(
+    "output",
+    "Result",
+    abstract=("The format depends on the 'output_format' input parameter."),
+    as_reference=True,
+    supported_formats=[FORMATS.NETCDF, FORMATS.ZIP],
+)
+
+output_log = ComplexOutput(
+    "output_log",
+    "Logging information",
+    abstract="Collected logs during process run.",
+    as_reference=True,
+    supported_formats=[FORMATS.TEXT],
 )

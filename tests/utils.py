@@ -1,8 +1,9 @@
 from pywps import get_ElementMakerForVersion
+from pathlib import Path
 
 import xarray as xr
-from lxml import etree
 from owslib.wps import WPSExecution
+from pywps.app.exceptions import ProcessError
 from pywps.tests import assert_response_success
 
 
@@ -10,12 +11,46 @@ VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
 
 
+def mock_local_datasets(monkeypatch, filenames=None):
+    """Mock the get_bccaqv2_local_files_datasets function
+
+    Datasets are of the following format:
+
+    >>> ds
+    <xarray.Dataset>
+    Dimensions:  (lat: 12, lon: 12, time: 100)
+    Coordinates:
+    * lon      (lon) float64 -73.46 -73.38 -73.29 -73.21 ... -72.71 -72.63 -72.54
+    * lat      (lat) float64 45.54 45.62 45.71 45.79 ... 46.21 46.29 46.37 46.46
+    * time     (time) object 1950-01-01 12:00:00 ... 1950-04-10 12:00:00
+    Data variables:
+        tasmax   (time, lat, lon) float32 ...
+    """
+    from pywps.configuration import CONFIG
+    from finch.processes import ensemble_utils
+
+    CONFIG.set("finch", "bccaqv2_url", "/mock_local/path")
+
+    subset_sample = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
+
+    if filenames is None:
+        filenames = ["tasmin_subset.nc", "tasmax_subset.nc"]
+
+    test_data = [subset_sample / f for f in filenames]
+
+    monkeypatch.setattr(
+        ensemble_utils,
+        "get_bccaqv2_local_files_datasets",
+        lambda *args: [str(f) for f in test_data],
+    )
+
+
 def wps_input_file(identifier, filename):
     return WPS.Input(
         OWS.Identifier(identifier),
         WPS.Reference(
             WPS.Body("request body"),
-            {"{http://www.w3.org/1999/xlink}href": "file://" + filename},
+            {"{http://www.w3.org/1999/xlink}href": "file://" + str(filename)},
             method="POST",
         ),
     )
@@ -36,8 +71,11 @@ def execute_process(
     try:
         assert_response_success(response)
     except AssertionError as e:
-        message = response.xpath('//ows:ExceptionText')[0].text
-        raise AssertionError(message) from e
+        exception = response.xpath("//ows:Exception")[0]
+        exception_code = exception.get("exceptionCode")
+        message = exception[0].text
+        output_message = f"{exception_code}: {message}"
+        raise ProcessError(output_message) from e
 
     execution = WPSExecution()
     execution.parseResponse(response.xml)

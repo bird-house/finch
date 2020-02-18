@@ -4,7 +4,7 @@ import logging
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
 from .wpsio import start_date, end_date, lat0, lat1, lon0, lon1
 
-from finch.processes.base import FinchProcess
+from finch.processes.wps_base import FinchProcess
 from finch.processes.utils import make_metalink_output, write_log
 from finch.processes.subset import finch_subset_bbox
 
@@ -83,7 +83,11 @@ class SubsetBboxProcess(FinchProcess):
     def _handler(self, request, response):
         write_log(self, "Processing started", process_step="start")
 
-        output_files = finch_subset_bbox(self, request.inputs)
+        output_files = finch_subset_bbox(
+            self,
+            netcdf_inputs=request.inputs["resource"],
+            request_inputs=request.inputs,
+        )
         metalink = make_metalink_output(self, output_files)
 
         response.outputs["output"].file = metalink.files[0].file

@@ -5,10 +5,10 @@ from pywps.app import WPSRequest
 from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 
-from .base import FinchProcess
-from .bccaqv2 import get_bccaqv2_inputs, make_output_filename
+from .wps_base import FinchProcess
+from .ensemble_utils import get_bccaqv2_inputs, make_output_filename
 from .subset import finch_subset_bbox
-from .utils import netcdf_to_csv, single_input_or_none, write_log, zip_files
+from .utils import netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
 from .wpsio import end_date, lat0, lat1, lon0, lon1, start_date
 
 
@@ -103,12 +103,19 @@ class SubsetBboxBCCAQV2Process(FinchProcess):
         write_log(self, "Fetching BCCAQv2 datasets")
 
         variable = single_input_or_none(request.inputs, "variable")
+        variable = [variable] if variable is not None else None
         rcp = single_input_or_none(request.inputs, "rcp")
-        request.inputs = get_bccaqv2_inputs(request.inputs, variable=variable, rcp=rcp)
+        request.inputs["resource"] = get_bccaqv2_inputs(
+            self.workdir, variables=variable, rcp=rcp
+        )
 
         write_log(self, "Running subset", process_step="subset")
 
-        output_files = finch_subset_bbox(self, request.inputs)
+        output_files = finch_subset_bbox(
+            self,
+            netcdf_inputs=request.inputs["resource"],
+            request_inputs=request.inputs,
+        )
 
         if not output_files:
             message = "No data was produced when subsetting using the provided bounds."
@@ -117,7 +124,7 @@ class SubsetBboxBCCAQV2Process(FinchProcess):
         if convert_to_csv:
             write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
 
-            csv_files, metadata_folder = netcdf_to_csv(
+            csv_files, metadata_folder = netcdf_file_list_to_csv(
                 output_files,
                 output_folder=Path(self.workdir),
                 filename_prefix=output_filename,

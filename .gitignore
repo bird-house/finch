@@ -6,6 +6,8 @@ tmp/
 # Docker
 #Dockerfile
 
+.mypy_cache
+
 # PyWPS 
 custom.cfg
 .custom.cfg

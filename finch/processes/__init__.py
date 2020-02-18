@@ -1,40 +1,62 @@
-from .wps_xsubsetbbox import SubsetBboxProcess
-from .wps_xsubsetpoint import SubsetGridPointProcess
-from .wps_xsubsetpoint_bccaqv2 import SubsetGridPointBCCAQV2Process
-from .wps_xsubsetbbox_bccaqv2 import SubsetBboxBCCAQV2Process
-from .wps_xclim_indices import make_xclim_indicator_process
-from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
 import xclim
 import xclim.atmos
+from xclim.utils import Indicator
+
+from finch.processes.ensemble_utils import uses_bccaqv2_data
+from finch.processes.wps_xclim_indices import XclimIndicatorBase
+
+from .wps_base import make_xclim_indicator_process
+from .wps_ensemble_gridpoint_indices import XclimEnsembleGridPointBase
+from .wps_ensemble_bbox_indices import XclimEnsembleBboxBase
+from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
+from .wps_xsubsetbbox import SubsetBboxProcess
+from .wps_xsubsetbbox_bccaqv2 import SubsetBboxBCCAQV2Process
+from .wps_xsubsetpoint import SubsetGridPointProcess
+from .wps_xsubsetpoint_bccaqv2 import SubsetGridPointBCCAQV2Process
 
 
-def get_indicators(*args):
-    """For all modules or classes listed, return the children that are instances of xclim.utils.Indicator."""
-    from xclim.utils import Indicator
-
-    out = []
-    for obj in args:
-        for key, val in obj.__dict__.items():
-            if isinstance(val, Indicator):
-                out.append(val)
-
-    return out
+def get_indicators(module):
+    """For a given module, return the children that are instances of xclim.utils.Indicator."""
+    return [o for o in module.__dict__.values() if isinstance(o, Indicator)]
 
 
 # List of Indicators that are exposed as WPS processes
 indicators = get_indicators(xclim.atmos)
 
-# Create PyWPS.Process subclasses
-processes = [make_xclim_indicator_process(ind) for ind in indicators]
-processes.extend(
-    [
-        SubsetBboxProcess(),
-        SubsetGridPointProcess(),
-        SubsetGridPointBCCAQV2Process(),
-        SubsetBboxBCCAQV2Process(),
-        BCCAQV2HeatWave(),
-    ]
-)
+not_implemented = [
+    "DC",  # lat input type is not implemented and start_up_mode argument seems to be missing?
+]
+indicators = [i for i in indicators if i.identifier not in not_implemented]
+ensemble_indicators = [i for i in indicators if uses_bccaqv2_data(i)]
+
+processes = []
+
+# xclim indicators
+for ind in indicators:
+    suffix = "Process"
+    base_class = XclimIndicatorBase
+    processes.append(make_xclim_indicator_process(ind, suffix, base_class=base_class))
+
+# ensemble with grid point subset
+for ind in ensemble_indicators:
+    suffix = "EnsembleGridPointProcess"
+    base_class = XclimEnsembleGridPointBase
+    processes.append(make_xclim_indicator_process(ind, suffix, base_class=base_class))
+
+# ensemble with bbox subset
+for ind in ensemble_indicators:
+    suffix = "EnsembleBboxProcess"
+    base_class = XclimEnsembleBboxBase
+    processes.append(make_xclim_indicator_process(ind, suffix, base_class=base_class))
+
+# others
+processes += [
+    SubsetBboxProcess(),
+    SubsetGridPointProcess(),
+    SubsetGridPointBCCAQV2Process(),
+    SubsetBboxBCCAQV2Process(),
+    BCCAQV2HeatWave(),
+]
 
 
 # Create virtual module for indicators so Sphinx can find it.

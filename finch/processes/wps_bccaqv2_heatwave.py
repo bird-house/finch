@@ -9,20 +9,22 @@ from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 from xclim.atmos import heat_wave_frequency
 
-from finch.processes import make_xclim_indicator_process
-
-from .base import FinchProcess
-from .bccaqv2 import get_bccaqv2_inputs, make_output_filename, fix_broken_time_indices
+from .wps_base import FinchProcess, make_xclim_indicator_process
+from .ensemble_utils import (
+    get_bccaqv2_inputs,
+    make_output_filename,
+    fix_broken_time_indices,
+)
 from .subset import finch_subset_gridpoint
 from .utils import (
     compute_indices,
     make_tasmin_tasmax_pairs,
-    netcdf_to_csv,
+    netcdf_file_list_to_csv,
     single_input_or_none,
     write_log,
     zip_files,
 )
-from .wps_xclim_indices import make_nc_input
+from .wps_xclim_indices import XclimIndicatorBase, make_nc_input
 from .wpsio import lat, lon
 
 LOGGER = logging.getLogger("PYWPS")
@@ -32,7 +34,11 @@ class BCCAQV2HeatWave(FinchProcess):
     """Subset a NetCDF file using a gridpoint, and then compute the 'heat wave' index."""
 
     def __init__(self):
-        self.indices_process = make_xclim_indicator_process(heat_wave_frequency)
+        self.indices_process = make_xclim_indicator_process(
+            heat_wave_frequency,
+            class_name_suffix="BCCAQV2HeatWave",
+            base_class=XclimIndicatorBase,
+        )
         inputs = [
             i
             for i in self.indices_process.inputs
@@ -113,12 +119,19 @@ class BCCAQV2HeatWave(FinchProcess):
         write_log(self, "Fetching BCCAQv2 datasets")
 
         variable = single_input_or_none(request.inputs, "variable")
+        variable = [variable] if variable is not None else None
         rcp = single_input_or_none(request.inputs, "rcp")
-        request.inputs = get_bccaqv2_inputs(request.inputs, variable=variable, rcp=rcp)
+        request.inputs["resource"] = get_bccaqv2_inputs(
+            self.workdir, variables=variable, rcp=rcp
+        )
 
         write_log(self, "Running subset", process_step="subset")
 
-        output_files = finch_subset_gridpoint(self, request.inputs)
+        output_files = finch_subset_gridpoint(
+            self,
+            netcdf_inputs=request.inputs["resource"],
+            request_inputs=request.inputs,
+        )
 
         if not output_files:
             message = "No data was produced when subsetting using the provided bounds."
@@ -166,7 +179,7 @@ class BCCAQV2HeatWave(FinchProcess):
         if convert_to_csv:
             write_log(self, "Converting outputs to csv", process_step="convert_to_csv")
 
-            csv_files, metadata_folder = netcdf_to_csv(
+            csv_files, metadata_folder = netcdf_file_list_to_csv(
                 output_files,
                 output_folder=Path(self.workdir),
                 filename_prefix=output_filename,

@@ -6,17 +6,18 @@ import pytest
 import numpy as np
 import pandas as pd
 from pywps import configuration
+from finch.processes import ensemble_utils
 
-from finch.processes.bccaqv2 import get_bccaqv2_opendap_datasets
+from finch.processes.ensemble_utils import get_bccaqv2_opendap_datasets
 from finch.processes.utils import (
-    netcdf_to_csv,
+    netcdf_file_list_to_csv,
     zip_files,
     is_opendap_url,
 )
 from unittest import mock
 
 
-@mock.patch("finch.processes.bccaqv2.TDSCatalog")
+@mock.patch("finch.processes.ensemble_utils.TDSCatalog")
 def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
     names = [
         "tasmin_day_BCCAQv2+ANUSPLIN300_CNRM-CM5_historical+rcp85_r1i1p1_19500101-21001231.nc",
@@ -42,11 +43,11 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
 
     mock_catalog.datasets = {name: make_dataset(name) for name in names}
 
-    urls = get_bccaqv2_opendap_datasets(catalog_url, variable, rcp)
+    urls = get_bccaqv2_opendap_datasets(catalog_url, [variable], rcp)
     assert len(urls) == 2
 
 
-def test_netcdf_to_csv_to_zip():
+def test_netcdf_file_list_to_csv_to_zip():
     here = Path(__file__).parent
     folder = here / "data" / "bccaqv2_single_cell"
     output_folder = here / "tmp" / "tasmin_csvs"
@@ -55,7 +56,9 @@ def test_netcdf_to_csv_to_zip():
     netcdf_files = list(sorted(folder.glob("tasmin*.nc")))
     # only take a small subset of files that have all the calendar types
     netcdf_files = netcdf_files[:5] + netcdf_files[40:50]
-    csv_files, metadata = netcdf_to_csv(netcdf_files, output_folder, "file_prefix")
+    csv_files, metadata = netcdf_file_list_to_csv(
+        netcdf_files, output_folder, "file_prefix"
+    )
 
     output_zip = output_folder / "output.zip"
     files = csv_files + [metadata]
@@ -79,18 +82,18 @@ def test_netcdf_to_csv_to_zip():
                 assert n_columns == 2
             elif "365_day" in filename:
                 assert n_lines == 365
-                assert n_columns == 9
+                assert n_columns == 8
             elif "360_day" in filename:
                 assert n_lines == 360
                 assert n_columns == 3
             elif "standard" in filename:
                 assert n_lines == 366
-                assert n_columns == 1
+                assert n_columns == 2
             else:
                 assert False, "Unknown calendar type"
 
 
-def test_netcdf_to_csv_bad_hours():
+def test_netcdf_file_list_to_csv_bad_hours():
     here = Path(__file__).parent
     folder = here / "data" / "bccaqv2_single_cell"
     output_folder = here / "tmp" / "tasmin_csvs"
@@ -110,7 +113,7 @@ def test_netcdf_to_csv_bad_hours():
     ]
     netcdf_files = [folder / bad for bad in bad_hours]
 
-    csv_files, _ = netcdf_to_csv(netcdf_files, output_folder, "file_prefix")
+    csv_files, _ = netcdf_file_list_to_csv(netcdf_files, output_folder, "file_prefix")
 
     for csv in csv_files:
         df = pd.read_csv(csv, parse_dates=["time"])
@@ -143,3 +146,12 @@ def test_is_opendap_url():
 
     url = "/missing_schema"
     assert not is_opendap_url(url)
+
+
+def test_bccaqv2_make_file_groups():
+    folder = Path(__file__).parent / "data" / "bccaqv2_single_cell"
+    files_list = list(folder.glob("*.nc"))
+    groups = ensemble_utils.make_file_groups(files_list)
+
+    assert len(groups) == 85
+    assert all(len(g) == 3 for g in groups)

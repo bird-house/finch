@@ -27,5 +27,5 @@ before_script:
   - make start
   - sleep 2
 script:
-  - pytest -m "not online"
+  - pytest -m "not online" tests
   - flake8
