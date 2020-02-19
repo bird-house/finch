@@ -32,6 +32,7 @@ import requests
 from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
 import sentry_sdk
 import xarray as xr
+from netCDF4 import num2date
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -135,6 +136,72 @@ def compute_indices(
     )
     output_dataset[out.name] = out
     return output_dataset
+
+
+def drs_filename(ds: xr.Dataset, variable: str = None):
+    """Copied and modified from https://github.com/bird-house/eggshell
+    which doesn't have a release usable by finch.
+
+    generates filename according to the data reference syntax (DRS)
+    based on the metadata in the resource.
+    http://cmip-pcmdi.llnl.gov/cmip5/docs/cmip5_data_reference_syntax.pdf
+    https://pypi.python.org/pypi/drslib
+    :param variable: appropriate variable for filename, if not set (default), variable will
+                      be determined from the dataset variables.
+    :return str: DRS filename
+    :raises KeyError: When the dataset doesn't have the required attributes.
+    """
+    if variable is None:
+        variable = [k for k, v in ds.variables.items() if len(v.dims) >= 3][0]
+    # CORDEX example: tas_EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
+    cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
+    # CMIP5 example: tas_MPI-ESM-LR_historical_r1i1p1
+    cmip5_pattern = "{variable}_{model}_{experiment}_{ensemble}"
+    if ds.attrs["project_id"] in ("CORDEX", "EOBS"):
+        filename = cordex_pattern.format(
+            variable=variable,
+            domain=ds.attrs["CORDEX_domain"],
+            driving_model=ds.attrs["driving_model_id"],
+            experiment=ds.attrs["experiment_id"],
+            ensemble=ds.attrs["driving_model_ensemble_member"],
+            model=ds.attrs["model_id"],
+            version=ds.attrs["rcm_version_id"],
+            frequency=ds.attrs["frequency"],
+        )
+    elif ds.attrs["project_id"] == "CMIP5":
+        ensemble = "r{}i{}p{}".format(
+            ds.attrs["driving_realization"],
+            ds.attrs["driving_initialization_method"],
+            ds.attrs["driving_physics_version"],
+        )
+        filename = cmip5_pattern.format(
+            variable=variable,
+            model=ds.attrs["driving_model_id"],
+            experiment=ds.attrs["driving_experiment_id"].replace(",", "+"),
+            ensemble=ensemble,
+        )
+    else:
+        raise Exception(f"Unknown project: {ds.attrs['project_id']}")
+
+    if "time" in ds:
+        date_from = ds.time[0].values
+        date_to = ds.time[-1].values
+
+        if "units" in ds.time.attrs:
+            # times are encoded
+            units = ds.time.units
+            calendar = ds.time.attrs.get("calendar", "standard")
+            date_from = num2date(date_from, units, calendar)
+            date_to = num2date(date_to, units, calendar)
+
+        date_from = pd.to_datetime(str(date_from))
+        date_to = pd.to_datetime(str(date_to))
+
+        filename += f"_{date_from:%Y%m%d}-{date_to:%Y%m%d}"
+
+    filename += ".nc"
+
+    return filename
 
 
 def try_opendap(
