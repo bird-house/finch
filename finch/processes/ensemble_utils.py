@@ -58,28 +58,28 @@ def _tas(tasmin: xr.Dataset, tasmax: xr.Dataset) -> xr.Dataset:
     return tas_ds
 
 
-def _percentile_doy_tn10(tas: xr.Dataset):
-    return xclim.utils.percentile_doy(tas.tas, per=0.1).to_dataset(name="tn10")
+def _percentile_doy_tn10(tasmin: xr.Dataset):
+    return xclim.utils.percentile_doy(tasmin.tasmin, per=0.1).to_dataset(name="tn10")
 
 
-def _percentile_doy_tn90(tas: xr.Dataset):
-    return xclim.utils.percentile_doy(tas.tas, per=0.9).to_dataset(name="tn90")
+def _percentile_doy_tn90(tasmin: xr.Dataset):
+    return xclim.utils.percentile_doy(tasmin.tasmin, per=0.9).to_dataset(name="tn90")
 
 
-def _percentile_doy_t10(tasmin: xr.Dataset):
-    return xclim.utils.percentile_doy(tasmin.tasmin, per=0.1).to_dataset(name="t10")
+def _percentile_doy_t10(tas: xr.Dataset):
+    return xclim.utils.percentile_doy(tas.tas, per=0.1).to_dataset(name="t10")
 
 
-def _percentile_doy_t90(tasmin: xr.Dataset):
-    return xclim.utils.percentile_doy(tasmin.tasmin, per=0.9).to_dataset(name="t90")
+def _percentile_doy_t90(tas: xr.Dataset):
+    return xclim.utils.percentile_doy(tas.tas, per=0.9).to_dataset(name="t90")
 
 
 variable_computations = {
     "tas": {"inputs": ["tasmin", "tasmax"], "function": _tas},
-    "tn10": {"inputs": ["tas"], "function": _percentile_doy_tn10},
-    "tn90": {"inputs": ["tas"], "function": _percentile_doy_tn90},
-    "t10": {"inputs": ["tasmin"], "function": _percentile_doy_t10},
-    "t90": {"inputs": ["tasmin"], "function": _percentile_doy_t90},
+    "tn10": {"inputs": ["tasmin"], "function": _percentile_doy_tn10},
+    "tn90": {"inputs": ["tasmin"], "function": _percentile_doy_tn90},
+    "t10": {"inputs": ["tas"], "function": _percentile_doy_t10},
+    "t90": {"inputs": ["tas"], "function": _percentile_doy_t90},
 }
 
 accepted_variables = bccaq_variables.union(variable_computations)
