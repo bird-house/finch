@@ -18,6 +18,8 @@ from finch.processes.utils import (
     zip_files,
 )
 
+test_data = Path(__file__).parent / "data"
+
 
 @mock.patch("finch.processes.ensemble_utils.TDSCatalog")
 def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
@@ -161,7 +163,14 @@ def test_bccaqv2_make_file_groups():
 
 def test_drs_filename():
     ds = xr.open_dataset(
-        Path(__file__).parent / "data/bccaqv2_subset_sample/tasmax_bcc-csm1-1_subset.nc"
+        test_data / "bccaqv2_subset_sample/tasmax_bcc-csm1-1_subset.nc"
     )
     filename = drs_filename(ds)
     assert filename == "tasmax_bcc-csm1-1_historical+rcp85_r1i1p1_19500101-19500410.nc"
+
+
+def test_drs_filename_cordex():
+    ds = xr.open_dataset(test_data / "cordex_subset.nc")
+    filename = drs_filename(ds)
+    expected = "tasmin_NAM-44_MPI-M-MPI-ESM-MR_rcp85_r1i1p1_UQAM-CRCM5_v1_day_20960101-20960409.nc"
+    assert filename == expected
