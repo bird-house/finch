@@ -450,13 +450,30 @@ def compute_intermediate_variables(
     return output_files_list
 
 
+def get_sub_inputs(variables):
+    """From a list of dataset variables, get the source variable names to compute them."""
+
+    output_variables = list(variables)
+    while any(v in variable_computations for v in output_variables):
+        new_output_variables = []
+        for variable in output_variables:
+            if variable in variable_computations:
+                new_output_variables += variable_computations[variable]["inputs"]
+            else:
+                new_output_variables.append(variable)
+        output_variables = new_output_variables
+    return output_variables
+
+
 def ensemble_common_handler(process: Process, request, response, subset_function):
     xci_inputs = process.xci_inputs_identifiers
     request_inputs_not_datasets = {
         k: v for k, v in request.inputs.items() if k in xci_inputs
     }
     dataset_input_names = accepted_variables.intersection(xci_inputs)
-    source_variable_names = dataset_input_names.intersection(bccaq_variables)
+    source_variable_names = bccaq_variables.intersection(
+        get_sub_inputs(dataset_input_names)
+    )
 
     convert_to_csv = request.inputs["output_format"][0].data == "csv"
     if not convert_to_csv:
