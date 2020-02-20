@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 import warnings
 
-from pywps import ComplexOutput, FORMATS, LiteralInput
+from pywps import LiteralInput
 from pywps.app import WPSRequest
 from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
@@ -21,7 +21,7 @@ from .utils import (
 )
 from .wps_base import FinchProcess, make_xclim_indicator_process
 from .wps_xclim_indices import XclimIndicatorBase, make_nc_input
-from .wpsio import lat, lon
+from . import wpsio
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -44,8 +44,8 @@ class BCCAQV2HeatWave(FinchProcess):
             if i.identifier not in ["tasmin", "tasmax"]
         ]
         inputs += [
-            lon,
-            lat,
+            wpsio.lon,
+            wpsio.lat,
             LiteralInput(
                 "y0",
                 "Initial year",
@@ -60,26 +60,10 @@ class BCCAQV2HeatWave(FinchProcess):
                 data_type="integer",
                 min_occurs=0,
             ),
-            LiteralInput(
-                "output_format",
-                "Output format choice",
-                abstract="Choose in which format you want to recieve the result",
-                data_type="string",
-                allowed_values=["netcdf", "csv"],
-                default="netcdf",
-                min_occurs=0,
-            ),
+            wpsio.output_format_netcdf_csv,
         ]
 
-        outputs = [
-            ComplexOutput(
-                "output",
-                "Result",
-                abstract="The format depends on the input parameter 'output_format'",
-                as_reference=True,
-                supported_formats=[FORMATS.NETCDF, FORMATS.TEXT],
-            )
-        ]
+        outputs = [wpsio.output_netcdf_zip]
 
         super().__init__(
             self._handler,

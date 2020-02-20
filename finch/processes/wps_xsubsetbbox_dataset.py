@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from pywps import ComplexOutput, FORMATS, LiteralInput
 from pywps.app import WPSRequest
 from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
@@ -69,7 +68,7 @@ class SubsetBboxDatasetProcess(FinchProcess):
         write_log(self, "Fetching BCCAQv2 datasets")
 
         variable = request.inputs["variable"][0].data
-        variables = None if variable == "all" else [variable]
+        variables = None if variable is None else [variable]
         rcp = single_input_or_none(request.inputs, "rcp")
 
         dataset_name = single_input_or_none(request.inputs, "dataset_name")

@@ -7,6 +7,7 @@ from pywps import ComplexOutput, FORMATS, LiteralInput
 
 from finch.processes.utils import PywpsInput, PywpsOutput
 from pywps.configuration import get_config_value
+from pywps.inout.literaltypes import AnyValue
 
 
 def copy_io(
@@ -104,10 +105,12 @@ variable = LiteralInput(
     "NetCDF Variable",
     abstract="Name of the variable in the NetCDF file.",
     data_type="string",
-    default="all",
+    default=None,
     min_occurs=0,
-    allowed_values=["tasmin", "tasmax", "pr", "all"],
+    allowed_values=["tasmin", "tasmax", "pr"],
 )
+
+variable_any = copy_io(variable, any_value=True, allowed_values=[AnyValue])
 
 dataset_name = LiteralInput(
     "dataset_name",
@@ -148,6 +151,7 @@ output_format_netcdf_csv = LiteralInput(
     data_type="string",
     allowed_values=["netcdf", "csv"],
     default="netcdf",
+    min_occurs=0,
 )
 
 output_netcdf_zip = ComplexOutput(

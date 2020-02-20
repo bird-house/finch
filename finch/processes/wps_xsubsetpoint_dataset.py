@@ -93,7 +93,7 @@ class SubsetGridPointDatasetProcess(FinchProcess):
         write_log(self, "Fetching BCCAQv2 datasets")
 
         variable = request.inputs["variable"][0].data
-        variables = None if variable == "all" else [variable]
+        variables = None if variable is None else [variable]
         rcp = single_input_or_none(request.inputs, "rcp")
 
         dataset_name = single_input_or_none(request.inputs, "dataset_name")

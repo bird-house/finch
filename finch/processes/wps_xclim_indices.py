@@ -10,6 +10,7 @@ from finch.processes.wps_base import convert_xclim_inputs_to_pywps
 
 from .utils import compute_indices, log_file_path, write_log
 from .wps_base import FinchProcess, FinchProgressBar
+from . import wpsio
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -41,13 +42,7 @@ class XclimIndicatorBase(FinchProcess):
                     FORMATS.NETCDF,
                 ],  # To support FORMATS.DODS we need to get the URL.
             ),
-            ComplexOutput(
-                "output_log",
-                "Logging information",
-                abstract="Collected logs during process run.",
-                as_reference=True,
-                supported_formats=[FORMATS.TEXT],
-            ),
+            wpsio.output_log,
         ]
 
         super().__init__(
