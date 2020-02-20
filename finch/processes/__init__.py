@@ -33,19 +33,19 @@ processes = []
 
 # xclim indicators
 for ind in indicators:
-    suffix = "Process"
+    suffix = "_Indicator_Process"
     base_class = XclimIndicatorBase
     processes.append(make_xclim_indicator_process(ind, suffix, base_class=base_class))
 
 # ensemble with grid point subset
 for ind in ensemble_indicators:
-    suffix = "EnsembleGridPointProcess"
+    suffix = "_Ensemble_GridPoint_Process"
     base_class = XclimEnsembleGridPointBase
     processes.append(make_xclim_indicator_process(ind, suffix, base_class=base_class))
 
 # ensemble with bbox subset
 for ind in ensemble_indicators:
-    suffix = "EnsembleBboxProcess"
+    suffix = "_Ensemble_Bbox_Process"
     base_class = XclimEnsembleBboxBase
     processes.append(make_xclim_indicator_process(ind, suffix, base_class=base_class))
 
