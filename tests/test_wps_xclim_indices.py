@@ -11,7 +11,7 @@ from tests.utils import execute_process, wps_input_file, wps_literal_input
 
 
 def _get_output_standard_name(process_identifier):
-    for p in finch.processes.processes:
+    for p in finch.processes.get_processes():
         if p.identifier == process_identifier:
             return p.xci.standard_name
 
