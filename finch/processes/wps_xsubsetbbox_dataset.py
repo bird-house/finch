@@ -1,77 +1,43 @@
 from pathlib import Path
 
-from pywps import LiteralInput, ComplexOutput, FORMATS
+from pywps import ComplexOutput, FORMATS, LiteralInput
 from pywps.app import WPSRequest
 from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 
-from .wps_base import FinchProcess
-from .ensemble_utils import get_bccaqv2_inputs, make_output_filename
+from .ensemble_utils import get_datasets, make_output_filename
 from .subset import finch_subset_bbox
 from .utils import netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
-from .wpsio import end_date, lat0, lat1, lon0, lon1, start_date
+from .wps_base import FinchProcess
+from . import wpsio
 
 
-class SubsetBboxBCCAQV2Process(FinchProcess):
+class SubsetBboxDatasetProcess(FinchProcess):
     """Subset a NetCDF file using bounding box geometry."""
 
     def __init__(self):
         inputs = [
-            LiteralInput(
-                "variable",
-                "NetCDF Variable",
-                abstract=(
-                    "Name of the variable in the NetCDF file."
-                    "If not provided, all variables will be subsetted."
-                ),
-                data_type="string",
-                default=None,
-                min_occurs=0,
-                allowed_values=["tasmin", "tasmax", "pr"],
-            ),
-            LiteralInput(
-                "rcp",
-                "RCP Scenario",
-                abstract="Representative Concentration Pathway (RCP)",
-                data_type="string",
-                default=None,
-                min_occurs=0,
-                allowed_values=["rcp26", "rcp45", "rcp85"],
-            ),
-            lon0,
-            lon1,
-            lat0,
-            lat1,
-            start_date,
-            end_date,
-            LiteralInput(
-                "output_format",
-                "Output format choice",
-                abstract="Choose in which format you want to recieve the result",
-                data_type="string",
-                allowed_values=["netcdf", "csv"],
-                default="netcdf",
-                min_occurs=0,
-            ),
+            wpsio.variable,
+            wpsio.rcp,
+            wpsio.lon0,
+            wpsio.lon1,
+            wpsio.lat0,
+            wpsio.lat1,
+            wpsio.start_date,
+            wpsio.end_date,
+            wpsio.output_format_netcdf_csv,
+            wpsio.dataset_name,
         ]
 
-        outputs = [
-            ComplexOutput(
-                "output",
-                "Result",
-                abstract="The format depends on the input parameter 'output_format'",
-                as_reference=True,
-                supported_formats=[FORMATS.NETCDF, FORMATS.TEXT],
-            )
-        ]
+        outputs = [wpsio.output_netcdf_csv]
 
         super().__init__(
             self._handler,
-            identifier="subset_ensemble_bbox_BCCAQv2",
-            title="Subset of BCCAQv2 datasets, using a bounding box",
+            identifier="subset_bbox_dataset",
+            title="Subset of a dataset, using a bounding box",
             version="0.1",
             abstract=(
-                "For the BCCAQv2 datasets, "
+                "For the given dataset, "
                 "return the data for which grid cells intersect the "
                 "bounding box for each input dataset as well as "
                 "the time range selected."
@@ -102,11 +68,13 @@ class SubsetBboxBCCAQV2Process(FinchProcess):
 
         write_log(self, "Fetching BCCAQv2 datasets")
 
-        variable = single_input_or_none(request.inputs, "variable")
-        variable = [variable] if variable is not None else None
+        variable = request.inputs["variable"][0].data
+        variables = None if variable == "all" else [variable]
         rcp = single_input_or_none(request.inputs, "rcp")
-        request.inputs["resource"] = get_bccaqv2_inputs(
-            self.workdir, variables=variable, rcp=rcp
+
+        dataset_name = single_input_or_none(request.inputs, "dataset_name")
+        request.inputs["resource"] = get_datasets(
+            dataset_name, workdir=self.workdir, variables=variables, rcp=rcp
         )
 
         write_log(self, "Running subset", process_step="subset")
@@ -144,3 +112,18 @@ class SubsetBboxBCCAQV2Process(FinchProcess):
 
         write_log(self, "Processing finished successfully", process_step="done")
         return response
+
+
+class SubsetBboxBCCAQV2Process(SubsetBboxDatasetProcess):
+    def __init__(self):
+        """*** Deprecated *** to be removed in a future release"""
+        super().__init__()
+        self.identifier = "subset_ensemble_bbox_BCCAQv2"
+        self.title = "Subset of BCCAQv2 datasets, using a bounding box"
+        self.version = "0.1"
+        self.abstract = (
+            "For the BCCAQv2 datasets, "
+            "return the data for which grid cells intersect the "
+            "bounding box for each input dataset as well as "
+            "the time range selected."
+        )

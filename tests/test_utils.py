@@ -28,7 +28,7 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp85_r1i1p1_19500101-21001231.nc",
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp45_r1i1p1_19500101-21001231.",
     ]
-    catalog_url = configuration.get_config_value("finch", "bccaqv2_url")
+    catalog_url = configuration.get_config_value("finch", "dataset_bccaqv2")
     variable = "tasmin"
     rcp = "rcp45"
 

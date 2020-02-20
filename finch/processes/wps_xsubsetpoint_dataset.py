@@ -1,3 +1,4 @@
+from finch.processes.wpsio import copy_io
 from pathlib import Path
 
 from pywps import ComplexOutput, FORMATS, LiteralInput
@@ -6,102 +7,50 @@ from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 
 from .wps_base import FinchProcess
-from .ensemble_utils import get_bccaqv2_inputs, make_output_filename
+from .ensemble_utils import get_datasets, make_output_filename
 from .subset import finch_subset_gridpoint
 from .utils import netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
-from .wpsio import end_date, start_date
+from . import wpsio
 
 
-class SubsetGridPointBCCAQV2Process(FinchProcess):
+class SubsetGridPointDatasetProcess(FinchProcess):
     """Subset a NetCDF file grid cells using a list of coordinates."""
 
     def __init__(self):
         inputs = [
-            LiteralInput(
-                "variable",
-                "NetCDF Variable",
-                abstract=(
-                    "Name of the variable in the NetCDF file."
-                    "If not provided, all variables will be subsetted."
-                ),
-                data_type="string",
-                default=None,
-                min_occurs=0,
-                allowed_values=["tasmin", "tasmax", "pr"],
-            ),
-            LiteralInput(
-                "rcp",
-                "RCP Scenario",
-                abstract="Representative Concentration Pathway (RCP)",
-                data_type="string",
-                default=None,
-                min_occurs=0,
-                allowed_values=["rcp26", "rcp45", "rcp85"],
-            ),
-            LiteralInput(
-                "lat",
-                "Latitude",
-                abstract="Latitude. Accepts a comma separated list of floats for multiple grid cells.",
-                data_type="string",
-                min_occurs=0,  # Set to 1 when lat0 is removed
-            ),
-            LiteralInput(
-                "lon",
-                "Longitude",
-                abstract="Longitude. Accepts a comma separated list of floats for multiple grid cells.",
-                data_type="string",
-                min_occurs=0,  # Set to 1 when lon0 is removed
-            ),
+            wpsio.variable,
+            wpsio.rcp,
+            wpsio.copy_io(wpsio.lat, min_occurs=0),
+            wpsio.copy_io(wpsio.lon, min_occurs=0),
             LiteralInput(
                 "lat0",
                 "Latitude (deprecated, use 'lat')",
-                abstract=(
-                    "Latitude (deprecated, use 'lat'). Accepts a comma "
-                    "separated list of floats for multiple grid cells."
-                ),
+                abstract="Latitude (deprecated, use 'lat').",
                 data_type="string",
                 min_occurs=0,
             ),
             LiteralInput(
                 "lon0",
                 "Longitude (deprecated, use 'lon')",
-                abstract=(
-                    "Latitude (deprecated, use 'lon'). Accepts a comma "
-                    "separated list of floats for multiple grid cells."
-                ),
+                abstract="Latitude (deprecated, use 'lon').",
                 data_type="string",
                 min_occurs=0,
             ),
-            start_date,
-            end_date,
-            LiteralInput(
-                "output_format",
-                "Output format choice",
-                abstract="Choose in which format you want to recieve the result",
-                data_type="string",
-                allowed_values=["netcdf", "csv"],
-                default="netcdf",
-                min_occurs=0,
-            ),
+            wpsio.start_date,
+            wpsio.end_date,
+            wpsio.output_format_netcdf_csv,
+            wpsio.dataset_name,
         ]
 
-        outputs = [
-            ComplexOutput(
-                "output",
-                "Result",
-                abstract="The format depends on the input parameter 'output_format'",
-                as_reference=True,
-                supported_formats=[FORMATS.NETCDF, FORMATS.TEXT],
-            )
-        ]
+        outputs = [wpsio.output_netcdf_csv]
 
         super().__init__(
             self._handler,
-            identifier="subset_ensemble_BCCAQv2",
-            title="Subset of BCCAQv2 datasets grid cells using a list of coordinates",
-            version="0.2",
+            identifier="subset_grid_point_dataset",
+            title="Subset of grid cells from a dataset, using a list of coordinates",
+            version="0.1",
             abstract=(
-                "For the BCCAQv2 datasets, "
+                "For the the given dataset, "
                 "return the closest grid cell for each provided coordinates pair, "
                 "for the time range selected."
             ),
@@ -143,11 +92,13 @@ class SubsetGridPointBCCAQV2Process(FinchProcess):
 
         write_log(self, "Fetching BCCAQv2 datasets")
 
-        variable = single_input_or_none(request.inputs, "variable")
-        variable = [variable] if variable is not None else None
+        variable = request.inputs["variable"][0].data
+        variables = None if variable == "all" else [variable]
         rcp = single_input_or_none(request.inputs, "rcp")
-        request.inputs["resource"] = get_bccaqv2_inputs(
-            self.workdir, variables=variable, rcp=rcp
+
+        dataset_name = single_input_or_none(request.inputs, "dataset_name")
+        request.inputs["resource"] = get_datasets(
+            dataset_name, workdir=self.workdir, variables=variables, rcp=rcp
         )
 
         write_log(self, "Running subset", process_step="subset")
@@ -185,3 +136,17 @@ class SubsetGridPointBCCAQV2Process(FinchProcess):
 
         write_log(self, "Processing finished successfully", process_step="done")
         return response
+
+
+class SubsetGridPointBCCAQV2Process(SubsetGridPointDatasetProcess):
+    def __init__(self):
+        """*** Deprecated *** to be removed in a future release"""
+        super().__init__()
+        self.identifier = "subset_ensemble_BCCAQv2"
+        self.title = "Subset of BCCAQv2 datasets grid cells using a list of coordinates"
+        self.version = "0.1"
+        self.abstract = (
+            "For the BCCAQv2 datasets, "
+            "return the closest grid cell for each provided coordinates pair, "
+            "for the time range selected."
+        )

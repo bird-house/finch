@@ -10,9 +10,12 @@ from .wps_ensemble_gridpoint_indices import XclimEnsembleGridPointBase
 from .wps_ensemble_bbox_indices import XclimEnsembleBboxBase
 from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
 from .wps_xsubsetbbox import SubsetBboxProcess
-from .wps_xsubsetbbox_bccaqv2 import SubsetBboxBCCAQV2Process
+from .wps_xsubsetbbox_dataset import SubsetBboxBCCAQV2Process, SubsetBboxDatasetProcess
 from .wps_xsubsetpoint import SubsetGridPointProcess
-from .wps_xsubsetpoint_bccaqv2 import SubsetGridPointBCCAQV2Process
+from .wps_xsubsetpoint_dataset import (
+    SubsetGridPointBCCAQV2Process,
+    SubsetGridPointDatasetProcess,
+)
 
 
 def get_indicators(module):
@@ -53,7 +56,9 @@ for ind in ensemble_indicators:
 processes += [
     SubsetBboxProcess(),
     SubsetGridPointProcess(),
+    SubsetGridPointDatasetProcess(),
     SubsetGridPointBCCAQV2Process(),
+    SubsetBboxDatasetProcess(),
     SubsetBboxBCCAQV2Process(),
     BCCAQV2HeatWave(),
 ]

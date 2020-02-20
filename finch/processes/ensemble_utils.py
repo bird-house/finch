@@ -3,7 +3,7 @@ from copy import deepcopy
 from enum import Enum
 from functools import partial
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Iterable
+from typing import Dict, List, Optional, Tuple, Iterable, cast
 import warnings
 
 from pywps import ComplexInput, FORMATS, Process
@@ -217,11 +217,24 @@ def _bccaqv2_filter(
     return rcp_ok and variable_ok
 
 
-def get_bccaqv2_inputs(
+def get_datasets(
+    dataset_name: Optional[str],
+    workdir: str,
+    variables: Optional[List[str]] = None,
+    rcp=None,
+) -> List[PywpsInput]:
+    datasets = {"bccaqv2": _get_bccaqv2_inputs}
+    if dataset_name is None:
+        dataset_name = configuration.get_config_value("finch", "default_dataset")
+    dataset_name = cast(str, dataset_name)
+    return datasets[dataset_name](workdir=workdir, variables=variables, rcp=rcp)
+
+
+def _get_bccaqv2_inputs(
     workdir: str, variables: Optional[List[str]] = None, rcp=None, catalog_url=None
 ) -> List[PywpsInput]:
     """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
-    catalog_url = configuration.get_config_value("finch", "bccaqv2_url")
+    catalog_url = configuration.get_config_value("finch", "dataset_bccaqv2")
 
     inputs = []
 
@@ -488,8 +501,12 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     write_log(process, "Fetching BCCAQv2 datasets")
 
     rcp = single_input_or_none(request.inputs, "rcp")
-    bccaqv2_inputs = get_bccaqv2_inputs(
-        process.workdir, variables=list(source_variable_names), rcp=rcp
+    dataset_name = single_input_or_none(request.inputs, "dataset")
+    bccaqv2_inputs = get_datasets(
+        dataset_name,
+        workdir=process.workdir,
+        variables=list(source_variable_names),
+        rcp=rcp,
     )
 
     write_log(process, "Running subset", process_step="subset")

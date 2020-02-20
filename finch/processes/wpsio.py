@@ -6,6 +6,7 @@ from typing import Union
 from pywps import ComplexOutput, FORMATS, LiteralInput
 
 from finch.processes.utils import PywpsInput, PywpsOutput
+from pywps.configuration import get_config_value
 
 
 def copy_io(
@@ -98,6 +99,26 @@ lat1 = LiteralInput(
     min_occurs=0,
 )
 
+variable = LiteralInput(
+    "variable",
+    "NetCDF Variable",
+    abstract="Name of the variable in the NetCDF file.",
+    data_type="string",
+    default="all",
+    min_occurs=0,
+    allowed_values=["tasmin", "tasmax", "pr", "all"],
+)
+
+dataset_name = LiteralInput(
+    "dataset_name",
+    "Dataset name",
+    abstract="Name of the dataset from which to get netcdf files for inputs.",
+    data_type="string",
+    default=None,
+    min_occurs=0,
+    allowed_values=["bccaqv2"],
+)
+
 rcp = LiteralInput(
     "rcp",
     "RCP Scenario",
@@ -135,6 +156,10 @@ output_netcdf_zip = ComplexOutput(
     abstract=("The format depends on the 'output_format' input parameter."),
     as_reference=True,
     supported_formats=[FORMATS.NETCDF, FORMATS.ZIP],
+)
+
+output_netcdf_csv = copy_io(
+    output_netcdf_zip, supported_formats=[FORMATS.NETCDF, FORMATS.TEXT]
 )
 
 output_log = ComplexOutput(

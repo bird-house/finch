@@ -29,7 +29,7 @@ def mock_local_datasets(monkeypatch, filenames=None):
     from pywps.configuration import CONFIG
     from finch.processes import ensemble_utils
 
-    CONFIG.set("finch", "bccaqv2_url", "/mock_local/path")
+    CONFIG.set("finch", "dataset_bccaqv2", "/mock_local/path")
 
     subset_sample = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
 

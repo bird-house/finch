@@ -36,6 +36,7 @@ class XclimEnsembleGridPointBase(FinchProcess):
             wpsio.start_date,
             wpsio.end_date,
             wpsio.ensemble_percentiles,
+            wpsio.dataset_name,
         ]
         rcp = wpsio.copy_io(wpsio.rcp, min_occurs=1)
         inputs.append(rcp)

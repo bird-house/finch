@@ -9,12 +9,7 @@ from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 from xclim.atmos import heat_wave_frequency
 
-from .wps_base import FinchProcess, make_xclim_indicator_process
-from .ensemble_utils import (
-    get_bccaqv2_inputs,
-    make_output_filename,
-    fix_broken_time_indices,
-)
+from .ensemble_utils import fix_broken_time_indices, get_datasets, make_output_filename
 from .subset import finch_subset_gridpoint
 from .utils import (
     compute_indices,
@@ -24,6 +19,7 @@ from .utils import (
     write_log,
     zip_files,
 )
+from .wps_base import FinchProcess, make_xclim_indicator_process
 from .wps_xclim_indices import XclimIndicatorBase, make_nc_input
 from .wpsio import lat, lon
 
@@ -31,7 +27,10 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class BCCAQV2HeatWave(FinchProcess):
-    """Subset a NetCDF file using a gridpoint, and then compute the 'heat wave' index."""
+    """Subset a NetCDF file using a gridpoint, and then compute the 'heat wave' index.
+
+    *** Deprecated *** to be removed in a future release
+    """
 
     def __init__(self):
         self.indices_process = make_xclim_indicator_process(
@@ -85,7 +84,10 @@ class BCCAQV2HeatWave(FinchProcess):
         super().__init__(
             self._handler,
             identifier="BCCAQv2_heat_wave_frequency_gridpoint",
-            title="BCCAQv2 grid cell heat wave frequency computation",
+            title=(
+                "BCCAQv2 grid cell heat wave frequency computation"
+                "*** Deprecated *** to be removed in a future release"
+            ),
             version="0.1",
             abstract=(
                 "Compute heat wave frequency for all the "
@@ -118,11 +120,10 @@ class BCCAQV2HeatWave(FinchProcess):
 
         write_log(self, "Fetching BCCAQv2 datasets")
 
-        variable = single_input_or_none(request.inputs, "variable")
-        variable = [variable] if variable is not None else None
         rcp = single_input_or_none(request.inputs, "rcp")
-        request.inputs["resource"] = get_bccaqv2_inputs(
-            self.workdir, variables=variable, rcp=rcp
+
+        request.inputs["resource"] = get_datasets(
+            "bccaqv2", workdir=self.workdir, variables=["tasmin", "tasmax"], rcp=rcp
         )
 
         write_log(self, "Running subset", process_step="subset")
