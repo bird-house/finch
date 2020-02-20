@@ -167,6 +167,45 @@ def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
     assert n_data_rows == 2 * 2 * 2 * 4  # realizations=2, lat=2, lon=2, time=4
 
 
+def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
+    # --- given ---
+    identifier = "ensemble_grid_point_heat_wave_frequency"
+    inputs = [
+        wps_literal_input("lat", "46"),
+        wps_literal_input("lon", "-72.8"),
+        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("start_date", "1950"),
+        wps_literal_input("end_date", "1950-03-31"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("output_format", "netcdf"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert len(outputs) == 1
+    ds = Dataset(outputs[0])
+    dims = {d.name: d.size for d in ds.dimensions.values()}
+    assert dims == {
+        "realization": 2,
+        "region": 1,
+        "time": 3,
+    }
+
+    ensemble_variables = {
+        k: v
+        for k, v in ds.variables.items()
+        if k not in "lat lon realization time".split()
+    }
+    assert sorted(ensemble_variables) == [
+        f"heat_wave_frequency_p{p}" for p in (10, 50, 90)
+    ]
+    for var in ensemble_variables.values():
+        variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
+        assert variable_dims == {"region": 1, "time": 3}
+
+
 def test_compute_intermediate_variables(monkeypatch):
     # --- given ---
     workdir = Path(__file__).parent / "tmp" / "temp_compute_intermediate_variables"
