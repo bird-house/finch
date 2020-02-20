@@ -2,7 +2,7 @@ import xclim
 import xclim.atmos
 from xclim.utils import Indicator
 
-from finch.processes.ensemble_utils import uses_bccaqv2_data
+from finch.processes.ensemble_utils import uses_accepted_netcdf_variables
 from finch.processes.wps_xclim_indices import XclimIndicatorBase
 
 from .wps_base import make_xclim_indicator_process
@@ -30,7 +30,7 @@ not_implemented = [
     "DC",  # lat input type is not implemented and start_up_mode argument seems to be missing?
 ]
 indicators = [i for i in indicators if i.identifier not in not_implemented]
-ensemble_indicators = [i for i in indicators if uses_bccaqv2_data(i)]
+ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i)]
 
 processes = []
 

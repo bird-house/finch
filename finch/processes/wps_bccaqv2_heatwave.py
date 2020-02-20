@@ -102,7 +102,7 @@ class BCCAQV2HeatWave(FinchProcess):
 
         output_filename = make_output_filename(self, request.inputs)
 
-        write_log(self, "Fetching BCCAQv2 datasets")
+        write_log(self, "Fetching datasets")
 
         rcp = single_input_or_none(request.inputs, "rcp")
 

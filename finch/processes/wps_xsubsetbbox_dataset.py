@@ -65,7 +65,7 @@ class SubsetBboxDatasetProcess(FinchProcess):
 
         output_filename = make_output_filename(self, request.inputs)
 
-        write_log(self, "Fetching BCCAQv2 datasets")
+        write_log(self, "Fetching datasets")
 
         variable = request.inputs["variable"][0].data
         variables = None if variable is None else [variable]

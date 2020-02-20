@@ -337,8 +337,8 @@ def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
     return tasmin, tasmax
 
 
-def uses_bccaqv2_data(indicator: Indicator) -> bool:
-    """Returns True if the BCCAQv2 data can be used directly with this indicator."""
+def uses_accepted_netcdf_variables(indicator: Indicator) -> bool:
+    """Returns True if this indicator uses  netcdf variables in `accepted_variables`."""
 
     params = eval(indicator.json()["parameters"])
     return not any(p in not_implemented_variables for p in params)
@@ -498,11 +498,11 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     output_filename = make_output_filename(process, request.inputs)
 
-    write_log(process, "Fetching BCCAQv2 datasets")
+    write_log(process, "Fetching datasets")
 
     rcp = single_input_or_none(request.inputs, "rcp")
     dataset_name = single_input_or_none(request.inputs, "dataset")
-    bccaqv2_inputs = get_datasets(
+    netcdf_inputs = get_datasets(
         dataset_name,
         workdir=process.workdir,
         variables=list(source_variable_names),
@@ -512,7 +512,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     write_log(process, "Running subset", process_step="subset")
 
     subsetted_files = subset_function(
-        process, netcdf_inputs=bccaqv2_inputs, request_inputs=request.inputs
+        process, netcdf_inputs=netcdf_inputs, request_inputs=request.inputs
     )
 
     if not subsetted_files:
