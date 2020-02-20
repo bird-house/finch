@@ -43,7 +43,20 @@ def _create_test_dataset(variable, cell_methods, stardard_name, units, seed=None
         )
     }
 
-    obj = xr.Dataset()
+    attrs = {
+        "Conventions": "CF-1.4",
+        "frequency": "day",
+        "modeling_realm": "atmos",
+        "project_id": "CMIP5",
+        "driving_experiment": "historical,rcp85",
+        "driving_experiment_id": "historical,rcp85",
+        "driving_model_id": "dummy-model",
+        "driving_realization": "1",
+        "driving_initialization_method": "1",
+        "driving_physics_version": "1",
+    }
+
+    obj = xr.Dataset(attrs=attrs)
     obj["time"] = ("time", pd.date_range("2000-01-01", periods=_dims["time"]))
     obj["lon"] = ("lon", np.arange(_dims["lon"]))
     obj["lat"] = ("lat", np.arange(_dims["lat"]))

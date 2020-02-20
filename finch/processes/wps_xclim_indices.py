@@ -5,11 +5,12 @@ from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.app.Common import Metadata
 from unidecode import unidecode
 
-from finch.processes.utils import dataset_to_netcdf
+from finch.processes.utils import dataset_to_netcdf, drs_filename
 from finch.processes.wps_base import convert_xclim_inputs_to_pywps
 
 from .utils import compute_indices, log_file_path, write_log
 from .wps_base import FinchProcess, FinchProgressBar
+from pathlib import Path
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -94,8 +95,11 @@ class XclimIndicatorBase(FinchProcess):
         write_log(self, "Computing the output netcdf", process_step="start")
 
         out = compute_indices(self, self.xci, request.inputs)
-
-        out_fn = os.path.join(self.workdir, "out.nc")
+        try:
+            filename = drs_filename(out)
+        except KeyError:
+            filename = "out.nc"
+        out_fn = Path(self.workdir, filename)
 
         def _log(message, percentage):
             write_log(self, message, subtask_percentage=percentage)
