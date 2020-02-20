@@ -8,95 +8,315 @@ Processes
     :depth: 1
 
 ..
-   from finch.processes import processes
-   processes.sort()
-   for p in processes:
-       c = p.__class__
-       doc = '.. autoprocess:: {}.{}\n'
-       print(doc.format(c.__module__, c.__name__))
+    from finch.processes import processes
+    name = lambda p: p.__class__.__name__
+    ensemble = sorted([p for p in processes if "Ensemble" in name(p)], key=name)
+    indicators = sorted([p for p in processes if name(p).endswith('_Indicator_Process')], key=name)
+    others = sorted([p for p in processes if name(p) not in set(map(name, indicators + ensemble))], key=name)
+    format = lambda p: print(f'.. autoprocess:: {p.__class__.__module__}.{name(p)}\n')
+    def print_all():
+        print("xclim Indicators")
+        print("----------------")
+        list(map(format, indicators))
+        print("Ensemble Processes")
+        print("------------------")
+        list(map(format, ensemble))
+        print("Other Processes")
+        print("------------------")
+        list(map(format, others))
+    
+
+    print_all()
 
 
-xclim Indicators
+xclim Indicators 
 ----------------
+.. autoprocess:: finch.processes.xclim.cdd_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.cddProcess
+.. autoprocess:: finch.processes.xclim.cold_spell_days_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.cddcold_thresh_Process
+.. autoprocess:: finch.processes.xclim.cold_spell_duration_index_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.consecutive_frost_daysProcess
+.. autoprocess:: finch.processes.xclim.consecutive_frost_days_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.csdi_window_Process
+.. autoprocess:: finch.processes.xclim.cooling_degree_days_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.csi_thresh_Process
+.. autoprocess:: finch.processes.xclim.cwd_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.cwdProcess
+.. autoprocess:: finch.processes.xclim.dlyfrzthw_Indicator_Process 
 
-.. autoprocess:: finch.processes.xclim.dlyfrzthwProcess
+.. autoprocess:: finch.processes.xclim.dtr_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.dtrProcess
+.. autoprocess:: finch.processes.xclim.dtrvar_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.dtrvarProcess
+.. autoprocess:: finch.processes.xclim.etr_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.etrProcess
+.. autoprocess:: finch.processes.xclim.freshet_start_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.frost_daysProcess
+.. autoprocess:: finch.processes.xclim.frost_days_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.gddgrow_thresh_Process
+.. autoprocess:: finch.processes.xclim.growing_degree_days_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.gsl_thresh_Process
+.. autoprocess:: finch.processes.xclim.growing_season_length_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.hddheat_thresh_Process
+.. autoprocess:: finch.processes.xclim.heat_wave_frequency_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.heat_wave_frequencyProcess
+.. autoprocess:: finch.processes.xclim.heat_wave_index_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.heat_wave_max_lengthProcess
+.. autoprocess:: finch.processes.xclim.heat_wave_max_length_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.hwi_thresh_Process
+.. autoprocess:: finch.processes.xclim.heat_wave_total_length_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.ice_daysProcess
+.. autoprocess:: finch.processes.xclim.heating_degree_days_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.prcptotProcess
+.. autoprocess:: finch.processes.xclim.ice_days_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.r_thresh_mmProcess
+.. autoprocess:: finch.processes.xclim.liquidprcptot_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.rain_frzgrProcess
+.. autoprocess:: finch.processes.xclim.max_n_day_precipitation_amount_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.rx1dayProcess
+.. autoprocess:: finch.processes.xclim.prcptot_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.rx_window_dayProcess
+.. autoprocess:: finch.processes.xclim.rain_frzgr_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.sdiiProcess
+.. autoprocess:: finch.processes.xclim.rx1day_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tg10pProcess
+.. autoprocess:: finch.processes.xclim.sdii_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tg90pProcess
+.. autoprocess:: finch.processes.xclim.solidprcptot_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tg_meanProcess
+.. autoprocess:: finch.processes.xclim.tg10p_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tn10pProcess
+.. autoprocess:: finch.processes.xclim.tg90p_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tn90pProcess
+.. autoprocess:: finch.processes.xclim.tg_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tn_maxProcess
+.. autoprocess:: finch.processes.xclim.tg_mean_Indicator_Process 
 
-.. autoprocess:: finch.processes.xclim.tn_meanProcess
+.. autoprocess:: finch.processes.xclim.tn10p_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tn_minProcess
+.. autoprocess:: finch.processes.xclim.tn90p_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tnlt_thresh_Process
+.. autoprocess:: finch.processes.xclim.tn_days_below_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tr_thresh_Process
+.. autoprocess:: finch.processes.xclim.tn_max_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tx10pProcess
+.. autoprocess:: finch.processes.xclim.tn_mean_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tx90pProcess
+.. autoprocess:: finch.processes.xclim.tn_min_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tx_maxProcess
+.. autoprocess:: finch.processes.xclim.tropical_nights_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tx_meanProcess
+.. autoprocess:: finch.processes.xclim.tx10p_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.tx_minProcess
+.. autoprocess:: finch.processes.xclim.tx90p_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.txgt_thresh_Process
+.. autoprocess:: finch.processes.xclim.tx_days_above_Indicator_Process
 
-.. autoprocess:: finch.processes.xclim.txgt_thresh_tasmax_tngt_thresh_tasmin_Process
+.. autoprocess:: finch.processes.xclim.tx_max_Indicator_Process
+
+.. autoprocess:: finch.processes.xclim.tx_mean_Indicator_Process
+
+.. autoprocess:: finch.processes.xclim.tx_min_Indicator_Process
+
+.. autoprocess:: finch.processes.xclim.tx_tn_days_above_Indicator_Process
+
+.. autoprocess:: finch.processes.xclim.wetdays_Indicator_Process 
+
+Ensemble Processes
+------------------
+.. autoprocess:: finch.processes.xclim.cdd_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.cdd_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.cold_spell_days_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.cold_spell_days_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.cold_spell_duration_index_Ensemble_Bbox_Process 
+
+.. autoprocess:: finch.processes.xclim.cold_spell_duration_index_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.consecutive_frost_days_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.consecutive_frost_days_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.cooling_degree_days_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.cooling_degree_days_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.cwd_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.cwd_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.dlyfrzthw_Ensemble_Bbox_Process 
+
+.. autoprocess:: finch.processes.xclim.dlyfrzthw_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.dtr_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.dtr_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.dtrvar_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.dtrvar_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.etr_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.etr_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.freshet_start_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.freshet_start_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.frost_days_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.frost_days_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.growing_degree_days_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.growing_degree_days_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.growing_season_length_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.growing_season_length_Ensemble_GridPoint_Process 
+
+.. autoprocess:: finch.processes.xclim.heat_wave_frequency_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.heat_wave_frequency_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.heat_wave_index_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.heat_wave_index_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.heat_wave_max_length_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.heat_wave_max_length_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.heat_wave_total_length_Ensemble_Bbox_Process
+ 
+.. autoprocess:: finch.processes.xclim.heat_wave_total_length_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.heating_degree_days_Ensemble_Bbox_Process 
+
+.. autoprocess:: finch.processes.xclim.heating_degree_days_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.ice_days_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.ice_days_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.liquidprcptot_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.liquidprcptot_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.max_n_day_precipitation_amount_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.max_n_day_precipitation_amount_Ensemble_GridPoint_Process 
+
+.. autoprocess:: finch.processes.xclim.prcptot_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.prcptot_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.rain_frzgr_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.rain_frzgr_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.rx1day_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.rx1day_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.sdii_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.sdii_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.solidprcptot_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.solidprcptot_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tg10p_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tg10p_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tg90p_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tg90p_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tg_Ensemble_Bbox_Process 
+
+.. autoprocess:: finch.processes.xclim.tg_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tg_mean_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tg_mean_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tn10p_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tn10p_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tn90p_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tn90p_Ensemble_GridPoint_Process 
+
+.. autoprocess:: finch.processes.xclim.tn_days_below_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tn_days_below_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tn_max_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tn_max_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tn_mean_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tn_mean_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tn_min_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tn_min_Ensemble_GridPoint_Process 
+
+.. autoprocess:: finch.processes.xclim.tropical_nights_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tropical_nights_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tx10p_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tx10p_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tx90p_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tx90p_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tx_days_above_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tx_days_above_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tx_max_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tx_max_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tx_mean_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tx_mean_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tx_min_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tx_min_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.tx_tn_days_above_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.tx_tn_days_above_Ensemble_GridPoint_Process
+
+.. autoprocess:: finch.processes.xclim.wetdays_Ensemble_Bbox_Process
+
+.. autoprocess:: finch.processes.xclim.wetdays_Ensemble_GridPoint_Process
+
+Other Processes
+------------------
+.. autoprocess:: finch.processes.xclim.BCCAQV2HeatWave
+
+.. autoprocess:: finch.processes.xclim.SubsetBboxBCCAQV2Process
+
+.. autoprocess:: finch.processes.xclim.SubsetBboxProcess
+
+.. autoprocess:: finch.processes.xclim.SubsetGridPointBCCAQV2Process
+
+.. autoprocess:: finch.processes.xclim.SubsetGridPointProcess

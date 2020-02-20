@@ -1,20 +1,24 @@
-import shutil
-import zipfile
 from pathlib import Path
+import shutil
+from unittest import mock
+import zipfile
 
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 from pywps import configuration
-from finch.processes import ensemble_utils
+import xarray as xr
 
+from finch.processes import ensemble_utils
 from finch.processes.ensemble_utils import get_bccaqv2_opendap_datasets
 from finch.processes.utils import (
+    drs_filename,
+    is_opendap_url,
     netcdf_file_list_to_csv,
     zip_files,
-    is_opendap_url,
 )
-from unittest import mock
+
+test_data = Path(__file__).parent / "data"
 
 
 @mock.patch("finch.processes.ensemble_utils.TDSCatalog")
@@ -155,3 +159,18 @@ def test_bccaqv2_make_file_groups():
 
     assert len(groups) == 85
     assert all(len(g) == 3 for g in groups)
+
+
+def test_drs_filename():
+    ds = xr.open_dataset(
+        test_data / "bccaqv2_subset_sample/tasmax_bcc-csm1-1_subset.nc"
+    )
+    filename = drs_filename(ds)
+    assert filename == "tasmax_bcc-csm1-1_historical+rcp85_r1i1p1_19500101-19500410.nc"
+
+
+def test_drs_filename_cordex():
+    ds = xr.open_dataset(test_data / "cordex_subset.nc")
+    filename = drs_filename(ds)
+    expected = "tasmin_NAM-44_MPI-M-MPI-ESM-MR_rcp85_r1i1p1_UQAM-CRCM5_v1_day_20960101-20960409.nc"
+    assert filename == expected
