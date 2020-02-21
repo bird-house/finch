@@ -23,7 +23,7 @@ Processes
         print("------------------")
         list(map(format, ensemble))
         print("Other Processes")
-        print("------------------")
+        print("---------------")
         list(map(format, others))
 
     print_all()
@@ -56,8 +56,6 @@ xclim Indicators
 .. autoprocess:: finch.processes.xclim.frost_days_Indicator_Process
 
 .. autoprocess:: finch.processes.xclim.growing_degree_days_Indicator_Process
-
-.. autoprocess:: finch.processes.xclim.growing_season_length_Indicator_Process
 
 .. autoprocess:: finch.processes.xclim.heat_wave_frequency_Indicator_Process
 
@@ -177,10 +175,6 @@ Ensemble Processes
 
 .. autoprocess:: finch.processes.xclim.growing_degree_days_Ensemble_GridPoint_Process
 
-.. autoprocess:: finch.processes.xclim.growing_season_length_Ensemble_Bbox_Process
-
-.. autoprocess:: finch.processes.xclim.growing_season_length_Ensemble_GridPoint_Process
-
 .. autoprocess:: finch.processes.xclim.heat_wave_frequency_Ensemble_Bbox_Process
 
 .. autoprocess:: finch.processes.xclim.heat_wave_frequency_Ensemble_GridPoint_Process
@@ -211,7 +205,7 @@ Ensemble Processes
 
 .. autoprocess:: finch.processes.xclim.max_n_day_precipitation_amount_Ensemble_Bbox_Process
 
-.. autoprocess:: finch.processes.xclim.max_n_day_precipitation_amount_Ensemble_GridPoint_Process 
+.. autoprocess:: finch.processes.xclim.max_n_day_precipitation_amount_Ensemble_GridPoint_Process
 
 .. autoprocess:: finch.processes.xclim.prcptot_Ensemble_Bbox_Process
 
@@ -310,7 +304,7 @@ Ensemble Processes
 .. autoprocess:: finch.processes.xclim.wetdays_Ensemble_GridPoint_Process
 
 Other Processes
-------------------
+---------------
 .. autoprocess:: finch.processes.xclim.BCCAQV2HeatWave
 
 .. autoprocess:: finch.processes.xclim.SubsetBboxBCCAQV2Process
