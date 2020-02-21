@@ -32,6 +32,7 @@ indicators = get_indicators(xclim.atmos)
 
 not_implemented = [
     "DC",  # lat input type is not implemented and start_up_mode argument seems to be missing?
+    "growing_season_length",  # mid_date parameter not implemented
 ]
 indicators = [i for i in indicators if i.identifier not in not_implemented]
 ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i)]

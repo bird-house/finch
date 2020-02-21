@@ -42,9 +42,6 @@ def test_processes(client, netcdf_datasets):
     }
     keep_defaults = ["thresh", "thresh_tasmin", "thresh_tasmax"]
 
-    # Todo: remove me when xclim.run_length.first_run_ufunc is fixed
-    processes = [p for p in processes if p.identifier != "freshet_start"]
-
     attrs = xr.open_dataset(list(netcdf_datasets.values())[0], decode_times=False).attrs
 
     for process in processes:
