@@ -2,7 +2,7 @@ from threading import Lock
 import logging
 
 from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
-from .wpsio import start_date, end_date, lat0, lat1, lon0, lon1
+from .wpsio import start_date, end_date, lat0, lat1, lon0, lon1, output_metalink
 
 from finch.processes.wps_base import FinchProcess
 from finch.processes.utils import make_metalink_output, write_log
@@ -50,13 +50,7 @@ class SubsetBboxProcess(FinchProcess):
                 as_reference=True,
                 supported_formats=[FORMATS.NETCDF],
             ),
-            ComplexOutput(
-                "ref",
-                "Link to all output files",
-                abstract="Metalink file storing all references to output file.",
-                as_reference=False,
-                supported_formats=[FORMATS.META4],
-            ),
+            output_metalink,
         ]
 
         super().__init__(
