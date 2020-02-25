@@ -144,3 +144,11 @@ output_log = ComplexOutput(
     as_reference=True,
     supported_formats=[FORMATS.TEXT],
 )
+
+output_metalink = ComplexOutput(
+    "ref",
+    "Link to all output files",
+    abstract="Metalink file storing all references to output files.",
+    as_reference=False,
+    supported_formats=[FORMATS.META4],
+)

@@ -80,14 +80,17 @@ def execute_process(
     execution = WPSExecution()
     execution.parseResponse(response.xml)
 
-    outputs = get_file_outputs(execution, output_names=output_names)
+    outputs = get_outputs(execution, output_names=output_names)
 
     return outputs
 
 
-def get_file_outputs(execution, output_names):
+def get_outputs(execution, output_names):
     outputs = []
     for output in execution.processOutputs:
         if output.identifier in output_names:
-            outputs.append(output.reference.replace("file://", ""))
+            try:
+                outputs.append(output.reference.replace("file://", ""))
+            except AttributeError:
+                outputs.append(output)
     return outputs
