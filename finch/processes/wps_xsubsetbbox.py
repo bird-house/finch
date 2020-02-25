@@ -1,5 +1,4 @@
 import logging
-from threading import Lock
 
 from pywps import ComplexInput, ComplexOutput, FORMATS
 
@@ -40,13 +39,7 @@ class SubsetBboxProcess(FinchProcess):
                 as_reference=True,
                 supported_formats=[FORMATS.NETCDF],
             ),
-            ComplexOutput(
-                "ref",
-                "Link to all output files",
-                abstract="Metalink file storing all references to output file.",
-                as_reference=False,
-                supported_formats=[FORMATS.META4],
-            ),
+            wpsio.output_metalink,
         ]
 
         super().__init__(

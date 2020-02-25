@@ -50,17 +50,21 @@ class FinchProcess(Process):
 
 
 class FinchProgressBar(ProgressBar):
-    def __init__(self, logging_function, start_percentage, *args, **kwargs):
+    def __init__(
+        self, logging_function, start_percentage=0, end_percentage=100, *args, **kwargs
+    ):
         super(FinchProgressBar, self).__init__(*args, **kwargs)
+        self.start = start_percentage
+        self.end = end_percentage
         self._logging_function = logging_function
 
     def _draw_bar(self, frac, elapsed):
-        bar = "#" * int(self._width * frac)
-        percent = int(100 * frac)
-        elapsed = format_time(elapsed)
-        msg = "[{0:<{1}}] | {2}% Done | {3}".format(bar, self._width, percent, elapsed)
+        real_frac = (self.start + frac * (self.end - self.start)) / 100
+        bar = "#" * int(self._width * real_frac)
+        percent = int(100 * real_frac)
+        msg = "[{0:<{1}}] | {2}% Done".format(bar, self._width, percent)
 
-        self._logging_function(msg, percent)
+        self._logging_function(msg, real_frac * 100)
 
 
 def make_xclim_indicator_process(
@@ -81,15 +85,26 @@ def make_xclim_indicator_process(
     return process_class()  # type: ignore
 
 
+NC_INPUT_VARIABLES = [
+    "tas",
+    "tasmin",
+    "tasmax",
+    "pr",
+    "prsn",
+    "tn10",
+    "tn90",
+    "t10",
+    "t90",
+]
+
+
 def convert_xclim_inputs_to_pywps(params: Dict) -> List[PywpsInput]:
     """Convert xclim indicators properties to pywps inputs."""
     # Ideally this would be based on the Parameters docstring section rather than name conventions.
     inputs = []
 
     for name, attrs in params.items():
-        if name in ["tas", "tasmin", "tasmax", "pr", "prsn"]:
-            inputs.append(make_nc_input(name))
-        elif name in ["tn10", "tn90", "t10", "t90"]:
+        if name in NC_INPUT_VARIABLES:
             inputs.append(make_nc_input(name))
         elif name in ["thresh_tasmin", "thresh_tasmax"]:
             inputs.append(make_thresh(name, attrs["default"], attrs["desc"]))
@@ -150,6 +165,6 @@ def make_nc_input(name):
         abstract="NetCDF Files or archive (tar/zip) containing netCDF files.",
         metadata=[Metadata("Info")],
         min_occurs=1,
-        max_occurs=1,
+        max_occurs=10000,
         supported_formats=[FORMATS.NETCDF],
     )

@@ -19,8 +19,8 @@ from .utils import (
     write_log,
     zip_files,
 )
-from .wps_base import FinchProcess, make_xclim_indicator_process
-from .wps_xclim_indices import XclimIndicatorBase, make_nc_input
+from .wps_base import FinchProcess, make_xclim_indicator_process, make_nc_input
+from .wps_xclim_indices import XclimIndicatorBase
 from . import wpsio
 
 LOGGER = logging.getLogger("PYWPS")

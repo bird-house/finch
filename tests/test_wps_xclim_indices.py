@@ -1,6 +1,8 @@
 from finch.processes.wps_xclim_indices import XclimIndicatorBase
 from inspect import signature
 
+import pytest
+from lxml import etree
 import xarray as xr
 import pandas as pd
 
@@ -9,6 +11,8 @@ import finch.processes
 from finch.processes.wps_base import make_xclim_indicator_process
 from tests.utils import execute_process, wps_input_file, wps_literal_input
 from pathlib import Path
+from pywps.app.exceptions import ProcessError
+from unittest import mock
 
 
 def _get_output_standard_name(process_identifier):
@@ -74,6 +78,48 @@ def test_processes(client, netcdf_datasets):
 
         expected = f"{output_variable}_{model}_{experiment}_{ensemble}_{date_start:%Y%m%d}-{date_end:%Y%m%d}.nc"
         assert Path(outputs[0]).name == expected
+
+
+def test_wps_daily_temperature_range_multiple(client, netcdf_datasets):
+    identifier = "dtr"
+    inputs = [wps_literal_input("freq", "YS")]
+    for _ in range(5):
+        inputs.append(wps_input_file("tasmax", netcdf_datasets["tasmax"]))
+        inputs.append(wps_input_file("tasmin", netcdf_datasets["tasmin"]))
+
+    with mock.patch(
+        "finch.processes.wps_xclim_indices.FinchProgressBar"
+    ) as mock_progress:
+        outputs = execute_process(
+            client, identifier, inputs, output_names=["output_netcdf", "ref"]
+        )
+
+    assert mock_progress.call_args_list[0][1]["start_percentage"] == 0
+    assert mock_progress.call_args_list[0][1]["end_percentage"] == 20
+    assert mock_progress.call_args_list[4][1]["start_percentage"] == 80
+    assert mock_progress.call_args_list[4][1]["end_percentage"] == 100
+
+    et = etree.fromstring(outputs[1].data[0].encode())
+    urls = [e[2].text for e in et if e.tag.endswith("file")]
+
+    assert len(urls) == 5, "Containing 10 files"
+    assert len(set(urls)) == 5, "With different links"
+    assert urls[1].endswith("-1.nc")
+
+
+def test_wps_daily_temperature_range_multiple_not_same_length(client, netcdf_datasets):
+    identifier = "dtr"
+    inputs = [wps_literal_input("freq", "YS")]
+    for _ in range(5):
+        inputs.append(wps_input_file("tasmax", netcdf_datasets["tasmax"]))
+        inputs.append(wps_input_file("tasmin", netcdf_datasets["tasmin"]))
+
+    inputs.pop()
+
+    with pytest.raises(ProcessError, match="must be equal"):
+        execute_process(
+            client, identifier, inputs, output_names=["output_netcdf", "ref"]
+        )
 
 
 def test_heat_wave_frequency_window_thresh_parameters(client, netcdf_datasets):
