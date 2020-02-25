@@ -29,21 +29,7 @@ from .utils import (
     zip_files,
 )
 from .wps_xclim_indices import make_nc_input
-
-
-xclim_netcdf_variables = {
-    "tasmin",
-    "tasmax",
-    "tas",
-    "pr",
-    "prsn",
-    "tn10",
-    "tn90",
-    "t10",
-    "t90",
-}  # a list of all posible netcdf arguments in xclim
-
-bccaq_variables = {"tasmin", "tasmax", "pr"}
+from .constants import MODELS, xclim_netcdf_variables, bccaq_variables
 
 
 def _tas(tasmin: xr.Dataset, tasmax: xr.Dataset) -> xr.Dataset:
@@ -143,35 +129,7 @@ def _bccaqv2_filter(
     variable_ok = variables is None
     rcp_ok = rcp is None
 
-    keep_models = [
-        m.lower()
-        for m in [
-            "BNU-ESM",
-            "CCSM4",
-            "CESM1-CAM5",
-            "CNRM-CM5",
-            "CSIRO-Mk3-6-0",
-            "CanESM2",
-            "FGOALS-g2",
-            "GFDL-CM3",
-            "GFDL-ESM2G",
-            "GFDL-ESM2M",
-            "HadGEM2-AO",
-            "HadGEM2-ES",
-            "IPSL-CM5A-LR",
-            "IPSL-CM5A-MR",
-            "MIROC-ESM-CHEM",
-            "MIROC-ESM",
-            "MIROC5",
-            "MPI-ESM-LR",
-            "MPI-ESM-MR",
-            "MRI-CGCM3",
-            "NorESM1-M",
-            "NorESM1-ME",
-            "bcc-csm1-1-m",
-            "bcc-csm1-1",
-        ]
-    ]
+    keep_models = [m.lower() for m in MODELS]
 
     if method == ParsingMethod.filename:
         variable_ok = variable_ok or any(filename.startswith(v) for v in variables)

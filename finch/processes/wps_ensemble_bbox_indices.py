@@ -6,7 +6,8 @@ from finch.processes.subset import finch_subset_bbox
 
 from . import wpsio
 from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
-from .ensemble_utils import ensemble_common_handler, xclim_netcdf_variables
+from .ensemble_utils import ensemble_common_handler
+from .constants import xclim_netcdf_variables
 
 LOGGER = logging.getLogger("PYWPS")
 
