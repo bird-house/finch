@@ -16,3 +16,4 @@ dependencies:
   - siphon
   - xclim>=0.14.0
   - pywps==4.2.3
+  - parse

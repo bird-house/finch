@@ -1,10 +1,12 @@
 from pathlib import Path
+from unittest import mock
 import zipfile
 
 from netCDF4 import Dataset
 import pytest
 
 from finch.processes import ensemble_utils
+from finch.processes.constants import PCIC_12
 from tests.utils import execute_process, mock_local_datasets, wps_literal_input
 
 mock_filenames = [
@@ -204,6 +206,66 @@ def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
     for var in ensemble_variables.values():
         variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
         assert variable_dims == {"region": 1, "time": 3}
+
+
+def test_ensemble_heatwave_frequency_grid_point_models(mock_datasets, client):
+    # --- given ---
+    identifier = "ensemble_grid_point_heat_wave_frequency"
+    inputs = [
+        wps_literal_input("lat", "46"),
+        wps_literal_input("lon", "-72.8"),
+        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("models", "CSIRO-Mk3-6-0"),
+        wps_literal_input("models", "HadGEM2-ES"),
+        wps_literal_input("models", "MRI-CGCM3"),
+        wps_literal_input("output_format", "netcdf"),
+    ]
+    from pywps.configuration import CONFIG
+
+    CONFIG.set("finch", "dataset_bccaqv2", "/mock_local/path")
+    subset_sample = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
+
+    # --- when ---
+    with mock.patch(
+        "finch.processes.ensemble_utils.get_bccaqv2_local_files_datasets"
+    ) as mock_datasets:
+        mock_datasets.return_value = [str(subset_sample / f) for f in mock_filenames]
+        execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert mock_datasets.call_args[1]["models"] == [
+        "CSIRO-Mk3-6-0",
+        "HadGEM2-ES",
+        "MRI-CGCM3",
+    ]
+
+
+def test_ensemble_heatwave_frequency_grid_point_models_pcic(mock_datasets, client):
+    # --- given ---
+    identifier = "ensemble_grid_point_heat_wave_frequency"
+    inputs = [
+        wps_literal_input("lat", "46"),
+        wps_literal_input("lon", "-72.8"),
+        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("models", PCIC_12),
+        wps_literal_input("output_format", "netcdf"),
+    ]
+    from pywps.configuration import CONFIG
+
+    CONFIG.set("finch", "dataset_bccaqv2", "/mock_local/path")
+    subset_sample = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
+
+    # --- when ---
+    with mock.patch(
+        "finch.processes.ensemble_utils.get_bccaqv2_local_files_datasets"
+    ) as mock_datasets:
+        mock_datasets.return_value = [str(subset_sample / f) for f in mock_filenames]
+        execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert mock_datasets.call_args[1]["models"] == [PCIC_12]
 
 
 def test_compute_intermediate_variables(monkeypatch):

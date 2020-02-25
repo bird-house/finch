@@ -1,3 +1,4 @@
+from finch.processes.constants import ALL_24_MODELS, PCIC_12
 from pathlib import Path
 import shutil
 from unittest import mock
@@ -30,7 +31,7 @@ def test_get_opendap_datasets_bccaqv2(mock_tdscatalog):
         "tasmax_day_BCCAQv2+ANUSPLIN300_CanESM2_historical+rcp45_r1i1p1_19500101-21001231.nc",
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-M_historical+rcp26_r1i1p1_19500101-21001231.nc",
         "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp85_r1i1p1_19500101-21001231.nc",
-        "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp45_r1i1p1_19500101-21001231.",
+        "tasmax_day_BCCAQv2+ANUSPLIN300_NorESM1-ME_historical+rcp45_r1i1p1_19500101-21001231.nc",
     ]
     catalog_url = configuration.get_config_value("finch", "dataset_bccaqv2")
     variable = "tasmin"
@@ -174,3 +175,98 @@ def test_drs_filename_cordex():
     filename = drs_filename(ds)
     expected = "tasmin_NAM-44_MPI-M-MPI-ESM-MR_rcp85_r1i1p1_UQAM-CRCM5_v1_day_20960101-20960409.nc"
     assert filename == expected
+
+
+def test_bccaqv2file():
+    filename = "tasmin_day_BCCAQv2+ANUSPLIN300_inmcm4_historical+rcp85_r1i1p1_19500101-21001231.nc"
+    file = ensemble_utils.Bccaqv2File.from_filename(filename)
+    expected = ensemble_utils.Bccaqv2File(
+        variable="tasmin",
+        frequency="day",
+        driving_model_id="inmcm4",
+        driving_experiment_id="historical+rcp85",
+        driving_realization="1",
+        driving_initialization_method="1",
+        driving_physics_version="1",
+        date_start="19500101",
+        date_end="21001231",
+    )
+    assert expected == file
+
+
+@pytest.mark.parametrize(
+    "filename,variable,rcp,models,expected",
+    [
+        (
+            "tasmin_day_BCCAQv2+ANUSPLIN300_canesm2_historical+rcp85_r1i1p1_19500101-21001231.nc",
+            "tasmin",
+            "rcp85",
+            None,
+            True,
+        ),
+        (
+            "tasmin_day_BCCAQv2+ANUSPLIN300_canesm2_historical+rcp85_r1i1p1_19500101-21001231.nc",
+            "tasmin",
+            "rcp85",
+            [ALL_24_MODELS],
+            True,
+        ),
+        (
+            "tasmin_day_BCCAQv2+ANUSPLIN300_canesm2_historical+rcp85_r1i1p1_19500101-21001231.nc",
+            "tasmax",
+            "rcp85",
+            [ALL_24_MODELS],
+            False,
+        ),
+        (
+            "tasmin_day_BCCAQv2+ANUSPLIN300_canesm2_historical+rcp85_r1i1p1_19500101-21001231.nc",
+            "tasmin",
+            "rcp45",
+            [ALL_24_MODELS],
+            False,
+        ),
+        (
+            "tasmin_day_BCCAQv2+ANUSPLIN300_canesm2_historical+rcp85_r1i1p1_19500101-21001231.nc",
+            "tasmin",
+            "rcp85",
+            ["HadGEM2-ES"],
+            False,
+        ),
+        (
+            "tasmin_day_BCCAQv2+ANUSPLIN300_HadGEM2-ES_historical+rcp85_r1i1p1_19500101-21001231.nc",
+            "tasmin",
+            "rcp85",
+            ["HadGEM2-ES"],
+            True,
+        ),
+        (
+            "tasmin_day_BCCAQv2+ANUSPLIN300_MPI-ESM-LR_historical+rcp85_r3i1p1_19500101-21001231.nc",
+            "tasmin",
+            "rcp85",
+            [PCIC_12],
+            True,
+        ),
+        (
+            "tasmin_day_BCCAQv2+ANUSPLIN300_MPI-ESM-LR_historical+rcp85_r1i1p1_19500101-21001231.nc",
+            "tasmin",
+            "rcp85",
+            [PCIC_12],
+            False,
+        ),
+        ("tasmin_not_proper_filename.nc", "tasmin", None, None, False),
+    ],
+)
+def test_bccaqv2_filter(filename, variable, rcp, models, expected):
+    method = ensemble_utils.ParsingMethod.filename
+    url = None
+    variables = [variable]
+
+    result = ensemble_utils._bccaqv2_filter(
+        method=method,
+        filename=filename,
+        url=url,
+        variables=variables,
+        rcp=rcp,
+        models=models,
+    )
+    assert result == expected

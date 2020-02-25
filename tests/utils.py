@@ -41,7 +41,7 @@ def mock_local_datasets(monkeypatch, filenames=None):
     monkeypatch.setattr(
         ensemble_utils,
         "get_bccaqv2_local_files_datasets",
-        lambda *args: [str(f) for f in test_data],
+        lambda *args, **kwargs: [str(f) for f in test_data],
     )
 
 

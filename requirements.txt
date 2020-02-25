@@ -13,3 +13,4 @@ scipy
 requests
 sentry-sdk
 siphon
+parse

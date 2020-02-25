@@ -41,6 +41,7 @@ class XclimEnsembleBboxBase(FinchProcess):
             wpsio.ensemble_percentiles,
             wpsio.dataset_name,
             wpsio.copy_io(wpsio.rcp, min_occurs=1),
+            wpsio.models,
         ]
 
         # all other inputs that are not the xarray data (window, threshold, etc.)

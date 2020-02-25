@@ -4,10 +4,10 @@ from copy import deepcopy
 from typing import Union
 
 from pywps import ComplexOutput, FORMATS, LiteralInput
-
-from finch.processes.utils import PywpsInput, PywpsOutput
-from pywps.configuration import get_config_value
 from pywps.inout.literaltypes import AnyValue
+
+from .constants import ALLOWED_MODEL_NAMES, ALL_24_MODELS
+from .utils import PywpsInput, PywpsOutput
 
 
 def copy_io(
@@ -130,6 +130,19 @@ rcp = LiteralInput(
     default=None,
     min_occurs=0,
     allowed_values=["rcp26", "rcp45", "rcp85"],
+)
+
+models = LiteralInput(
+    "models",
+    "Models to include in ensemble",
+    abstract=(
+        "When calculating the ensemble, include only these models. By default, all 24 models are used."
+    ),
+    data_type="string",
+    default=ALL_24_MODELS,
+    min_occurs=0,
+    max_occurs=1000,
+    allowed_values=ALLOWED_MODEL_NAMES,
 )
 
 ensemble_percentiles = LiteralInput(
