@@ -28,7 +28,7 @@ from .utils import (
     write_log,
     zip_files,
 )
-from .wps_xclim_indices import make_nc_input
+from .wps_base import make_nc_input
 
 
 xclim_netcdf_variables = {

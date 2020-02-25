@@ -3,7 +3,7 @@ from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from .wps_base import FinchProcess
 from .subset import finch_subset_gridpoint
 from .utils import make_metalink_output, write_log
-from .wpsio import end_date, lat, lon, start_date
+from .wpsio import end_date, lat, lon, start_date, output_metalink
 
 
 class SubsetGridPointProcess(FinchProcess):
@@ -42,13 +42,7 @@ class SubsetGridPointProcess(FinchProcess):
                 as_reference=True,
                 supported_formats=[FORMATS.NETCDF],
             ),
-            ComplexOutput(
-                "ref",
-                "Link to all output files",
-                abstract="Metalink file storing all references to output file.",
-                as_reference=False,
-                supported_formats=[FORMATS.META4],
-            ),
+            output_metalink,
         ]
 
         super().__init__(

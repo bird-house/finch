@@ -24,7 +24,8 @@ from .utils import (
     write_log,
     zip_files,
 )
-from .wps_xclim_indices import XclimIndicatorBase, make_nc_input
+from .wps_xclim_indices import XclimIndicatorBase
+from .wps_base import make_nc_input
 from .wpsio import lat, lon
 
 LOGGER = logging.getLogger("PYWPS")
