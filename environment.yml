@@ -15,5 +15,5 @@ dependencies:
   - sentry-sdk
   - siphon
   - xclim>=0.14.0
-  - pywps==4.2.3
+  - pywps==4.2.4
   - parse
