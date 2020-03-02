@@ -131,7 +131,7 @@ def test_is_opendap_url():
     # We should record these requests so that the tests don't break when the servers are down.
 
     url = (
-        "https://boreas.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/"
+        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/"
         "birdhouse/nrcan/nrcan_canada_daily_v2/tasmin/nrcan_canada_daily_tasmin_2017.nc"
     )
     assert is_opendap_url(url)

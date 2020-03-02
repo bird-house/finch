@@ -151,7 +151,7 @@ def get_bccaqv2_opendap_datasets(
 
     We assume that the files are named in a certain way on the Thredds server.
 
-    This is the case for boreas.ouranos.ca/thredds
+    This is the case for pavics.ouranos.ca/thredds
     For more general use cases, see the `xarray` and `requests` methods below."""
 
     catalog = TDSCatalog(catalog_url)
