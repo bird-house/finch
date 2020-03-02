@@ -3,11 +3,7 @@ import logging
 from pywps.configuration import get_config_value
 import xclim
 import xclim.atmos
-try:
-    from xclim.indicator import Indicator
-except:
-    # Todo: remove me when xclim 0.15 is released
-    from xclim.utils import Indicator
+from xclim.utils import Indicator
 
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .wps_base import make_xclim_indicator_process

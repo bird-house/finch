@@ -14,12 +14,8 @@ import xarray as xr
 import xclim
 from xclim import ensembles
 from xclim.checks import assert_daily
+from xclim.utils import Indicator
 from parse import parse
-try:
-    from xclim.indicator import Indicator
-except:
-    # Todo: remove me when xclim 0.15 is released
-    from xclim.utils import Indicator
 
 from finch.processes.utils import dataset_to_netcdf
 
