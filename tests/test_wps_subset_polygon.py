@@ -1,36 +1,29 @@
-from pywps import Service
-from pywps.tests import client_for, assert_response_success
-
-from .common import get_output, CFG_FILE
-from finch.processes import SubsetPolygonProcess
-import xarray as xr
-from pathlib import Path
-import xclim
 import geojson
+import xarray as xr
+from tests.utils import execute_process, wps_input_file, wps_literal_input
 
-TESTS_DATA = Path(xclim.__file__).parent.parent / 'tests' / 'testdata'
 
-poly = {
-    "type": "Feature",
-    "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-            [[0, 0], [2.5, 0], [2.5, 2.5], [0, 2.5]]
-        ]
+def test_wps_subsetpoly(client, netcdf_datasets):
+    # --- given ---
+    identifier = "subset_polygon"
+    poly = {
+        "type": "Feature",
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [[[0.5, 0], [2.5, 0], [2.5, 2.5], [0.5, 2.5]]],
+        },
     }
-    }
+    inputs = [
+        wps_input_file("resource", f"file://{netcdf_datasets['tasmin']}"),
+        wps_literal_input("shape", geojson.dumps(poly)),
+        wps_literal_input("variable", "tasmin"),
+        wps_literal_input("start_date", "2000"),
+    ]
 
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
 
-def test_wps_xsubsetpoint(tas_dataset):
-    client = client_for(Service(processes=[SubsetPolygonProcess()], cfgfiles=CFG_FILE))
-
-    datainputs = "resource=files@xlink:href=file://{fn};"\
-        "shape={shape};"\
-        "start={y0};".format(fn=tas_dataset, shape=geojson.dumps(poly), y0='2000')
-
-    resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset_polygon&datainputs={}".format(
-            datainputs))
-    print(resp.response)
-    assert_response_success(resp)
-
+    # --- then ---
+    ds = xr.open_dataset(outputs[0])
+    assert list(ds.lat.values) == [0, 1, 2]
+    assert list(ds.lon.values) == [1, 2]

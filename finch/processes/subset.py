@@ -7,7 +7,7 @@ from typing import List
 from pywps import ComplexInput, Process
 from pywps.app.exceptions import ProcessError
 import xarray as xr
-from xclim.subset import subset_bbox, subset_gridpoint
+from xclim.subset import subset_bbox, subset_gridpoint, subset_shape
 
 from finch.processes.utils import dataset_to_netcdf
 
@@ -160,6 +160,66 @@ def finch_subset_bbox(
             lat_bnds=[lat0, lat1],
             start_date=start_date,
             end_date=end_date,
+        )
+
+        if not all(subsetted.dims.values()):
+            LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
+            return
+
+        p = Path(resource._file or resource._build_file_name(resource.url))
+        output_filename = Path(process.workdir) / (p.stem + "_sub" + p.suffix)
+
+        dataset_to_netcdf(subsetted, output_filename)
+
+        output_files.append(output_filename)
+
+    process_threaded(_subset, netcdf_inputs)
+
+    return output_files
+
+
+def finch_subset_shape(
+    process: Process, netcdf_inputs: List[ComplexInput], request_inputs: RequestInputs,
+) -> List[Path]:
+    """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
+
+
+    The expected names of the request_inputs are as followed (taken from `wpsio.py`):
+     - shape: Polygon contour to subset the data with.
+     - start_date: Initial date for temporal subsetting.
+     - end_date: Final date for temporal subsetting.
+    """
+    shape = request_inputs[wpsio.shape.identifier][0].data
+    start_date = single_input_or_none(request_inputs, wpsio.start_date.identifier)
+    end_date = single_input_or_none(request_inputs, wpsio.end_date.identifier)
+    variables = [r.data for r in request_inputs.get("variable", [])]
+
+    n_files = len(netcdf_inputs)
+    count = 0
+
+    output_files = []
+
+    lock = Lock()
+
+    def _subset(resource):
+        nonlocal count
+
+        # if not subsetting by time, it's not necessary to decode times
+        time_subset = start_date is not None or end_date is not None
+        dataset = try_opendap(resource, decode_times=time_subset)
+
+        with lock:
+            count += 1
+            write_log(
+                process,
+                f"Subsetting file {count} of {n_files}",
+                subtask_percentage=(count - 1) * 100 // n_files,
+            )
+
+        dataset = dataset[variables] if variables else dataset
+
+        subsetted = subset_shape(
+            dataset, shape=shape, start_date=start_date, end_date=end_date,
         )
 
         if not all(subsetted.dims.values()):

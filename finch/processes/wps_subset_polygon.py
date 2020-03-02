@@ -1,20 +1,21 @@
-from threading import Lock
 import logging
+from threading import Lock
 
-from pywps import LiteralInput, ComplexInput, ComplexOutput, FORMATS
-from pywps.app.exceptions import ProcessError
+from pywps import ComplexInput, ComplexOutput, FORMATS
+from .subset import finch_subset_shape
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_shape
-from .wpsio import start_date, end_date, shape
 
-from finch.processes.subset import SubsetProcess
+from finch.processes.utils import make_metalink_output, write_log
 
+from . import wpsio
+from .wps_base import FinchProcess
 
 LOGGER = logging.getLogger("PYWPS")
 
 
-class SubsetPolygonProcess(SubsetProcess):
-    """Subset a NetCDF file using bounding box geometry."""
+class SubsetPolygonProcess(FinchProcess):
+    """Subset a NetCDF file using a polygon contour."""
 
     def __init__(self):
         inputs = [
@@ -25,20 +26,10 @@ class SubsetPolygonProcess(SubsetProcess):
                 max_occurs=1000,
                 supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
             ),
-            shape,
-            start_date,
-            end_date,
-            LiteralInput(
-                "variable",
-                "Variable",
-                abstract=(
-                    "Name of the variable in the NetCDF file."
-                    "If not provided, all variables will be subsetted."
-                ),
-                data_type="string",
-                default=None,
-                min_occurs=0,
-            ),
+            wpsio.shape,
+            wpsio.start_date,
+            wpsio.end_date,
+            wpsio.variable_any,
         ]
 
         outputs = [
@@ -48,13 +39,7 @@ class SubsetPolygonProcess(SubsetProcess):
                 as_reference=True,
                 supported_formats=[FORMATS.NETCDF],
             ),
-            ComplexOutput(
-                "ref",
-                "Link to all output files",
-                abstract="Metalink file storing all references to output file.",
-                as_reference=False,
-                supported_formats=[FORMATS.META4],
-            ),
+            wpsio.output_metalink,
         ]
 
         super(SubsetPolygonProcess, self).__init__(
@@ -72,6 +57,11 @@ class SubsetPolygonProcess(SubsetProcess):
             status_supported=True,
             store_supported=True,
         )
+
+        self.status_percentage_steps = {
+            "start": 5,
+            "done": 99,
+        }
 
     def subset(
         self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1
@@ -107,10 +97,25 @@ class SubsetPolygonProcess(SubsetProcess):
             dataset = dataset[variables] if variables else dataset
             return subset_shape(dataset, shape, start_date=start, end_date=end)
 
-
         metalink = self.subset_resources(
             wps_inputs["resource"], _subset_function, threads=threads
         )
 
         return metalink
 
+    def _handler(self, request, response):
+        write_log(self, "Processing started", process_step="start")
+
+        output_files = finch_subset_shape(
+            self,
+            netcdf_inputs=request.inputs["resource"],
+            request_inputs=request.inputs,
+        )
+        metalink = make_metalink_output(self, output_files)
+
+        response.outputs["output"].file = metalink.files[0].file
+        response.outputs["ref"].data = metalink.xml
+
+        write_log(self, "Processing finished successfully", process_step="done")
+
+        return response

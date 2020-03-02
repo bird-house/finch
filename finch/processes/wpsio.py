@@ -149,7 +149,7 @@ shape = ComplexInput(
     "shape",
     "Polygon shape",
     abstract="Polygon contour",
-    supported_formats=[FORMATS.GEOJSON,],
+    supported_formats=[FORMATS.GEOJSON],
     min_occurs=1,
     max_occurs=1,
 )
