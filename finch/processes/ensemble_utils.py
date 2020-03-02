@@ -181,7 +181,7 @@ def _bccaqv2_filter(
 ):
     """Parse metadata and filter BCCAQV2 datasets"""
 
-    if models is None or [m.lower() for m in models] == [ALL_24_MODELS]:
+    if models is None or [m.lower() for m in models] == [ALL_24_MODELS.lower()]:
         models = BCCAQV2_MODELS
 
     models = [m.lower() for m in models]
@@ -196,7 +196,7 @@ def _bccaqv2_filter(
         if rcp and rcp not in parsed.driving_experiment_id:
             return False
 
-        if models == [PCIC_12]:
+        if models == [PCIC_12.lower()]:
             for model, realization in PCIC_12_MODELS_REALIZATIONS:
                 model_ok = model.lower() == parsed.driving_model_id.lower()
                 r_ok = realization[1:] == parsed.driving_realization
