@@ -9,8 +9,6 @@ from pywps.app.exceptions import ProcessError
 import xarray as xr
 from xclim.subset import subset_bbox, subset_gridpoint, subset_shape
 
-from finch.processes.utils import dataset_to_netcdf
-
 from . import wpsio
 from .utils import (
     RequestInputs,
@@ -18,6 +16,8 @@ from .utils import (
     single_input_or_none,
     try_opendap,
     write_log,
+    dataset_to_netcdf,
+    make_metalink_output,
 )
 
 LOGGER = logging.getLogger("PYWPS")
@@ -236,3 +236,21 @@ def finch_subset_shape(
     process_threaded(_subset, netcdf_inputs)
 
     return output_files
+
+
+def common_subset_handler(process: Process, request, response, subset_function):
+    write_log(process, "Processing started", process_step="start")
+
+    output_files = subset_function(
+        process,
+        netcdf_inputs=request.inputs["resource"],
+        request_inputs=request.inputs,
+    )
+    metalink = make_metalink_output(process, output_files)
+
+    response.outputs["output"].file = metalink.files[0].file
+    response.outputs["ref"].data = metalink.xml
+
+    write_log(process, "Processing finished successfully", process_step="done")
+
+    return response

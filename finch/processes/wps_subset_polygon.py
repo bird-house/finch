@@ -6,10 +6,9 @@ from .subset import finch_subset_shape
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_shape
 
-from finch.processes.utils import make_metalink_output, write_log
-
 from . import wpsio
 from .wps_base import FinchProcess
+from .subset import common_subset_handler
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -104,18 +103,4 @@ class SubsetPolygonProcess(FinchProcess):
         return metalink
 
     def _handler(self, request, response):
-        write_log(self, "Processing started", process_step="start")
-
-        output_files = finch_subset_shape(
-            self,
-            netcdf_inputs=request.inputs["resource"],
-            request_inputs=request.inputs,
-        )
-        metalink = make_metalink_output(self, output_files)
-
-        response.outputs["output"].file = metalink.files[0].file
-        response.outputs["ref"].data = metalink.xml
-
-        write_log(self, "Processing finished successfully", process_step="done")
-
-        return response
+        return common_subset_handler(self, request, response, finch_subset_shape)

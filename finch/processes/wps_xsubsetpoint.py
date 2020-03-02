@@ -1,8 +1,7 @@
 from pywps import ComplexInput, ComplexOutput, FORMATS
 
 from . import wpsio
-from .subset import finch_subset_gridpoint
-from .utils import make_metalink_output, write_log
+from .subset import finch_subset_gridpoint, common_subset_handler
 from .wps_base import FinchProcess
 
 
@@ -57,18 +56,4 @@ class SubsetGridPointProcess(FinchProcess):
         }
 
     def _handler(self, request, response):
-        write_log(self, "Processing started", process_step="start")
-
-        output_files = finch_subset_gridpoint(
-            self,
-            netcdf_inputs=request.inputs["resource"],
-            request_inputs=request.inputs,
-        )
-        metalink = make_metalink_output(self, output_files)
-
-        response.outputs["output"].file = metalink.files[0].file
-        response.outputs["ref"].data = metalink.xml
-
-        write_log(self, "Processing finished successfully", process_step="done")
-
-        return response
+        return common_subset_handler(self, request, response, finch_subset_gridpoint)
