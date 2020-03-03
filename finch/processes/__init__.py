@@ -10,6 +10,7 @@ from .wps_base import make_xclim_indicator_process
 from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
 from .wps_ensemble_indices_bbox import XclimEnsembleBboxBase
 from .wps_ensemble_indices_point import XclimEnsembleGridPointBase
+from .wps_ensemble_indices_polygon import XclimEnsemblePolygonBase
 from .wps_xclim_indices import XclimIndicatorBase
 from .wps_xsubset_bbox import SubsetBboxProcess
 from .wps_xsubset_bbox_dataset import SubsetBboxBCCAQV2Process, SubsetBboxDatasetProcess
@@ -70,6 +71,13 @@ def get_processes(all_processes=False):
         for ind in ensemble_indicators:
             suffix = "_Ensemble_Bbox_Process"
             base_class = XclimEnsembleBboxBase
+            processes.append(
+                make_xclim_indicator_process(ind, suffix, base_class=base_class)
+            )
+        # ensemble with polygon subset
+        for ind in ensemble_indicators:
+            suffix = "_Ensemble_Polygon_Process"
+            base_class = XclimEnsemblePolygonBase
             processes.append(
                 make_xclim_indicator_process(ind, suffix, base_class=base_class)
             )
