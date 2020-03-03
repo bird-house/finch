@@ -8,17 +8,17 @@ from xclim.utils import Indicator
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .wps_base import make_xclim_indicator_process
 from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
-from .wps_ensemble_bbox_indices import XclimEnsembleBboxBase
-from .wps_ensemble_gridpoint_indices import XclimEnsembleGridPointBase
+from .wps_ensemble_indices_bbox import XclimEnsembleBboxBase
+from .wps_ensemble_indices_point import XclimEnsembleGridPointBase
 from .wps_xclim_indices import XclimIndicatorBase
-from .wps_xsubsetbbox import SubsetBboxProcess
-from .wps_xsubsetbbox_dataset import SubsetBboxBCCAQV2Process, SubsetBboxDatasetProcess
-from .wps_xsubsetpoint import SubsetGridPointProcess
-from .wps_xsubsetpoint_dataset import (
+from .wps_xsubset_bbox import SubsetBboxProcess
+from .wps_xsubset_bbox_dataset import SubsetBboxBCCAQV2Process, SubsetBboxDatasetProcess
+from .wps_xsubset_point import SubsetGridPointProcess
+from .wps_xsubset_point_dataset import (
     SubsetGridPointBCCAQV2Process,
     SubsetGridPointDatasetProcess,
 )
-from .wps_subset_polygon import SubsetPolygonProcess
+from .wps_xsubset_polygon import SubsetPolygonProcess
 
 logger = logging.getLogger("PYWPS")
 
