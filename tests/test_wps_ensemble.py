@@ -2,6 +2,8 @@ from pathlib import Path
 from unittest import mock
 import zipfile
 
+import numpy as np
+import geojson
 from netCDF4 import Dataset
 import pytest
 
@@ -15,6 +17,15 @@ mock_filenames = [
     "tasmin_bcc-csm1-1_subset.nc",
     "tasmin_inmcm4_subset.nc",
 ]
+
+poly = {
+    "type": "Feature",
+    "geometry": {
+        "type": "Polygon",
+        # subsets bounds: -73.46, -72.54, 45.54, 46.46
+        "coordinates": [[[-73.5, 45.58], [-72.5, 46.5], [-72.5, 45.58]]],
+    },
+}
 
 
 @pytest.fixture
@@ -134,7 +145,7 @@ def test_ensemble_heatwave_frequency_grid_point_csv(mock_datasets, client):
     lines = csv.split("\n")
     assert lines[0].startswith("lat,lon,realization,time")
     n_data_rows = len(lines) - 2
-    assert n_data_rows == 8
+    assert n_data_rows == 6  # realizations=2, time=3 (last month is NaN)
 
 
 def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
@@ -166,7 +177,9 @@ def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
     lines = csv.split("\n")
     assert lines[0].startswith("lat,lon,realization,time")
     n_data_rows = len(lines) - 2
-    assert n_data_rows == 2 * 2 * 2 * 4  # realizations=2, lat=2, lon=2, time=4
+    assert (
+        n_data_rows == 2 * 2 * 2 * 3
+    )  # realizations=2, lat=2, lon=2, time=3 (last month is NaN)
 
 
 def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
@@ -370,3 +383,78 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
     for var in ensemble_variables.values():
         variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
         assert variable_dims == {"region": 1, "time": 1}
+
+
+def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
+    # --- given ---
+    identifier = "ensemble_polygon_heat_wave_frequency"
+    inputs = [
+        wps_literal_input("shape", geojson.dumps(poly)),
+        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("thresh_tasmin", "22.0 degC"),
+        wps_literal_input("thresh_tasmax", "30 degC"),
+        wps_literal_input("window", "3"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
+        wps_literal_input("output_format", "netcdf"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert len(outputs) == 1
+    ds = Dataset(outputs[0])
+    dims = {d.name: d.size for d in ds.dimensions.values()}
+    assert dims == {
+        "lat": 11,
+        "lon": 11,
+        "realization": 2,
+        "time": 4,  # there are roughly 4 months in the test datasets
+    }
+    data = ds.variables["heat_wave_frequency_p20"][1, :].data
+    assert np.isnan(data).sum() == 55
+    assert (~np.isnan(data)).sum() == 66
+
+    ensemble_variables = {
+        k: v
+        for k, v in ds.variables.items()
+        if k not in "lat lon realization time".split()
+    }
+    assert sorted(ensemble_variables) == [
+        f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
+    ]
+    for var in ensemble_variables.values():
+        variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
+        assert variable_dims == {"lat": 11, "lon": 11, "time": 4}
+
+
+def test_ensemble_heatwave_frequency_polygon_csv(mock_datasets, client):
+    # --- given ---
+    identifier = "ensemble_polygon_heat_wave_frequency"
+    inputs = [
+        wps_literal_input("shape", geojson.dumps(poly)),
+        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("thresh_tasmin", "22.0 degC"),
+        wps_literal_input("thresh_tasmax", "30 degC"),
+        wps_literal_input("window", "3"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
+        wps_literal_input("output_format", "csv"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert len(outputs) == 1
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 2  # metadata + data
+    data_filename = [n for n in zf.namelist() if "metadata" not in n]
+    csv = zf.read(data_filename[0]).decode()
+    lines = csv.split("\n")
+    assert lines[0].startswith("lat,lon,realization,time")
+    n_data_rows = len(lines) - 2  # header + ending line
+    # realizations=2, lat-lon=66 (not NaN), time=3 (last month is NaN)
+    assert n_data_rows == 2 * 66 * 3
+

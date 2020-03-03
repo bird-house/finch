@@ -609,7 +609,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
 
-        df.to_csv(ensemble_csv)
+        df.dropna().to_csv(ensemble_csv)
 
         metadata = format_metadata(ensemble)
         metadata_file = output_basename.parent / f"{ensemble_csv.stem}_metadata.txt"
