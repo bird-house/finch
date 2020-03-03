@@ -18,6 +18,8 @@ install:
   - conda update -q conda
   - conda create -n finch -c conda-forge python=$TRAVIS_PYTHON_VERSION
   - conda env update -f environment.yml
+  # Todo: remove me when xclim 0.15 is released
+  - conda run -n finch pip install --no-dependencies git+git://github.com/ouranosinc/xclim@metadata-internationalization
   - source activate finch
   # Packages for testing
   - conda install pytest flake8
