@@ -2,13 +2,12 @@ import logging
 from threading import Lock
 
 from pywps import ComplexInput, ComplexOutput, FORMATS
-from .subset import finch_subset_shape
 from pywps.inout.outputs import MetaLink4
 from xclim.subset import subset_shape
 
 from . import wpsio
 from .wps_base import FinchProcess
-from .subset import common_subset_handler
+from .subset import common_subset_handler, finch_subset_shape
 
 LOGGER = logging.getLogger("PYWPS")
 
