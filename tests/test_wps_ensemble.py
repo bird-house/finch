@@ -457,4 +457,3 @@ def test_ensemble_heatwave_frequency_polygon_csv(mock_datasets, client):
     n_data_rows = len(lines) - 2  # header + ending line
     # realizations=2, lat-lon=66 (not NaN), time=3 (last month is NaN)
     assert n_data_rows == 2 * 66 * 3
-
