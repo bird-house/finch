@@ -1,11 +1,12 @@
 from collections import deque
 from copy import deepcopy
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Iterable, cast
+from typing import Dict, Iterable, List, Optional, Tuple, cast
 import warnings
-from dataclasses import dataclass
 
+from parse import parse
 from pywps import ComplexInput, FORMATS, Process
 from pywps import configuration
 from pywps.app.exceptions import ProcessError
@@ -15,29 +16,28 @@ import xclim
 from xclim import ensembles
 from xclim.checks import assert_daily
 from xclim.utils import Indicator
-from parse import parse
 
-from finch.processes.utils import dataset_to_netcdf
-
+from .constants import (
+    ALL_24_MODELS,
+    BCCAQV2_MODELS,
+    PCIC_12,
+    PCIC_12_MODELS_REALIZATIONS,
+    bccaq_variables,
+    xclim_netcdf_variables,
+)
+from .subset import finch_subset_bbox, finch_subset_gridpoint, finch_subset_shape
 from .utils import (
     PywpsInput,
     RequestInputs,
     compute_indices,
     dataset_to_dataframe,
+    dataset_to_netcdf,
     format_metadata,
     single_input_or_none,
     write_log,
     zip_files,
 )
 from .wps_base import make_nc_input
-from .constants import (
-    BCCAQV2_MODELS,
-    ALL_24_MODELS,
-    PCIC_12,
-    PCIC_12_MODELS_REALIZATIONS,
-    xclim_netcdf_variables,
-    bccaq_variables,
-)
 
 
 @dataclass
@@ -514,6 +514,12 @@ def get_sub_inputs(variables):
 
 
 def ensemble_common_handler(process: Process, request, response, subset_function):
+    assert subset_function in [
+        finch_subset_bbox,
+        finch_subset_gridpoint,
+        finch_subset_shape,
+    ]
+
     xci_inputs = process.xci_inputs_identifiers
     request_inputs_not_datasets = {
         k: v for k, v in request.inputs.items() if k in xci_inputs

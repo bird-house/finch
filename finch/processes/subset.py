@@ -109,7 +109,6 @@ def finch_subset_bbox(
 ) -> List[Path]:
     """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
-
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
      - lat0: Latitude coordinate
      - lon0: Longitude coordinate
@@ -183,7 +182,6 @@ def finch_subset_shape(
 ) -> List[Path]:
     """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
-
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
      - shape: Polygon contour to subset the data with.
      - start_date: Initial date for temporal subsetting.
@@ -239,6 +237,12 @@ def finch_subset_shape(
 
 
 def common_subset_handler(process: Process, request, response, subset_function):
+    assert subset_function in [
+        finch_subset_bbox,
+        finch_subset_gridpoint,
+        finch_subset_shape,
+    ]
+
     write_log(process, "Processing started", process_step="start")
 
     output_files = subset_function(
