@@ -1,18 +1,17 @@
 from pathlib import Path
+from shutil import rmtree
 import tempfile
 from typing import Dict
-from shutil import rmtree
 
 import pytest
-from pywps import Service
-from pywps.tests import client_for
+from pywps import configuration
 import xarray as xr
 from xclim.utils import percentile_doy
 
-import finch
 import finch.processes
+import finch.wsgi
 
-from .common import CFG_FILE
+from .common import CFG_FILE, client_for
 
 
 TEMP_DIR = Path(__file__).parent / "tmp"
@@ -116,4 +115,11 @@ def netcdf_datasets(request) -> Dict[str, Path]:
 
 @pytest.fixture(scope="module")
 def client():
-    return client_for(Service(processes=finch.processes.processes, cfgfiles=CFG_FILE))
+    service = finch.wsgi.create_app(cfgfiles=CFG_FILE)
+
+    # overwrite output path from defaults.cfg
+    outputpath = tempfile.gettempdir()
+    configuration.CONFIG.set("server", "outputurl", f"file://{outputpath}")
+    configuration.CONFIG.set("server", "outputpath", outputpath)
+
+    return client_for(service)

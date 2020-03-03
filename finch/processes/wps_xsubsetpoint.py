@@ -1,9 +1,9 @@
-from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
+from pywps import ComplexInput, ComplexOutput, FORMATS
 
-from .wps_base import FinchProcess
+from . import wpsio
 from .subset import finch_subset_gridpoint
 from .utils import make_metalink_output, write_log
-from .wpsio import end_date, lat, lon, start_date, output_metalink
+from .wps_base import FinchProcess
 
 
 class SubsetGridPointProcess(FinchProcess):
@@ -18,21 +18,11 @@ class SubsetGridPointProcess(FinchProcess):
                 max_occurs=1000,
                 supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
             ),
-            lon,
-            lat,
-            start_date,
-            end_date,
-            LiteralInput(
-                "variable",
-                "Variable",
-                abstract=(
-                    "Name of the variable in the NetCDF file."
-                    "If not provided, all variables will be subsetted."
-                ),
-                data_type="string",
-                default=None,
-                min_occurs=0,
-            ),
+            wpsio.lon,
+            wpsio.lat,
+            wpsio.start_date,
+            wpsio.end_date,
+            wpsio.variable_any,
         ]
 
         outputs = [
@@ -42,7 +32,7 @@ class SubsetGridPointProcess(FinchProcess):
                 as_reference=True,
                 supported_formats=[FORMATS.NETCDF],
             ),
-            output_metalink,
+            wpsio.output_metalink,
         ]
 
         super().__init__(

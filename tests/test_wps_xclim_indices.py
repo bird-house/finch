@@ -16,7 +16,7 @@ from unittest import mock
 
 
 def _get_output_standard_name(process_identifier):
-    for p in finch.processes.processes:
+    for p in finch.processes.get_processes():
         if p.identifier == process_identifier:
             return p.xci.standard_name
 

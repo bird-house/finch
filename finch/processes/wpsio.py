@@ -4,8 +4,10 @@ from copy import deepcopy
 from typing import Union
 
 from pywps import ComplexOutput, FORMATS, LiteralInput
+from pywps.inout.literaltypes import AnyValue
 
-from finch.processes.utils import PywpsInput, PywpsOutput
+from .constants import ALLOWED_MODEL_NAMES, ALL_24_MODELS
+from .utils import PywpsInput, PywpsOutput
 
 
 def copy_io(
@@ -98,6 +100,28 @@ lat1 = LiteralInput(
     min_occurs=0,
 )
 
+variable = LiteralInput(
+    "variable",
+    "NetCDF Variable",
+    abstract="Name of the variable in the NetCDF file.",
+    data_type="string",
+    default=None,
+    min_occurs=0,
+    allowed_values=["tasmin", "tasmax", "pr"],
+)
+
+variable_any = copy_io(variable, any_value=True, allowed_values=[AnyValue])
+
+dataset_name = LiteralInput(
+    "dataset_name",
+    "Dataset name",
+    abstract="Name of the dataset from which to get netcdf files for inputs.",
+    data_type="string",
+    default=None,
+    min_occurs=0,
+    allowed_values=["bccaqv2"],
+)
+
 rcp = LiteralInput(
     "rcp",
     "RCP Scenario",
@@ -108,9 +132,22 @@ rcp = LiteralInput(
     allowed_values=["rcp26", "rcp45", "rcp85"],
 )
 
+models = LiteralInput(
+    "models",
+    "Models to include in ensemble",
+    abstract=(
+        "When calculating the ensemble, include only these models. By default, all 24 models are used."
+    ),
+    data_type="string",
+    default=ALL_24_MODELS,
+    min_occurs=0,
+    max_occurs=1000,
+    allowed_values=ALLOWED_MODEL_NAMES,
+)
+
 ensemble_percentiles = LiteralInput(
     "ensemble_percentiles",
-    "Ensemble percentiles (comma separated integers)",
+    "Ensemble percentiles",
     abstract=(
         "Ensemble percentiles to calculate for input climate simulations. "
         "Accepts a comma separated list of integers."
@@ -127,6 +164,7 @@ output_format_netcdf_csv = LiteralInput(
     data_type="string",
     allowed_values=["netcdf", "csv"],
     default="netcdf",
+    min_occurs=0,
 )
 
 output_netcdf_zip = ComplexOutput(
@@ -135,6 +173,10 @@ output_netcdf_zip = ComplexOutput(
     abstract=("The format depends on the 'output_format' input parameter."),
     as_reference=True,
     supported_formats=[FORMATS.NETCDF, FORMATS.ZIP],
+)
+
+output_netcdf_csv = copy_io(
+    output_netcdf_zip, supported_formats=[FORMATS.NETCDF, FORMATS.TEXT]
 )
 
 output_log = ComplexOutput(

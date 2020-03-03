@@ -6,7 +6,8 @@ from finch.processes.subset import finch_subset_gridpoint
 
 from . import wpsio
 from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
-from .ensemble_utils import ensemble_common_handler, xclim_netcdf_variables
+from .ensemble_utils import ensemble_common_handler
+from .constants import xclim_netcdf_variables
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -36,9 +37,10 @@ class XclimEnsembleGridPointBase(FinchProcess):
             wpsio.start_date,
             wpsio.end_date,
             wpsio.ensemble_percentiles,
+            wpsio.dataset_name,
+            wpsio.copy_io(wpsio.rcp, min_occurs=1),
+            wpsio.models,
         ]
-        rcp = wpsio.copy_io(wpsio.rcp, min_occurs=1)
-        inputs.append(rcp)
 
         # all other inputs that are not the xarray data (window, threshold, etc.)
         for i in xci_inputs:

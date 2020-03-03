@@ -1,19 +1,19 @@
 import logging
+from pathlib import Path
 from typing import List
 from collections import deque
 
 import xarray as xr
 from pywps import ComplexOutput, FORMATS
+from pywps.app.exceptions import ProcessError
 from unidecode import unidecode
 
 from finch.processes.utils import dataset_to_netcdf, drs_filename, make_metalink_output
 from finch.processes.wps_base import convert_xclim_inputs_to_pywps
-from .wpsio import output_metalink
 
 from .utils import compute_indices, log_file_path, write_log
 from .wps_base import FinchProcess, FinchProgressBar, NC_INPUT_VARIABLES
-from pathlib import Path
-from pywps.app.exceptions import ProcessError
+from . import wpsio
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -45,14 +45,8 @@ class XclimIndicatorBase(FinchProcess):
                     FORMATS.NETCDF,
                 ],  # To support FORMATS.DODS we need to get the URL.
             ),
-            output_metalink,
-            ComplexOutput(
-                "output_log",
-                "Logging information",
-                abstract="Collected logs during process run.",
-                as_reference=True,
-                supported_formats=[FORMATS.TEXT],
-            ),
+            wpsio.output_log,
+            wpsio.output_metalink,
         ]
 
         super().__init__(

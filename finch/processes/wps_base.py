@@ -137,7 +137,7 @@ def make_freq(name, default="YS", allowed=("YS", "MS", "QS-DEC", "AS-JUL")):
 def make_thresh(name, default, abstract=""):
     return LiteralInput(
         name,
-        "threshold",
+        "Threshold",
         abstract=abstract,
         data_type="string",
         min_occurs=0,
@@ -149,7 +149,7 @@ def make_thresh(name, default, abstract=""):
 def make_window(name, default, abstract=""):
     return LiteralInput(
         name,
-        "window",
+        "Window",
         abstract=abstract,
         data_type="integer",
         min_occurs=0,
