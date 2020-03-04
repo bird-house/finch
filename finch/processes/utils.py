@@ -537,7 +537,9 @@ def fix_broken_time_index(ds: xr.Dataset):
     if is_daily:
         fixed_time = time_dim
         fixed_time[wrong_id] = time_dim[wrong_id - 1] + daily_gap
+        attrs = ds.time.attrs
         ds["time"] = fixed_time
+        ds.time.attrs = attrs
 
 
 def dataset_to_netcdf(
