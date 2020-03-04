@@ -513,10 +513,14 @@ def fix_broken_time_index(ds: xr.Dataset):
     """Fix for a single broken index in a specific file"""
     if not "time" in ds.dims:
         return
+
+    wrong_value = cftime.DatetimeNoLeap(year=1850, month=1, day=1, hour=0)
+    times_are_encoded = "units" in ds.time.attrs
+    if times_are_encoded:
+        wrong_value = 0
+
     time_dim = ds.time.values
-    wrong_id = np.argwhere(
-        time_dim == cftime.DatetimeNoLeap(year=1850, month=1, day=1, hour=0)
-    )
+    wrong_id = np.argwhere(time_dim == wrong_value)
     if not wrong_id:
         return
     wrong_id = wrong_id[0, 0]
