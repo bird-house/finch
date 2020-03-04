@@ -441,6 +441,13 @@ def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
 
 def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
     ensemble = ensembles.create_ensemble(files)
+    # Depending on the datasets, I've found that writing the netcdf could hang
+    # if the dataset was not loaded explicitely previously... Not sure why.
+    # The datasets should be pretty small when computing the ensembles, so this is
+    # a best effort at working around what looks like a bug in either xclim or xarray.
+    # The xarray documentation mentions: 'this method can be necessary when working
+    # with many file objects on disk.'
+    ensemble.load()
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
     ensemble_percentiles = ensembles.ensemble_percentiles(ensemble, values=percentiles)
