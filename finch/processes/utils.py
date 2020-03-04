@@ -527,10 +527,13 @@ def fix_broken_time_index(ds: xr.Dataset):
     if wrong_id == 0 or wrong_id == len(ds.time) - 1:
         return
 
-    is_daily = time_dim[wrong_id + 1] - time_dim[wrong_id - 1] == timedelta(days=2)
+    daily_gap = 1.0 if times_are_encoded else timedelta(days=1)
+
+    is_daily = time_dim[wrong_id + 1] - time_dim[wrong_id - 1] == daily_gap * 2
+
     if is_daily:
         fixed_time = time_dim
-        fixed_time[wrong_id] = time_dim[wrong_id - 1] + timedelta(days=1)
+        fixed_time[wrong_id] = time_dim[wrong_id - 1] + daily_gap
         ds["time"] = fixed_time
 
 
