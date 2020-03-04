@@ -9,7 +9,11 @@ from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 from xclim.atmos import heat_wave_frequency
 
-from .ensemble_utils import fix_broken_time_indices, get_datasets, make_output_filename
+from . import wpsio
+from .ensemble_utils import (
+    get_datasets,
+    make_output_filename,
+)
 from .subset import finch_subset_gridpoint
 from .utils import (
     compute_indices,
@@ -19,9 +23,8 @@ from .utils import (
     write_log,
     zip_files,
 )
-from .wps_base import FinchProcess, make_xclim_indicator_process, make_nc_input
+from .wps_base import FinchProcess, make_nc_input, make_xclim_indicator_process
 from .wps_xclim_indices import XclimIndicatorBase
-from . import wpsio
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -140,8 +143,6 @@ class BCCAQV2HeatWave(FinchProcess):
                 f"Computing indices for file {n + 1} of {n_pairs}",
                 subtask_percentage=n * 100 // n_pairs,
             )
-
-            tasmin, tasmax = fix_broken_time_indices(tasmin, tasmax)
 
             compute_inputs = [i.identifier for i in self.indices_process.inputs]
             inputs = {k: v for k, v in request.inputs.items() if k in compute_inputs}

@@ -13,7 +13,6 @@ from siphon.catalog import TDSCatalog
 import xarray as xr
 import xclim
 from xclim import ensembles
-from xclim.checks import assert_daily
 from xclim.utils import Indicator
 from parse import parse
 
@@ -341,37 +340,6 @@ def make_output_filename(process: Process, inputs: List[PywpsInput]):
     return "_".join(output_parts)
 
 
-def fix_broken_time_indices(tasmin: Path, tasmax: Path) -> Tuple[Path, Path]:
-    """In a single bccaqv2 dataset, there is an error in the timestamp data.
-
-    2036-10-28 time step coded as 1850-01-01
-    tasmax_day_BCCAQv2+ANUSPLIN300_CESM1-CAM5_historical+rcp85_r1i1p1_19500101-21001231_sub.nc
-    """
-    tasmin_ds = xr.open_dataset(tasmin)
-    tasmax_ds = xr.open_dataset(tasmax)
-
-    def fix(correct_ds, wrong_ds, original_filename):
-        wrong_ds["time"] = correct_ds.time
-        temp_name = original_filename.with_name(original_filename.stem + "_temp")
-        dataset_to_netcdf(wrong_ds, temp_name)
-        original_filename.unlink()
-        temp_name.rename(original_filename)
-
-    try:
-        assert_daily(tasmin_ds)
-    except ValueError:
-        fix(tasmax_ds, tasmin_ds, tasmin)
-        return tasmin, tasmax
-
-    try:
-        assert_daily(tasmax_ds)
-    except ValueError:
-        fix(tasmin_ds, tasmax_ds, tasmax)
-        return tasmin, tasmax
-
-    return tasmin, tasmax
-
-
 def uses_accepted_netcdf_variables(indicator: Indicator) -> bool:
     """Returns True if this indicator uses  netcdf variables in `accepted_variables`."""
 
@@ -399,10 +367,6 @@ def make_indicator_inputs(
             input_list.append(inputs)
     else:
         for group in make_file_groups(files_list):
-            if "tasmin" in group and "tasmax" in group:
-                group["tasmin"], group["tasmax"] = fix_broken_time_indices(
-                    group["tasmin"], group["tasmax"]
-                )
             inputs = deepcopy(wps_inputs)
             for variable_name, path in group.items():
                 if variable_name not in required_netcdf_args:

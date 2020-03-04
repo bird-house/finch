@@ -1,3 +1,4 @@
+from datetime import timedelta
 import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
@@ -15,6 +16,7 @@ from typing import (
 )
 import zipfile
 
+import cftime
 import netCDF4
 import numpy as np
 import pandas as pd
@@ -507,15 +509,37 @@ def make_tasmin_tasmax_pairs(
         )
 
 
+def fix_broken_time_index(ds: xr.Dataset):
+    """Fix for a single broken index in a specific file"""
+    if not "time" in ds.dims:
+        return
+    time_dim = ds.time.values
+    wrong_id = np.argwhere(
+        time_dim == cftime.DatetimeNoLeap(year=1850, month=1, day=1, hour=0)
+    )
+    if not wrong_id:
+        return
+    wrong_id = wrong_id[0, 0]
+    if wrong_id == 0 or wrong_id == len(ds.time) - 1:
+        return
+
+    is_daily = time_dim[wrong_id + 1] - time_dim[wrong_id - 1] == timedelta(days=2)
+    if is_daily:
+        fixed_time = time_dim
+        fixed_time[wrong_id] = time_dim[wrong_id - 1] + timedelta(days=1)
+        ds["time"] = fixed_time
+
+
 def dataset_to_netcdf(
     ds: xr.Dataset, output_path: Union[Path, str], compression_level=0
 ) -> None:
-    """Write an :class:`xarray.Dataset` dataset to disk, using compression."""
+    """Write an :class:`xarray.Dataset` dataset to disk, optionally using compression."""
     encoding = {}
     if "time" in ds.dims:
         encoding["time"] = {
             "dtype": "single",  # better compatibility with OpenDAP in thredds
         }
+        fix_broken_time_index(ds)
     if compression_level:
         for v in ds.data_vars:
             encoding[v] = {"zlib": True, "complevel": compression_level}
