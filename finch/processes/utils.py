@@ -511,7 +511,7 @@ def make_tasmin_tasmax_pairs(
 
 def fix_broken_time_index(ds: xr.Dataset):
     """Fix for a single broken index in a specific file"""
-    if not "time" in ds.dims:
+    if "time" not in ds.dims:
         return
 
     wrong_value = cftime.DatetimeNoLeap(year=1850, month=1, day=1, hour=0)
