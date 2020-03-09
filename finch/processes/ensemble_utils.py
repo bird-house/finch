@@ -419,7 +419,7 @@ def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
     # a best effort at working around what looks like a bug in either xclim or xarray.
     # The xarray documentation mentions: 'this method can be necessary when working
     # with many file objects on disk.'
-    ensemble.load()
+    ensemble.persist()
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
     ensemble_percentiles = ensembles.ensemble_percentiles(ensemble, values=percentiles)
