@@ -12,7 +12,6 @@ from pywps import configuration
 from pywps.app.exceptions import ProcessError
 from siphon.catalog import TDSCatalog
 import xarray as xr
-import xclim
 from xclim import ensembles
 from parse import parse
 

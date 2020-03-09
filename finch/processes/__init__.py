@@ -2,7 +2,7 @@ import logging
 
 from pywps.configuration import get_config_value
 import xclim
-import xclim.atmos
+import xclim.indicators.atmos
 
 try:
     from xclim.indicator import Indicator
@@ -35,7 +35,7 @@ def get_indicators(module):
 
 
 # List of Indicators that are exposed as WPS processes
-indicators = get_indicators(xclim.atmos)
+indicators = get_indicators(xclim.indicators.atmos)
 
 not_implemented = [
     "DC",  # lat input type is not implemented and start_up_mode argument seems to be missing?

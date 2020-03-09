@@ -7,7 +7,7 @@ from pywps import LiteralInput
 from pywps.app import WPSRequest
 from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
-from xclim.atmos import heat_wave_frequency
+from xclim.indicators.atmos import heat_wave_frequency
 
 from . import wpsio
 from .ensemble_utils import (
