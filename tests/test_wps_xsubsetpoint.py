@@ -1,3 +1,4 @@
+import pytest
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
 import xarray as xr
@@ -30,6 +31,7 @@ def test_wps_xsubsetpoint(netcdf_datasets):
     assert ds.lon == 3
 
 
+@pytest.mark.online
 def test_thredds():
     import lxml.etree
 
