@@ -6,7 +6,13 @@ from typing import Dict
 import pytest
 from pywps import configuration
 import xarray as xr
-from xclim.utils import percentile_doy
+
+try:
+    from xclim.core.calendar import percentile_doy
+except ImportError:
+    # Todo: remove me when xclim 0.15 is released
+    from xclim.utils import percentile_doy
+
 
 import finch.processes
 import finch.wsgi
