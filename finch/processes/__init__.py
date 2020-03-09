@@ -112,7 +112,9 @@ def _build_xclim():
     processes = get_processes(all_processes=True)
     objs = {p.__class__.__name__: p.__class__ for p in processes}
 
-    mod = xclim.build_module("finch.processes.xclim", objs, doc="""XCLIM Processes""")
+    mod = xclim.indicators.build_module(
+        "finch.processes.xclim", objs, doc="""XCLIM Processes"""
+    )
     sys.modules["finch.processes.xclim"] = mod
     return mod
 
