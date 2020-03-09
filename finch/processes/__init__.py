@@ -5,7 +5,7 @@ import xclim
 import xclim.indicators.atmos
 
 try:
-    from xclim.indicator import Indicator
+    from xclim.core.indicator import Indicator
 except ImportError:
     # Todo: remove me when xclim 0.15 is released
     from xclim.utils import Indicator
