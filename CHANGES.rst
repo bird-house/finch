@@ -14,6 +14,7 @@ Changes
 * Add support for percentiles inputs
 * Update xclim to 0.14
 * Pin PyWPS to 4.2.4
+* Add DODS to supported formats for resources
 
 
 
