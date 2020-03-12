@@ -136,6 +136,17 @@ def compute_indices(
     output_dataset = xr.Dataset(
         data_vars=None, coords=out.coords, attrs=global_attributes
     )
+
+    # fix frequency of computed output (xclim should handle this)
+    if output_dataset.attrs.get("frequency") == "day" and "freq" in kwds:
+        conversions = {
+            "YS": "yr",
+            "MS": "mon",
+            "QS-DEC": "seasonal",
+            "AS-JUL": "seasonal",
+        }
+        output_dataset.attrs["frequency"] = conversions.get(kwds["freq"], "day")
+
     output_dataset[out.name] = out
     return output_dataset
 
@@ -155,10 +166,14 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
     """
     if variable is None:
         variable = [k for k, v in ds.variables.items() if len(v.dims) >= 3][0]
+    variable = variable.replace("_", "-")
+
     # CORDEX example: tas_EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
     cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
+
     # CMIP5 example: tas_MPI-ESM-LR_historical_r1i1p1
     cmip5_pattern = "{variable}_{model}_{experiment}_{ensemble}"
+
     if ds.attrs["project_id"] in ("CORDEX", "EOBS"):
         filename = cordex_pattern.format(
             variable=variable,
@@ -183,7 +198,16 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
             ensemble=ensemble,
         )
     else:
-        raise Exception(f"Unknown project: {ds.attrs['project_id']}")
+        params = [
+            variable,
+            ds.attrs.get("frequency"),
+            ds.attrs.get("model_id"),
+            ds.attrs.get("driving_model_id"),
+            ds.attrs.get("experiment_id", "").replace(",", "+"),
+            ds.attrs.get("driving_experiment_id", "").replace(",", "+"),
+        ]
+        params = [k for k in params if k]
+        filename = "_".join(params)
 
     if "time" in ds:
         date_from = ds.time[0].values
