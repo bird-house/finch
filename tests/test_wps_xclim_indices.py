@@ -132,12 +132,14 @@ def test_heat_wave_frequency_window_thresh_parameters(client, netcdf_datasets):
         wps_input_file("tasmax", netcdf_datasets["tasmax"]),
         wps_input_file("tasmin", netcdf_datasets["tasmin"]),
         wps_literal_input("window", "3"),
+        wps_literal_input("freq", "YS"),
         wps_literal_input("thresh_tasmin", "20 degC"),
         wps_literal_input("thresh_tasmax", "25 degC"),
     ]
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
 
+    assert ds.attrs["frequency"] == "yr"
     assert ds.heat_wave_frequency.standard_name == _get_output_standard_name(identifier)
 
 

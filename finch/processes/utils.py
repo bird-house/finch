@@ -136,6 +136,17 @@ def compute_indices(
     output_dataset = xr.Dataset(
         data_vars=None, coords=out.coords, attrs=global_attributes
     )
+
+    # fix frequency of computed output (xclim should handle this)
+    if output_dataset.attrs.get("frequency") == "day" and "freq" in kwds:
+        conversions = {
+            "YS": "yr",
+            "MS": "mon",
+            "QS-DEC": "seasonal",
+            "AS-JUL": "seasonal",
+        }
+        output_dataset.attrs["frequency"] = conversions.get(kwds["freq"], "day")
+
     output_dataset[out.name] = out
     return output_dataset
 
