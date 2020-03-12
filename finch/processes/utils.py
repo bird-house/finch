@@ -155,6 +155,7 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
     """
     if variable is None:
         variable = [k for k, v in ds.variables.items() if len(v.dims) >= 3][0]
+    variable = variable.replace("_", "-")
 
     # CORDEX example: tas_EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
     cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"

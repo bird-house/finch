@@ -76,7 +76,11 @@ def test_processes(client, netcdf_datasets):
         date_start = pd.to_datetime(str(ds.time[0].values))
         date_end = pd.to_datetime(str(ds.time[-1].values))
 
-        expected = f"{output_variable}_{model}_{experiment}_{ensemble}_{date_start:%Y%m%d}-{date_end:%Y%m%d}.nc"
+        expected = (
+            f"{output_variable.replace('_', '-')}_"
+            f"{model}_{experiment}_{ensemble}_"
+            f"{date_start:%Y%m%d}-{date_end:%Y%m%d}.nc"
+        )
         assert Path(outputs[0]).name == expected
 
 
