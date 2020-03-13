@@ -1,19 +1,28 @@
+from collections import deque
 import logging
 from pathlib import Path
 from typing import List
-from collections import deque
 
-import xarray as xr
 from pywps import ComplexOutput, FORMATS
 from pywps.app.exceptions import ProcessError
 from unidecode import unidecode
+import xarray as xr
 
-from finch.processes.utils import dataset_to_netcdf, drs_filename, make_metalink_output
-from finch.processes.wps_base import convert_xclim_inputs_to_pywps
-
-from .utils import compute_indices, log_file_path, write_log
-from .wps_base import FinchProcess, FinchProgressBar, NC_INPUT_VARIABLES
 from . import wpsio
+from .utils import (
+    compute_indices,
+    dataset_to_netcdf,
+    drs_filename,
+    log_file_path,
+    make_metalink_output,
+    write_log,
+)
+from .wps_base import (
+    FinchProcess,
+    FinchProgressBar,
+    NC_INPUT_VARIABLES,
+    convert_xclim_inputs_to_pywps,
+)
 
 LOGGER = logging.getLogger("PYWPS")
 
