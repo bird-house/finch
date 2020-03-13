@@ -176,5 +176,5 @@ def make_nc_input(name):
         metadata=[Metadata("Info")],
         min_occurs=1,
         max_occurs=10000,
-        supported_formats=[FORMATS.NETCDF],
+        supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
     )

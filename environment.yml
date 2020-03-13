@@ -14,6 +14,6 @@ dependencies:
   - xarray>=0.14
   - sentry-sdk
   - siphon
-  - xclim>=0.14.0
+  - xclim>=0.14.0, <0.15
   - pywps==4.2.4
   - parse

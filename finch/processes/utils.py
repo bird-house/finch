@@ -1,3 +1,4 @@
+from datetime import timedelta
 import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
@@ -15,6 +16,7 @@ from typing import (
 )
 import zipfile
 
+import cftime
 import netCDF4
 import numpy as np
 import pandas as pd
@@ -134,6 +136,17 @@ def compute_indices(
     output_dataset = xr.Dataset(
         data_vars=None, coords=out.coords, attrs=global_attributes
     )
+
+    # fix frequency of computed output (xclim should handle this)
+    if output_dataset.attrs.get("frequency") == "day" and "freq" in kwds:
+        conversions = {
+            "YS": "yr",
+            "MS": "mon",
+            "QS-DEC": "seasonal",
+            "AS-JUL": "seasonal",
+        }
+        output_dataset.attrs["frequency"] = conversions.get(kwds["freq"], "day")
+
     output_dataset[out.name] = out
     return output_dataset
 
@@ -153,10 +166,14 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
     """
     if variable is None:
         variable = [k for k, v in ds.variables.items() if len(v.dims) >= 3][0]
+    variable = variable.replace("_", "-")
+
     # CORDEX example: tas_EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
     cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
+
     # CMIP5 example: tas_MPI-ESM-LR_historical_r1i1p1
     cmip5_pattern = "{variable}_{model}_{experiment}_{ensemble}"
+
     if ds.attrs["project_id"] in ("CORDEX", "EOBS"):
         filename = cordex_pattern.format(
             variable=variable,
@@ -181,7 +198,16 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
             ensemble=ensemble,
         )
     else:
-        raise Exception(f"Unknown project: {ds.attrs['project_id']}")
+        params = [
+            variable,
+            ds.attrs.get("frequency"),
+            ds.attrs.get("model_id"),
+            ds.attrs.get("driving_model_id"),
+            ds.attrs.get("experiment_id", "").replace(",", "+"),
+            ds.attrs.get("driving_experiment_id", "").replace(",", "+"),
+        ]
+        params = [k for k in params if k]
+        filename = "_".join(params)
 
     if "time" in ds:
         date_from = ds.time[0].values
@@ -507,15 +533,49 @@ def make_tasmin_tasmax_pairs(
         )
 
 
+def fix_broken_time_index(ds: xr.Dataset):
+    """Fix for a single broken index in a specific file"""
+    if "time" not in ds.dims:
+        return
+
+    time_dim = ds.time.values
+    times_are_encoded = "units" in ds.time.attrs
+
+    if times_are_encoded:
+        wrong_id = np.argwhere(np.isclose(time_dim, 0))
+    else:
+        wrong_id = np.argwhere(
+            time_dim == cftime.DatetimeNoLeap(year=1850, month=1, day=1, hour=0)
+        )
+
+    if not wrong_id:
+        return
+    wrong_id = wrong_id[0, 0]
+    if wrong_id == 0 or wrong_id == len(ds.time) - 1:
+        return
+
+    daily_gap = 1.0 if times_are_encoded else timedelta(days=1)
+
+    is_daily = time_dim[wrong_id + 1] - time_dim[wrong_id - 1] == daily_gap * 2
+
+    if is_daily:
+        fixed_time = time_dim
+        fixed_time[wrong_id] = time_dim[wrong_id - 1] + daily_gap
+        attrs = ds.time.attrs
+        ds["time"] = fixed_time
+        ds.time.attrs = attrs
+
+
 def dataset_to_netcdf(
     ds: xr.Dataset, output_path: Union[Path, str], compression_level=0
 ) -> None:
-    """Write an :class:`xarray.Dataset` dataset to disk, using compression."""
+    """Write an :class:`xarray.Dataset` dataset to disk, optionally using compression."""
     encoding = {}
     if "time" in ds.dims:
         encoding["time"] = {
             "dtype": "single",  # better compatibility with OpenDAP in thredds
         }
+        fix_broken_time_index(ds)
     if compression_level:
         for v in ds.data_vars:
             encoding[v] = {"zlib": True, "complevel": compression_level}
