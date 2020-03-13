@@ -1,18 +1,12 @@
-import logging
-
 from pywps import ComplexInput, ComplexOutput, FORMATS
 
 from . import wpsio
-from .subset import finch_subset_bbox
-from .utils import make_metalink_output, write_log
+from .subset import finch_subset_gridpoint, common_subset_handler
 from .wps_base import FinchProcess
 
 
-LOGGER = logging.getLogger("PYWPS")
-
-
-class SubsetBboxProcess(FinchProcess):
-    """Subset a NetCDF file using bounding box geometry."""
+class SubsetGridPointProcess(FinchProcess):
+    """Subset a NetCDF file grid cells using a list of coordinates."""
 
     def __init__(self):
         inputs = [
@@ -23,10 +17,8 @@ class SubsetBboxProcess(FinchProcess):
                 max_occurs=1000,
                 supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
             ),
-            wpsio.lon0,
-            wpsio.lon1,
-            wpsio.lat0,
-            wpsio.lat1,
+            wpsio.lon,
+            wpsio.lat,
             wpsio.start_date,
             wpsio.end_date,
             wpsio.variable_any,
@@ -44,12 +36,12 @@ class SubsetBboxProcess(FinchProcess):
 
         super().__init__(
             self._handler,
-            identifier="subset_bbox",
-            title="Subset with bounding box",
-            version="0.1",
+            identifier="subset_gridpoint",
+            title="Subset with a grid point",
+            version="0.2",
             abstract=(
-                "Return the data for which grid cells intersect the "
-                "bounding box for each input dataset as well as "
+                "Return the data for which grid cells includes the "
+                "point coordinates for each input dataset as well as "
                 "the time range selected."
             ),
             inputs=inputs,
@@ -64,18 +56,4 @@ class SubsetBboxProcess(FinchProcess):
         }
 
     def _handler(self, request, response):
-        write_log(self, "Processing started", process_step="start")
-
-        output_files = finch_subset_bbox(
-            self,
-            netcdf_inputs=request.inputs["resource"],
-            request_inputs=request.inputs,
-        )
-        metalink = make_metalink_output(self, output_files)
-
-        response.outputs["output"].file = metalink.files[0].file
-        response.outputs["ref"].data = metalink.xml
-
-        write_log(self, "Processing finished successfully", process_step="done")
-
-        return response
+        return common_subset_handler(self, request, response, finch_subset_gridpoint)

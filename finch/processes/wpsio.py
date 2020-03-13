@@ -3,7 +3,7 @@
 from copy import deepcopy
 from typing import Union
 
-from pywps import ComplexOutput, FORMATS, LiteralInput
+from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.inout.literaltypes import AnyValue
 
 from .constants import ALLOWED_MODEL_NAMES, ALL_24_MODELS
@@ -143,6 +143,15 @@ models = LiteralInput(
     min_occurs=0,
     max_occurs=1000,
     allowed_values=ALLOWED_MODEL_NAMES,
+)
+
+shape = ComplexInput(
+    "shape",
+    "Polygon shape",
+    abstract="Polygon contour, as a geojson string.",
+    supported_formats=[FORMATS.GEOJSON],
+    min_occurs=1,
+    max_occurs=1,
 )
 
 ensemble_percentiles = LiteralInput(
