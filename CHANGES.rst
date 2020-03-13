@@ -2,7 +2,14 @@ Changes
 *******
 
 
-0.4.x (2020-03-10)
+0.4.1 (2020-03-12)
+==================
+
+* fix #103 (drs_filename) add defaults when `project_id` is unknown
+* drs_filenames: use dash instead of underscores in variable names
+* fix #80 frequency attrs of computed datasets 
+
+0.4.0 (2020-03-10)
 ==================
 
 * Add ensembles processes
