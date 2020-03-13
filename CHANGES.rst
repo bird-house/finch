@@ -30,6 +30,8 @@ Changes
 * Add start and end date to bccaqv2 subset
 * Identifier DAP link by header
 * Datetime fix when replacing hour to 12
+* deprecate lon0 and lat0 for SubsetGridPointBCCAQV2Process
+* change point subset processes to accept a comma separated list of floats for multiple grid cells
 
 
 0.2.7 (2019-12-09)
