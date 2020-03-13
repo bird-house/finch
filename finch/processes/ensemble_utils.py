@@ -11,15 +11,11 @@ from pywps import configuration
 from pywps.app.exceptions import ProcessError
 from siphon.catalog import TDSCatalog
 import xarray as xr
-import xclim
 from xclim import ensembles
+from xclim.core.indicator import Indicator
+from xclim.core.calendar import percentile_doy
 from parse import parse
 
-try:
-    from xclim.indicator import Indicator
-except ImportError:
-    # Todo: remove me when xclim 0.15 is released
-    from xclim.utils import Indicator
 
 from finch.processes.utils import dataset_to_netcdf
 
@@ -88,19 +84,19 @@ def _tas(tasmin: xr.Dataset, tasmax: xr.Dataset) -> xr.Dataset:
 
 
 def _percentile_doy_tn10(tasmin: xr.Dataset):
-    return xclim.utils.percentile_doy(tasmin.tasmin, per=0.1).to_dataset(name="tn10")
+    return percentile_doy(tasmin.tasmin, per=0.1).to_dataset(name="tn10")
 
 
 def _percentile_doy_tn90(tasmin: xr.Dataset):
-    return xclim.utils.percentile_doy(tasmin.tasmin, per=0.9).to_dataset(name="tn90")
+    return percentile_doy(tasmin.tasmin, per=0.9).to_dataset(name="tn90")
 
 
 def _percentile_doy_t10(tas: xr.Dataset):
-    return xclim.utils.percentile_doy(tas.tas, per=0.1).to_dataset(name="t10")
+    return percentile_doy(tas.tas, per=0.1).to_dataset(name="t10")
 
 
 def _percentile_doy_t90(tas: xr.Dataset):
-    return xclim.utils.percentile_doy(tas.tas, per=0.9).to_dataset(name="t90")
+    return percentile_doy(tas.tas, per=0.9).to_dataset(name="t90")
 
 
 variable_computations = {

@@ -2,13 +2,8 @@ import logging
 
 from pywps.configuration import get_config_value
 import xclim
-import xclim.atmos
-
-try:
-    from xclim.indicator import Indicator
-except ImportError:
-    # Todo: remove me when xclim 0.15 is released
-    from xclim.utils import Indicator
+import xclim.indicators.atmos
+from xclim.core.indicator import Indicator
 
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .wps_base import make_xclim_indicator_process
@@ -33,7 +28,7 @@ def get_indicators(module):
 
 
 # List of Indicators that are exposed as WPS processes
-indicators = get_indicators(xclim.atmos)
+indicators = get_indicators(xclim.indicators.atmos)
 
 not_implemented = [
     "DC",  # lat input type is not implemented and start_up_mode argument seems to be missing?
