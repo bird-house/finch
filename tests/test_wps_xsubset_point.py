@@ -1,3 +1,4 @@
+import pytest
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
 import xarray as xr
