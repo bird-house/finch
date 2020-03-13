@@ -571,6 +571,11 @@ def dataset_to_netcdf(
 ) -> None:
     """Write an :class:`xarray.Dataset` dataset to disk, optionally using compression."""
     encoding = {}
+    if "crs" in ds:
+        # Todo: xclim 0.15.0 adds a 'crs' coordinate that xarray seems
+        # to have problem with when writing it to disk
+        ds = ds.drop_vars('crs')
+
     if "time" in ds.dims:
         encoding["time"] = {
             "dtype": "single",  # better compatibility with OpenDAP in thredds
