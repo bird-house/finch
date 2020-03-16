@@ -34,14 +34,11 @@ indicators = get_indicators(xclim.indicators.atmos)
 
 for i in indicators:
     # Todo: remove me after xclim fixes the identifier name
-    if i.compute.__name__ == 'hot_spell_max_length':
-        i.identifier = 'hot_spell_max_length'
+    if i.compute.__name__ == "hot_spell_max_length":
+        i.identifier = "hot_spell_max_length"
 
 not_implemented = [
     "DC",  # lat input type is not implemented and start_up_mode argument seems to be missing?
-    "growing_season_length",  # mid_date parameter not implemented
-    "growing_season_end",  # mid_date parameter not implemented
-    "last_spring_frost",  # before_date parameter not implemented
 ]
 indicators = [i for i in indicators if i.identifier not in not_implemented]
 ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i)]
@@ -114,7 +111,9 @@ def _build_xclim():
     processes = get_processes(all_processes=True)
     objs = {p.__class__.__name__: p.__class__ for p in processes}
 
-    mod = xclim.indicators.build_module("finch.processes.xclim", objs, doc="""XCLIM Processes""")
+    mod = xclim.indicators.build_module(
+        "finch.processes.xclim", objs, doc="""XCLIM Processes"""
+    )
     sys.modules["finch.processes.xclim"] = mod
     return mod
 

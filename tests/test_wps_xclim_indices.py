@@ -43,6 +43,8 @@ def test_processes(client, netcdf_datasets):
     literal_inputs = {
         "freq": "MS",
         "window": "3",
+        "mid_date": "07-01",
+        "before_date": "07-01",
     }
     keep_defaults = ["thresh", "thresh_tasmin", "thresh_tasmax"]
 
