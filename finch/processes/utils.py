@@ -225,6 +225,9 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
 
         filename += f"_{date_from:%Y%m%d}-{date_to:%Y%m%d}"
 
+    # sanitize any spaces that came from the source input's metadata
+    filename = filename.replace(" ", "-")
+
     filename += ".nc"
 
     return filename
@@ -574,7 +577,7 @@ def dataset_to_netcdf(
     if "crs" in ds:
         # Todo: xclim 0.15.0 adds a 'crs' coordinate that xarray seems
         # to have problem with when writing it to disk
-        ds = ds.drop_vars('crs')
+        ds = ds.drop_vars("crs")
 
     if "time" in ds.dims:
         encoding["time"] = {
