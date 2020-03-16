@@ -2,6 +2,13 @@ Changes
 *******
 
 
+0.5.x (TBD)
+==================
+
+* update xclim to 0.15.0
+* add french translation of processes abstract and descriptions
+
+
 0.4.1 (2020-03-12)
 ==================
 

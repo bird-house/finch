@@ -7,13 +7,13 @@ dependencies:
   - jinja2
   - click
   - psutil
-  - libnetcdf==4.6.2
+  - libnetcdf==4.7.3
   - unidecode
   - dask>=2.9
   - distributed
   - xarray>=0.14
   - sentry-sdk
   - siphon
-  - xclim>=0.14.0, <0.15
+  - xclim>=0.15.0, <0.16
   - pywps==4.2.4
   - parse

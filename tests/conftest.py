@@ -6,7 +6,8 @@ from typing import Dict
 import pytest
 from pywps import configuration
 import xarray as xr
-from xclim.utils import percentile_doy
+from xclim.core.calendar import percentile_doy
+
 
 import finch.processes
 import finch.wsgi

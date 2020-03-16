@@ -1,4 +1,3 @@
-from finch.processes.utils import PywpsInput
 import logging
 from typing import Dict, List
 
@@ -7,6 +6,9 @@ from dask.diagnostics.progress import format_time
 from pywps import ComplexInput, FORMATS, LiteralInput, Process
 from pywps.app.Common import Metadata
 from sentry_sdk import configure_scope
+import xclim
+
+from finch.processes.utils import PywpsInput
 
 
 LOGGER = logging.getLogger("PYWPS")
@@ -70,7 +72,9 @@ class FinchProgressBar(ProgressBar):
 def make_xclim_indicator_process(
     xci, class_name_suffix: str, base_class
 ) -> FinchProcess:
-    """Create a WPS Process subclass from an xclim `Indicator` class instance."""
+    """Create a WPS Process subclass from an xclim `Indicator` class instance.
+
+    Adds translations for title and abstract properties of the process and its inputs and outputs."""
     attrs = xci.json()
 
     # Sanitize name
@@ -82,7 +86,13 @@ def make_xclim_indicator_process(
         {"xci": xci, "__doc__": attrs["abstract"]},
     )
 
-    return process_class()  # type: ignore
+    process = process_class()
+    process.translations = {  # type: ignore
+        locale: xclim.locales.get_local_attrs(xci, locale, append_locale_name=False)
+        for locale in xclim.locales.list_locales()
+    }
+
+    return process  # type: ignore
 
 
 NC_INPUT_VARIABLES = [
