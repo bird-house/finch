@@ -4,3 +4,5 @@ pytest-flake8
 sphinx>=1.7
 bump2version
 twine
+nbval
+birdy

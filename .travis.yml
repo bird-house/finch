@@ -28,4 +28,5 @@ before_script:
   - sleep 2
 script:
   - pytest -m "not online" tests
+  - DISABLE_VERIFY_SSL=1 pytest --nbval docs/source/notebooks
   - flake8
