@@ -20,7 +20,7 @@ install:
   - conda env update -f environment.yml
   - source activate finch
   # Packages for testing
-  - conda install pytest flake8
+  - conda install pytest flake8 birdy nbval
   - python setup.py install
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
