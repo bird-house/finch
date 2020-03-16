@@ -179,6 +179,15 @@ def test_drs_filename_unknown_project():
     assert filename == "tasmax_day_bcc-csm1-1_historical+rcp85_19500101-19500410.nc"
 
 
+def test_drs_filename_no_spaces():
+    ds = xr.open_dataset(
+        test_data / "bccaqv2_subset_sample/tasmax_bcc-csm1-1_subset.nc"
+    )
+    ds.attrs["driving_model_id"] = "bcc csm1 1"
+    filename = drs_filename(ds)
+    assert filename == "tasmax_bcc-csm1-1_historical+rcp85_r1i1p1_19500101-19500410.nc"
+
+
 def test_drs_filename_cordex():
     ds = xr.open_dataset(test_data / "cordex_subset.nc")
     filename = drs_filename(ds)
