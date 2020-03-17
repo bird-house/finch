@@ -28,5 +28,5 @@ before_script:
   - sleep 2
 script:
   - pytest -m "not online" tests
-  - make test-notebooks
+  - FINCH_WPS_URL=http://localhost:5000 make test-notebooks
   - flake8
