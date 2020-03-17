@@ -101,6 +101,12 @@ test: check_conda
 	@echo "Running tests (skip slow and online tests) ..."
 	@bash -c 'pytest -v -m "not slow and not online" tests/'
 
+.PHONY: test-notebooks
+test-notebooks:
+	@echo "Running notebook-based tests"
+	@bash -c "curl -L https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg --output $(CURDIR)/docs/source/output_sanitize.cfg --silent"
+	@bash -c "FINCH_WPS_URL=$(FINCH_WPS_URL) pytest --nbval $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
+
 .PHONY: test-all
 test-all:
 	@echo "Running all tests (including slow and online tests) ..."
