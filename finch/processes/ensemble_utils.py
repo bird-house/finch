@@ -133,7 +133,7 @@ def get_bccaqv2_local_files_datasets(
     urls = []
     for file in Path(catalog_url).glob("*.nc"):
         if _bccaqv2_filter(
-            method, file.stem, str(file), variables=variables, rcp=rcp, models=models
+            method, file.name, str(file), variables=variables, rcp=rcp, models=models
         ):
             urls.append(str(file))
     return urls
