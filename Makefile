@@ -24,6 +24,8 @@ help:
 	@echo "\nTesting targets:"
 	@echo "  test              to run tests (but skip long running tests)."
 	@echo "  test-all          to run all tests (including long running tests)."
+	@echo "  test-notebooks    to test all notebooks."
+	@echo "  refresh-notebooks to re-run all notebooks to refresh all outputs."
 	@echo "  lint              to run code style checks with flake8."
 	@echo "\nSphinx targets:"
 	@echo "  docs              to generate HTML documentation with Sphinx."
@@ -107,6 +109,11 @@ test-notebooks:
 	@echo "Running notebook-based tests"
 	@bash -c "curl -L https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg --output $(CURDIR)/docs/source/output_sanitize.cfg --silent"
 	@bash -c "env FINCH_WPS_URL=$(FINCH_WPS_URL) pytest --nbval --verbose $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
+
+.PHONY: refresh-notebooks
+refresh-notebooks:
+	@echo "Refresh all notebook outputs under docs/source/notebooks"
+	cd docs/source/notebooks; for nb in *.ipynb; do FINCH_WPS_URL="$(FINCH_WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --allow-errors --output "$$nb" "$$nb"; done
 
 .PHONY: test-all
 test-all:

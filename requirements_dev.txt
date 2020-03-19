@@ -5,4 +5,5 @@ sphinx>=1.7
 bump2version
 twine
 nbval
+nbconvert
 birdhouse-birdy
