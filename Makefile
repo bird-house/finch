@@ -2,6 +2,7 @@
 APP_ROOT := $(abspath $(lastword $(MAKEFILE_LIST))/..)
 APP_NAME := finch
 FINCH_WPS_URL := http://localhost:5000
+PAVICS_OUTPUT_URL := https://pavics.ouranos.ca/wpsoutputs
 
 # end of configuration
 
@@ -113,7 +114,7 @@ test-notebooks:
 .PHONY: refresh-notebooks
 refresh-notebooks:
 	@echo "Refresh all notebook outputs under docs/source/notebooks"
-	cd docs/source/notebooks; for nb in *.ipynb; do FINCH_WPS_URL="$(FINCH_WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --allow-errors --output "$$nb" "$$nb"; done
+	cd docs/source/notebooks; for nb in *.ipynb; do FINCH_WPS_URL="$(FINCH_WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --allow-errors --output "$$nb" "$$nb"; sed -i "s@$(FINCH_WPS_URL)/outputs/@$(PAVICS_OUTPUT_URL)/@g" "$$nb"; done
 
 .PHONY: test-all
 test-all:
