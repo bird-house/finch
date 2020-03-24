@@ -143,9 +143,9 @@ def test_ensemble_heatwave_frequency_grid_point_csv(mock_datasets, client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,realization,time")
+    assert lines[0].startswith("lat,lon,time")
     n_data_rows = len(lines) - 2
-    assert n_data_rows == 6  # realizations=2, time=3 (last month is NaN)
+    assert n_data_rows == 3  # time=3 (last month is NaN)
 
 
 def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
@@ -175,11 +175,9 @@ def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,realization,time")
+    assert lines[0].startswith("lat,lon,time")
     n_data_rows = len(lines) - 2
-    assert (
-        n_data_rows == 2 * 2 * 2 * 3
-    )  # realizations=2, lat=2, lon=2, time=3 (last month is NaN)
+    assert n_data_rows == 2 * 2 * 3  # lat=2, lon=2, time=3 (last month is NaN)
 
 
 def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
@@ -453,7 +451,7 @@ def test_ensemble_heatwave_frequency_polygon_csv(mock_datasets, client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,realization,time")
+    assert lines[0].startswith("lat,lon,time")
     n_data_rows = len(lines) - 2  # header + ending line
-    # realizations=2, lat-lon=66 (not NaN), time=3 (last month is NaN)
-    assert n_data_rows == 2 * 66 * 3
+    # lat-lon=66 (not NaN), time=3 (last month is NaN)
+    assert n_data_rows == 66 * 3

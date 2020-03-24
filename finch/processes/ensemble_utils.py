@@ -575,8 +575,9 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
+        ensemble = ensemble.drop_vars("realization")
         df = dataset_to_dataframe(ensemble)
-        df = df.reset_index().set_index(["lat", "lon", "realization", "time"])
+        df = df.reset_index().set_index(["lat", "lon", "time"])
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
 
