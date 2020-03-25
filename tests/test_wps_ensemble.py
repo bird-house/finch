@@ -56,15 +56,12 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
     ds = Dataset(outputs[0])
     dims = {d.name: d.size for d in ds.dimensions.values()}
     assert dims == {
-        "realization": 2,
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
     }
 
     ensemble_variables = {
-        k: v
-        for k, v in ds.variables.items()
-        if k not in "lat lon realization time".split()
+        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
     }
     assert sorted(ensemble_variables) == [
         f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
@@ -99,16 +96,13 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     ds = Dataset(outputs[0])
     dims = {d.name: d.size for d in ds.dimensions.values()}
     assert dims == {
-        "realization": 2,
         "lat": 2,
         "lon": 2,
         "time": 4,  # there are roughly 4 months in the test datasets
     }
 
     ensemble_variables = {
-        k: v
-        for k, v in ds.variables.items()
-        if k not in "lat lon realization time".split()
+        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
     }
     assert sorted(ensemble_variables) == [
         f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
@@ -201,15 +195,12 @@ def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
     ds = Dataset(outputs[0])
     dims = {d.name: d.size for d in ds.dimensions.values()}
     assert dims == {
-        "realization": 2,
         "region": 1,
         "time": 3,
     }
 
     ensemble_variables = {
-        k: v
-        for k, v in ds.variables.items()
-        if k not in "lat lon realization time".split()
+        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
     }
     assert sorted(ensemble_variables) == [
         f"heat_wave_frequency_p{p}" for p in (10, 50, 90)
@@ -328,15 +319,12 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
     ds = Dataset(outputs[0])
     dims = {d.name: d.size for d in ds.dimensions.values()}
     assert dims == {
-        "realization": 2,
         "region": 1,
         "time": 1,
     }
 
     ensemble_variables = {
-        k: v
-        for k, v in ds.variables.items()
-        if k not in "lat lon realization time".split()
+        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
     }
     assert sorted(ensemble_variables) == [f"csdi_6_p{p}" for p in (20, 50, 80)]
     for var in ensemble_variables.values():
@@ -365,15 +353,12 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
     ds = Dataset(outputs[0])
     dims = {d.name: d.size for d in ds.dimensions.values()}
     assert dims == {
-        "realization": 2,
         "region": 1,
         "time": 1,
     }
 
     ensemble_variables = {
-        k: v
-        for k, v in ds.variables.items()
-        if k not in "lat lon realization time".split()
+        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
     }
     assert sorted(ensemble_variables) == [
         f"growing_degree_days_p{p}" for p in (20, 50, 80)
@@ -407,7 +392,6 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
     assert dims == {
         "lat": 11,
         "lon": 11,
-        "realization": 2,
         "time": 4,  # there are roughly 4 months in the test datasets
     }
     data = ds.variables["heat_wave_frequency_p20"][1, :].data
@@ -415,9 +399,7 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
     assert (~np.isnan(data)).sum() == 66
 
     ensemble_variables = {
-        k: v
-        for k, v in ds.variables.items()
-        if k not in "lat lon realization time".split()
+        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
     }
     assert sorted(ensemble_variables) == [
         f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
