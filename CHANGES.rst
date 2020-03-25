@@ -2,6 +2,11 @@ Changes
 *******
 
 
+0.5.2 (2020-04-25)
+==================
+
+* fix to remove realization coordinate from ensembles
+
 0.5.1 (2020-04-18)
 ==================
 
