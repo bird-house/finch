@@ -2,12 +2,16 @@ Changes
 *******
 
 
-0.5.x (TBD)
+0.5.1 (2020-04-18)
+==================
+
+* fix local bccaqv2 files filtering
+
+0.5.0 (2020-04-18)
 ==================
 
 * update xclim to 0.15.0
 * add french translation of processes abstract and descriptions
-
 
 0.4.1 (2020-03-12)
 ==================

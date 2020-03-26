@@ -126,8 +126,8 @@ class XclimIndicatorBase(FinchProcess):
 
         metalink = make_metalink_output(self, output_files)
 
-        response.outputs["output_netcdf"].file = output_files[0]
-        response.outputs["output_log"].file = log_file_path(self)
+        response.outputs["output_netcdf"].file = str(output_files[0])
+        response.outputs["output_log"].file = str(log_file_path(self))
         response.outputs["ref"].data = metalink.xml
 
         write_log(self, "Processing finished successfully", process_step="done")
