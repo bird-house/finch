@@ -6,6 +6,8 @@ Changes
 ==================
 
 * fix to remove realization coordinate from ensembles
+* added chunk datasets for local files also
+* update xclim to == 0.15.2
 
 0.5.1 (2020-04-18)
 ==================
@@ -23,7 +25,7 @@ Changes
 
 * fix #103 (drs_filename) add defaults when `project_id` is unknown
 * drs_filenames: use dash instead of underscores in variable names
-* fix #80 frequency attrs of computed datasets 
+* fix #80 frequency attrs of computed datasets
 
 0.4.0 (2020-03-10)
 ==================

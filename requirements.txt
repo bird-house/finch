@@ -1,5 +1,5 @@
 pywps>=4.2.0<4.3
-xclim>=0.13.0
+xclim==0.15.2
 geopandas
 jinja2
 click
