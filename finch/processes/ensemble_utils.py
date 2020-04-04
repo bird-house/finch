@@ -408,6 +408,12 @@ def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
     ensemble_percentiles = ensembles.ensemble_percentiles(ensemble, values=percentiles)
+
+    if "realization" in ensemble_percentiles.coords:
+        # realization coordinate will probably be removed in xclim
+        # directly in the near future so this line will not be necessary
+        ensemble_percentiles = ensemble_percentiles.drop_vars("realization")
+
     # Depending on the datasets, I've found that writing the netcdf could hang
     # if the dataset was not loaded explicitely previously... Not sure why.
     # The datasets should be pretty small when computing the ensembles, so this is
@@ -576,7 +582,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
         df = dataset_to_dataframe(ensemble)
-        df = df.reset_index().set_index(["lat", "lon", "realization", "time"])
+        df = df.reset_index().set_index(["lat", "lon", "time"])
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
 
