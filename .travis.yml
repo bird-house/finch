@@ -5,7 +5,6 @@ python:
   - "3.8"
 os:
   - linux
-#  - osx
 sudo: false
 install:
   # Python 3.x is default

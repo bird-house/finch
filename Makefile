@@ -101,7 +101,7 @@ clean-dist: clean
 ## Test targets
 
 .PHONY: test
-test: check_conda
+test:
 	@echo "Running tests (skip slow and online tests) ..."
 	@bash -c 'pytest -v -m "not slow and not online" tests/'
 
