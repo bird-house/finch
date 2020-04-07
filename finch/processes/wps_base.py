@@ -2,7 +2,6 @@ import logging
 from typing import Dict, List
 
 from dask.diagnostics import ProgressBar
-from dask.diagnostics.progress import format_time
 from pywps import ComplexInput, FORMATS, LiteralInput, Process
 from pywps.app.Common import Metadata
 from sentry_sdk import configure_scope
@@ -121,9 +120,11 @@ def convert_xclim_inputs_to_pywps(params: Dict) -> List[PywpsInput]:
         elif name in ["thresh"]:
             inputs.append(make_thresh(name, attrs["default"], attrs["desc"]))
         elif name in ["freq"]:
-            inputs.append(make_freq(name, attrs["default"]))
+            inputs.append(make_freq(name, attrs["default"], attrs["desc"]))
         elif name in ["window"]:
             inputs.append(make_window(name, attrs["default"], attrs["desc"]))
+        elif name in ["mid_date", "before_date"]:
+            inputs.append(make_date_of_year(name, attrs["default"], attrs["desc"]))
         else:
             # raise NotImplementedError(name)
             LOGGER.warning("not implemented: {}".format(name))
@@ -162,6 +163,18 @@ def make_window(name, default, abstract=""):
         "Window",
         abstract=abstract,
         data_type="integer",
+        min_occurs=0,
+        max_occurs=1,
+        default=default,
+    )
+
+
+def make_date_of_year(name, default, abstract=""):
+    return LiteralInput(
+        name,
+        "Date of the year",
+        abstract=abstract,
+        data_type="string",
         min_occurs=0,
         max_occurs=1,
         default=default,
