@@ -254,6 +254,10 @@ def try_opendap(
             logging_function(f"Downloading dataset for url: {url}")
         else:
             logging_function(f"Opening as local file: {input.file}")
+        
+        if "_sub" in str(input.file):
+            chunks=dict(time=-1, region=5)
+
         ds = xr.open_dataset(input.file, chunks=chunks, decode_times=decode_times)
     if not chunks:
         ds = ds.chunk(chunk_dataset(ds, max_size=1000000))
