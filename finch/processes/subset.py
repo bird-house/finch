@@ -69,7 +69,7 @@ def finch_subset_gridpoint(
             count += 1
             write_log(
                 process,
-                f"Subsetting file {count} of {n_files}",
+                f"Subsetting file {count} of {n_files} ({resource.file})",
                 subtask_percentage=(count - 1) * 100 // n_files,
             )
 
@@ -147,7 +147,7 @@ def finch_subset_bbox(
             count += 1
             write_log(
                 process,
-                f"Subsetting file {count} of {n_files}",
+                f"Subsetting file {count} of {n_files} ({resource.file})",
                 subtask_percentage=(count - 1) * 100 // n_files,
             )
 
@@ -210,7 +210,7 @@ def finch_subset_shape(
             count += 1
             write_log(
                 process,
-                f"Subsetting file {count} of {n_files}",
+                f"Subsetting file {count} of {n_files} ({resource.file})",
                 subtask_percentage=(count - 1) * 100 // n_files,
             )
 

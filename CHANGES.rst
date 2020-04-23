@@ -1,20 +1,24 @@
 Changes
 *******
 
+0.5.3 (2020-04-23)
+==================
 
-0.5.2 (2020-04-25)
+* fix to chunk regions of subsetted files
+
+0.5.2 (2020-03-25)
 ==================
 
 * fix to remove realization coordinate from ensembles
 * added chunk datasets for local files also
 * update xclim to == 0.15.2
 
-0.5.1 (2020-04-18)
+0.5.1 (2020-03-18)
 ==================
 
 * fix local bccaqv2 files filtering
 
-0.5.0 (2020-04-18)
+0.5.0 (2020-03-18)
 ==================
 
 * update xclim to 0.15.0
