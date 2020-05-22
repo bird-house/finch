@@ -29,6 +29,9 @@ Documentation
 Learn more about finch in its official documentation at
 https://finch.readthedocs.io.
 
+Submit bug reports, questions and feature requests at
+https://github.com/bird-house/finch/issues
+
 Contributing
 ------------
 

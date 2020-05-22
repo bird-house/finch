@@ -1,0 +1,9 @@
+name: finch
+channels:
+#- conda-forge
+- defaults
+dependencies:
+- pywps>=4.2
+- sphinx
+- nbsphinx
+- ipython
