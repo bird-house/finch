@@ -30,12 +30,7 @@ help:
 	@echo "\nTesting targets:"
 	@echo "  test              to run tests (but skip long running tests)."
 	@echo "  test-all          to run all tests (including long running tests)."
-<<<<<<<
-	@echo "  test-notebooks    to test all notebooks."
-	@echo "  refresh-notebooks to re-run all notebooks to refresh all outputs."
-=======
 	@echo "  test-notebooks    to verify Jupyter Notebook test outputs are valid."
->>>>>>>
 	@echo "  lint              to run code style checks with flake8."
 	@echo "  refresh-notebooks to verify Jupyter Notebook test outputs are valid."
 	@echo "\nSphinx targets:"
