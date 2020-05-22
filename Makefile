@@ -137,7 +137,7 @@ refresh-notebooks:
 ## Sphinx targets
 
 .PHONY: docs
-docs: check_conda
+docs:
 	@echo "Generating docs with Sphinx ..."
 	@-bash -c '$(MAKE) -C $@ clean html'
 	@echo "Open your browser to: file:/$(APP_ROOT)/docs/build/html/index.html"
