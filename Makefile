@@ -1,8 +1,6 @@
 # Configuration
 APP_ROOT := $(abspath $(lastword $(MAKEFILE_LIST))/..)
 APP_NAME := finch
-FINCH_WPS_URL := http://localhost:5000
-PAVICS_OUTPUT_URL := https://pavics.ouranos.ca/wpsoutputs
 
 WPS_URL = http://localhost:5000/
 OUTPUT_URL = $(WPS_URL)/wpsoutputs
@@ -110,17 +108,6 @@ clean-dist: clean
 test:
 	@echo "Running tests (skip slow and online tests) ..."
 	@bash -c 'pytest -v -m "not slow and not online" tests/'
-
-.PHONY: test-notebooks
-test-notebooks:
-	@echo "Running notebook-based tests"
-	@bash -c "curl -L https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg --output $(CURDIR)/docs/source/output_sanitize.cfg --silent"
-	@bash -c "env FINCH_WPS_URL=$(FINCH_WPS_URL) pytest --nbval --verbose $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
-
-.PHONY: refresh-notebooks
-refresh-notebooks:
-	@echo "Refresh all notebook outputs under docs/source/notebooks"
-	cd docs/source/notebooks; for nb in *.ipynb; do FINCH_WPS_URL="$(FINCH_WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --output "$$nb" "$$nb"; sed -i "s@$(FINCH_WPS_URL)/outputs/@$(PAVICS_OUTPUT_URL)/@g" "$$nb"; done; cd $(APP_ROOT)
 
 .PHONY: test-all
 test-all:
