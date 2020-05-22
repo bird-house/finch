@@ -1,0 +1,23 @@
+{
+    "template": "https://github.com/bird-house/cookiecutter-birdhouse",
+    "commit": "37c609bc4942227c2a64e6386cf38a9207da9534",
+    "context": {
+        "cookiecutter": {
+            "full_name": "David Huard",
+            "email": "huard.david@ouranos.ca",
+            "github_username": "bird-house",
+            "project_name": "Finch",
+            "project_slug": "finch",
+            "project_repo_name": "finch",
+            "project_readthedocs_name": "finch",
+            "project_short_description": "A Web Processing Service for Climate Indicators.",
+            "version": "0.5.3",
+            "open_source_license": "Apache Software License 2.0",
+            "http_port": "5000",
+            "_copy_without_render": [
+                "{{cookiecutter.project_slug}}/templates/*.cfg"
+            ],
+            "_template": "https://github.com/bird-house/cookiecutter-birdhouse"
+        }
+    }
+}
