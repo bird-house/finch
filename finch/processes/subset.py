@@ -43,7 +43,7 @@ def finch_subset_gridpoint(
 
     lat_value = request_inputs[wpsio.lat.identifier][0].data
     try:
-        latitudes = [float(lat) for at in lat_value.split(",")]
+        latitudes = [float(lat) for lat in lat_value.split(",")]
     except AttributeError:
         latitudes = [float(lat_value)]
 
