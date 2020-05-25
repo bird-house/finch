@@ -21,7 +21,9 @@ formats: all
 #  version: 3.6
 
 conda:
-  environment: environment-docs.yml
+  # list of processes not working with environment-docs.yml
+  #environment: environment-docs.yml
+  environment: environment.yml
 
 build:
   image: stable
