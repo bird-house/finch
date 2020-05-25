@@ -7,3 +7,4 @@ dependencies:
 - sphinx
 - nbsphinx
 - ipython
+- xclim==0.15.2

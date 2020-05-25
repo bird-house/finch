@@ -14,6 +14,7 @@ dependencies:
   - xarray>=0.14
   - sentry-sdk
   - siphon
+  # remember to match xclim version in environment-docs.yml as well
   - xclim==0.15.2
   - pywps==4.2.4
   - parse
