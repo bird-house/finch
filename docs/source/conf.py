@@ -51,7 +51,7 @@ extensions = [
 autodoc_mock_imports = ["numpy", "xarray", "fiona", "rasterio", "shapely",
                         "osgeo", "geopandas", "pandas", "statsmodels",
                         "affine", "rasterstats", "spotpy", "matplotlib",
-                        "scipy", "unidecode", "sentry_sdk", "dask"]
+                        "scipy", "unidecode", "sentry_sdk", "dask", "numba"]
 
 # We are using mock imports in readthedocs, so probably safer to not run the notebooks
 nbsphinx_execute = 'never'
