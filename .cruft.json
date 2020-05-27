@@ -1,6 +1,6 @@
 {
     "template": "https://github.com/bird-house/cookiecutter-birdhouse",
-    "commit": "2eb02cce041ff867c4220fb292dbbe4b1e2e3ec5",
+    "commit": "6259954d77f03c8b6215a47fe32fd4c82626cc65",
     "skip": [
         "finch/processes/wps_say_hello.py",
         "tests/test_wps_hello.py",
