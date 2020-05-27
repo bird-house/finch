@@ -1,7 +1,7 @@
 from locust import HttpLocust, TaskSet
 
 
-def post_ice_days(l):
+def post_ice_days(loc):
     url = "https://github.com/Ouranosinc/xclim/raw/master/tests/testdata/NRCANdaily/nrcan_canada_daily_tasmax_1990.nc"
     data = {
         "inputs": [
@@ -23,7 +23,7 @@ def post_ice_days(l):
             }
         ]
     }
-    l.client.post("/providers/finch/processes/tx_max/jobs", json=data, verify=False)
+    loc.client.post("/providers/finch/processes/tx_max/jobs", json=data, verify=False)
 
 
 class UserBehavior(TaskSet):

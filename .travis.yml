@@ -1,11 +1,14 @@
-dist: xenial # required for Python >= 3.7
+dist: xenial   # required for Python >= 3.7
 language: python
+os:
+  - linux
 python:
   - "3.7"
   - "3.8"
-os:
-  - linux
 sudo: false
+before_install:
+  # Useful for debugging Travis CI environment
+  - printenv
 install:
   # Python 3.x is default
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
@@ -15,11 +18,15 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda install setuptools
   - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+  # Prepare env with Python version
   - conda create -n finch -c conda-forge python=$TRAVIS_PYTHON_VERSION
   - conda env update -f environment.yml
   - source activate finch
   # Packages for testing
   - conda install -c conda-forge pytest flake8 birdy nbval
+  # Install WPS
   - python setup.py install
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
@@ -27,5 +34,5 @@ before_script:
   - sleep 2
 script:
   - pytest -m "not online" tests
-  - FINCH_WPS_URL=http://localhost:5000 make test-notebooks
+  - make test-notebooks
   - flake8
