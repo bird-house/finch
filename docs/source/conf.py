@@ -53,7 +53,11 @@ autodoc_mock_imports = ["numpy", "xarray", "fiona", "rasterio", "shapely",
                         "affine", "rasterstats", "spotpy", "matplotlib",
                         "scipy", "unidecode", "gdal", "sentry_sdk", "dask",
                         "numba", "parse", "siphon", "sklearn", "cftime",
-                        "netCDF4"]
+                        "netCDF4", "bottleneck"]
+
+# Monkeypatch constant because the following are mock imports.
+import numpy
+numpy.pi = 3.1416
 
 # We are using mock imports in readthedocs, so probably safer to not run the notebooks
 nbsphinx_execute = 'never'
@@ -80,7 +84,7 @@ author = "David Huard"
 # the built documents.
 #
 # The short X.Y version.
-version = ""
+version = "0.5.3"
 # The full version, including alpha/beta/rc tags.
 release = "0.5.3"
 
@@ -101,6 +105,9 @@ pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
+
+# Suppress "WARNING: unknown mimetype for ..." when building EPUB.
+suppress_warnings = ['epub.unknown_project_files']
 
 
 # -- Options for HTML output -------------------------------------------

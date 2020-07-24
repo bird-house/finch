@@ -24,10 +24,10 @@ install:
   - conda create -n finch -c conda-forge python=$TRAVIS_PYTHON_VERSION
   - conda env update -f environment.yml
   - source activate finch
-  # Packages for testing
+  # Packages for testing (make develop not installing requirements_dev.txt yet)
   - conda install -c conda-forge pytest flake8 birdy nbval
-  # Install WPS
-  - python setup.py install
+  # Packages for testing, generating docs and installing WPS
+  - make develop
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
   - make start
@@ -36,3 +36,6 @@ script:
   - pytest -m "not online" tests
   - make test-notebooks
   - flake8
+  - make docs  # default html
+  - make SPHINXOPTS='-b epub' docs  # to match RtD
+  - make SPHINXOPTS='-b latex' docs  # to match RtD
