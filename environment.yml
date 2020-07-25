@@ -18,3 +18,4 @@ dependencies:
   - xclim==0.15.2
   - pywps==4.2.4
   - parse
+  - pandoc  # for building docs on Travis-CI, version on Pypi too old
