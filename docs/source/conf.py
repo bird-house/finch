@@ -113,6 +113,7 @@ suppress_warnings = ['epub.unknown_project_files']
 # Avoid "configuration.rst:4:duplicate label configuration, other instance in configuration.rst"
 autosectionlabel_prefix_document = True
 
+
 # -- Options for HTML output -------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
