@@ -26,6 +26,8 @@ for req in open("requirements.txt"):
         req = git_url_match.group(1)
     requirements.append(req)
 
+dev_reqs = [line.strip() for line in open('requirements_dev.txt')]
+
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -56,5 +58,8 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=requirements,
+    extras_require={
+        "dev": dev_reqs,              # pip install ".[dev]"
+    },
     entry_points={"console_scripts": ["finch=finch.cli:cli"]},
 )

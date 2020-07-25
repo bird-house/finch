@@ -24,8 +24,6 @@ install:
   - conda create -n finch -c conda-forge python=$TRAVIS_PYTHON_VERSION
   - conda env update -f environment.yml
   - source activate finch
-  # Packages for testing (make develop not installing requirements_dev.txt yet)
-  - conda install -c conda-forge pytest flake8 birdy nbval
   # Packages for testing, generating docs and installing WPS
   - make develop
 before_script:
