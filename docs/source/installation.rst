@@ -17,7 +17,7 @@ Install from Conda
 Install from GitHub
 -------------------
 
-Check out code from the finch GitHub repo and start the installation:
+Check out code from the Finch GitHub repo and start the installation:
 
 .. code-block:: console
 
@@ -31,7 +31,7 @@ Create Conda environment named `finch`:
    $ conda env create -f environment.yml
    $ source activate finch
 
-Install finch app:
+Install Finch app:
 
 .. code-block:: console
 
@@ -47,7 +47,7 @@ For development you can use this command:
   OR
   $ make develop
 
-Start finch PyWPS service
+Start Finch PyWPS service
 -------------------------
 
 After successful installation you can start the service using the ``finch`` command-line.
@@ -95,19 +95,19 @@ You can also use the ``Makefile`` to start and stop the service:
   $ make stop
 
 
-Run finch as Docker container
+Run Finch as Docker container
 -----------------------------
 
-You can also run finch as a Docker container.
+You can also run Finch as a Docker container.
 
 .. warning::
 
   TODO: Describe Docker container support.
 
-Use Ansible to deploy finch on your System
+Use Ansible to deploy Finch on your System
 ------------------------------------------
 
-Use the `Ansible playbook`_ for PyWPS to deploy finch on your system.
+Use the `Ansible playbook`_ for PyWPS to deploy Finch on your system.
 
 
 .. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html
