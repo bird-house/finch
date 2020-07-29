@@ -49,16 +49,21 @@ extensions = [
 ]
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
+# List of all tested working mock imports from all birds so new birds can
+# inherit without having to test which work which do not.
 autodoc_mock_imports = ["numpy", "xarray", "fiona", "rasterio", "shapely",
                         "osgeo", "geopandas", "pandas", "statsmodels",
                         "affine", "rasterstats", "spotpy", "matplotlib",
                         "scipy", "unidecode", "gdal", "sentry_sdk", "dask",
                         "numba", "parse", "siphon", "sklearn", "cftime",
-                        "netCDF4", "bottleneck"]
+                        "netCDF4", "bottleneck", "ocgis", "geotiff", "geos",
+                        "hdf4", "hdf5", "zlib", "pyproj", "proj", "cartopy",
+                        "scikit-learn", "cairo"]
 
 # Monkeypatch constant because the following are mock imports.
-import numpy
-numpy.pi = 3.1416
+# Only works if numpy is actually installed and at the same time being mocked.
+#import numpy
+#numpy.pi = 3.1416
 
 # We are using mock imports in readthedocs, so probably safer to not run the notebooks
 nbsphinx_execute = 'never'
