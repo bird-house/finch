@@ -90,7 +90,7 @@ Update the Conda specification file to build identical environments_ on a specif
 Bump a new version
 ------------------
 
-Make a new version of finch in the following steps:
+Make a new version of Finch in the following steps:
 
 * Make sure everything is commit to GitHub.
 * Update ``CHANGES.rst`` with the next version.

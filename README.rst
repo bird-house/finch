@@ -1,4 +1,4 @@
-finch
+Finch
 ===============================
 
 .. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
@@ -18,15 +18,15 @@ finch
     :alt: Join the chat at https://gitter.im/bird-house/birdhouse
 
 
-finch (the bird)
-  *finch is a bird ...*
+Finch (the bird)
+  *Finch is a bird ...*
 
-A Web Processing Service for Climate Indicators
+A Web Processing Service for Climate Indicators.
 
 Documentation
 -------------
 
-Learn more about finch in its official documentation at
+Learn more about Finch in its official documentation at
 https://finch.readthedocs.io.
 
 Submit bug reports, questions and feature requests at

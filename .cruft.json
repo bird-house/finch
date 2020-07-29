@@ -1,11 +1,10 @@
 {
     "template": "https://github.com/bird-house/cookiecutter-birdhouse",
-    "commit": "6259954d77f03c8b6215a47fe32fd4c82626cc65",
+    "commit": "b6969697401008114c8e25846ae5801e7e65224d",
     "skip": [
         "finch/processes/wps_say_hello.py",
         "tests/test_wps_hello.py",
         "docs/source/notebooks/example.ipynb",
-        ".travis.yml",
         "environment.yml",
         "requirements.txt",
         "docs/source/notebooks/index.rst",

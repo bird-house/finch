@@ -32,7 +32,7 @@ LOGGER = logging.getLogger("PYWPS")
 class BCCAQV2HeatWave(FinchProcess):
     """Subset a NetCDF file using a gridpoint, and then compute the 'heat wave' index.
 
-    *** Deprecated *** to be removed in a future release
+    ***Deprecated*** to be removed in a future release
     """
 
     def __init__(self):
@@ -73,7 +73,7 @@ class BCCAQV2HeatWave(FinchProcess):
             identifier="BCCAQv2_heat_wave_frequency_gridpoint",
             title=(
                 "BCCAQv2 grid cell heat wave frequency computation"
-                "*** Deprecated *** to be removed in a future release"
+                "***Deprecated*** to be removed in a future release"
             ),
             version="0.1",
             abstract=(

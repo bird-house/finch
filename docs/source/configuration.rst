@@ -7,7 +7,7 @@ Command-line options
 --------------------
 
 You can overwrite the default `PyWPS`_ configuration by using command-line options.
-See the finch help which options are available::
+See the Finch help which options are available::
 
     $ finch start --help
     --hostname HOSTNAME        hostname in PyWPS configuration.
