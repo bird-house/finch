@@ -21,25 +21,22 @@ def _get_output_standard_name(process_identifier):
             return p.xci.standard_name
 
 
-def test_indicators_processes_discovery():
-    for indicator in finch.processes.indicators:
-        process = make_xclim_indicator_process(indicator, "Process", XclimIndicatorBase)
-        assert indicator.identifier == process.identifier
-        sig = signature(indicator.compute)
-        # the phase parameter is set by a partial function in xclim, so there is
-        # no input necessary from the user in the WPS process
-        parameters = [k for k in sig.parameters.keys() if k != "phase"]
-        for parameter, input_ in zip(parameters, process.inputs):
-            assert parameter == input_.identifier
+@pytest.mark.parametrize("indicator", finch.processes.indicators)
+def test_indicators_processes_discovery(indicator):
+    process = make_xclim_indicator_process(indicator, "Process", XclimIndicatorBase)
+    assert indicator.identifier == process.identifier
+    sig = signature(indicator.compute)
+    # the phase parameter is set by a partial function in xclim, so there is
+    # no input necessary from the user in the WPS process
+    parameters = [k for k in sig.parameters.keys() if k != "phase"]
+    for parameter, input_ in zip(parameters, process.inputs):
+        assert parameter == input_.identifier
 
 
 def test_processes(client, netcdf_datasets):
     """Run a dummy calculation for every process, keeping some default parameters."""
     indicators = finch.processes.indicators
-    processes = [
-        make_xclim_indicator_process(ind, "Process", XclimIndicatorBase)
-        for ind in indicators
-    ]
+    processes = filter(lambda x: isinstance(x, XclimIndicatorBase), finch.processes.xclim.__dict__.values())
     literal_inputs = {
         "freq": "MS",
         "window": "3",

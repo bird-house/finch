@@ -1,5 +1,7 @@
+cftime
 pywps>=4.2.0<4.3
-xclim==0.15.2
+xclim==0.21
+clisops==0.4.0
 geopandas
 jinja2
 click
