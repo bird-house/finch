@@ -1,8 +1,10 @@
 from finch.processes.wps_xclim_indices import XclimIndicatorBase
 from inspect import signature
 
+import json
 import pytest
 from lxml import etree
+import numpy as np
 import xarray as xr
 import pandas as pd
 
@@ -152,3 +154,26 @@ def test_heat_wave_index_thresh_parameter(client, netcdf_datasets):
     ds = xr.open_dataset(outputs[0])
 
     assert ds["heat_wave_index"].standard_name == _get_output_standard_name(identifier)
+
+
+def test_missing_options(client, netcdf_datasets):
+    identifier = "tg_mean"
+    inputs = [
+        wps_input_file("tas", netcdf_datasets["tas_missing"]),
+        wps_literal_input("freq", "YS"),
+    ]
+    outputs = execute_process(client, identifier, inputs)
+    ds = xr.open_dataset(outputs[0])
+    np.testing.assert_array_equal(ds.tg_mean.isnull(), True)
+
+    inputs = [
+        wps_input_file("tas", netcdf_datasets["tas_missing"]),
+        wps_literal_input("freq", "YS"),
+        wps_literal_input("check_missing", "pct"),
+        wps_literal_input("missing_options", json.dumps({"pct": {"tolerance": 0.1}}))
+    ]
+    outputs = execute_process(client, identifier, inputs)
+    ds = xr.open_dataset(outputs[0])
+    np.testing.assert_array_equal(ds.tg_mean.isnull(), False)
+
+

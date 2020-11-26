@@ -64,7 +64,8 @@ class XclimIndicatorBase(FinchProcess):
             version="0.1",
             title=unidecode(attrs["title"]),
             abstract=unidecode(attrs["abstract"]),
-            inputs=convert_xclim_inputs_to_pywps(attrs["parameters"], attrs["identifier"]),
+            inputs=convert_xclim_inputs_to_pywps(attrs["parameters"], attrs["identifier"]) +
+                   [wpsio.check_missing, wpsio.missing_options],
             outputs=outputs,
             status_supported=True,
             store_supported=True,
@@ -98,7 +99,7 @@ class XclimIndicatorBase(FinchProcess):
         output_files = []
 
         for n in range(n_files):
-            # create a dict containting a single netcdf input for each type
+            # create a dict containing a single netcdf input for each type
             netcdf_inputs = {k: deque([queue[n]]) for k, queue in nc_inputs.items()}
             inputs = {**other_inputs, **netcdf_inputs}
 

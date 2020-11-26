@@ -2,12 +2,15 @@
 
 from copy import deepcopy
 from typing import Union
+import json
 
 from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
 from pywps.inout.literaltypes import AnyValue
 
 from .constants import ALLOWED_MODEL_NAMES, ALL_24_MODELS
 from .utils import PywpsInput, PywpsOutput
+
+from xclim.core.options import MISSING_METHODS, OPTIONS, MISSING_OPTIONS, CHECK_MISSING
 
 
 def copy_io(
@@ -165,6 +168,25 @@ ensemble_percentiles = LiteralInput(
     default="10,50,90",
     min_occurs=0,
 )
+
+check_missing = LiteralInput(
+    "check_missing",
+    "Missing value handling method",
+    abstract="Method used to determine which aggregations should be considered missing.",
+    data_type="string",
+    default=OPTIONS[CHECK_MISSING],
+    allowed_values=list(MISSING_METHODS.keys()),
+)
+
+
+missing_options = ComplexInput(
+    "missing_options",
+    "Missing method parameters",
+    abstract="JSON representation of dictionary of missing method parameters.",
+    default=json.dumps(OPTIONS[MISSING_OPTIONS][OPTIONS[CHECK_MISSING]]),
+    supported_formats=[FORMATS.JSON,]
+)
+
 
 output_format_netcdf_csv = LiteralInput(
     "output_format",

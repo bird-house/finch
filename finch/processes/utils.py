@@ -3,6 +3,7 @@ import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 import re
+import json
 from typing import (
     Callable,
     Deque,
@@ -35,12 +36,16 @@ from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
 import sentry_sdk
 import xarray as xr
 from netCDF4 import num2date
+import xclim
 
 LOGGER = logging.getLogger("PYWPS")
 
 PywpsInput = Union[LiteralInput, ComplexInput, BoundingBoxInput]
 PywpsOutput = Union[LiteralOutput, ComplexOutput, BoundingBoxOutput]
 RequestInputs = Dict[str, Deque[PywpsInput]]
+
+# These are parameters that set options. They are not `compute` arguments.
+INDICATOR_OPTIONS = ['check_missing', 'missing_options']
 
 
 def log_file_path(process: Process) -> Path:
@@ -107,18 +112,22 @@ def compute_indices(
     for name, input_queue in inputs.items():
         input = input_queue[0]
         if isinstance(input, ComplexInput):
-            ds = try_opendap(input)
-            global_attributes = global_attributes or ds.attrs
-            if re.match(r"^t[nx]?\d{1,2}$", name):
-                # dayofyear, get the first data_var
-                kwds[name] = list(ds.data_vars.values())[0]
-                continue
-            try:
-                kwds[name] = ds.data_vars[name]
-            except KeyError as e:
-                raise KeyError(
-                    f"Variable name '{name}' not in data_vars {list(ds.data_vars)}"
-                ) from e
+            if input.supported_formats[0] == FORMATS.JSON:
+                kwds[name] = json.loads(input.data)
+            else:
+                ds = try_opendap(input)
+                global_attributes = global_attributes or ds.attrs
+                if re.match(r"^t[nx]?\d{1,2}$", name):
+                    # dayofyear, get the first data_var
+                    kwds[name] = list(ds.data_vars.values())[0]
+                    continue
+                try:
+                    kwds[name] = ds.data_vars[name]
+                except KeyError as e:
+                    raise KeyError(
+                        f"Variable name '{name}' not in data_vars {list(ds.data_vars)}"
+                    ) from e
+
         elif isinstance(input, LiteralInput):
             kwds[name] = input.data
 
@@ -132,7 +141,10 @@ def compute_indices(
         }
     )
 
-    out = func(**kwds)
+    options = {name: kwds.pop(name) for name in INDICATOR_OPTIONS if name in kwds}
+    with xclim.core.options.set_options(**options):
+        out = func(**kwds)
+
     output_dataset = xr.Dataset(
         data_vars=None, coords=out.coords, attrs=global_attributes
     )

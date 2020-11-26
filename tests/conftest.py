@@ -28,8 +28,15 @@ def setup_temp_data(request):
     request.addfinalizer(_cleanup_temp)
 
 
-def _create_test_dataset(variable, cell_methods, stardard_name, units, seed=None):
-    """Create a synthetic dataset for variable"""
+def _create_test_dataset(variable, cell_methods, stardard_name, units, seed=None, missing=False):
+    """Create a synthetic dataset for variable.
+
+    Parameters
+    ----------
+    TODO:
+    missing: bool
+      If True, add a NaN on Jan 15.
+    """
     import numpy as np
     import xarray as xr
     import pandas as pd
@@ -63,6 +70,8 @@ def _create_test_dataset(variable, cell_methods, stardard_name, units, seed=None
 
     for v, dims in sorted(_vars.items()):
         data = rs.normal(size=tuple(_dims[d] for d in dims))
+        if missing:
+            data[14, :, :] = np.nan
         obj[v] = (dims, data, {"foo": "variable"})
         obj[v].attrs.update(_attrs[v])
 
@@ -70,10 +79,10 @@ def _create_test_dataset(variable, cell_methods, stardard_name, units, seed=None
 
 
 def _create_and_write_dataset(
-    variable, cell_methods, standard_name, units, seed=None
+    variable, **kwds
 ) -> Path:
     """Write a DataSet to disk and return its path"""
-    ds = _create_test_dataset(variable, cell_methods, standard_name, units, seed)
+    ds = _create_test_dataset(variable, **kwds)
     return _write_dataset(variable, ds)
 
 
@@ -85,11 +94,11 @@ def _write_dataset(variable, ds) -> Path:
 
 variable_descriptions = {
     # variable_name: (cell_methods, stardard_name, units)
-    "tas": ("time: mean within days", "air_temperature", "K"),
-    "tasmax": ("time: maximum within days", "air_temperature", "K"),
-    "tasmin": ("time: minimum within days", "air_temperature", "K"),
-    "pr": ("time: mean", "precipitation_flux", "mm/d"),
-    "prsn": ("time: mean", "snowfall_flux", "mm/d"),
+    "tas": {"cell_methods": "time: mean within days", "stardard_name": "air_temperature", "units": "K"},
+    "tasmax": {"cell_methods": "time: maximum within days", "stardard_name":"air_temperature", "units": "K"},
+    "tasmin": {"cell_methods": "time: minimum within days", "stardard_name":"air_temperature", "units": "K"},
+    "pr": {"cell_methods": "time: mean", "stardard_name":"precipitation_flux", "units": "mm/d"},
+    "prsn": {"cell_methods": "time: mean", "stardard_name":"snowfall_flux", "units": "mm/d"},
 }
 
 
@@ -98,8 +107,13 @@ def netcdf_datasets(request) -> Dict[str, Path]:
     """Returns a Dict mapping a variable name to a corresponding netcdf path"""
     datasets = {}
     for variable_name, description in variable_descriptions.items():
-        filename = _create_and_write_dataset(variable_name, *description, seed=1)
+        filename = _create_and_write_dataset(variable_name, **description, seed=1)
         datasets[variable_name] = filename
+
+        # With missing values
+        filename = _create_and_write_dataset(variable_name, **description, seed=1, missing=True)
+        datasets[variable_name + "_missing"] = filename
+
 
     tasmin = xr.open_dataset(datasets["tasmin"]).tasmin
     tas = xr.open_dataset(datasets["tas"]).tas
@@ -110,6 +124,7 @@ def netcdf_datasets(request) -> Dict[str, Path]:
     datasets["t10"] = _write_dataset("t10", t10)
     t90 = percentile_doy(tas, per=0.9).to_dataset(name="t90")
     datasets["t90"] = _write_dataset("t90", t90)
+
 
     return datasets
 
