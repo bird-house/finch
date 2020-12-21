@@ -1,10 +1,7 @@
-from pathlib import Path
-
 import numpy as np
-import pytest
+import xarray as xr
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
-import xarray as xr
 
 from finch.processes import SubsetBboxProcess
 

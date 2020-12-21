@@ -1,7 +1,8 @@
 import pytest
+import xarray as xr
+from numpy.testing import assert_array_equal
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
-import xarray as xr
 
 from finch.processes import SubsetGridPointProcess
 
@@ -29,6 +30,29 @@ def test_wps_xsubsetpoint(netcdf_datasets):
     ds = xr.open_dataset(out["output"][6:])
     assert ds.lat == 2
     assert ds.lon == 3
+
+
+def test_wps_multiple_xsubsetpoint(netcdf_datasets):
+    client = client_for(
+        Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
+    )
+
+    datainputs = (
+        f"resource=files@xlink:href=file://{netcdf_datasets['tas']};"
+        "lat=1.0,3.0,4.0;"
+        "lon=2.0,3.0,4.0;"
+        "start=2000;"
+    )
+
+    resp = client.get(
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset_gridpoint&datainputs={datainputs}"
+    )
+
+    assert_response_success(resp)
+    out = get_output(resp.xml)
+    ds = xr.open_dataset(out["output"][6:])
+    assert_array_equal(ds.lon, [2, 3, 4])
+    assert_array_equal(ds.lat, [1, 3, 4])
 
 
 @pytest.mark.online
