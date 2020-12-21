@@ -151,8 +151,8 @@ models = LiteralInput(
 shape = ComplexInput(
     "shape",
     "Polygon shape",
-    abstract="Polygon contour, as a geojson string.",
-    supported_formats=[FORMATS.GEOJSON],
+    abstract="Polygon contour, as a geojson string or as a zipped ShapeFile.",
+    supported_formats=[FORMATS.GEOJSON, FORMATS.SHP],
     min_occurs=1,
     max_occurs=1,
 )

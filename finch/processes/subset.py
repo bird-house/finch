@@ -1,4 +1,3 @@
-from copy import deepcopy
 import logging
 from pathlib import Path
 from threading import Lock
@@ -188,6 +187,11 @@ def finch_subset_shape(
      - end_date: Final date for temporal subsetting.
     """
     shape = request_inputs[wpsio.shape.identifier][0].data
+    # if isinstance(shape, bytes):
+    #     with open("test.zip", "wb") as src:
+    #         src.write(shape)
+    #     shape = "test.zip"
+
     start_date = single_input_or_none(request_inputs, wpsio.start_date.identifier)
     end_date = single_input_or_none(request_inputs, wpsio.end_date.identifier)
     variables = [r.data for r in request_inputs.get("variable", [])]
