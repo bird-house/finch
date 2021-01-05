@@ -20,6 +20,8 @@ from .wps_xsubset_point_dataset import (
     SubsetGridPointDatasetProcess,
 )
 from .wps_xsubset_polygon import SubsetPolygonProcess
+from .wps_sdba import EmpiricalQuantileMappingProcess
+
 
 logger = logging.getLogger("PYWPS")
 
@@ -100,20 +102,28 @@ def get_processes(all_processes=False):
                 make_xclim_indicator_process(ind, suffix, base_class=base_class)
             )
 
+        # Generic subsetting
         processes += [
+            SubsetGridPointProcess(),
+            SubsetBboxProcess(),
+            SubsetPolygonProcess(),
             SubsetGridPointDatasetProcess(),
-            SubsetGridPointBCCAQV2Process(),
             SubsetBboxDatasetProcess(),
-            SubsetBboxBCCAQV2Process(),
-            BCCAQV2HeatWave(),
         ]
 
-    # others
-    processes += [
-        SubsetBboxProcess(),
-        SubsetGridPointProcess(),
-        SubsetPolygonProcess(),
-    ]
+        # Statistical downscaling and bias adjustment
+        processes += [
+            EmpiricalQuantileMappingProcess(),
+        ]
+
+        # BCCAQvs subsetting (connects to Ouranos THREDDS server)
+        processes += [
+        SubsetGridPointBCCAQV2Process(),
+        SubsetBboxBCCAQV2Process(),
+        BCCAQV2HeatWave(),
+            ]
+
+
 
     return processes
 

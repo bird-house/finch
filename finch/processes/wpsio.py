@@ -16,7 +16,7 @@ from xclim.core.options import MISSING_METHODS, OPTIONS, MISSING_OPTIONS, CHECK_
 def copy_io(
     io: Union[PywpsInput, PywpsOutput], **kwargs
 ) -> Union[PywpsInput, PywpsOutput]:
-    """Creates a new input or outout with modified parameters.
+    """Creates a new input or output with modified parameters.
 
     Use this if you want one of the inputs in this file, but want to modify it.
 
