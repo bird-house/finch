@@ -1,16 +1,15 @@
 """Module storing inputs and outputs used in multiple processes. """
 
+import json
 from copy import deepcopy
 from typing import Union
-import json
 
-from pywps import ComplexInput, ComplexOutput, FORMATS, LiteralInput
+from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
 from pywps.inout.literaltypes import AnyValue
+from xclim.core.options import CHECK_MISSING, MISSING_METHODS, MISSING_OPTIONS, OPTIONS
 
-from .constants import ALLOWED_MODEL_NAMES, ALL_24_MODELS
+from .constants import ALL_24_MODELS, ALLOWED_MODEL_NAMES
 from .utils import PywpsInput, PywpsOutput
-
-from xclim.core.options import MISSING_METHODS, OPTIONS, MISSING_OPTIONS, CHECK_MISSING
 
 
 def copy_io(
@@ -57,6 +56,7 @@ lon = LiteralInput(
     abstract="Longitude coordinate. Accepts a comma separated list of floats for multiple grid cells.",
     data_type="string",
     min_occurs=1,
+    max_occurs=100
 )
 
 lat = LiteralInput(
@@ -65,6 +65,7 @@ lat = LiteralInput(
     abstract="Latitude coordinate. Accepts a comma separated list of floats for multiple grid cells.",
     data_type="string",
     min_occurs=1,
+    max_occurs=100
 )
 
 lon0 = LiteralInput(
