@@ -61,45 +61,5 @@ class SubsetPolygonProcess(FinchProcess):
             "done": 99,
         }
 
-    def subset(
-        self, wps_inputs, response, start_percentage=10, end_percentage=85, threads=1
-    ) -> MetaLink4:
-        shape = self.get_shape(wps_inputs)
-        start = self.get_input_or_none(wps_inputs, "start_date")
-        end = self.get_input_or_none(wps_inputs, "end_date")
-        variables = [r.data for r in wps_inputs.get("variable", [])]
-
-        n_files = len(wps_inputs["resource"])
-        count = 0
-
-        lock = Lock()
-
-        def _subset_function(resource):
-            nonlocal count
-
-            # if not subsetting by time, it's not necessary to decode times
-            time_subset = start is not None or end is not None
-            dataset = self.try_opendap(resource, decode_times=time_subset)
-
-            with lock:
-                count += 1
-                percentage = start_percentage + int(
-                    (count - 1) / n_files * (end_percentage - start_percentage)
-                )
-                self.write_log(
-                    f"Subsetting file {count} of {n_files}",
-                    response=response,
-                    percentage=percentage,
-                )
-
-            dataset = dataset[variables] if variables else dataset
-            return subset_shape(dataset, shape, start_date=start, end_date=end)
-
-        metalink = self.subset_resources(
-            wps_inputs["resource"], _subset_function, threads=threads
-        )
-
-        return metalink
-
     def _handler(self, request, response):
         return common_subset_handler(self, request, response, finch_subset_shape)
