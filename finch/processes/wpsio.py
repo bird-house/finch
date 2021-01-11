@@ -56,7 +56,7 @@ lon = LiteralInput(
     abstract="Longitude coordinate. Accepts a comma separated list of floats for multiple grid cells.",
     data_type="string",
     min_occurs=1,
-    max_occurs=100
+    max_occurs=100,
 )
 
 lat = LiteralInput(
@@ -65,7 +65,7 @@ lat = LiteralInput(
     abstract="Latitude coordinate. Accepts a comma separated list of floats for multiple grid cells.",
     data_type="string",
     min_occurs=1,
-    max_occurs=100
+    max_occurs=100,
 )
 
 lon0 = LiteralInput(
@@ -185,7 +185,7 @@ missing_options = ComplexInput(
     "Missing method parameters",
     abstract="JSON representation of dictionary of missing method parameters.",
     default=json.dumps(OPTIONS[MISSING_OPTIONS][OPTIONS[CHECK_MISSING]]),
-    supported_formats=[FORMATS.JSON,]
+    supported_formats=[FORMATS.JSON],
 )
 
 

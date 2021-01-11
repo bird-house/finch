@@ -95,10 +95,10 @@ def _write_dataset(variable, ds) -> Path:
 variable_descriptions = {
     # variable_name: (cell_methods, stardard_name, units)
     "tas": {"cell_methods": "time: mean within days", "stardard_name": "air_temperature", "units": "K"},
-    "tasmax": {"cell_methods": "time: maximum within days", "stardard_name":"air_temperature", "units": "K"},
-    "tasmin": {"cell_methods": "time: minimum within days", "stardard_name":"air_temperature", "units": "K"},
-    "pr": {"cell_methods": "time: mean", "stardard_name":"precipitation_flux", "units": "mm/d"},
-    "prsn": {"cell_methods": "time: mean", "stardard_name":"snowfall_flux", "units": "mm/d"},
+    "tasmax": {"cell_methods": "time: maximum within days", "stardard_name": "air_temperature", "units": "K"},
+    "tasmin": {"cell_methods": "time: minimum within days", "stardard_name": "air_temperature", "units": "K"},
+    "pr": {"cell_methods": "time: mean", "stardard_name": "precipitation_flux", "units": "mm/d"},
+    "prsn": {"cell_methods": "time: mean", "stardard_name": "snowfall_flux", "units": "mm/d"},
 }
 
 
@@ -114,7 +114,6 @@ def netcdf_datasets(request) -> Dict[str, Path]:
         filename = _create_and_write_dataset(variable_name, **description, seed=1, missing=True)
         datasets[variable_name + "_missing"] = filename
 
-
     tasmin = xr.open_dataset(datasets["tasmin"]).tasmin
     tas = xr.open_dataset(datasets["tas"]).tas
 
@@ -124,7 +123,6 @@ def netcdf_datasets(request) -> Dict[str, Path]:
     datasets["t10"] = _write_dataset("t10", t10)
     t90 = percentile_doy(tas, per=0.9).to_dataset(name="t90")
     datasets["t90"] = _write_dataset("t90", t90)
-
 
     return datasets
 

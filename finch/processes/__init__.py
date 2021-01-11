@@ -3,7 +3,6 @@ import logging
 from pywps.configuration import get_config_value
 import xclim
 import xclim.indicators.atmos
-from xclim.core.indicator import Indicator, registry
 
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .wps_base import make_xclim_indicator_process

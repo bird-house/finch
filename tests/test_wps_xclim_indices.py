@@ -37,7 +37,7 @@ def test_indicators_processes_discovery(indicator):
 
 def test_processes(client, netcdf_datasets):
     """Run a dummy calculation for every process, keeping some default parameters."""
-    indicators = finch.processes.indicators
+    # indicators = finch.processes.indicators
     processes = filter(lambda x: isinstance(x, XclimIndicatorBase), finch.processes.xclim.__dict__.values())
     literal_inputs = {
         "freq": "MS",
@@ -175,5 +175,3 @@ def test_missing_options(client, netcdf_datasets):
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
     np.testing.assert_array_equal(ds.tg_mean.isnull(), False)
-
-
