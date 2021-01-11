@@ -128,4 +128,4 @@ def _build_xclim():
     return mod
 
 
-xclim = _build_xclim()
+xclim = _build_xclim() # noqa

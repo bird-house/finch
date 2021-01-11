@@ -5,7 +5,7 @@ import pytest
 import finch.processes
 from finch.processes import indicators, get_processes
 from .common import client_for, CFG_FILE
-from numpy.testing import assert_array_equal
+
 
 def test_wps_caps(client):
     resp = client.get(service="wps", request="getcapabilities", version="1.0.0")
