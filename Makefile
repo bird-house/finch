@@ -146,7 +146,7 @@ docs:
 	@bash -c '$(MAKE) -C $@ clean html'
 	@echo "Open your browser to: file:/$(APP_ROOT)/docs/build/html/index.html"
 	## do not execute xdg-open automatically since it hangs travis and job does not complete
-	@echo "xdg-open $(APP_ROOT)/docs/build/html/index.html"
+	@bash if [ $TRAVIS != true ]; then echo "xdg-open $(APP_ROOT)/docs/build/html/index.html" fi
 
 ## Deployment targets
 
