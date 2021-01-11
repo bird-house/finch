@@ -35,7 +35,7 @@ def test_wps_subsetpoly_shapefile(client, netcdf_datasets):
     poly = shapefile_zip()
     inputs = [
         wps_input_file("resource", f"file://{netcdf_datasets['tasmin']}"),
-        wps_input_file("shape", f"file://{poly}"),
+        wps_input_file("shape", poly),
         wps_literal_input("variable", "tasmin"),
         wps_literal_input("start_date", "2000"),
     ]
