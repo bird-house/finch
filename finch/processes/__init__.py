@@ -98,12 +98,8 @@ def get_processes(all_processes=False):
 
         processes += [
             SubsetGridPointDatasetProcess(),
-            SubsetBboxDatasetProcess(),
-        ]
-
-        # BCCAQvs subsetting (connects to Ouranos THREDDS server)
-        processes += [
             SubsetGridPointBCCAQV2Process(),
+            SubsetBboxDatasetProcess(),
             SubsetBboxBCCAQV2Process(),
             BCCAQV2HeatWave(),
         ]
@@ -114,8 +110,6 @@ def get_processes(all_processes=False):
         SubsetGridPointProcess(),
         SubsetPolygonProcess(),
     ]
-
-
 
     return processes
 
