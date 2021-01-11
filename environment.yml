@@ -16,7 +16,7 @@ dependencies:
   - siphon
   # remember to match xclim version in environment-docs.yml as well
   - xclim==0.21
-  - clisops==0.5.0
+  - clisops==0.5.1
   - pywps==4.2.4
   - parse
   - pandoc  # for building docs on Travis-CI, version on Pypi too old
