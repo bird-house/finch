@@ -23,7 +23,7 @@ from .wps_xsubset_polygon import SubsetPolygonProcess
 logger = logging.getLogger("PYWPS")
 
 
-def get_indicators(module):
+def get_indicators(realms=["atmos"], exclude=()):
     """For all modules or classes listed, return the children that are instances of registered Indicator classes.
 
     module : A xclim module.
@@ -31,18 +31,12 @@ def get_indicators(module):
     from collections import OrderedDict
     from xclim.core.indicator import registry
 
-    out = {}
-    for key, val in module.__dict__.items():
-        if hasattr(val, "identifier"):
-            name = val.identifier.upper()
-            if name in registry:
-                out[key] = val
+    def filter_func(elem):
+        name, ind = elem
+        return ind.realm in realms and ind.identifier is not None and name not in exclude
 
-    return OrderedDict(sorted(out.items())).values()
-
-
-# List of Indicators that are exposed as WPS processes
-indicators = get_indicators(xclim.atmos)
+    out = OrderedDict(filter(filter_func, registry.items()))
+    return [ind.get_instance() for ind in out.values()]
 
 
 not_implemented = [
@@ -52,8 +46,11 @@ not_implemented = [
     "RH_FROMDEWPOINT",
     "E_SAT",
     "HUSS",
+    "TG_MAX",  # Not listed in _temperature.__all__
+    "TG_MIN"
 ]
-indicators = [i for i in indicators if i.identifier.upper() not in not_implemented]
+
+indicators = get_indicators(realms=["atmos"], exclude=not_implemented)
 ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i)]
 
 
@@ -101,8 +98,12 @@ def get_processes(all_processes=False):
 
         processes += [
             SubsetGridPointDatasetProcess(),
-            SubsetGridPointBCCAQV2Process(),
             SubsetBboxDatasetProcess(),
+        ]
+
+        # BCCAQvs subsetting (connects to Ouranos THREDDS server)
+        processes += [
+            SubsetGridPointBCCAQV2Process(),
             SubsetBboxBCCAQV2Process(),
             BCCAQV2HeatWave(),
         ]
@@ -113,6 +114,8 @@ def get_processes(all_processes=False):
         SubsetGridPointProcess(),
         SubsetPolygonProcess(),
     ]
+
+
 
     return processes
 
