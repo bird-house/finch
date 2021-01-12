@@ -1,19 +1,17 @@
+import tempfile
 from pathlib import Path
 from shutil import rmtree
-import tempfile
 from typing import Dict
 
 import pytest
-from pywps import configuration
 import xarray as xr
+from pywps import configuration
 from xclim.core.calendar import percentile_doy
-
 
 import finch.processes
 import finch.wsgi
 
 from .common import CFG_FILE, client_for
-
 
 TEMP_DIR = Path(__file__).parent / "tmp"
 
@@ -28,7 +26,9 @@ def setup_temp_data(request):
     request.addfinalizer(_cleanup_temp)
 
 
-def _create_test_dataset(variable, cell_methods, stardard_name, units, seed=None, missing=False):
+def _create_test_dataset(
+    variable, cell_methods, stardard_name, units, seed=None, missing=False
+):
     """Create a synthetic dataset for variable.
 
     Parameters
@@ -38,8 +38,8 @@ def _create_test_dataset(variable, cell_methods, stardard_name, units, seed=None
       If True, add a NaN on Jan 15.
     """
     import numpy as np
-    import xarray as xr
     import pandas as pd
+    import xarray as xr
 
     rs = np.random.RandomState(seed)
     _vars = {variable: ["time", "lon", "lat"]}
@@ -78,9 +78,7 @@ def _create_test_dataset(variable, cell_methods, stardard_name, units, seed=None
     return obj
 
 
-def _create_and_write_dataset(
-    variable, **kwds
-) -> Path:
+def _create_and_write_dataset(variable, **kwds) -> Path:
     """Write a DataSet to disk and return its path"""
     ds = _create_test_dataset(variable, **kwds)
     return _write_dataset(variable, ds)
@@ -94,24 +92,46 @@ def _write_dataset(variable, ds) -> Path:
 
 variable_descriptions = {
     # variable_name: (cell_methods, stardard_name, units)
-    "tas": {"cell_methods": "time: mean within days", "stardard_name": "air_temperature", "units": "K"},
-    "tasmax": {"cell_methods": "time: maximum within days", "stardard_name": "air_temperature", "units": "K"},
-    "tasmin": {"cell_methods": "time: minimum within days", "stardard_name": "air_temperature", "units": "K"},
-    "pr": {"cell_methods": "time: mean", "stardard_name": "precipitation_flux", "units": "mm/d"},
-    "prsn": {"cell_methods": "time: mean", "stardard_name": "snowfall_flux", "units": "mm/d"},
+    "tas": {
+        "cell_methods": "time: mean within days",
+        "stardard_name": "air_temperature",
+        "units": "K",
+    },
+    "tasmax": {
+        "cell_methods": "time: maximum within days",
+        "stardard_name": "air_temperature",
+        "units": "K",
+    },
+    "tasmin": {
+        "cell_methods": "time: minimum within days",
+        "stardard_name": "air_temperature",
+        "units": "K",
+    },
+    "pr": {
+        "cell_methods": "time: mean",
+        "stardard_name": "precipitation_flux",
+        "units": "mm/d",
+    },
+    "prsn": {
+        "cell_methods": "time: mean",
+        "stardard_name": "snowfall_flux",
+        "units": "mm/d",
+    },
 }
 
 
 @pytest.fixture(scope="session")
 def netcdf_datasets(request) -> Dict[str, Path]:
     """Returns a Dict mapping a variable name to a corresponding netcdf path"""
-    datasets = {}
+    datasets = dict()
     for variable_name, description in variable_descriptions.items():
         filename = _create_and_write_dataset(variable_name, **description, seed=1)
         datasets[variable_name] = filename
 
         # With missing values
-        filename = _create_and_write_dataset(variable_name, **description, seed=1, missing=True)
+        filename = _create_and_write_dataset(
+            variable_name, **description, seed=1, missing=True
+        )
         datasets[variable_name + "_missing"] = filename
 
     tasmin = xr.open_dataset(datasets["tasmin"]).tasmin

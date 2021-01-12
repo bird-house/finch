@@ -1,4 +1,3 @@
-from copy import deepcopy
 import logging
 from pathlib import Path
 from threading import Lock
@@ -177,6 +176,30 @@ def finch_subset_bbox(
     return output_files
 
 
+def extract_shp(path):
+    """Return a geopandas-compatible path to the shapefile stored in a zip archive.
+
+    If multiple shapefiles are included, return only the first one found.
+
+    Parameters
+    ----------
+    path : Path
+      Path to zip archive holding shapefile.
+
+    Returns
+    -------
+    str
+      zip:///<path to zip file>!<relative path to shapefile>
+    """
+    from zipfile import ZipFile
+    z = ZipFile(path)
+
+    fn = next(filter(lambda x: x.endswith(".shp"), z.namelist()))
+    z.close()
+
+    return f"zip://{path.absolute()}!{fn}"
+
+
 def finch_subset_shape(
     process: Process, netcdf_inputs: List[ComplexInput], request_inputs: RequestInputs,
 ) -> List[Path]:
@@ -187,7 +210,10 @@ def finch_subset_shape(
      - start_date: Initial date for temporal subsetting.
      - end_date: Final date for temporal subsetting.
     """
-    shape = request_inputs[wpsio.shape.identifier][0].data
+    shp = Path(request_inputs[wpsio.shape.identifier][0].file)
+    if shp.suffix == ".zip":
+        shp = extract_shp(shp)
+
     start_date = single_input_or_none(request_inputs, wpsio.start_date.identifier)
     end_date = single_input_or_none(request_inputs, wpsio.end_date.identifier)
     variables = [r.data for r in request_inputs.get("variable", [])]
@@ -217,7 +243,7 @@ def finch_subset_shape(
         dataset = dataset[variables] if variables else dataset
 
         subsetted = subset_shape(
-            dataset, shape=shape, start_date=start_date, end_date=end_date,
+            dataset, shape=shp, start_date=start_date, end_date=end_date,
         )
 
         if not all(subsetted.dims.values()):
