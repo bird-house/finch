@@ -46,8 +46,6 @@ not_implemented = [
     "RH_FROMDEWPOINT",
     "E_SAT",
     "HUSS",
-    "TG_MAX",  # Not listed in _temperature.__all__
-    "TG_MIN"
 ]
 
 indicators = get_indicators(realms=["atmos"], exclude=not_implemented)

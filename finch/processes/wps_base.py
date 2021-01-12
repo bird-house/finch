@@ -136,7 +136,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
     for name, attrs in params.items():
         if name in NC_INPUT_VARIABLES:
             inputs.append(make_nc_input(name))
-        elif name in ["thresh_tasmin", "thresh_tasmax", ]:
+        elif name in ["thresh_tasmin", "thresh_tasmax", "sum_thresh"]:
             inputs.append(make_thresh(name, attrs["default"], attrs["description"]))
         elif name in ["thresh", "ice_thresh", "calm_wind_thresh"]:
             inputs.append(make_thresh(name, attrs["default"], attrs["description"]))
@@ -146,6 +146,10 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
             inputs.append(make_window(name, attrs["default"], attrs["description"]))
         elif name in ["mid_date", "before_date", "start_date", "after_date"]:
             inputs.append(make_date_of_year(name, attrs["default"], attrs["description"]))
+        elif name in ["op"]:
+            inputs.append(make_op(name, attrs["default"], attrs["description"]))
+        elif name in ["start_date", "end_date"]:
+            inputs.append(make_datetime(name, attrs["default"], attrs["description"]))
         else:
             # raise NotImplementedError(f"{parent}: {name}")
             LOGGER.warning(f"{parent}: {name} is not implemented.")
@@ -168,8 +172,8 @@ def make_freq(name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "A
 
 def make_thresh(name, default, abstract=""):
     return LiteralInput(
-        name,
-        "Threshold",
+        identifier=name,
+        title="Threshold",
         abstract=abstract,
         data_type="string",
         min_occurs=0,
@@ -211,4 +215,28 @@ def make_nc_input(name):
         min_occurs=1,
         max_occurs=10000,
         supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
+    )
+
+
+def make_op(name, default, abstract=""):
+    return LiteralInput(
+        identifier=name,
+        title="Operation",
+        abstract=abstract,
+        data_type="string",
+        min_occurs=0,
+        max_occurs=1,
+        default=default,
+    )
+
+
+def make_datetime(name, default, abstract=""):
+    return LiteralInput(
+        identifier=name,
+        title="Datetime",
+        abstract=abstract,
+        data_type="datetime",
+        min_occurs=0,
+        max_occurs=1,
+        default=default,
     )

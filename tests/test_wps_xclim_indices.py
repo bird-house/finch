@@ -15,6 +15,7 @@ from tests.utils import execute_process, wps_input_file, wps_literal_input
 from pathlib import Path
 from pywps.app.exceptions import ProcessError
 from unittest import mock
+from numpy.testing import assert_equal
 
 
 def _get_output_standard_name(process_identifier):
@@ -32,7 +33,7 @@ def test_indicators_processes_discovery(indicator):
     # no input necessary from the user in the WPS process
     parameters = [k for k in sig.parameters.keys() if k != "phase"]
     for parameter, input_ in zip(parameters, process.inputs):
-        assert parameter == input_.identifier
+        assert_equal(parameter, input_.identifier, indicator.identifier)
 
 
 def test_processes(client, netcdf_datasets):
