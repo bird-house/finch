@@ -1,8 +1,10 @@
 from finch.processes.wps_xclim_indices import XclimIndicatorBase
 from inspect import signature
 
+import json
 import pytest
 from lxml import etree
+import numpy as np
 import xarray as xr
 import pandas as pd
 
@@ -21,25 +23,22 @@ def _get_output_standard_name(process_identifier):
             return p.xci.standard_name
 
 
-def test_indicators_processes_discovery():
-    for indicator in finch.processes.indicators:
-        process = make_xclim_indicator_process(indicator, "Process", XclimIndicatorBase)
-        assert indicator.identifier == process.identifier
-        sig = signature(indicator.compute)
-        # the phase parameter is set by a partial function in xclim, so there is
-        # no input necessary from the user in the WPS process
-        parameters = [k for k in sig.parameters.keys() if k != "phase"]
-        for parameter, input_ in zip(parameters, process.inputs):
-            assert parameter == input_.identifier
+@pytest.mark.parametrize("indicator", finch.processes.indicators)
+def test_indicators_processes_discovery(indicator):
+    process = make_xclim_indicator_process(indicator, "Process", XclimIndicatorBase)
+    assert indicator.identifier == process.identifier
+    sig = signature(indicator.compute)
+    # the phase parameter is set by a partial function in xclim, so there is
+    # no input necessary from the user in the WPS process
+    parameters = [k for k in sig.parameters.keys() if k != "phase"]
+    for parameter, input_ in zip(parameters, process.inputs):
+        assert parameter == input_.identifier
 
 
 def test_processes(client, netcdf_datasets):
     """Run a dummy calculation for every process, keeping some default parameters."""
-    indicators = finch.processes.indicators
-    processes = [
-        make_xclim_indicator_process(ind, "Process", XclimIndicatorBase)
-        for ind in indicators
-    ]
+    # indicators = finch.processes.indicators
+    processes = filter(lambda x: isinstance(x, XclimIndicatorBase), finch.processes.xclim.__dict__.values())
     literal_inputs = {
         "freq": "MS",
         "window": "3",
@@ -155,3 +154,24 @@ def test_heat_wave_index_thresh_parameter(client, netcdf_datasets):
     ds = xr.open_dataset(outputs[0])
 
     assert ds["heat_wave_index"].standard_name == _get_output_standard_name(identifier)
+
+
+def test_missing_options(client, netcdf_datasets):
+    identifier = "tg_mean"
+    inputs = [
+        wps_input_file("tas", netcdf_datasets["tas_missing"]),
+        wps_literal_input("freq", "YS"),
+    ]
+    outputs = execute_process(client, identifier, inputs)
+    ds = xr.open_dataset(outputs[0])
+    np.testing.assert_array_equal(ds.tg_mean.isnull(), True)
+
+    inputs = [
+        wps_input_file("tas", netcdf_datasets["tas_missing"]),
+        wps_literal_input("freq", "YS"),
+        wps_literal_input("check_missing", "pct"),
+        wps_literal_input("missing_options", json.dumps({"pct": {"tolerance": 0.1}}))
+    ]
+    outputs = execute_process(client, identifier, inputs)
+    ds = xr.open_dataset(outputs[0])
+    np.testing.assert_array_equal(ds.tg_mean.isnull(), False)

@@ -1,5 +1,8 @@
-pywps>=4.2.0<4.3
-xclim==0.15.2
+cftime
+pywps>=4.2.0,<4.3
+xclim~=0.21.0
+xarray>=0.14
+clisops>=0.5.1,<0.6.0
 geopandas
 jinja2
 click

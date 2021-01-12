@@ -3,7 +3,6 @@ import logging
 from pywps.configuration import get_config_value
 import xclim
 import xclim.indicators.atmos
-from xclim.core.indicator import Indicator
 
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .wps_base import make_xclim_indicator_process
@@ -24,23 +23,34 @@ from .wps_xsubset_polygon import SubsetPolygonProcess
 logger = logging.getLogger("PYWPS")
 
 
-def get_indicators(module):
-    """For a given module, return the children that are instances of xclim.utils.Indicator."""
-    return [o for o in module.__dict__.values() if isinstance(o, Indicator)]
+def get_indicators(realms=["atmos"], exclude=()):
+    """For all modules or classes listed, return the children that are instances of registered Indicator classes.
 
+    module : A xclim module.
+    """
+    from collections import OrderedDict
+    from xclim.core.indicator import registry
 
-# List of Indicators that are exposed as WPS processes
-indicators = get_indicators(xclim.indicators.atmos)
+    def filter_func(elem):
+        name, ind = elem
+        return ind.realm in realms and ind.identifier is not None and name not in exclude
 
-for i in indicators:
-    # Todo: remove me after xclim fixes the identifier name
-    if i.compute.__name__ == "hot_spell_max_length":
-        i.identifier = "hot_spell_max_length"
+    out = OrderedDict(filter(filter_func, registry.items()))
+    return [ind.get_instance() for ind in out.values()]
+
 
 not_implemented = [
-    "DC",  # lat input type is not implemented and start_up_mode argument seems to be missing?
+    "DC",
+    "FWI",
+    "RH",
+    "RH_FROMDEWPOINT",
+    "E_SAT",
+    "HUSS",
+    "TG_MAX",  # Not listed in _temperature.__all__
+    "TG_MIN"
 ]
-indicators = [i for i in indicators if i.identifier not in not_implemented]
+
+indicators = get_indicators(realms=["atmos"], exclude=not_implemented)
 ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i)]
 
 
@@ -118,4 +128,4 @@ def _build_xclim():
     return mod
 
 
-xclim = _build_xclim()
+xclim = _build_xclim() # noqa

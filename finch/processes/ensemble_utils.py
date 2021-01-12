@@ -343,7 +343,7 @@ def make_output_filename(process: Process, inputs: List[PywpsInput]):
 def uses_accepted_netcdf_variables(indicator: Indicator) -> bool:
     """Returns True if this indicator uses  netcdf variables in `accepted_variables`."""
 
-    params = eval(indicator.json()["parameters"])
+    params = indicator.json()["parameters"]
     return not any(p in not_implemented_variables for p in params)
 
 
@@ -352,7 +352,7 @@ def make_indicator_inputs(
 ) -> List[RequestInputs]:
     """From a list of files, make a list of inputs used to call the given xclim indicator."""
 
-    arguments = set(eval(indicator.json()["parameters"]))
+    arguments = set(indicator.json()["parameters"])
 
     required_netcdf_args = accepted_variables.intersection(arguments)
 

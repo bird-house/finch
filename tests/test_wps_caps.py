@@ -9,11 +9,21 @@ from .common import client_for, CFG_FILE
 
 def test_wps_caps(client):
     resp = client.get(service="wps", request="getcapabilities", version="1.0.0")
+
+    # List of process identifiers returned by server
     names = resp.xpath_text(
         "/wps:Capabilities/wps:ProcessOfferings/wps:Process/ows:Identifier"
-    )
+    ).split()
 
-    assert len(get_processes()) == len(names.split())
+    # List of expected process names
+    pnames = [p.identifier for p in get_processes()]
+
+    # Sort
+    pnames.sort()
+    names.sort()
+
+    assert set(names) == set(pnames)
+    assert len(names) == len(pnames)
 
 
 @pytest.fixture
@@ -26,6 +36,7 @@ def monkeypatch_config(request):
 
 
 def test_wps_caps_no_datasets(client, monkeypatch):
+    """Check that when no default dataset is configured, we get a lot less indicators. """
     def mock_config_get(*args, **kwargs):
         if args[:2] == ("finch", "dataset_bccaqv2"):
             return ""
@@ -39,7 +50,7 @@ def test_wps_caps_no_datasets(client, monkeypatch):
     resp = client.get(service="wps", request="getcapabilities", version="1.0.0")
     names = resp.xpath_text(
         "/wps:Capabilities/wps:ProcessOfferings/wps:Process/ows:Identifier"
-    )
+    ).split()
 
     subset_processes_count = 3
-    assert len(indicators) + subset_processes_count == len(names.split())
+    assert len(indicators) + subset_processes_count == len(names)

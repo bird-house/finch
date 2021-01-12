@@ -62,9 +62,10 @@ class XclimIndicatorBase(FinchProcess):
             self._handler,
             identifier=attrs["identifier"],
             version="0.1",
-            title=unidecode(attrs["long_name"]),
+            title=unidecode(attrs["title"]),
             abstract=unidecode(attrs["abstract"]),
-            inputs=convert_xclim_inputs_to_pywps(eval(attrs["parameters"])),
+            inputs=convert_xclim_inputs_to_pywps(attrs["parameters"], attrs["identifier"]) + [wpsio.check_missing,
+                                                                                              wpsio.missing_options],
             outputs=outputs,
             status_supported=True,
             store_supported=True,
@@ -98,7 +99,7 @@ class XclimIndicatorBase(FinchProcess):
         output_files = []
 
         for n in range(n_files):
-            # create a dict containting a single netcdf input for each type
+            # create a dict containing a single netcdf input for each type
             netcdf_inputs = {k: deque([queue[n]]) for k, queue in nc_inputs.items()}
             inputs = {**other_inputs, **netcdf_inputs}
 
@@ -116,11 +117,11 @@ class XclimIndicatorBase(FinchProcess):
             )
 
             with FinchProgressBar(
-                logging_function=_log,
-                start_percentage=start_percentage,
-                end_percentage=end_percentage,
-                width=15,
-                dt=1,
+                    logging_function=_log,
+                    start_percentage=start_percentage,
+                    end_percentage=end_percentage,
+                    width=15,
+                    dt=1,
             ):
                 dataset_to_netcdf(out, output_filename)
 
@@ -136,7 +137,7 @@ class XclimIndicatorBase(FinchProcess):
 
 
 def _make_unique_drs_filename(
-    ds: xr.Dataset, existing_names: List[str],
+        ds: xr.Dataset, existing_names: List[str],
 ):
     """Generate a drs filename: avoid overwriting files by adding a dash and a number to the filename."""
     try:
