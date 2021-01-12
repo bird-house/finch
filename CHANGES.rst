@@ -6,6 +6,8 @@ Changes
 
 * fix to chunk regions of subsetted files
 * use `cruft` to propagate changes from the birdhouse cookiecutter
+* catch documentation build error earlier since doc build is part of regular CI build
+* catch tutorial notebooks out of sync with code earlier since also part of regular CI build
 * use mock imports to facilitate building docs
 * add partial support for xclim v0.21
 * add support for shapefiles in `subset_shape`
