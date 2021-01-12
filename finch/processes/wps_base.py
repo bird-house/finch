@@ -114,6 +114,8 @@ NC_INPUT_VARIABLES = [
     "tn90",
     "t10",
     "t90",
+    "q",
+    "da",
     "sic",
     "snd",
     "area",
@@ -127,6 +129,9 @@ NC_INPUT_VARIABLES = [
     "sfcWindfromdir",
 ]
 
+# TODO: Some indicators have a default value for a given argument, while others do not.
+# TODO: `op` is used for both reduce and binary logical operations... cannot differentiate here...
+# TODO: `support **indexer argument, possibly by creating both season and month inputs.
 
 def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]:
     """Convert xclim indicators properties to pywps inputs."""
@@ -147,9 +152,17 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
         elif name in ["mid_date", "before_date", "start_date", "after_date"]:
             inputs.append(make_date_of_year(name, attrs["default"], attrs["description"]))
         elif name in ["op"]:
-            inputs.append(make_op(name, attrs["default"], attrs["description"]))
+            inputs.append(make_binary_op(name, attrs["default"], attrs["description"]))
+        elif name in ["mode"]:
+            inputs.append(make_mode(name, attrs["default"], attrs["description"]))
         elif name in ["start_date", "end_date"]:
             inputs.append(make_datetime(name, attrs["default"], attrs["description"]))
+        elif name in ["t"]:
+            inputs.append(make_return_period(name, attrs["default"], attrs["description"]))
+        elif name in ["dist"]:
+            inputs.append(make_distribution(name, attrs["default"], attrs["description"]))
+        elif name in ["method"]:
+            inputs.append(make_fit_method(name, attrs["default"], attrs["description"]))
         else:
             # raise NotImplementedError(f"{parent}: {name}")
             LOGGER.warning(f"{parent}: {name} is not implemented.")
@@ -194,6 +207,19 @@ def make_window(name, default, abstract=""):
     )
 
 
+def make_mode(name, default="max", abstract=""):
+    return LiteralInput(
+        name,
+        "Mode",
+        abstract=abstract,
+        data_type="string",
+        min_occurs=0,
+        max_occurs=1,
+        default=default,
+        allowed_values=["min", "max"]
+    )
+
+
 def make_date_of_year(name, default, abstract=""):
     return LiteralInput(
         name,
@@ -218,15 +244,29 @@ def make_nc_input(name):
     )
 
 
-def make_op(name, default, abstract=""):
+def make_binary_op(name, default=">", abstract=""):
     return LiteralInput(
         identifier=name,
-        title="Operation",
+        title="Binary operation",
         abstract=abstract,
         data_type="string",
         min_occurs=0,
         max_occurs=1,
         default=default,
+        allowed_values=[">", "<", ">=", "<=", "gt", "lt", "ge", "le"]
+    )
+
+
+def make_reduce_op(name, default="max", abstract=""):
+    return LiteralInput(
+        identifier=name,
+        title="Reduce operation",
+        abstract=abstract,
+        data_type="string",
+        min_occurs=0,
+        max_occurs=1,
+        default=default,
+        allowed_values=['min', 'max', 'mean', 'std', 'var', 'count', 'sum', 'argmax', 'argmin']
     )
 
 
@@ -240,3 +280,40 @@ def make_datetime(name, default, abstract=""):
         max_occurs=1,
         default=default,
     )
+
+
+def make_return_period(name, default, abstract=""):
+    return LiteralInput(
+        identifier=name,
+        title="Datetime",
+        abstract=abstract,
+        data_type="integer",
+        min_occurs=1,
+        max_occurs=100,
+    )
+
+
+def make_distribution(name, default, abstract=""):
+    return LiteralInput(
+        identifier=name,
+        title="Statistical distribution",
+        abstract=abstract,
+        data_type="string",
+        min_occurs=0,
+        max_occurs=1,
+        default=default,
+    )
+
+
+def make_fit_method(name, default, abstract=""):
+    return LiteralInput(
+        identifier=name,
+        title="Parameter fitting method",
+        abstract=abstract,
+        data_type="string",
+        min_occurs=0,
+        max_occurs=1,
+        default=default,
+        allowed_values=["ML", "PWM"]
+    )
+

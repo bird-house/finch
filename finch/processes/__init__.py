@@ -46,9 +46,13 @@ not_implemented = [
     "RH_FROMDEWPOINT",
     "E_SAT",
     "HUSS",
+    "STATS",
+    "FREQ_ANALYSIS",
+    "DOY_QMAX",
+    "DOY_QMIN"
 ]
 
-indicators = get_indicators(realms=["atmos"], exclude=not_implemented)
+indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
 ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i)]
 
 

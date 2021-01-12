@@ -36,6 +36,7 @@ def test_indicators_processes_discovery(indicator):
         assert_equal(parameter, input_.identifier, indicator.identifier)
 
 
+# TODO : Extend test coverage
 def test_processes(client, netcdf_datasets):
     """Run a dummy calculation for every process, keeping some default parameters."""
     # indicators = finch.processes.indicators
