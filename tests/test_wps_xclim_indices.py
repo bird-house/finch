@@ -175,4 +175,3 @@ def test_missing_options(client, netcdf_datasets):
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
     np.testing.assert_array_equal(ds.tg_mean.isnull(), False)
-
