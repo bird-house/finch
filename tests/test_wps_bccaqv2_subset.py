@@ -1,4 +1,3 @@
-from pathlib import Path
 import zipfile
 
 from netCDF4 import Dataset

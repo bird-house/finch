@@ -147,8 +147,8 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
         elif name in ["mid_date", "before_date", "start_date", "after_date"]:
             inputs.append(make_date_of_year(name, attrs["default"], attrs["description"]))
         else:
-            #raise NotImplementedError(f"{parent}: {name}")
-            LOGGER.warning(f"{parent}: {name} is not implemented.".format(name))
+            # raise NotImplementedError(f"{parent}: {name}")
+            LOGGER.warning(f"{parent}: {name} is not implemented.")
 
     return inputs
 

@@ -11,6 +11,10 @@ VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
 
 
+def shapefile_zip():
+    return (Path(__file__).parent / "data" / "shapefile.zip").as_posix()
+
+
 def mock_local_datasets(monkeypatch, filenames=None):
     """Mock the get_bccaqv2_local_files_datasets function
 
