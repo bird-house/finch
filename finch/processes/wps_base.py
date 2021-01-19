@@ -129,9 +129,6 @@ NC_INPUT_VARIABLES = [
     "sfcWindfromdir",
 ]
 
-# TODO: Some indicators have a default value for a given argument, while others do not.
-# TODO: `op` is used for both reduce and binary logical operations... cannot differentiate here...
-# TODO: `support **indexer argument, possibly by creating both season and month inputs.
 
 def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]:
     """Convert xclim indicators properties to pywps inputs."""
@@ -147,12 +144,18 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
             inputs.append(make_thresh(name, attrs["default"], attrs["description"]))
         elif name in ["freq"]:
             inputs.append(make_freq(name, attrs["default"], attrs["description"]))
+        elif name in ["indexer"]:
+            inputs.append(make_month())
+            inputs.append(make_season())
         elif name in ["window"]:
             inputs.append(make_window(name, attrs["default"], attrs["description"]))
         elif name in ["mid_date", "before_date", "start_date", "after_date"]:
             inputs.append(make_date_of_year(name, attrs["default"], attrs["description"]))
         elif name in ["op"]:
-            inputs.append(make_binary_op(name, attrs["default"], attrs["description"]))
+            if "reduce" in attrs["description"].lower():
+                inputs.append(make_reduce_op(name, attrs["default"], attrs["description"]))
+            else:
+                inputs.append(make_binary_op(name, attrs["default"], attrs["description"]))
         elif name in ["mode"]:
             inputs.append(make_mode(name, attrs["default"], attrs["description"]))
         elif name in ["start_date", "end_date"]:
@@ -208,6 +211,8 @@ def make_window(name, default, abstract=""):
 
 
 def make_mode(name, default="max", abstract=""):
+    if default == "none":
+        default = "max"
     return LiteralInput(
         name,
         "Mode",
@@ -258,6 +263,8 @@ def make_binary_op(name, default=">", abstract=""):
 
 
 def make_reduce_op(name, default="max", abstract=""):
+    if default == "none":
+        default = "max"
     return LiteralInput(
         identifier=name,
         title="Reduce operation",
@@ -317,3 +324,26 @@ def make_fit_method(name, default, abstract=""):
         allowed_values=["ML", "PWM"]
     )
 
+
+def make_month():
+    return LiteralInput(
+        identifier="month",
+        title="Select by month",
+        abstract="Months of the year over which to compute indicator.",
+        data_type="integer",
+        min_occurs=0,
+        max_occurs=12,
+        allowed_values=list(range(1, 13))
+    )
+
+
+def make_season():
+    return LiteralInput(
+        identifier="season",
+        title="Select by season",
+        abstract="Climatological season over which to compute indicator.",
+        data_type="string",
+        min_occurs=0,
+        max_occurs=1,
+        allowed_values=["DJF", "MAM", "JJA", "SON"]
+    )

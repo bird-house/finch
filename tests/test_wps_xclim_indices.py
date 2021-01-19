@@ -31,9 +31,15 @@ def test_indicators_processes_discovery(indicator):
     sig = signature(indicator.compute)
     # the phase parameter is set by a partial function in xclim, so there is
     # no input necessary from the user in the WPS process
-    parameters = [k for k in sig.parameters.keys() if k != "phase"]
-    for parameter, input_ in zip(parameters, process.inputs):
-        assert_equal(parameter, input_.identifier, indicator.identifier)
+    parameters = set([k for k in sig.parameters.keys() if k != "phase"])
+    parameters.add("check_missing")
+    parameters.add("missing_options")
+    if "indexer" in parameters:
+        parameters.remove("indexer")
+        parameters.add("month")
+        parameters.add("season")
+
+    assert_equal(parameters, set(i.identifier for i in process.inputs), indicator.identifier)
 
 
 # TODO : Extend test coverage
