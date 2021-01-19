@@ -42,12 +42,6 @@ def _create_test_dataset(
     missing: bool
       If True, add a NaN on Jan 15.
     """
-<<<<<<< HEAD
-=======
-    import numpy as np
-    import pandas as pd
-    import xarray as xr
->>>>>>> master
 
     rs = np.random.RandomState(seed)
     _vars = {variable: ["time", "lon", "lat"]}
