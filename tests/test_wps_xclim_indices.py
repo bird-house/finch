@@ -1,5 +1,10 @@
 from finch.processes.wps_xclim_indices import XclimIndicatorBase
 from inspect import signature
+from pywps import Service
+from pywps.tests import assert_response_success
+
+#from raven.processes import TSStatsProcess, FreqAnalysisProcess, FitProcess, BaseFlowIndexProcess
+#from .common import client_for, TESTDATA, CFG_FILE, get_output
 
 import json
 import pytest
@@ -11,7 +16,7 @@ import pandas as pd
 import finch
 import finch.processes
 from finch.processes.wps_base import make_xclim_indicator_process
-from tests.utils import execute_process, wps_input_file, wps_literal_input
+from . utils import execute_process, wps_input_file, wps_literal_input
 from pathlib import Path
 from pywps.app.exceptions import ProcessError
 from unittest import mock
@@ -183,3 +188,48 @@ def test_missing_options(client, netcdf_datasets):
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
     np.testing.assert_array_equal(ds.tg_mean.isnull(), False)
+
+
+def test_stats_process(client, netcdf_datasets):
+    identifier = "stats"
+
+    inputs = [
+        wps_input_file("da",  netcdf_datasets["discharge"]),
+        wps_literal_input("freq", "YS"),
+        wps_literal_input("op", "max"),
+        wps_literal_input("season", "JJA"),
+        wps_literal_input("variable", "discharge")
+    ]
+    outputs = execute_process(client, identifier, inputs)
+    ds = xr.open_dataset(outputs[0])
+    np.testing.assert_array_equal(ds.qsummermax.isnull(), False)
+
+
+def test_freqanalysis_process(client, netcdf_datasets):
+    identifier = "freq_analysis"
+    inputs = [
+        wps_input_file("da", netcdf_datasets["discharge"]),
+        wps_literal_input("t", "2"),
+        wps_literal_input("t", "50"),
+        wps_literal_input("freq", "YS"),
+        wps_literal_input("mode", "max"),
+        wps_literal_input("season", "JJA"),
+        wps_literal_input("dist", "gumbel_r"),
+        wps_literal_input("variable", "discharge")
+    ]
+    outputs = execute_process(client, identifier, inputs)
+    ds = xr.open_dataset(outputs[0])
+    np.testing.assert_array_equal(ds.q1maxsummer.shape, (2, 5, 6, 1))
+
+
+def test_fit_process(client, netcdf_datasets):
+    identifier = "fit"
+
+    inputs = [
+        wps_input_file("da", netcdf_datasets["discharge"]),
+        wps_literal_input("dist", "norm"),
+        ]
+    outputs = execute_process(client, identifier, inputs)
+    ds = xr.open_dataset(outputs[0])
+    np.testing.assert_array_equal(ds.params.shape, (2, 5, 6, 1))
+

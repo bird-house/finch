@@ -112,15 +112,26 @@ def compute_indices(
     for name, input_queue in inputs.items():
         input = input_queue[0]
         if isinstance(input, ComplexInput):
+
             if input.supported_formats[0] == FORMATS.JSON:
                 kwds[name] = json.loads(input.data)
             else:
                 ds = try_opendap(input)
                 global_attributes = global_attributes or ds.attrs
+                vars = list(ds.data_vars.values())
+
+                # If only one variable in dataset, use it.
+                if len(vars) == 1:
+                    kwds[name] = vars[0]
+                    continue
+
+                # TODO: Hum, unclear what this is. Review
                 if re.match(r"^t[nx]?\d{1,2}$", name):
-                    # dayofyear, get the first data_var
+                    # dayofyear, get the first data_var (DH: I think this is rather for percentiles)
                     kwds[name] = list(ds.data_vars.values())[0]
                     continue
+
+                # Get variable matching input parameter name.
                 try:
                     kwds[name] = ds.data_vars[name]
                 except KeyError as e:
@@ -128,8 +139,13 @@ def compute_indices(
                         f"Variable name '{name}' not in data_vars {list(ds.data_vars)}"
                     ) from e
 
+                # TODO: Add support for `variable` WPS parameter specifying variable name.
+
         elif isinstance(input, LiteralInput):
-            kwds[name] = input.data
+            value = [inp.data for inp in input_queue]
+            if len(input_queue) == 1:
+                value = value[0]
+            kwds[name] = value
 
     global_attributes.update(
         {

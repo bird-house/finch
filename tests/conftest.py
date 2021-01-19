@@ -27,7 +27,7 @@ def setup_temp_data(request):
 
 
 def _create_test_dataset(
-    variable, cell_methods, stardard_name, units, seed=None, missing=False
+    variable, cell_methods, standard_name, units, seed=None, missing=False
 ):
     """Create a synthetic dataset for variable.
 
@@ -46,7 +46,7 @@ def _create_test_dataset(
     _dims = {"time": 365, "lon": 5, "lat": 6}
     _attrs = {
         variable: dict(
-            units=units, cell_methods=cell_methods, standard_name=stardard_name
+            units=units, cell_methods=cell_methods, standard_name=standard_name
         )
     }
 
@@ -91,32 +91,37 @@ def _write_dataset(variable, ds) -> Path:
 
 
 variable_descriptions = {
-    # variable_name: (cell_methods, stardard_name, units)
+    # variable_name: (cell_methods, standard_name, units)
     "tas": {
         "cell_methods": "time: mean within days",
-        "stardard_name": "air_temperature",
+        "standard_name": "air_temperature",
         "units": "K",
     },
     "tasmax": {
         "cell_methods": "time: maximum within days",
-        "stardard_name": "air_temperature",
+        "standard_name": "air_temperature",
         "units": "K",
     },
     "tasmin": {
         "cell_methods": "time: minimum within days",
-        "stardard_name": "air_temperature",
+        "standard_name": "air_temperature",
         "units": "K",
     },
     "pr": {
         "cell_methods": "time: mean",
-        "stardard_name": "precipitation_flux",
+        "standard_name": "precipitation_flux",
         "units": "mm/d",
     },
     "prsn": {
         "cell_methods": "time: mean",
-        "stardard_name": "snowfall_flux",
+        "standard_name": "snowfall_flux",
         "units": "mm/d",
     },
+    "discharge": {
+            "cell_methods": "time: mean",
+            "standard_name": "water_volume_transport_in_river_channel",
+            "units": "m^3 s-1",
+        },
 }
 
 
