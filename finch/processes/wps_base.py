@@ -165,7 +165,10 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
         elif name in ["dist"]:
             inputs.append(make_distribution(name, attrs["default"], attrs["description"]))
         elif name in ["method"]:
-            inputs.append(make_fit_method(name, attrs["default"], attrs["description"]))
+            if "fitting" in attrs["description"].lower():
+                inputs.append(make_fit_method(name, attrs["default"], attrs["description"]))
+            else:
+                pass
         else:
             # raise NotImplementedError(f"{parent}: {name}")
             LOGGER.warning(f"{parent}: {name} is not implemented.")

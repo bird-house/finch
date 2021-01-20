@@ -46,6 +46,7 @@ not_implemented = [
     "RH_FROMDEWPOINT",
     "E_SAT",
     "HUSS",
+    "DEGREE_DAYS_DEPASSMENT_DATE",
 ]
 
 indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
