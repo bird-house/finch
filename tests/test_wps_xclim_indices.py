@@ -1,11 +1,4 @@
-from finch.processes.wps_xclim_indices import XclimIndicatorBase
 from inspect import signature
-from pywps import Service
-from pywps.tests import assert_response_success
-
-#from raven.processes import TSStatsProcess, FreqAnalysisProcess, FitProcess, BaseFlowIndexProcess
-#from .common import client_for, TESTDATA, CFG_FILE, get_output
-
 import json
 import pytest
 from lxml import etree
@@ -15,6 +8,7 @@ import pandas as pd
 
 import finch
 import finch.processes
+from finch.processes.wps_xclim_indices import XclimIndicatorBase
 from finch.processes.wps_base import make_xclim_indicator_process
 from . utils import execute_process, wps_input_file, wps_literal_input
 from pathlib import Path
@@ -196,7 +190,7 @@ def test_stats_process(client, netcdf_datasets):
     identifier = "stats"
 
     inputs = [
-        wps_input_file("da",  netcdf_datasets["pr_discharge"]),
+        wps_input_file("da", netcdf_datasets["pr_discharge"]),
         wps_literal_input("freq", "YS"),
         wps_literal_input("op", "max"),
         wps_literal_input("season", "JJA"),
@@ -230,9 +224,7 @@ def test_fit_process(client, netcdf_datasets):
     inputs = [
         wps_input_file("da", netcdf_datasets["discharge"]),
         wps_literal_input("dist", "norm"),
-        ]
+    ]
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
     np.testing.assert_array_equal(ds.params.shape, (2, 5, 6, 1))
-
-

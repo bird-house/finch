@@ -118,10 +118,10 @@ variable_descriptions = {
         "units": "mm/d",
     },
     "discharge": {
-            "cell_methods": "time: mean",
-            "standard_name": "water_volume_transport_in_river_channel",
-            "units": "m^3 s-1",
-        },
+        "cell_methods": "time: mean",
+        "standard_name": "water_volume_transport_in_river_channel",
+        "units": "m^3 s-1",
+    },
 }
 
 
