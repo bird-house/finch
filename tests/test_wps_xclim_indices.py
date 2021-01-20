@@ -39,6 +39,7 @@ def test_indicators_processes_discovery(indicator):
     parameters = set([k for k in sig.parameters.keys() if k != "phase"])
     parameters.add("check_missing")
     parameters.add("missing_options")
+    parameters.add("variable")
     if "indexer" in parameters:
         parameters.remove("indexer")
         parameters.add("month")
@@ -191,10 +192,11 @@ def test_missing_options(client, netcdf_datasets):
 
 
 def test_stats_process(client, netcdf_datasets):
+    """Test stats and the capacity to choose the variable."""
     identifier = "stats"
 
     inputs = [
-        wps_input_file("da",  netcdf_datasets["discharge"]),
+        wps_input_file("da",  netcdf_datasets["pr_discharge"]),
         wps_literal_input("freq", "YS"),
         wps_literal_input("op", "max"),
         wps_literal_input("season", "JJA"),
@@ -232,4 +234,5 @@ def test_fit_process(client, netcdf_datasets):
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
     np.testing.assert_array_equal(ds.params.shape, (2, 5, 6, 1))
+
 

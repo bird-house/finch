@@ -149,6 +149,11 @@ def netcdf_datasets(request) -> Dict[str, Path]:
     t90 = percentile_doy(tas, per=0.9).to_dataset(name="t90")
     datasets["t90"] = _write_dataset("t90", t90)
 
+    # Create file with two variables
+    keys = ["pr", "discharge"]
+    ds = xr.merge([_create_test_dataset(k, **variable_descriptions[k], seed=1) for k in keys])
+    datasets["pr_discharge"] = _write_dataset("pr_discharge", ds)
+
     return datasets
 
 

@@ -110,42 +110,43 @@ def compute_indices(
     kwds = {}
     global_attributes = {}
     for name, input_queue in inputs.items():
-        input = input_queue[0]
-        if isinstance(input, ComplexInput):
-
-            if input.supported_formats[0] == FORMATS.JSON:
-                kwds[name] = json.loads(input.data)
-            else:
-                ds = try_opendap(input)
-                global_attributes = global_attributes or ds.attrs
-                vars = list(ds.data_vars.values())
-
-                # If only one variable in dataset, use it.
-                if len(vars) == 1:
-                    kwds[name] = vars[0]
-                    continue
-
-                # TODO: Hum, unclear what this is. Review
-                if re.match(r"^t[nx]?\d{1,2}$", name):
-                    # dayofyear, get the first data_var (DH: I think this is rather for percentiles)
-                    kwds[name] = list(ds.data_vars.values())[0]
-                    continue
-
-                # Get variable matching input parameter name.
-                try:
-                    kwds[name] = ds.data_vars[name]
-                except KeyError as e:
-                    raise KeyError(
-                        f"Variable name '{name}' not in data_vars {list(ds.data_vars)}"
-                    ) from e
-
-                # TODO: Add support for `variable` WPS parameter specifying variable name.
-
-        elif isinstance(input, LiteralInput):
+        if isinstance(input_queue[0], LiteralInput):
             value = [inp.data for inp in input_queue]
             if len(input_queue) == 1:
                 value = value[0]
             kwds[name] = value
+
+    variable = kwds.pop("variable", None)
+
+    for name, input_queue in inputs.items():
+        input = input_queue[0]
+
+        if isinstance(input, ComplexInput):
+
+            if input.supported_formats[0] == FORMATS.JSON:
+                kwds[name] = json.loads(input.data)
+
+            elif input.supported_formats[0] in [FORMATS.NETCDF, FORMATS.DODS]:
+                ds = try_opendap(input)
+                global_attributes = global_attributes or ds.attrs
+                vars = list(ds.data_vars.values())
+
+                if variable:
+                    if variable in ds.data_vars:
+                        kwds[name] = ds.data_vars[variable]
+
+                    else:
+                        raise KeyError(
+                            f"Variable name '{name}' not in data_vars {list(ds.data_vars)}"
+                        )
+                else:
+                    # Get variable matching input parameter name.
+                    if name in ds.data_vars:
+                        kwds[name] = ds.data_vars[name]
+
+                    # If only one variable in dataset, use it.
+                    elif len(vars) == 1:
+                        kwds[name] = vars[0]
 
     global_attributes.update(
         {
