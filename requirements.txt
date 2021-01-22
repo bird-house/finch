@@ -1,7 +1,7 @@
 cftime
-pywps>=4.2.0,<4.3
+pywps==4.2.9
 xclim~=0.22.0
-xarray>=0.14
+xarray
 clisops>=0.5.1,<0.6.0
 geopandas
 jinja2
@@ -17,3 +17,4 @@ requests
 sentry-sdk
 siphon
 parse
+nbsphinx # needed for PyWPS 4.2.9 only
