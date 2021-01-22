@@ -46,11 +46,10 @@ not_implemented = [
     "RH_FROMDEWPOINT",
     "E_SAT",
     "HUSS",
-    "TG_MAX",  # Not listed in _temperature.__all__
-    "TG_MIN"
+    "DEGREE_DAYS_DEPASSMENT_DATE",
 ]
 
-indicators = get_indicators(realms=["atmos"], exclude=not_implemented)
+indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
 ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i)]
 
 

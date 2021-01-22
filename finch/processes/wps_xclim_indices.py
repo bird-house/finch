@@ -58,14 +58,15 @@ class XclimIndicatorBase(FinchProcess):
             wpsio.output_metalink,
         ]
 
+        common = [wpsio.check_missing, wpsio.missing_options, wpsio.variable_any]
+
         super().__init__(
             self._handler,
             identifier=attrs["identifier"],
             version="0.1",
             title=unidecode(attrs["title"]),
             abstract=unidecode(attrs["abstract"]),
-            inputs=convert_xclim_inputs_to_pywps(attrs["parameters"], attrs["identifier"]) + [wpsio.check_missing,
-                                                                                              wpsio.missing_options],
+            inputs=convert_xclim_inputs_to_pywps(attrs["parameters"], attrs["identifier"]) + common,
             outputs=outputs,
             status_supported=True,
             store_supported=True,
