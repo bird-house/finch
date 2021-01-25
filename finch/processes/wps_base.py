@@ -168,7 +168,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
             if "fitting" in attrs["description"].lower():
                 inputs.append(make_fit_method(name, attrs["default"], attrs["description"]))
             else:
-                pass
+                inputs.append(make_approximation_method(name, attrs["default"], attrs["description"]))
         else:
             # raise NotImplementedError(f"{parent}: {name}")
             LOGGER.warning(f"{parent}: {name} is not implemented.")
@@ -325,6 +325,19 @@ def make_fit_method(name, default, abstract=""):
         max_occurs=1,
         default=default,
         allowed_values=["ML", "PWM"]
+    )
+
+
+def make_approximation_method(name, default, abstract=""):
+    return LiteralInput(
+        identifier=name,
+        title="Precipitation phase approximation method",
+        abstract=abstract,
+        data_type="string",
+        min_occurs=0,
+        max_occurs=1,
+        default=default,
+        allowed_values=["binary"]
     )
 
 

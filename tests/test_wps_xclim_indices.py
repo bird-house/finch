@@ -217,7 +217,7 @@ def test_freqanalysis_process(client, netcdf_datasets):
     ]
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
-    np.testing.assert_array_equal(ds.q1maxsummer.shape, (2, 5, 6, 1))
+    np.testing.assert_array_equal(ds.q1maxsummer.shape, (2, 5, 6))
 
 
 def test_fit_process(client, netcdf_datasets):
@@ -229,7 +229,7 @@ def test_fit_process(client, netcdf_datasets):
     ]
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
-    np.testing.assert_array_equal(ds.params.shape, (2, 5, 6, 1))
+    np.testing.assert_array_equal(ds.params.shape, (2, 5, 6))
 
 
 def test_rain_approximation(client, pr_series, tas_series, tmp_path):
