@@ -250,6 +250,25 @@ def test_rain_approximation(client, pr_series, tas_series, tmp_path):
         )
 
 
+def test_two_nondefault_variable_name(client, pr_series, tas_series, tmp_path):
+    identifier = "prlp"
+
+    pr = pr_series(np.ones(10)).to_dataset(name="my_pr").to_netcdf(tmp_path / 'pr.nc')
+    tas = tas_series(np.arange(10) + K2C).to_dataset(name="my_tas").to_netcdf(tmp_path / 'tas.nc')
+
+    inputs = [wps_input_file("pr", tmp_path / "pr.nc"),
+              wps_input_file("tas", tmp_path / "tas.nc"),
+              wps_literal_input("thresh", "5 degC"),
+              wps_literal_input("method", "binary"),
+              wps_literal_input("variable", "my_pr")
+              ]
+    outputs = execute_process(client, identifier, inputs)
+    with xr.open_dataset(outputs[0]) as ds:
+        np.testing.assert_allclose(
+            ds.prlp, [0, 0, 0, 0, 0, 1, 1, 1, 1, 1], atol=1e-5, rtol=1e-3
+        )
+
+
 def test_degree_days_exceedance_date(client, tmp_path):
     identifier = "degree_days_exceedance_date"
 
