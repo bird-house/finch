@@ -7,7 +7,7 @@ import pytest
 import xarray as xr
 from pywps import configuration
 from xclim.core.calendar import percentile_doy
-
+from xclim.testing.tests.conftest import pr_series, tas_series
 import finch.processes
 import finch.wsgi
 
