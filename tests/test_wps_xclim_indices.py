@@ -250,6 +250,7 @@ def test_rain_approximation(client, pr_series, tas_series, tmp_path):
         )
 
 
+@pytest.mark.xfail
 def test_two_nondefault_variable_name(client, pr_series, tas_series, tmp_path):
     identifier = "prlp"
 
