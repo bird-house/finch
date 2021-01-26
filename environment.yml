@@ -15,9 +15,8 @@ dependencies:
   - sentry-sdk
   - siphon
   # remember to match xclim version in environment-docs.yml as well
-  - xclim==0.22
+  - xclim==0.23
   - clisops>=0.5.1,<0.6.0
-  - pywps==4.2.9
+  - pywps==4.2.10
   - parse
   - pandoc  # for building docs on Travis-CI, version on Pypi too old
-  - nbsphinx # needed for PyWPS 4.2.9 only

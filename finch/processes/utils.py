@@ -193,6 +193,9 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
     :return str: DRS filename
     :raises KeyError: When the dataset doesn't have the required attributes.
     """
+    if len(ds.data_vars) == 1:
+        variable = list(ds.data_vars)[0]
+
     if variable is None:
         variable = [k for k, v in ds.variables.items() if len(v.dims) >= 3][0]
     variable = variable.replace("_", "-")
