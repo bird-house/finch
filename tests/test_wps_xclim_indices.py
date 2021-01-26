@@ -19,6 +19,7 @@ from xclim.testing import open_dataset
 
 K2C = 273.16
 
+
 def _get_output_standard_name(process_identifier):
     for p in finch.processes.get_processes():
         if p.identifier == process_identifier:
@@ -235,14 +236,14 @@ def test_fit_process(client, netcdf_datasets):
 def test_rain_approximation(client, pr_series, tas_series, tmp_path):
     identifier = "prlp"
 
-    pr = pr_series(np.ones(10)).to_netcdf(tmp_path / 'pr.nc')
-    tas = tas_series(np.arange(10) + K2C).to_netcdf(tmp_path / 'tas.nc')
+    pr_series(np.ones(10)).to_netcdf(tmp_path / 'pr.nc')
+    tas_series(np.arange(10) + K2C).to_netcdf(tmp_path / 'tas.nc')
 
     inputs = [wps_input_file("pr", tmp_path / "pr.nc"),
               wps_input_file("tas", tmp_path / "tas.nc"),
               wps_literal_input("thresh", "5 degC"),
-              wps_literal_input("method", "binary")
-    ]
+              wps_literal_input("method", "binary")]
+
     outputs = execute_process(client, identifier, inputs)
     with xr.open_dataset(outputs[0]) as ds:
         np.testing.assert_allclose(
@@ -254,8 +255,8 @@ def test_rain_approximation(client, pr_series, tas_series, tmp_path):
 def test_two_nondefault_variable_name(client, pr_series, tas_series, tmp_path):
     identifier = "prlp"
 
-    pr = pr_series(np.ones(10)).to_dataset(name="my_pr").to_netcdf(tmp_path / 'pr.nc')
-    tas = tas_series(np.arange(10) + K2C).to_dataset(name="my_tas").to_netcdf(tmp_path / 'tas.nc')
+    pr_series(np.ones(10)).to_dataset(name="my_pr").to_netcdf(tmp_path / 'pr.nc')
+    tas_series(np.arange(10) + K2C).to_dataset(name="my_tas").to_netcdf(tmp_path / 'tas.nc')
 
     inputs = [wps_input_file("pr", tmp_path / "pr.nc"),
               wps_input_file("tas", tmp_path / "tas.nc"),
@@ -288,4 +289,3 @@ def test_degree_days_exceedance_date(client, tmp_path):
     outputs = execute_process(client, identifier, inputs)
     with xr.open_dataset(outputs[0]) as ds:
         np.testing.assert_array_equal(ds.degree_days_exceedance_date, np.array([[153, 136, 9, 6]]).T)
-

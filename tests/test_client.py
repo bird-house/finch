@@ -4,8 +4,6 @@ from finch.processes import get_processes
 import pytest
 
 
-
-
 class TestClient:
     URL = "http://localhost:9099"
 
@@ -26,4 +24,3 @@ class TestClient:
         pytest.importorskip("birdy")
         from birdy import WPSClient
         WPSClient(url=self.URL, caps_xml=self.cap, desc_xml=self.desc)
-
