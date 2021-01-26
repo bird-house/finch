@@ -1,7 +1,7 @@
 # vim:set ft=dockerfile:
 FROM continuumio/miniconda3
 MAINTAINER https://github.com/bird-house/finch
-LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.6.0"
+LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.6.1"
 
 # Update Debian system
 RUN apt-get update && apt-get install -y \
