@@ -127,7 +127,7 @@ def compute_indices(
                 kwds[name] = json.loads(input.data)
 
             elif input.supported_formats[0] in [FORMATS.NETCDF, FORMATS.DODS]:
-                ds = try_opendap(input)
+                ds = try_opendap(input, logging_function=lambda msg: write_log(process, msg))
                 global_attributes = global_attributes or ds.attrs
                 vars = list(ds.data_vars.values())
 
@@ -277,6 +277,8 @@ def try_opendap(
     If OPeNDAP fails, access the file directly.
     """
     url = input.url
+    logging_function(f"Try opening DAP link {url}")
+
     if is_opendap_url(url):
         ds = xr.open_dataset(url, chunks=chunks, decode_times=decode_times)
         logging_function(f"Opened dataset as an OPeNDAP url: {url}")
@@ -378,7 +380,10 @@ def is_opendap_url(url):
     if content_description:
         return content_description.lower().startswith("dods")
     else:
+        return False
+
         try:
+            # For a non-DAP URL, this just hangs python.
             dataset = netCDF4.Dataset(url)
         except OSError:
             return False
