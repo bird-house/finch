@@ -1,11 +1,11 @@
+import pytest
 from pywps import Service
 from .common import client_for
 from finch.processes import get_processes
-import pytest
 
 
 class TestClient:
-    URL = "http://localhost:9099"
+    URL = "http://dummy_url.org"
 
     @classmethod
     def setup_class(self):
