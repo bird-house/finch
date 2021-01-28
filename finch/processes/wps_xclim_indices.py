@@ -98,6 +98,7 @@ class XclimIndicatorBase(FinchProcess):
             write_log(self, message, subtask_percentage=percentage)
 
         output_files = []
+        input_files = [Path(fn[0].url).name for fn in nc_inputs.values()]
 
         for n in range(n_files):
             # create a dict containing a single netcdf input for each type
@@ -105,7 +106,7 @@ class XclimIndicatorBase(FinchProcess):
             inputs = {**other_inputs, **netcdf_inputs}
 
             out = compute_indices(self, self.xci, inputs)
-            filename = _make_unique_drs_filename(out, [f.name for f in output_files])
+            filename = _make_unique_drs_filename(out, [f.name for f in output_files] + input_files)
             output_filename = Path(self.workdir, filename)
             output_files.append(output_filename)
 
@@ -113,7 +114,7 @@ class XclimIndicatorBase(FinchProcess):
             end_percentage = int((n + 1) / n_files * 100)
             write_log(
                 self,
-                f"Processing file {n} of {n_files}",
+                f"Processing file {n+1} of {n_files}",
                 subtask_percentage=start_percentage,
             )
 
@@ -124,7 +125,9 @@ class XclimIndicatorBase(FinchProcess):
                     width=15,
                     dt=1,
             ):
+                write_log(self, f"Writing file {output_filename} to disk.")
                 dataset_to_netcdf(out, output_filename)
+                out.close()
 
         metalink = make_metalink_output(self, output_files)
 

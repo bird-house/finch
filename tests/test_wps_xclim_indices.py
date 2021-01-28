@@ -221,16 +221,29 @@ def test_freqanalysis_process(client, netcdf_datasets):
     np.testing.assert_array_equal(ds.q1maxsummer.shape, (2, 5, 6))
 
 
-def test_fit_process(client, netcdf_datasets):
+class TestFitProcess:
     identifier = "fit"
 
-    inputs = [
-        wps_input_file("da", netcdf_datasets["discharge"]),
-        wps_literal_input("dist", "norm"),
-    ]
-    outputs = execute_process(client, identifier, inputs)
-    ds = xr.open_dataset(outputs[0])
-    np.testing.assert_array_equal(ds.params.shape, (2, 5, 6))
+    def test_simple(self, client, netcdf_datasets):
+
+
+        inputs = [
+            wps_input_file("da", netcdf_datasets["discharge"]),
+            wps_literal_input("dist", "norm"),
+        ]
+        outputs = execute_process(client, self.identifier, inputs)
+        ds = xr.open_dataset(outputs[0])
+        np.testing.assert_array_equal(ds.params.shape, (2, 5, 6))
+
+    def test_nan(self, client, q_series, tmp_path):
+        q_series([333, 145, 203, 109, 430, 230, np.nan]).to_netcdf(tmp_path / "q.nc")
+        inputs = [
+            wps_input_file("da", tmp_path / "q.nc"),
+            wps_literal_input("dist", "norm"),
+        ]
+        outputs = execute_process(client, self.identifier, inputs)
+        ds = xr.open_dataset(outputs[0])
+        np.testing.assert_array_equal(ds.params.isnull(), False)
 
 
 def test_rain_approximation(client, pr_series, tas_series, tmp_path):

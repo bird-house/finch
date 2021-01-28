@@ -4,10 +4,12 @@ from shutil import rmtree
 from typing import Dict
 
 import pytest
+import numpy as np
+import pandas as pd
 import xarray as xr
 from pywps import configuration
 from xclim.core.calendar import percentile_doy
-from xclim.testing.tests.conftest import pr_series, tas_series
+from xclim.testing.tests.conftest import pr_series, tas_series, q_series
 import finch.processes
 import finch.wsgi
 
@@ -37,9 +39,6 @@ def _create_test_dataset(
     missing: bool
       If True, add a NaN on Jan 15.
     """
-    import numpy as np
-    import pandas as pd
-    import xarray as xr
 
     rs = np.random.RandomState(seed)
     _vars = {variable: ["time", "lon", "lat"]}

@@ -86,7 +86,7 @@ def _run(application, bind_host=None, daemon=False):
         hostname=bind_host,
         port=port,
         application=application,
-        use_debugger=False,
+        use_debugger=True,
         use_reloader=False,
         threaded=True,
         # processes=2,
