@@ -64,8 +64,8 @@ def _create_test_dataset(
 
     obj = xr.Dataset(attrs=attrs)
     obj["time"] = ("time", pd.date_range("2000-01-01", periods=_dims["time"]))
-    obj["lon"] = ("lon", np.arange(_dims["lon"]))
-    obj["lat"] = ("lat", np.arange(_dims["lat"]))
+    obj["lon"] = ("lon", np.arange(_dims["lon"]), {'standard_name': 'longitude'})
+    obj["lat"] = ("lat", np.arange(_dims["lat"]), {'standard_name': 'latitude'})
 
     for v, dims in sorted(_vars.items()):
         data = rs.normal(size=tuple(_dims[d] for d in dims))
