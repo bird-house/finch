@@ -20,6 +20,7 @@ from .wps_xsubset_point_dataset import (
     SubsetGridPointDatasetProcess,
 )
 from .wps_xsubset_polygon import SubsetPolygonProcess
+from .wps_xaverage_polygon import AveragePolygonProcess
 
 logger = logging.getLogger("PYWPS")
 
@@ -125,6 +126,7 @@ def get_processes(all_processes=False):
         SubsetBboxProcess(),
         SubsetGridPointProcess(),
         SubsetPolygonProcess(),
+        AveragePolygonProcess(),
     ]
 
     return processes
