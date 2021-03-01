@@ -52,5 +52,5 @@ def test_wps_caps_no_datasets(client, monkeypatch):
         "/wps:Capabilities/wps:ProcessOfferings/wps:Process/ows:Identifier"
     ).split()
 
-    subset_processes_count = 3
+    subset_processes_count = 4
     assert len(indicators) + subset_processes_count == len(names)
