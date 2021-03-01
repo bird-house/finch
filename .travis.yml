@@ -27,7 +27,7 @@ install:
   # Packages for testing, generating docs and installing WPS
   - make develop
   # TODO: Remove when xclim 0.24 is released. Test with a specific xclim branch 
-  - pip install git+https://github.com/Ouranosinc/xclim.git@unpin-cftime-remove-checks
+  - pip install git+https://github.com/Ouranosinc/xclim.git@master
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
   - make start
