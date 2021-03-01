@@ -109,9 +109,11 @@ NC_INPUT_VARIABLES = [
     "tasmin",
     "tasmax",
     "pr",
+    "per",
     "prsn",
     "tn10",
     "tn90",
+    "tx90",
     "t10",
     "t90",
     "q",
@@ -142,7 +144,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
         InputKind.NUMBER: "integer",
         InputKind.NUMBER_SEQUENCE: "integer",
         InputKind.STRING: "string",
-        InputKind.DATE_OF_YEAR: "string",
+        InputKind.DAY_OF_YEAR: "string",
         InputKind.DATE: "datetime",
     }
 

@@ -3,7 +3,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple, cast
+from typing import Dict, Iterable, List, Optional, cast
 import warnings
 
 from parse import parse
@@ -83,25 +83,30 @@ def _tas(tasmin: xr.Dataset, tasmax: xr.Dataset) -> xr.Dataset:
 
 
 def _percentile_doy_tn10(tasmin: xr.Dataset):
-    return percentile_doy(tasmin.tasmin, per=0.1).to_dataset(name="tn10")
+    return percentile_doy(tasmin.tasmin, per=10).sel(percentiles=10, drop=True).to_dataset(name="tn10")
 
 
 def _percentile_doy_tn90(tasmin: xr.Dataset):
-    return percentile_doy(tasmin.tasmin, per=0.9).to_dataset(name="tn90")
+    return percentile_doy(tasmin.tasmin, per=90).sel(percentiles=90, drop=True).to_dataset(name="tn90")
+
+
+def _percentile_doy_tx90(tasmax: xr.Dataset):
+    return percentile_doy(tasmax.tasmax, per=90).sel(percentiles=90, drop=True).to_dataset(name="tx90")
 
 
 def _percentile_doy_t10(tas: xr.Dataset):
-    return percentile_doy(tas.tas, per=0.1).to_dataset(name="t10")
+    return percentile_doy(tas.tas, per=10).sel(percentiles=10, drop=True).to_dataset(name="t10")
 
 
 def _percentile_doy_t90(tas: xr.Dataset):
-    return percentile_doy(tas.tas, per=0.9).to_dataset(name="t90")
+    return percentile_doy(tas.tas, per=90).sel(percentiles=90, drop=True).to_dataset(name="t90")
 
 
 variable_computations = {
     "tas": {"inputs": ["tasmin", "tasmax"], "function": _tas},
     "tn10": {"inputs": ["tasmin"], "function": _percentile_doy_tn10},
     "tn90": {"inputs": ["tasmin"], "function": _percentile_doy_tn90},
+    "tx90": {"inputs": ["tasmax"], "function": _percentile_doy_tx90},
     "t10": {"inputs": ["tas"], "function": _percentile_doy_t10},
     "t90": {"inputs": ["tas"], "function": _percentile_doy_t90},
 }
@@ -342,9 +347,7 @@ def make_output_filename(process: Process, inputs: List[PywpsInput]):
 
 def uses_accepted_netcdf_variables(indicator: Indicator) -> bool:
     """Returns True if this indicator uses  netcdf variables in `accepted_variables`."""
-
-    params = indicator.json()["parameters"]
-    return not any(p in not_implemented_variables for p in params)
+    return not any(p in not_implemented_variables for p in indicator.parameters)
 
 
 def make_indicator_inputs(
@@ -352,7 +355,7 @@ def make_indicator_inputs(
 ) -> List[RequestInputs]:
     """From a list of files, make a list of inputs used to call the given xclim indicator."""
 
-    arguments = set(indicator.json()["parameters"])
+    arguments = set(indicator.parameters)
 
     required_netcdf_args = accepted_variables.intersection(arguments)
 
