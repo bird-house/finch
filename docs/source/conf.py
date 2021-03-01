@@ -53,7 +53,7 @@ extensions = [
 # inherit without having to test which work which do not.
 if os.environ.get('READTHEDOCS') == 'True':
     autodoc_mock_imports = ["numpy", "xarray", "fiona", "rasterio", "shapely",
-                            "osgeo", "pandas", "statsmodels",
+                            "osgeo", "pandas", "geopandas", "statsmodels",
                             "affine", "rasterstats", "spotpy", "matplotlib",
                             "scipy", "unidecode", "gdal", "sentry_sdk", "dask",
                             "numba", "parse", "siphon", "sklearn", "cftime",
