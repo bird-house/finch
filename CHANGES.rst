@@ -1,11 +1,12 @@
 Changes
 *******
 
-0.6.2
-=====
 
-* Upgrade PyWPS to 4.4
+0.6.2 (unreleased)
+==================
 
+* Update to xclim 0.24
+* Update to PyWPS 4.4
 
 0.6.1 (2021-01-26)
 ==================

@@ -42,8 +42,6 @@ class XclimIndicatorBase(FinchProcess):
                 "Use the `make_xclim_indicator_process` function instead."
             )
 
-        attrs = self.xci.json()
-
         outputs = [
             ComplexOutput(
                 "output_netcdf",
@@ -62,11 +60,11 @@ class XclimIndicatorBase(FinchProcess):
 
         super().__init__(
             self._handler,
-            identifier=attrs["identifier"],
+            identifier=self.xci.identifier,
             version="0.1",
-            title=unidecode(attrs["title"]),
-            abstract=unidecode(attrs["abstract"]),
-            inputs=convert_xclim_inputs_to_pywps(attrs["parameters"], attrs["identifier"]) + common,
+            title=unidecode(self.xci.title),
+            abstract=unidecode(self.xci.abstract),
+            inputs=convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier) + common,
             outputs=outputs,
             status_supported=True,
             store_supported=True,

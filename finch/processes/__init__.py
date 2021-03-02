@@ -48,26 +48,10 @@ not_implemented = [
     "RH_FROMDEWPOINT",
     "E_SAT",
     "HUSS",
-    "FIT"
 ]
-# Patch to fix upstream issue
-fit = Fit(
-    identifier="fit",
-    var_name="params",
-    units="",
-    standard_name="{dist} parameters",
-    long_name="{dist} distribution parameters",
-    description="Parameters of the {dist} distribution",
-    title="Distribution parameters fitted over the time dimension.",
-    cell_methods="time: fit",
-    compute=xclim.indices.stats.fit,
-    missing="skip",
-    missing_options=None
-)
+
 
 indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
-indicators.append(fit)
-
 ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i)]
 
 
