@@ -26,8 +26,6 @@ install:
   - source activate finch
   # Packages for testing, generating docs and installing WPS
   - make develop
-  # TODO: Remove when xclim 0.24 is released on conda-forge.
-  - pip install xclim
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
   - make start
