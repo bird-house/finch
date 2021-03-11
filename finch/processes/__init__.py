@@ -3,6 +3,7 @@ import logging
 from pywps.configuration import get_config_value
 import xclim
 import xclim.indicators.atmos
+from xclim.indicators.land._streamflow import Fit
 
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .wps_base import make_xclim_indicator_process
@@ -20,6 +21,7 @@ from .wps_xsubset_point_dataset import (
 )
 from .wps_xsubset_polygon import SubsetPolygonProcess
 from .wps_sdba import EmpiricalQuantileMappingProcess
+from .wps_xaverage_polygon import AveragePolygonProcess
 
 
 logger = logging.getLogger("PYWPS")
@@ -50,6 +52,7 @@ not_implemented = [
     "HUSS",
 ]
 
+
 indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
 ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i)]
 
@@ -71,6 +74,11 @@ def get_processes(all_processes=False):
         processes.append(
             make_xclim_indicator_process(ind, suffix, base_class=base_class)
         )
+
+    # Statistical downscaling and bias adjustment
+    processes += [
+        EmpiricalQuantileMappingProcess(),
+    ]
 
     if datasets_configured or all_processes:
         # ensemble with grid point subset
@@ -96,28 +104,21 @@ def get_processes(all_processes=False):
                 make_xclim_indicator_process(ind, suffix, base_class=base_class)
             )
 
-        # Generic subsetting
         processes += [
-            SubsetGridPointProcess(),
-            SubsetBboxProcess(),
-            SubsetPolygonProcess(),
             SubsetGridPointDatasetProcess(),
+            SubsetGridPointBCCAQV2Process(),
             SubsetBboxDatasetProcess(),
+            SubsetBboxBCCAQV2Process(),
+            BCCAQV2HeatWave(),
         ]
 
-        # Statistical downscaling and bias adjustment
-        processes += [
-            EmpiricalQuantileMappingProcess(),
-        ]
-
-        # BCCAQvs subsetting (connects to Ouranos THREDDS server)
-        processes += [
-        SubsetGridPointBCCAQV2Process(),
-        SubsetBboxBCCAQV2Process(),
-        BCCAQV2HeatWave(),
-            ]
-
-
+    # others
+    processes += [
+        SubsetBboxProcess(),
+        SubsetGridPointProcess(),
+        SubsetPolygonProcess(),
+        AveragePolygonProcess(),
+    ]
 
     return processes
 

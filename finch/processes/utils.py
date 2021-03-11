@@ -110,26 +110,43 @@ def compute_indices(
     kwds = {}
     global_attributes = {}
     for name, input_queue in inputs.items():
+        if isinstance(input_queue[0], LiteralInput):
+            value = [inp.data for inp in input_queue]
+            if len(input_queue) == 1:
+                value = value[0]
+            kwds[name] = value
+
+    variable = kwds.pop("variable", None)
+
+    for name, input_queue in inputs.items():
         input = input_queue[0]
+
         if isinstance(input, ComplexInput):
+
             if input.supported_formats[0] == FORMATS.JSON:
                 kwds[name] = json.loads(input.data)
-            else:
-                ds = try_opendap(input)
-                global_attributes = global_attributes or ds.attrs
-                if re.match(r"^t[nx]?\d{1,2}$", name):
-                    # dayofyear, get the first data_var
-                    kwds[name] = list(ds.data_vars.values())[0]
-                    continue
-                try:
-                    kwds[name] = ds.data_vars[name]
-                except KeyError as e:
-                    raise KeyError(
-                        f"Variable name '{name}' not in data_vars {list(ds.data_vars)}"
-                    ) from e
 
-        elif isinstance(input, LiteralInput):
-            kwds[name] = input.data
+            elif input.supported_formats[0] in [FORMATS.NETCDF, FORMATS.DODS]:
+                ds = try_opendap(input, logging_function=lambda msg: write_log(process, msg))
+                global_attributes = global_attributes or ds.attrs
+                vars = list(ds.data_vars.values())
+
+                if variable:
+                    if variable in ds.data_vars:
+                        kwds[name] = ds.data_vars[variable]
+
+                    else:
+                        raise KeyError(
+                            f"Variable name '{name}' not in data_vars {list(ds.data_vars)}"
+                        )
+                else:
+                    # Get variable matching input parameter name.
+                    if name in ds.data_vars:
+                        kwds[name] = ds.data_vars[name]
+
+                    # If only one variable in dataset, use it.
+                    elif len(vars) == 1:
+                        kwds[name] = vars[0]
 
     global_attributes.update(
         {
@@ -176,6 +193,9 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
     :return str: DRS filename
     :raises KeyError: When the dataset doesn't have the required attributes.
     """
+    if len(ds.data_vars) == 1:
+        variable = list(ds.data_vars)[0]
+
     if variable is None:
         variable = [k for k, v in ds.variables.items() if len(v.dims) >= 3][0]
     variable = variable.replace("_", "-")
@@ -257,6 +277,8 @@ def try_opendap(
     If OPeNDAP fails, access the file directly.
     """
     url = input.url
+    logging_function(f"Try opening DAP link {url}")
+
     if is_opendap_url(url):
         ds = xr.open_dataset(url, chunks=chunks, decode_times=decode_times)
         logging_function(f"Opened dataset as an OPeNDAP url: {url}")
@@ -358,7 +380,10 @@ def is_opendap_url(url):
     if content_description:
         return content_description.lower().startswith("dods")
     else:
+        return False
+
         try:
+            # For a non-DAP URL, this just hangs python.
             dataset = netCDF4.Dataset(url)
         except OSError:
             return False

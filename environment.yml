@@ -7,16 +7,16 @@ dependencies:
   - jinja2
   - click
   - psutil
-  - libnetcdf==4.7.3
+  - libnetcdf
   - unidecode
   - dask>=2.9
   - distributed
-  - xarray>=0.14
+  - xarray
   - sentry-sdk
   - siphon
   # remember to match xclim version in environment-docs.yml as well
-  - xclim==0.22
-  - clisops>=0.5.1,<0.6.0
-  - pywps==4.2.4
+  - xclim==0.24
+  - clisops>=0.6.1
+  - pywps==4.4
   - parse
   - pandoc  # for building docs on Travis-CI, version on Pypi too old

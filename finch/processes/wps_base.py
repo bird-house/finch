@@ -7,6 +7,8 @@ from pywps.app.Common import Metadata
 from sentry_sdk import configure_scope
 import xclim
 
+from xclim.core.utils import InputKind
+
 from finch.processes.utils import PywpsInput
 
 
@@ -84,15 +86,13 @@ def make_xclim_indicator_process(
     base_class : cls
       Class that will be subclassed to create indicator Process.
     """
-    attrs = xci.json()
-
     # Sanitize name
-    name = attrs["identifier"].replace("{", "_").replace("}", "_").replace("__", "_")
+    name = xci.identifier.replace("{", "_").replace("}", "_").replace("__", "_")
 
     process_class = type(
         str(name) + class_name_suffix,
         (base_class,),
-        {"xci": xci, "__doc__": attrs["abstract"]},
+        {"xci": xci, "__doc__": xci.abstract},
     )
 
     process = process_class()
@@ -109,9 +109,11 @@ NC_INPUT_VARIABLES = [
     "tasmin",
     "tasmax",
     "pr",
+    "per",
     "prsn",
     "tn10",
     "tn90",
+    "tx90",
     "t10",
     "t90",
     "q",
@@ -135,40 +137,42 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
     # Ideally this would be based on the Parameters docstring section rather than name conventions.
     inputs = []
 
+    # Mapping from xclim's InputKind to data_type
+    # Only for generic types
+    data_types = {
+        InputKind.QUANTITY_STR: "string",
+        InputKind.NUMBER: "integer",
+        InputKind.NUMBER_SEQUENCE: "integer",
+        InputKind.STRING: "string",
+        InputKind.DAY_OF_YEAR: "string",
+        InputKind.DATE: "datetime",
+    }
+
     for name, attrs in params.items():
-        if name in NC_INPUT_VARIABLES:
+        if name in NC_INPUT_VARIABLES and attrs['kind'] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
             inputs.append(make_nc_input(name))
-        elif name in ["thresh_tasmin", "thresh_tasmax", "sum_thresh"]:
-            inputs.append(make_thresh(name, attrs["default"], attrs["description"]))
-        elif name in ["thresh", "ice_thresh", "calm_wind_thresh"]:
-            inputs.append(make_thresh(name, attrs["default"], attrs["description"]))
         elif name in ["freq"]:
-            inputs.append(make_freq(name, attrs["default"], attrs["description"]))
+            inputs.append(make_freq(name, default=attrs['default'], abstract=attrs['description']))
         elif name in ["indexer"]:
             inputs.append(make_month())
             inputs.append(make_season())
-        elif name in ["window"]:
-            inputs.append(make_window(name, attrs["default"], attrs["description"]))
-        elif name in ["mid_date", "before_date", "start_date", "after_date"]:
-            inputs.append(make_date_of_year(name, attrs["default"], attrs["description"]))
-        elif name in ["op"]:
-            if "reduce" in attrs["description"].lower():
-                inputs.append(make_reduce_op(name, attrs["default"], attrs["description"]))
-            else:
-                inputs.append(make_binary_op(name, attrs["default"], attrs["description"]))
-        elif name in ["mode"]:
-            inputs.append(make_mode(name, attrs["default"], attrs["description"]))
-        elif name in ["start_date", "end_date"]:
-            inputs.append(make_datetime(name, attrs["default"], attrs["description"]))
-        elif name in ["t"]:
-            inputs.append(make_return_period(name, attrs["default"], attrs["description"]))
-        elif name in ["dist"]:
-            inputs.append(make_distribution(name, attrs["default"], attrs["description"]))
-        elif name in ["method"]:
-            inputs.append(make_fit_method(name, attrs["default"], attrs["description"]))
+        elif attrs['kind'] in data_types:
+            choices = list(attrs['choices']) if 'choices' in attrs else None
+            inputs.append(
+                LiteralInput(
+                    name,
+                    title=name.capitalize().replace('_', ' '),
+                    abstract=attrs['description'],
+                    data_type=data_types[attrs['kind']],
+                    min_occurs=0,
+                    max_occurs=1 if attrs['kind'] != InputKind.NUMBER_SEQUENCE else 99,
+                    default=attrs["default"],
+                    allowed_values=choices,
+                )
+            )
         else:
             # raise NotImplementedError(f"{parent}: {name}")
-            LOGGER.warning(f"{parent}: {name} is not implemented.")
+            LOGGER.warning(f"{parent}: {name} of kind {attrs['kind']} is not implemented.")
 
     return inputs
 
@@ -186,57 +190,6 @@ def make_freq(name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "A
     )
 
 
-def make_thresh(name, default, abstract=""):
-    return LiteralInput(
-        identifier=name,
-        title="Threshold",
-        abstract=abstract,
-        data_type="string",
-        min_occurs=0,
-        max_occurs=1,
-        default=default,
-    )
-
-
-def make_window(name, default, abstract=""):
-    return LiteralInput(
-        name,
-        "Window",
-        abstract=abstract,
-        data_type="integer",
-        min_occurs=0,
-        max_occurs=1,
-        default=default,
-    )
-
-
-def make_mode(name, default="max", abstract=""):
-    if default == "none":
-        default = "max"
-    return LiteralInput(
-        name,
-        "Mode",
-        abstract=abstract,
-        data_type="string",
-        min_occurs=0,
-        max_occurs=1,
-        default=default,
-        allowed_values=["min", "max"]
-    )
-
-
-def make_date_of_year(name, default, abstract=""):
-    return LiteralInput(
-        name,
-        "Date of the year",
-        abstract=abstract,
-        data_type="string",
-        min_occurs=0,
-        max_occurs=1,
-        default=default,
-    )
-
-
 def make_nc_input(name):
     return ComplexInput(
         name,
@@ -246,82 +199,6 @@ def make_nc_input(name):
         min_occurs=1,
         max_occurs=10000,
         supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
-    )
-
-
-def make_binary_op(name, default=">", abstract=""):
-    return LiteralInput(
-        identifier=name,
-        title="Binary operation",
-        abstract=abstract,
-        data_type="string",
-        min_occurs=0,
-        max_occurs=1,
-        default=default,
-        allowed_values=[">", "<", ">=", "<=", "gt", "lt", "ge", "le"]
-    )
-
-
-def make_reduce_op(name, default="max", abstract=""):
-    if default == "none":
-        default = "max"
-    return LiteralInput(
-        identifier=name,
-        title="Reduce operation",
-        abstract=abstract,
-        data_type="string",
-        min_occurs=0,
-        max_occurs=1,
-        default=default,
-        allowed_values=['min', 'max', 'mean', 'std', 'var', 'count', 'sum', 'argmax', 'argmin']
-    )
-
-
-def make_datetime(name, default, abstract=""):
-    return LiteralInput(
-        identifier=name,
-        title="Datetime",
-        abstract=abstract,
-        data_type="datetime",
-        min_occurs=0,
-        max_occurs=1,
-        default=default,
-    )
-
-
-def make_return_period(name, default, abstract=""):
-    return LiteralInput(
-        identifier=name,
-        title="Datetime",
-        abstract=abstract,
-        data_type="integer",
-        min_occurs=1,
-        max_occurs=100,
-    )
-
-
-def make_distribution(name, default, abstract=""):
-    return LiteralInput(
-        identifier=name,
-        title="Statistical distribution",
-        abstract=abstract,
-        data_type="string",
-        min_occurs=0,
-        max_occurs=1,
-        default=default,
-    )
-
-
-def make_fit_method(name, default, abstract=""):
-    return LiteralInput(
-        identifier=name,
-        title="Parameter fitting method",
-        abstract=abstract,
-        data_type="string",
-        min_occurs=0,
-        max_occurs=1,
-        default=default,
-        allowed_values=["ML", "PWM"]
     )
 
 

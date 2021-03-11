@@ -226,3 +226,16 @@ output_metalink = ComplexOutput(
     as_reference=False,
     supported_formats=[FORMATS.META4],
 )
+
+tolerance = LiteralInput(
+    "tolerance",
+    "Tolerance",
+    abstract=(
+        "The polygon tolerance in degrees."
+        "High-resolution polygons are simplified to this tolerance "
+        "in order to speed up the averaging. Put 0 to disable that simplification."
+    ),
+    data_type="float",
+    default=0.001,
+    min_occurs=0,
+)

@@ -1,6 +1,24 @@
 Changes
 *******
 
+
+0.6.2 (unreleased)
+==================
+
+* Update to xclim 0.24
+* Update to PyWPS 4.4
+
+0.6.1 (2021-01-26)
+==================
+
+* Add partial support for xclim 0.23 with new indicators
+* Add support for land indicators
+* Add support for multivariate indicators
+* Upgrade PyWPS to 4.2.10
+* Fix bug in variable name inference
+* Add support for non-standard variable name (univariate case only)
+
+
 0.6.0 (2021-01-12)
 ==================
 

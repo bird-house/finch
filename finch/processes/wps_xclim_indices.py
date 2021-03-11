@@ -42,8 +42,6 @@ class XclimIndicatorBase(FinchProcess):
                 "Use the `make_xclim_indicator_process` function instead."
             )
 
-        attrs = self.xci.json()
-
         outputs = [
             ComplexOutput(
                 "output_netcdf",
@@ -58,14 +56,15 @@ class XclimIndicatorBase(FinchProcess):
             wpsio.output_metalink,
         ]
 
+        common = [wpsio.check_missing, wpsio.missing_options, wpsio.variable_any]
+
         super().__init__(
             self._handler,
-            identifier=attrs["identifier"],
+            identifier=self.xci.identifier,
             version="0.1",
-            title=unidecode(attrs["title"]),
-            abstract=unidecode(attrs["abstract"]),
-            inputs=convert_xclim_inputs_to_pywps(attrs["parameters"], attrs["identifier"]) + [wpsio.check_missing,
-                                                                                              wpsio.missing_options],
+            title=unidecode(self.xci.title),
+            abstract=unidecode(self.xci.abstract),
+            inputs=convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier) + common,
             outputs=outputs,
             status_supported=True,
             store_supported=True,
@@ -97,6 +96,7 @@ class XclimIndicatorBase(FinchProcess):
             write_log(self, message, subtask_percentage=percentage)
 
         output_files = []
+        input_files = [Path(fn[0].url).name for fn in nc_inputs.values()]
 
         for n in range(n_files):
             # create a dict containing a single netcdf input for each type
@@ -104,7 +104,7 @@ class XclimIndicatorBase(FinchProcess):
             inputs = {**other_inputs, **netcdf_inputs}
 
             out = compute_indices(self, self.xci, inputs)
-            filename = _make_unique_drs_filename(out, [f.name for f in output_files])
+            filename = _make_unique_drs_filename(out, [f.name for f in output_files] + input_files)
             output_filename = Path(self.workdir, filename)
             output_files.append(output_filename)
 
@@ -112,7 +112,7 @@ class XclimIndicatorBase(FinchProcess):
             end_percentage = int((n + 1) / n_files * 100)
             write_log(
                 self,
-                f"Processing file {n} of {n_files}",
+                f"Processing file {n+1} of {n_files}",
                 subtask_percentage=start_percentage,
             )
 
@@ -123,7 +123,9 @@ class XclimIndicatorBase(FinchProcess):
                     width=15,
                     dt=1,
             ):
+                write_log(self, f"Writing file {output_filename} to disk.")
                 dataset_to_netcdf(out, output_filename)
+                out.close()
 
         metalink = make_metalink_output(self, output_files)
 

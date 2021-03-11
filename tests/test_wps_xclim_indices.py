@@ -1,6 +1,4 @@
-from finch.processes.wps_xclim_indices import XclimIndicatorBase
 from inspect import signature
-
 import json
 import pytest
 from lxml import etree
@@ -10,12 +8,16 @@ import pandas as pd
 
 import finch
 import finch.processes
+from finch.processes.wps_xclim_indices import XclimIndicatorBase
 from finch.processes.wps_base import make_xclim_indicator_process
-from tests.utils import execute_process, wps_input_file, wps_literal_input
+from . utils import execute_process, wps_input_file, wps_literal_input
 from pathlib import Path
 from pywps.app.exceptions import ProcessError
 from unittest import mock
 from numpy.testing import assert_equal
+from xclim.testing import open_dataset
+
+K2C = 273.16
 
 
 def _get_output_standard_name(process_identifier):
@@ -34,6 +36,7 @@ def test_indicators_processes_discovery(indicator):
     parameters = set([k for k in sig.parameters.keys() if k != "phase"])
     parameters.add("check_missing")
     parameters.add("missing_options")
+    parameters.add("variable")
     if "indexer" in parameters:
         parameters.remove("indexer")
         parameters.add("month")
@@ -183,3 +186,118 @@ def test_missing_options(client, netcdf_datasets):
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
     np.testing.assert_array_equal(ds.tg_mean.isnull(), False)
+
+
+def test_stats_process(client, netcdf_datasets):
+    """Test stats and the capacity to choose the variable."""
+    identifier = "stats"
+
+    inputs = [
+        wps_input_file("da", netcdf_datasets["pr_discharge"]),
+        wps_literal_input("freq", "YS"),
+        wps_literal_input("op", "max"),
+        wps_literal_input("season", "JJA"),
+        wps_literal_input("variable", "discharge")
+    ]
+    outputs = execute_process(client, identifier, inputs)
+    ds = xr.open_dataset(outputs[0])
+    np.testing.assert_array_equal(ds.qsummermax.isnull(), False)
+
+
+def test_freqanalysis_process(client, netcdf_datasets):
+    identifier = "freq_analysis"
+    inputs = [
+        wps_input_file("da", netcdf_datasets["discharge"]),
+        wps_literal_input("t", "2"),
+        wps_literal_input("t", "50"),
+        wps_literal_input("freq", "YS"),
+        wps_literal_input("mode", "max"),
+        wps_literal_input("season", "JJA"),
+        wps_literal_input("dist", "gumbel_r"),
+        wps_literal_input("variable", "discharge")
+    ]
+    outputs = execute_process(client, identifier, inputs)
+    ds = xr.open_dataset(outputs[0])
+    np.testing.assert_array_equal(ds.q1maxsummer.shape, (2, 5, 6))
+
+
+class TestFitProcess:
+    identifier = "fit"
+
+    def test_simple(self, client, netcdf_datasets):
+
+        inputs = [
+            wps_input_file("da", netcdf_datasets["discharge"]),
+            wps_literal_input("dist", "norm"),
+        ]
+        outputs = execute_process(client, self.identifier, inputs)
+        ds = xr.open_dataset(outputs[0])
+        np.testing.assert_array_equal(ds.params.shape, (2, 5, 6))
+
+    def test_nan(self, client, q_series, tmp_path):
+        q_series([333, 145, 203, 109, 430, 230, np.nan]).to_netcdf(tmp_path / "q.nc")
+        inputs = [
+            wps_input_file("da", tmp_path / "q.nc"),
+            wps_literal_input("dist", "norm"),
+        ]
+        outputs = execute_process(client, self.identifier, inputs)
+        ds = xr.open_dataset(outputs[0])
+        np.testing.assert_array_equal(ds.params.isnull(), False)
+
+
+def test_rain_approximation(client, pr_series, tas_series, tmp_path):
+    identifier = "prlp"
+
+    pr_series(np.ones(10)).to_netcdf(tmp_path / 'pr.nc')
+    tas_series(np.arange(10) + K2C).to_netcdf(tmp_path / 'tas.nc')
+
+    inputs = [wps_input_file("pr", tmp_path / "pr.nc"),
+              wps_input_file("tas", tmp_path / "tas.nc"),
+              wps_literal_input("thresh", "5 degC"),
+              wps_literal_input("method", "binary")]
+
+    outputs = execute_process(client, identifier, inputs)
+    with xr.open_dataset(outputs[0]) as ds:
+        np.testing.assert_allclose(
+            ds.prlp, [0, 0, 0, 0, 0, 1, 1, 1, 1, 1], atol=1e-5, rtol=1e-3
+        )
+
+
+@pytest.mark.xfail
+def test_two_nondefault_variable_name(client, pr_series, tas_series, tmp_path):
+    identifier = "prlp"
+
+    pr_series(np.ones(10)).to_dataset(name="my_pr").to_netcdf(tmp_path / 'pr.nc')
+    tas_series(np.arange(10) + K2C).to_dataset(name="my_tas").to_netcdf(tmp_path / 'tas.nc')
+
+    inputs = [wps_input_file("pr", tmp_path / "pr.nc"),
+              wps_input_file("tas", tmp_path / "tas.nc"),
+              wps_literal_input("thresh", "5 degC"),
+              wps_literal_input("method", "binary"),
+              wps_literal_input("variable", "my_pr")
+              ]
+    outputs = execute_process(client, identifier, inputs)
+    with xr.open_dataset(outputs[0]) as ds:
+        np.testing.assert_allclose(
+            ds.prlp, [0, 0, 0, 0, 0, 1, 1, 1, 1, 1], atol=1e-5, rtol=1e-3
+        )
+
+
+def test_degree_days_exceedance_date(client, tmp_path):
+    identifier = "degree_days_exceedance_date"
+
+    tas = open_dataset("FWI/GFWED_sample_2017.nc").tas
+    tas.attrs.update(
+        cell_methods="time: mean within days", standard_name="air_temperature"
+    )
+
+    tas.to_netcdf(tmp_path / "tas.nc")
+    inputs = [wps_input_file("tas", tmp_path / "tas.nc"),
+              wps_literal_input("thresh", "4 degC"),
+              wps_literal_input("op", ">"),
+              wps_literal_input("sum_thresh", "200 K days")
+              ]
+
+    outputs = execute_process(client, identifier, inputs)
+    with xr.open_dataset(outputs[0]) as ds:
+        np.testing.assert_array_equal(ds.degree_days_exceedance_date, np.array([[153, 136, 9, 6]]).T)

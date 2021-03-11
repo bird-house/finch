@@ -56,6 +56,7 @@ xclim_netcdf_variables = {
     "prsn",
     "tn10",
     "tn90",
+    "tx90",
     "t10",
     "t90",
 }
