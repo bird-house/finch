@@ -102,7 +102,7 @@ common_outputs = [
 
 class EmpiricalQuantileMappingProcess(FinchProcess):
     def __init__(self):
-        inputs = list(resources.values()) + list(init_args.values())  + list(adjust_args.values()) + [
+        inputs = list(resources.values()) + list(init_args.values()) + list(adjust_args.values()) + [
             wpsio.variable_any, ] + [
             LiteralInput(
                 "nquantiles",
