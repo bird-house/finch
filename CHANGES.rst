@@ -2,11 +2,13 @@ Changes
 *******
 
 
-0.6.2 (unreleased)
+0.6.2 (2021-03-15)
 ==================
 
-* Update to xclim 0.24
+* Add new process averaging gridded fields over a polygon using xESMF
+* Update to xclim 0.24, allowing for considerable simplification of the indicator process building mechanism
 * Update to PyWPS 4.4
+
 
 0.6.1 (2021-01-26)
 ==================
