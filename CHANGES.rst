@@ -2,7 +2,7 @@ Changes
 *******
 
 
-0.6.2 (2021-03-15)
+0.7.0 (2021-03-15)
 ==================
 
 * Add new process averaging gridded fields over a polygon using xESMF
