@@ -45,7 +45,7 @@ PywpsOutput = Union[LiteralOutput, ComplexOutput, BoundingBoxOutput]
 RequestInputs = Dict[str, Deque[PywpsInput]]
 
 # These are parameters that set options. They are not `compute` arguments.
-INDICATOR_OPTIONS = ['check_missing', 'missing_options']
+INDICATOR_OPTIONS = ['check_missing', 'missing_options', "cf_compliance", "data_validation"]
 
 
 def log_file_path(process: Process) -> Path:
