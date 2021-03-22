@@ -203,7 +203,7 @@ cf_compliance = LiteralInput(
     abstract="Whether to log, warn or raise when inputs have non-CF-compliant attributes.",
     data_type="string",
     default=OPTIONS[CF_COMPLIANCE],
-    allowed_values=list(_LOUDNESS_OPTIONS),
+    allowed_values=['log', 'warn', 'raise'],
 )
 
 
@@ -213,7 +213,7 @@ data_validation = LiteralInput(
     abstract="Whether to log, warn or raise when inputs fail data validation checks.",
     data_type="string",
     default=OPTIONS[DATA_VALIDATION],
-    allowed_values=list(_LOUDNESS_OPTIONS),
+    allowed_values=['log', 'warn', 'raise'],
 )
 
 
