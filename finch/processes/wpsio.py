@@ -6,7 +6,15 @@ from typing import Union
 
 from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
 from pywps.inout.literaltypes import AnyValue
-from xclim.core.options import CHECK_MISSING, CF_COMPLIANCE, DATA_VALIDATION, _LOUDNESS_OPTIONS, MISSING_METHODS, MISSING_OPTIONS, OPTIONS
+from xclim.core.options import (
+    CHECK_MISSING,
+    CF_COMPLIANCE,
+    DATA_VALIDATION,
+    _LOUDNESS_OPTIONS,
+    MISSING_METHODS,
+    MISSING_OPTIONS,
+    OPTIONS
+)
 
 from .constants import ALL_24_MODELS, ALLOWED_MODEL_NAMES
 from .utils import PywpsInput, PywpsOutput
