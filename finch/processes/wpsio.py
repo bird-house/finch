@@ -194,6 +194,7 @@ missing_options = ComplexInput(
     abstract="JSON representation of dictionary of missing method parameters.",
     default=json.dumps(OPTIONS[MISSING_OPTIONS][OPTIONS[CHECK_MISSING]]),
     supported_formats=[FORMATS.JSON],
+    min_occurs=0,
 )
 
 
