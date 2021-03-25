@@ -56,7 +56,13 @@ class XclimIndicatorBase(FinchProcess):
             wpsio.output_metalink,
         ]
 
-        common = [wpsio.check_missing, wpsio.missing_options, wpsio.variable_any]
+        common = [
+            wpsio.check_missing,
+            wpsio.missing_options,
+            wpsio.cf_compliance,
+            wpsio.data_validation,
+            wpsio.variable_any
+        ]
 
         super().__init__(
             self._handler,
