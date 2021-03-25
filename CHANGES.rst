@@ -2,6 +2,12 @@ Changes
 *******
 
 
+0.7.1 (2021-03-25)
+==================
+* Add `data_validation` and `cf_compliance` arguments for xclim processes.
+* Skip `data_validation` checks for the BCCAQv2HeatWave process.
+
+
 0.7.0 (2021-03-15)
 ==================
 

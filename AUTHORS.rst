@@ -10,4 +10,5 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Pascal Bourgault <bourgault.pascal@ouranos.ca>
+* Trevor James Smith <smith.trevorj@ouranos.ca>
