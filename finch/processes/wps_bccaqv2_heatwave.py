@@ -44,8 +44,13 @@ class BCCAQV2HeatWave(FinchProcess):
         inputs = [
             i
             for i in self.indices_process.inputs
-            if i.identifier not in ["tasmin", "tasmax"]
+            if i.identifier not in ["tasmin", "tasmax", "data_validation"]
         ]
+
+        # For BCCAQv2, relaxe data validation strictness.
+        data_valid = wpsio.data_validation.clone()
+        data_valid.data = 'warn'
+
         inputs += [
             wpsio.lon,
             wpsio.lat,
@@ -63,6 +68,7 @@ class BCCAQV2HeatWave(FinchProcess):
                 data_type="integer",
                 min_occurs=0,
             ),
+            data_valid,
             wpsio.output_format_netcdf_csv,
         ]
 

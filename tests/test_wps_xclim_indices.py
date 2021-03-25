@@ -36,6 +36,8 @@ def test_indicators_processes_discovery(indicator):
     parameters = set([k for k in sig.parameters.keys() if k != "phase"])
     parameters.add("check_missing")
     parameters.add("missing_options")
+    parameters.add("cf_compliance")
+    parameters.add("data_validation")
     parameters.add("variable")
     if "indexer" in parameters:
         parameters.remove("indexer")
