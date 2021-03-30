@@ -27,7 +27,7 @@ class XclimEnsemblePolygonBase(FinchProcess):
             )
 
         attrs = self.xci.json()
-        xci_inputs = convert_xclim_inputs_to_pywps(attrs["parameters"])
+        xci_inputs = convert_xclim_inputs_to_pywps(attrs["parameters"], self.xci.identifier)
         self.xci_inputs_identifiers = [i.identifier for i in xci_inputs]
 
         inputs = [
