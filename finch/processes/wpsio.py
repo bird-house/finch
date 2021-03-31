@@ -268,3 +268,10 @@ tolerance = LiteralInput(
     default=0.001,
     min_occurs=0,
 )
+
+xclim_common_options = [
+    check_missing,
+    missing_options,
+    cf_compliance,
+    data_validation,
+]
