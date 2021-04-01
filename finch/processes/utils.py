@@ -270,6 +270,7 @@ def try_opendap(
     *,
     chunks=None,
     decode_times=True,
+    chunk_dims=None,
     logging_function=lambda message: None,
 ) -> xr.Dataset:
     """Try to open the file as an OPeNDAP url and chunk it.
@@ -296,7 +297,7 @@ def try_opendap(
             chunks = dict(time=-1, region=5)
             ds = ds.chunk(chunks)
     if not chunks:
-        ds = ds.chunk(chunk_dataset(ds, max_size=1000000))
+        ds = ds.chunk(chunk_dataset(ds, max_size=1000000, chunk_dims=chunk_dims))
     return ds
 
 
@@ -315,10 +316,12 @@ def process_threaded(function: Callable, inputs: Iterable):
     return outputs
 
 
-def chunk_dataset(ds, max_size=1000000):
-    """Ensures the chunked size of a xarray.Dataset is below a certain size
+def chunk_dataset(ds, max_size=1000000, chunk_dims=None):
+    """Ensures the chunked size of a xarray.Dataset is below a certain size.
 
     Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
+    If chunk_dims is given, limits the chunking to those dimensions, if they are
+    found in the dataset.
     """
     from functools import reduce
     from operator import mul
@@ -326,10 +329,15 @@ def chunk_dataset(ds, max_size=1000000):
 
     chunks = dict(ds.sizes)
 
+    dims = set(ds.dims).intersection(chunk_dims or ds.dims)
+    if not dims:
+        LOGGER.warning(f"Provided dimension names for chunking ({chunk_dims}) were not found in dataset dims ({ds.dims}). No chunking was done.")
+        return chunks
+
     def chunk_size():
         return reduce(mul, chunks.values())
 
-    for dim in cycle(chunks):
+    for dim in cycle(dims):
         if chunk_size() < max_size:
             break
         chunks[dim] = max(chunks[dim] // 2, 1)
