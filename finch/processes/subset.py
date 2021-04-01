@@ -22,7 +22,6 @@ from .utils import (
 )
 
 LOGGER = logging.getLogger("PYWPS")
-LOGGER.disabled = False
 
 
 def finch_subset_gridpoint(
