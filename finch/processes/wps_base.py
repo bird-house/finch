@@ -3,6 +3,7 @@ from typing import Dict, List
 
 from dask.diagnostics import ProgressBar
 from pywps import ComplexInput, FORMATS, LiteralInput, Process
+from pywps.app.exceptions import ProcessError
 from pywps.app.Common import Metadata
 from sentry_sdk import configure_scope
 import xclim
@@ -34,7 +35,11 @@ class FinchProcess(Process):
         # The process has been deepcopied, so it's ok to assign it a single response.
         # We can now update the status document from the process instance itself.
         self.response = response
-        return self.wrapped_handler(request, response)
+        try:
+            return self.wrapped_handler(request, response)
+        except Exception as err:
+            LOGGER.exception('FinchProcess handler wrapper failed with:')
+            raise ProcessError(f"Finch failed with {err!r}")
 
     def sentry_configure_scope(self, request):
         """Add additional data to sentry error messages.
@@ -170,9 +175,9 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
                     allowed_values=choices,
                 )
             )
-        else:
+        elif name != 'ds':
             # raise NotImplementedError(f"{parent}: {name}")
-            LOGGER.warning(f"{parent}: {name} of kind {attrs['kind']} is not implemented.")
+            LOGGER.warning(f"{parent}: Argument {name} of kind {attrs['kind']} is not implemented.")
 
     return inputs
 
