@@ -16,3 +16,4 @@ nbval
 nbconvert
 birdhouse-birdy
 geojson
+matplotlib
