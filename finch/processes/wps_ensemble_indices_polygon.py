@@ -28,6 +28,7 @@ class XclimEnsemblePolygonBase(FinchProcess):
 
         attrs = self.xci.json()
         xci_inputs = convert_xclim_inputs_to_pywps(attrs["parameters"], self.xci.identifier)
+        xci_inputs.extend(wpsio.xclim_common_options)
         self.xci_inputs_identifiers = [i.identifier for i in xci_inputs]
 
         inputs = [

@@ -240,7 +240,7 @@ def finch_average_shape(
 
         # if not subsetting by time, it's not necessary to decode times
         time_subset = start_date is not None or end_date is not None
-        dataset = try_opendap(resource, decode_times=time_subset)
+        dataset = try_opendap(resource, decode_times=time_subset, chunk_dims=['time', 'realization'])
 
         with lock:
             count += 1
