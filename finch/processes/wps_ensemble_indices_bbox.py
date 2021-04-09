@@ -28,7 +28,7 @@ class XclimEnsembleBboxBase(FinchProcess):
             )
 
         attrs = self.xci.json()
-        xci_inputs = convert_xclim_inputs_to_pywps(attrs["parameters"]) + wpsio.xclim_common_options
+        xci_inputs = convert_xclim_inputs_to_pywps(attrs["parameters"], self.xci.identifier) + wpsio.xclim_common_options
         self.xci_inputs_identifiers = [i.identifier for i in xci_inputs]
 
         inputs = [
