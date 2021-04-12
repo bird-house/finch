@@ -1,0 +1,44 @@
+name: finch-wps
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  lint:
+    name: Code linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install flake8
+        run: pip install flake8
+      - name: Run linting suite
+        run: flake8
+
+  conda:
+    name: Conda
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup conda
+        uses: s-weigand/setup-conda@v1
+        with:
+          update-conda: true
+      - name: Conda version
+        run: conda --version
+      - name: Create finch environment
+        run: conda env create -n finch-wps -f environment.yml
+      - name: Install and test finch-wps
+        run: |
+          source activate finch-wps
+          make develop
+          make start
+          sleep 2
+          make test-notebooks
+          make docs

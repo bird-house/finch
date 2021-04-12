@@ -1,39 +1,39 @@
-dist: xenial   # required for Python >= 3.7
-language: python
-os:
-  - linux
-python:
-  - "3.7"
-  - "3.8"
-sudo: false
-before_install:
-  # Useful for debugging Travis CI environment
-  - printenv
-install:
-  # Python 3.x is default
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda install setuptools
-  - conda update -q conda
-  # Useful for debugging any issues with conda
-  - conda info -a
-  # Prepare env with Python version
-  - conda create -n finch -c conda-forge python=$TRAVIS_PYTHON_VERSION
-  - conda env update -f environment.yml
-  - source activate finch
-  # Packages for testing, generating docs and installing WPS
-  - make develop
-before_script:
-  # Start WPS service on port 5000 on 0.0.0.0
-  - make start
-  - sleep 2
-script:
-  - pytest -m "not online" tests
-  - make test-notebooks
-  - flake8
-  - make docs  # default html
-  - make SPHINXOPTS='-b epub' docs  # to match RtD
-  - make SPHINXOPTS='-b latex' docs  # to match RtD
+#dist: xenial   # required for Python >= 3.7
+#language: python
+#os:
+#  - linux
+#python:
+#  - "3.7"
+#  - "3.8"
+#sudo: false
+#before_install:
+#  # Useful for debugging Travis CI environment
+#  - printenv
+#install:
+#  # Python 3.x is default
+#  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+#  - bash miniconda.sh -b -p $HOME/miniconda
+#  - export PATH="$HOME/miniconda/bin:$PATH"
+#  - hash -r
+#  - conda config --set always_yes yes --set changeps1 no
+#  - conda install setuptools
+#  - conda update -q conda
+#  # Useful for debugging any issues with conda
+#  - conda info -a
+#  # Prepare env with Python version
+#  - conda create -n finch -c conda-forge python=$TRAVIS_PYTHON_VERSION
+#  - conda env update -f environment.yml
+#  - source activate finch
+#  # Packages for testing, generating docs and installing WPS
+#  - make develop
+#before_script:
+#  # Start WPS service on port 5000 on 0.0.0.0
+#  - make start
+#  - sleep 2
+#script:
+#  - pytest -m "not online" tests
+#  - make test-notebooks
+#  - flake8
+#  - make docs  # default html
+#  - make SPHINXOPTS='-b epub' docs  # to match RtD
+#  - make SPHINXOPTS='-b latex' docs  # to match RtD
