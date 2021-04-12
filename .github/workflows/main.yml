@@ -41,4 +41,3 @@ jobs:
           make start
           sleep 2
           make test-notebooks
-          make docs
