@@ -1,6 +1,13 @@
 Changes
 *******
 
+0.7.3 (2021-04-12)
+==================
+* Workaround clisops logging block
+* More flexible chunking
+* New subsetting & averaging notebook
+* Require xESMF>=0.5.3
+
 0.7.2 (2021-04-01)
 ==================
 * Add `data_validation` and `cf_compliance` arguments for ensemble xclim processes.
