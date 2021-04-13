@@ -10,3 +10,4 @@ dependencies:
 - ipython
 - xclim==0.24
 - matplotlib
+- xesmf>=0.5.3
