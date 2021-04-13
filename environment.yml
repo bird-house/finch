@@ -21,5 +21,6 @@ dependencies:
   - parse
   - pandoc  # for building docs on Travis-CI, version on Pypi too old
   - pip:
-    # work-around: sync with requirements.txt, conda package not available yet
-    - xesmf>=0.5.3
+    # work-around: pip stuck at 0.3.0, conda not yet available, have to install
+    # from source to get latest
+    - https://github.com/pangeo-data/xESMF/archive/refs/tags/v0.5.3.zip
