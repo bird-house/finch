@@ -1,9 +1,9 @@
 Changes
 *******
 
-0.7.3 (2021-04-12)
+0.7.3 (2021-04-13)
 ==================
-* Workaround clisops logging block
+* Workaround for clisops shutting down logging
 * More flexible chunking
 * New subsetting & averaging notebook
 * Require xESMF>=0.5.3
