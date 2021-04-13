@@ -50,11 +50,16 @@ def mock_local_datasets(monkeypatch, filenames=None):
 
 
 def wps_input_file(identifier, filename):
+    fn = str(filename)
+    if fn.startswith("http"):
+        url = fn
+    else:
+        url = f"file://{fn}"
     return WPS.Input(
         OWS.Identifier(identifier),
         WPS.Reference(
             WPS.Body("request body"),
-            {"{http://www.w3.org/1999/xlink}href": "file://" + str(filename)},
+            {"{http://www.w3.org/1999/xlink}href": url},
             method="POST",
         ),
     )
