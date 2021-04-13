@@ -9,3 +9,4 @@ dependencies:
 - nbsphinx
 - ipython
 - xclim==0.24
+- matplotlib
