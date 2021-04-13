@@ -20,3 +20,6 @@ dependencies:
   - pywps==4.4
   - parse
   - pandoc  # for building docs on Travis-CI, version on Pypi too old
+  - pip:
+    # work-around: sync with requirements.txt, conda package not available yet
+    - xesmf>=0.5.3
