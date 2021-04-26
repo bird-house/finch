@@ -26,6 +26,8 @@ install:
   - source activate finch
   # Packages for testing, generating docs and installing WPS
   - make develop
+  # For testing a branch with upstream xclim. COMMENT OUT BEFORE MERGING.
+  - pip install git+https://github.com/Ouranosinc/xclimé.git@master#egg=xclim
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
   - make start
