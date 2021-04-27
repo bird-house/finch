@@ -40,4 +40,5 @@ jobs:
           make develop
           make start
           sleep 2
+          make test
           make test-notebooks
