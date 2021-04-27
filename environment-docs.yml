@@ -8,5 +8,5 @@ dependencies:
 - sphinx
 - nbsphinx
 - ipython
-- xclim>=0.25.2
+- xclim>=0.25
 - matplotlib
