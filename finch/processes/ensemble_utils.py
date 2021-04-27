@@ -265,7 +265,6 @@ def _get_bccaqv2_inputs(
     workdir: str,
     variables: Optional[List[str]] = None,
     rcp=None,
-    catalog_url=None,
     models=None,
 ) -> List[PywpsInput]:
     """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
@@ -581,6 +580,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     output_basename = Path(process.workdir) / (output_filename + "_ensemble")
     ensemble = make_ensemble(indices_files, ensemble_percentiles)
+    ensemble.attrs['source_datasets'] = '\n'.join([dsinp.url for dsinp in netcdf_inputs])
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")

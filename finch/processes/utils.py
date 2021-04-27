@@ -27,6 +27,7 @@ from pywps import (
     BoundingBoxOutput,
     ComplexInput,
     ComplexOutput,
+    configuration,
     LiteralInput,
     LiteralOutput,
 )
@@ -152,9 +153,9 @@ def compute_indices(
         {
             "climateindex_package_id": "https://github.com/Ouranosinc/xclim",
             "product": "derived climate index",
-            "contact": "Canadian Centre for Climate Services",
-            "institution": "Canadian Centre for Climate Services (CCCS)",
-            "institute_id": "CCCS",
+            "contact": configuration.get_config_value('finch:metadata', 'contact'),
+            "institution": configuration.get_config_value("finch:metadata", "institution"),
+            "institute_id": configuration.get_config_value("finch:metadata", "institute_id"),
         }
     )
 
