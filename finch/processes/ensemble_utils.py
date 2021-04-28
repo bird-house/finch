@@ -605,6 +605,5 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     response.outputs["output"].file = ensemble_output
     response.outputs["output_log"].file = str(log_file_path(process))
 
-
     write_log(process, "Processing finished successfully", process_step="done")
     return response

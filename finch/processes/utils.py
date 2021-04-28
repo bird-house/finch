@@ -21,15 +21,16 @@ import cftime
 import netCDF4
 import numpy as np
 import pandas as pd
-from pywps import FORMATS, Process, configuration
 from pywps import (
     BoundingBoxInput,
     BoundingBoxOutput,
     ComplexInput,
     ComplexOutput,
-    configuration,
+    FORMATS,
     LiteralInput,
     LiteralOutput,
+    Process,
+    configuration
 )
 from pywps.inout.outputs import MetaFile, MetaLink4
 import requests

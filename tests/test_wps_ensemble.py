@@ -4,7 +4,6 @@ import zipfile
 
 import numpy as np
 import geojson
-#from netCDF4 import Dataset
 from xarray import open_dataset
 import pytest
 
