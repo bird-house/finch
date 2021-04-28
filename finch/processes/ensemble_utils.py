@@ -32,6 +32,7 @@ from .utils import (
     dataset_to_dataframe,
     dataset_to_netcdf,
     format_metadata,
+    log_file_path,
     single_input_or_none,
     write_log,
     zip_files,
@@ -602,6 +603,8 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         dataset_to_netcdf(ensemble, ensemble_output)
 
     response.outputs["output"].file = ensemble_output
+    response.outputs["output_log"].file = str(log_file_path(process))
+
 
     write_log(process, "Processing finished successfully", process_step="done")
     return response

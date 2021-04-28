@@ -105,6 +105,22 @@ def write_log(
             pass
 
 
+def get_attributes_from_config():
+    """Get all explicitly passed metadata attributes from the config, in section finch:metadata."""
+    # Remove all "defaults", only keep explicitly-passed options
+    # This works because we didn't define any defaults for this section.
+    # But will do strange things if any of the defaults have the same name as a passed field
+    # This is especially risky, since ALL environment variables are listed in the defaults...
+    names = (
+        set(configuration.CONFIG['finch:metadata'].keys())
+        - set(configuration.CONFIG._defaults.keys())
+    )
+
+    return {
+        name: configuration.get_config_value("finch:metadata", name) for name in names
+    }
+
+
 def compute_indices(
     process: Process, func: Callable, inputs: RequestInputs
 ) -> xr.Dataset:
@@ -149,14 +165,14 @@ def compute_indices(
                     elif len(vars) == 1:
                         kwds[name] = vars[0]
 
+    user_attrs = get_attributes_from_config()
+
     global_attributes.update(
         {
             "climateindex_package_id": "https://github.com/Ouranosinc/xclim",
             "product": "derived climate index",
-            "contact": configuration.get_config_value('finch:metadata', 'contact'),
-            "institution": configuration.get_config_value("finch:metadata", "institution"),
-            "institute_id": configuration.get_config_value("finch:metadata", "institute_id"),
-        }
+        },
+        **user_attrs
     )
 
     options = {name: kwds.pop(name) for name in INDICATOR_OPTIONS if name in kwds}
@@ -628,10 +644,6 @@ def dataset_to_netcdf(
 ) -> None:
     """Write an :class:`xarray.Dataset` dataset to disk, optionally using compression."""
     encoding = {}
-    if "crs" in ds:
-        # Todo: xclim 0.15.0 adds a 'crs' coordinate that xarray seems
-        # to have problem with when writing it to disk
-        ds = ds.drop_vars("crs")
 
     if "time" in ds.dims:
         encoding["time"] = {
