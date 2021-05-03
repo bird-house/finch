@@ -108,6 +108,7 @@ def test_ensemble_dded_grid_point(mock_datasets, client):
         variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
         assert variable_dims == {"region": 1, "time": 4}
 
+
 def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     # --- given ---
     identifier = "ensemble_bbox_heat_wave_frequency"
