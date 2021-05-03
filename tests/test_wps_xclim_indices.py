@@ -31,7 +31,7 @@ def test_indicators_processes_discovery(indicator):
     assert indicator.identifier == process.identifier
     # Remove args not supported by finch: we remove special kinds,
     # 50 is "kwargs". 70 is Dataset ('ds') and 99 is "unknown". All normal types are 0-9.
-    parameters = set([k for k in indicator.parameters.keys() if k['kind'] >= 50])
+    parameters = set([k for k, v in indicator.parameters.items() if v['kind'] < 50 or k == 'indexer'])
     parameters.add("check_missing")
     parameters.add("missing_options")
     parameters.add("cf_compliance")
