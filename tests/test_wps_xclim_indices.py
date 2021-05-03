@@ -1,4 +1,3 @@
-from inspect import signature
 import json
 import pytest
 from lxml import etree
@@ -30,8 +29,9 @@ def _get_output_standard_name(process_identifier):
 def test_indicators_processes_discovery(indicator):
     process = make_xclim_indicator_process(indicator, "Process", XclimIndicatorBase)
     assert indicator.identifier == process.identifier
-    # Remove the `ds` arg, this behavior is managed by finch itself.
-    parameters = set([k for k in indicator.parameters.keys() if k != 'ds'])
+    # Remove args not supported by finch: we remove special kinds,
+    # 50 is "kwargs". 70 is Dataset ('ds') and 99 is "unknown". All normal types are 0-9.
+    parameters = set([k for k in indicator.parameters.keys() if k['kind'] >= 50])
     parameters.add("check_missing")
     parameters.add("missing_options")
     parameters.add("cf_compliance")
