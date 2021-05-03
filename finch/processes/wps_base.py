@@ -125,6 +125,7 @@ NC_INPUT_VARIABLES = [
     "da",
     "sic",
     "snd",
+    "swe",
     "area",
     "uas",
     "vas",

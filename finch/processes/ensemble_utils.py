@@ -14,7 +14,7 @@ from siphon.catalog import TDSCatalog
 import xarray as xr
 from xclim import ensembles
 from xclim.core.indicator import Indicator
-from xclim.core.calendar import percentile_doy
+from xclim.core.calendar import percentile_doy, doy_to_days_since, days_since_to_doy
 
 from .constants import (
     ALL_24_MODELS,
@@ -410,7 +410,19 @@ def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
     ensemble = ensembles.create_ensemble(files)
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
+
+    # If data is in day of year, percentiles won't make sense.
+    # Convert to "days since" (base will be the time coordinate)
+    for v in ensemble.data_vars:
+        if ensemble[v].attrs.get('is_dayofyear', 0) == 1:
+            ensemble[v] = doy_to_days_since(ensemble[v])
+
     ensemble_percentiles = ensembles.ensemble_percentiles(ensemble, values=percentiles)
+
+    # Doy data converted previously is converted back.
+    for v in ensemble_percentiles.data_vars:
+        if ensemble_percentiles[v].attrs.get('units', '').startswith('days after'):
+            ensemble_percentiles[v] = days_since_to_doy(ensemble_percentiles[v])
 
     if "realization" in ensemble_percentiles.coords:
         # realization coordinate will probably be removed in xclim
