@@ -27,7 +27,7 @@ def test_wps_empirical_quantile_mapping(netcdf_sdba_ds, kind, name):
         f"sim=files@xlink:href=file://{sdba_ds[f'qdm_{name}_hist']};"
         "group=time;"
         f"kind={quote_plus(kind)};"
-        "nquantiles=10;"
+        "nquantiles=50;"
         "interp=linear;"
     )
 
@@ -37,9 +37,11 @@ def test_wps_empirical_quantile_mapping(netcdf_sdba_ds, kind, name):
     print(resp.response)
     assert_response_success(resp)
     out = get_output(resp.xml)
-    p = xr.open_dataset(out["output"][6:])
+    p = xr.open_dataset(out["output"][6:])[name]
     middle = (u > 1e-2) * (u < 0.99)
-    np.testing.assert_array_almost_equal(p[middle], sdba_ds[f'qdm_{name}_ref'][middle], 1)
+
+    ref = xr.open_dataset(sdba_ds[f'qdm_{name}_ref'])[name]
+    np.testing.assert_array_almost_equal(p[middle], ref[middle], 1)
 
 
 
