@@ -91,21 +91,19 @@ def test_ensemble_dded_grid_point(mock_datasets, client):
 
     # --- then ---
     assert len(outputs) == 1
-    ds = Dataset(outputs[0])
-    dims = {d.name: d.size for d in ds.dimensions.values()}
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
     }
 
-    ensemble_variables = {
-        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
-    }
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
     assert sorted(ensemble_variables) == [
         f"degree_days_exceedance_date_p{p}" for p in (20, 50, 80)
     ]
     for var in ensemble_variables.values():
-        variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
+        variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"region": 1, "time": 4}
 
 
