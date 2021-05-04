@@ -6,12 +6,16 @@ Expose xclim.sdba algorithms as WPS.
 
 For the moment, both train-adjust operations are bundled into a single process.
 """
-
+import logging
 import xclim
 from pathlib import Path
+import string
+import traceback
 from pywps import ComplexInput, LiteralInput, ComplexOutput, FORMATS
+from pywps.app.exceptions import ProcessError
 from .wps_base import FinchProcess, FinchProgressBar
 from . import wpsio
+
 from .utils import (
     RequestInputs,
     process_threaded,
@@ -22,6 +26,8 @@ from .utils import (
     dataset_to_netcdf,
     make_metalink_output,
 )
+
+LOGGER = logging.getLogger("PYWPS")
 
 init_args = dict(
     group = LiteralInput(
@@ -121,7 +127,7 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
                 allowed_values=["+", "*"],
                 min_occurs=0,
             )
-        ],
+        ]
 
         super().__init__(
             self._handler,
@@ -143,32 +149,43 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
         res = {}
         init = {}
         adj = {}
-        variable = request.inputs.pop(wpsio.variable.identifier, None)
 
-        for input in request.inputs:
-            key = input.identifier
-            if key in resources:
-                ds = try_opendap(request.inputs[key][0])
-                name = variable or list(ds.data_vars)[0]
-                res[key] = ds[name]
+        try:
+            variable = request.inputs.pop(wpsio.variable.identifier, None)
 
-            elif key in init_args:
-                init[key] = single_input_or_none(request.inputs, key)
+            for key, input in request.inputs.items():
+                if key in resources:
+                    ds = try_opendap(request.inputs[key][0])
+                    name = variable or list(ds.data_vars)[0]
+                    res[key] = ds[name]
 
-            elif key in adjust_args:
-                adj[key] = single_input_or_none(request.inputs, key)
+                elif key in init_args:
+                    init[key] = single_input_or_none(request.inputs, key)
 
-        bc = xclim.sdba.EmpiricalQuantileMapping(**init)
-        bc.train(res["ref"], res["hist"])
-        out = bc.adjust(res["sim"])
-        out_fn = Path(self.workdir) / "bias_corrected.nc"
-        with FinchProgressBar(
-            logging_function=_log,
-            start_percentage=2,
-            end_percentage=98,
-            width=15,
-            dt=1):
-            dataset_to_netcdf(out, out_fn)
+                elif key in adjust_args:
+                    adj[key] = single_input_or_none(request.inputs, key)
+
+            _log("Read inputs from request.", 1)
+
+            bc = xclim.sdba.EmpiricalQuantileMapping(**init)
+            bc.train(res["ref"], res["hist"])
+            _log("Training object created.", 3)
+            out = bc.adjust(res["sim"])
+            _log("Adjustment object created.", 5)
+            out_fn = Path(self.workdir) / "bias_corrected.nc"
+            with FinchProgressBar(
+                logging_function=_log,
+                start_percentage=5,
+                end_percentage=98,
+                width=15,
+                dt=1):
+                dataset_to_netcdf(out, out_fn)
+        except Exception as exc:
+            LOGGER.exception(exc)
+            err_msg = traceback.format_exc()
+            raise ProcessError(
+                err_msg, max_length=len(err_msg), allowed_chars=string.printable
+            ) from exc
 
         metalink = make_metalink_output(self, [out_fn,])
 

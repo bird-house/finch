@@ -6,6 +6,7 @@ import pytest
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
 import xarray as xr
+from urllib.parse import quote_plus
 
 from finch.processes import EmpiricalQuantileMappingProcess
 from xclim.sdba.utils import (
@@ -18,14 +19,14 @@ from .common import CFG_FILE, get_output
 def test_wps_empirical_quantile_mapping(netcdf_sdba_ds, kind, name):
     client = client_for(Service(processes=[EmpiricalQuantileMappingProcess()], cfgfiles=CFG_FILE))
 
-    u, sdba_ds = netcdf_sdba_ds
+    sdba_ds, u = netcdf_sdba_ds
 
     datainputs = (
         f"ref=files@xlink:href=file://{sdba_ds[f'qdm_{name}_ref']};"
         f"hist=files@xlink:href=file://{sdba_ds[f'qdm_{name}_hist']};"
         f"sim=files@xlink:href=file://{sdba_ds[f'qdm_{name}_hist']};"
         "group=time;"
-        f"kind={kind};"
+        f"kind={quote_plus(kind)};"
         "nquantiles=10;"
         "interp=linear;"
     )

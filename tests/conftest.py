@@ -87,7 +87,7 @@ def _create_and_write_dataset(variable, **kwds) -> Path:
 
 
 def _write_dataset(variable, ds) -> Path:
-    _, filename = tempfile.mkstemp(f"finch_test_data{variable}.nc", dir=TEMP_DIR)
+    _, filename = tempfile.mkstemp(f"finch_test_data_{variable}.nc", dir=TEMP_DIR)
     ds.to_netcdf(filename)
     return Path(filename)
 

@@ -83,7 +83,7 @@ def get_processes(all_processes=False):
 
     # Statistical downscaling and bias adjustment
     processes += [
-        EmpiricalQuantileMappingProcess(),
+        #EmpiricalQuantileMappingProcess(),
     ]
 
     if datasets_configured or all_processes:
