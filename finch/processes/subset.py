@@ -154,15 +154,18 @@ def finch_subset_bbox(
 
         dataset = dataset[variables] if variables else dataset
 
-        subsetted = subset_bbox(
-            dataset,
-            lon_bnds=[lon0, lon1],
-            lat_bnds=[lat0, lat1],
-            start_date=start_date,
-            end_date=end_date,
-        )
+        try:
+            subsetted = subset_bbox(
+                dataset,
+                lon_bnds=[lon0, lon1],
+                lat_bnds=[lat0, lat1],
+                start_date=start_date,
+                end_date=end_date,
+            )
+        except ValueError:
+            subsetted = False
 
-        if not all(subsetted.dims.values()):
+        if subsetted is False or not all(subsetted.dims.values()):
             LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
             return
 
@@ -237,7 +240,7 @@ def finch_average_shape(
 
         # if not subsetting by time, it's not necessary to decode times
         time_subset = start_date is not None or end_date is not None
-        dataset = try_opendap(resource, decode_times=time_subset)
+        dataset = try_opendap(resource, decode_times=time_subset, chunk_dims=['time', 'realization'])
 
         with lock:
             count += 1

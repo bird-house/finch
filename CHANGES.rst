@@ -1,12 +1,30 @@
 Changes
 *******
 
+0.7.3 (2021-04-13)
+==================
+* Workaround for clisops shutting down logging
+* More flexible chunking
+* New subsetting & averaging notebook
+* Require xESMF>=0.5.3
 
-0.6.2 (unreleased)
+0.7.2 (2021-04-01)
+==================
+* Add `data_validation` and `cf_compliance` arguments for ensemble xclim processes.
+
+0.7.1 (2021-03-25)
+==================
+* Add `data_validation` and `cf_compliance` arguments for xclim processes.
+* Skip `data_validation` checks for the BCCAQv2HeatWave process.
+
+
+0.7.0 (2021-03-15)
 ==================
 
-* Update to xclim 0.24
+* Add new process averaging gridded fields over a polygon using xESMF
+* Update to xclim 0.24, allowing for considerable simplification of the indicator process building mechanism
 * Update to PyWPS 4.4
+
 
 0.6.1 (2021-01-26)
 ==================

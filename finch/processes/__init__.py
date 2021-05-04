@@ -3,7 +3,6 @@ import logging
 from pywps.configuration import get_config_value
 import xclim
 import xclim.indicators.atmos
-from xclim.indicators.land._streamflow import Fit
 
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .wps_base import make_xclim_indicator_process
@@ -25,6 +24,7 @@ from .wps_xaverage_polygon import AveragePolygonProcess
 
 
 logger = logging.getLogger("PYWPS")
+logger.disabled = False
 
 
 def get_indicators(realms=["atmos"], exclude=()):

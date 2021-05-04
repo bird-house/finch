@@ -6,7 +6,15 @@ from typing import Union
 
 from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
 from pywps.inout.literaltypes import AnyValue
-from xclim.core.options import CHECK_MISSING, MISSING_METHODS, MISSING_OPTIONS, OPTIONS
+from xclim.core.options import (
+    CHECK_MISSING,
+    CF_COMPLIANCE,
+    DATA_VALIDATION,
+    _LOUDNESS_OPTIONS,
+    MISSING_METHODS,
+    MISSING_OPTIONS,
+    OPTIONS
+)
 
 from .constants import ALL_24_MODELS, ALLOWED_MODEL_NAMES
 from .utils import PywpsInput, PywpsOutput
@@ -186,6 +194,27 @@ missing_options = ComplexInput(
     abstract="JSON representation of dictionary of missing method parameters.",
     default=json.dumps(OPTIONS[MISSING_OPTIONS][OPTIONS[CHECK_MISSING]]),
     supported_formats=[FORMATS.JSON],
+    min_occurs=0,
+)
+
+
+cf_compliance = LiteralInput(
+    "cf_compliance",
+    "Strictness level for CF-compliance input checks.",
+    abstract="Whether to log, warn or raise when inputs have non-CF-compliant attributes.",
+    data_type="string",
+    default=OPTIONS[CF_COMPLIANCE],
+    allowed_values=['log', 'warn', 'raise'],
+)
+
+
+data_validation = LiteralInput(
+    "data_validation",
+    "Strictness level for data validation input checks.",
+    abstract="Whether to log, warn or raise when inputs fail data validation checks.",
+    data_type="string",
+    default=OPTIONS[DATA_VALIDATION],
+    allowed_values=['log', 'warn', 'raise'],
 )
 
 
@@ -239,3 +268,10 @@ tolerance = LiteralInput(
     default=0.001,
     min_occurs=0,
 )
+
+xclim_common_options = [
+    check_missing,
+    missing_options,
+    cf_compliance,
+    data_validation,
+]
