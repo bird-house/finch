@@ -3,6 +3,7 @@ import logging
 from pywps.configuration import get_config_value
 import xclim
 import xclim.indicators.atmos
+from xclim.core.indicator import build_indicator_module
 
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .wps_base import make_xclim_indicator_process
@@ -37,7 +38,12 @@ def get_indicators(realms=["atmos"], exclude=()):
 
     def filter_func(elem):
         name, ind = elem
-        return ind.realm in realms and ind.identifier is not None and name not in exclude
+        return (
+            ind.realm in realms
+            and ind.identifier is not None
+            and name not in exclude
+            and ind.identifier.upper() == ind._registry_id  # official indicator
+        )
 
     out = OrderedDict(filter(filter_func, registry.items()))
     return [ind.get_instance() for ind in out.values()]
@@ -130,7 +136,7 @@ def _build_xclim():
     processes = get_processes(all_processes=True)
     objs = {p.__class__.__name__: p.__class__ for p in processes}
 
-    mod = xclim.indicators.build_module(
+    mod = build_indicator_module(
         "finch.processes.xclim", objs, doc="""XCLIM Processes"""
     )
     sys.modules["finch.processes.xclim"] = mod
