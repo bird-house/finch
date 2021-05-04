@@ -9,15 +9,15 @@ import xarray as xr
 from urllib.parse import quote_plus
 
 from finch.processes import EmpiricalQuantileMappingProcess
-from xclim.sdba.utils import (
-    ADDITIVE,
-    MULTIPLICATIVE)
+from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
 from .common import CFG_FILE, get_output
 
 
 @pytest.mark.parametrize("kind,name", [(ADDITIVE, "tas"), (MULTIPLICATIVE, "pr")])
 def test_wps_empirical_quantile_mapping(netcdf_sdba_ds, kind, name):
-    client = client_for(Service(processes=[EmpiricalQuantileMappingProcess()], cfgfiles=CFG_FILE))
+    client = client_for(
+        Service(processes=[EmpiricalQuantileMappingProcess()], cfgfiles=CFG_FILE)
+    )
 
     sdba_ds, u = netcdf_sdba_ds
 
@@ -40,9 +40,5 @@ def test_wps_empirical_quantile_mapping(netcdf_sdba_ds, kind, name):
     p = xr.open_dataset(out["output"][6:])[name]
     middle = (u > 1e-2) * (u < 0.99)
 
-    ref = xr.open_dataset(sdba_ds[f'qdm_{name}_ref'])[name]
+    ref = xr.open_dataset(sdba_ds[f"qdm_{name}_ref"])[name]
     np.testing.assert_array_almost_equal(p[middle], ref[middle], 1)
-
-
-
-

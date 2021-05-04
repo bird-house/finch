@@ -83,7 +83,7 @@ def get_processes(all_processes=False):
 
     # Statistical downscaling and bias adjustment
     processes += [
-        #EmpiricalQuantileMappingProcess(),
+        EmpiricalQuantileMappingProcess(),
     ]
 
     if datasets_configured or all_processes:
@@ -143,4 +143,4 @@ def _build_xclim():
     return mod
 
 
-xclim = _build_xclim() # noqa
+xclim = _build_xclim()  # noqa
