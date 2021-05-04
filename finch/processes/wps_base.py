@@ -176,7 +176,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
                     allowed_values=choices,
                 )
             )
-        elif name != 'ds':
+        elif attrs['kind'] < 50:
             # raise NotImplementedError(f"{parent}: {name}")
             LOGGER.warning(f"{parent}: Argument {name} of kind {attrs['kind']} is not implemented.")
 
