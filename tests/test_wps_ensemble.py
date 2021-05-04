@@ -4,7 +4,7 @@ import zipfile
 
 import numpy as np
 import geojson
-from netCDF4 import Dataset
+from xarray import open_dataset
 import pytest
 
 from finch.processes import ensemble_utils
@@ -53,22 +53,22 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
 
     # --- then ---
     assert len(outputs) == 1
-    ds = Dataset(outputs[0])
-    dims = {d.name: d.size for d in ds.dimensions.values()}
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
     }
 
-    ensemble_variables = {
-        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
-    }
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
     assert sorted(ensemble_variables) == [
         f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
     ]
     for var in ensemble_variables.values():
-        variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
+        variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
         assert variable_dims == {"region": 1, "time": 4}
+
+    assert len(ds.attrs['source_datasets'].split('\n')) == 4
 
 
 def test_ensemble_dded_grid_point(mock_datasets, client):
@@ -91,21 +91,19 @@ def test_ensemble_dded_grid_point(mock_datasets, client):
 
     # --- then ---
     assert len(outputs) == 1
-    ds = Dataset(outputs[0])
-    dims = {d.name: d.size for d in ds.dimensions.values()}
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
     }
 
-    ensemble_variables = {
-        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
-    }
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
     assert sorted(ensemble_variables) == [
         f"degree_days_exceedance_date_p{p}" for p in (20, 50, 80)
     ]
     for var in ensemble_variables.values():
-        variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
+        variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"region": 1, "time": 4}
 
 
@@ -131,22 +129,20 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
 
     # --- then ---
     assert len(outputs) == 1
-    ds = Dataset(outputs[0])
-    dims = {d.name: d.size for d in ds.dimensions.values()}
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
     assert dims == {
         "lat": 2,
         "lon": 2,
         "time": 4,  # there are roughly 4 months in the test datasets
     }
 
-    ensemble_variables = {
-        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
-    }
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
     assert sorted(ensemble_variables) == [
         f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
     ]
     for var in ensemble_variables.values():
-        variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
+        variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"time": 4, "lat": 2, "lon": 2}
 
 
@@ -230,21 +226,20 @@ def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
 
     # --- then ---
     assert len(outputs) == 1
-    ds = Dataset(outputs[0])
-    dims = {d.name: d.size for d in ds.dimensions.values()}
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
     assert dims == {
         "region": 1,
         "time": 3,
     }
 
-    ensemble_variables = {
-        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
-    }
+    ensemble_variables = dict(ds.data_vars)
+
     assert sorted(ensemble_variables) == [
         f"heat_wave_frequency_p{p}" for p in (10, 50, 90)
     ]
     for var in ensemble_variables.values():
-        variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
+        variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"region": 1, "time": 3}
 
 
@@ -354,19 +349,17 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
 
     # --- then ---
     assert len(outputs) == 1
-    ds = Dataset(outputs[0])
-    dims = {d.name: d.size for d in ds.dimensions.values()}
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
     assert dims == {
         "region": 1,
         "time": 1,
     }
 
-    ensemble_variables = {
-        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
-    }
+    ensemble_variables = dict(ds.data_vars)
     assert sorted(ensemble_variables) == [f"csdi_6_p{p}" for p in (20, 50, 80)]
     for var in ensemble_variables.values():
-        variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
+        variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"region": 1, "time": 1}
 
 
@@ -388,21 +381,19 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
 
     # --- then ---
     assert len(outputs) == 1
-    ds = Dataset(outputs[0])
-    dims = {d.name: d.size for d in ds.dimensions.values()}
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
     assert dims == {
         "region": 1,
         "time": 1,
     }
 
-    ensemble_variables = {
-        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
-    }
+    ensemble_variables = dict(ds.data_vars)
     assert sorted(ensemble_variables) == [
         f"growing_degree_days_p{p}" for p in (20, 50, 80)
     ]
     for var in ensemble_variables.values():
-        variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
+        variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"region": 1, "time": 1}
 
 
@@ -425,25 +416,23 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
 
     # --- then ---
     assert len(outputs) == 1
-    ds = Dataset(outputs[0])
-    dims = {d.name: d.size for d in ds.dimensions.values()}
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
     assert dims == {
         "lat": 11,
         "lon": 11,
         "time": 4,  # there are roughly 4 months in the test datasets
     }
-    data = ds.variables["heat_wave_frequency_p20"][1, :].data
+    data = ds["heat_wave_frequency_p20"][1, :].data
     assert np.isnan(data).sum() == 55
     assert (~np.isnan(data)).sum() == 66
 
-    ensemble_variables = {
-        k: v for k, v in ds.variables.items() if k not in "lat lon time".split()
-    }
+    ensemble_variables = dict(ds.data_vars)
     assert sorted(ensemble_variables) == [
         f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
     ]
     for var in ensemble_variables.values():
-        variable_dims = {d: s for d, s in zip(var.dimensions, var.shape)}
+        variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"lat": 11, "lon": 11, "time": 4}
 
 
