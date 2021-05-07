@@ -10,6 +10,7 @@ from urllib.parse import quote_plus
 
 from finch.processes import EmpiricalQuantileMappingProcess
 from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
+from xclim.core.calendar import convert_calendar
 from .common import CFG_FILE, get_output
 
 
@@ -38,7 +39,10 @@ def test_wps_empirical_quantile_mapping(netcdf_sdba_ds, kind, name):
     assert_response_success(resp)
     out = get_output(resp.xml)
     p = xr.open_dataset(out["output"][6:])[name]
-    middle = (u > 1e-2) * (u < 0.99)
+
+    uc = convert_calendar(u, "noleap")
+    middle = ((uc > 1e-2) * (uc < 0.99)).data
 
     ref = xr.open_dataset(sdba_ds[f"qdm_{name}_ref"])[name]
-    np.testing.assert_array_almost_equal(p[middle], ref[middle], 1)
+    refc = convert_calendar(ref, "noleap")
+    np.testing.assert_array_almost_equal(p[middle], refc[middle], 1)

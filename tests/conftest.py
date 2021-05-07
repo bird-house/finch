@@ -179,7 +179,7 @@ def netcdf_sdba_ds(request) -> Dict[str, Path]:
     out["qdm_pr_hist"] = _write_dataset("qdm_pr_hist", series(x, "pr"))
     out["qdm_pr_ref"] = _write_dataset("qdm_pr_ref", series(y, "pr"))
 
-    return out, u
+    return out, series(u, "u")
 
 
 @pytest.fixture(scope="module")
@@ -216,6 +216,8 @@ def series(values, name, start="2000-01-01"):
             "units": "kg m-2 s-1",
             "kind": "*",
         }
+    else:
+        attrs = {}
 
     return xr.DataArray(
         values,

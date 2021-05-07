@@ -11,6 +11,8 @@ import xclim
 from pathlib import Path
 import string
 import traceback
+from xclim.core.calendar import convert_calendar
+from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
 from pywps import ComplexInput, LiteralInput, ComplexOutput, FORMATS
 from pywps.app.exceptions import ProcessError
 from .wps_base import FinchProcess, FinchProgressBar
@@ -128,8 +130,8 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
                     "Kind of adjustment (+, *)",
                     abstract="Use * for multiplicative adjustment, or + for additive adjustement.",
                     data_type="string",
-                    default="+",
-                    allowed_values=["+", "*"],
+                    default=ADDITIVE,
+                    allowed_values=[ADDITIVE, MULTIPLICATIVE],
                     min_occurs=0,
                 ),
             ]
@@ -157,59 +159,48 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
         train = {}
         adj = {}
 
-        try:
-            variable = request.inputs.pop(wpsio.variable.identifier, None)
+        variable = request.inputs.pop(wpsio.variable.identifier, None)
 
-            for key, input in request.inputs.items():
-                if key in resources:
-                    ds = try_opendap(request.inputs[key][0])
-                    name = variable or list(ds.data_vars)[0]
-                    res[key] = ds[name]
+        for key, input in request.inputs.items():
+            if key in resources:
+                ds = try_opendap(request.inputs[key][0])
+                name = variable or list(ds.data_vars)[0]
 
-                elif key in group_args:
-                    group[key] = single_input_or_none(request.inputs, key)
+                # Force calendar to noleap
+                res[key] = convert_calendar(ds[name], "noleap")
 
-                elif key in adjust_args:
-                    adj[key] = single_input_or_none(request.inputs, key)
+            elif key in group_args:
+                group[key] = single_input_or_none(request.inputs, key)
 
-                else:
-                    train[key] = single_input_or_none(request.inputs, key)
+            elif key in adjust_args:
+                adj[key] = single_input_or_none(request.inputs, key)
 
-            _log("Successfully read inputs from request.", 1)
+            else:
+                train[key] = single_input_or_none(request.inputs, key)
 
-            group = xclim.sdba.Grouper(**group)
-            _log("Grouper object created.", 2)
+        _log("Successfully read inputs from request.", 1)
 
-            bc = xclim.sdba.EmpiricalQuantileMapping(**train, group=group)
-            bc.train(res["ref"], res["hist"])
-            _log("Training object created.", 3)
+        group = xclim.sdba.Grouper(**group)
+        _log("Grouper object created.", 2)
 
-            out = bc.adjust(res["sim"], interp=group["interp"]).to_dataset(name=name)
-            _log("Adjustment object created.", 5)
+        bc = xclim.sdba.EmpiricalQuantileMapping(**train, group=group)
+        bc.train(res["ref"], res["hist"])
+        _log("Training object created.", 3)
 
-            out_fn = Path(self.workdir) / "bias_corrected.nc"
-            with FinchProgressBar(
-                logging_function=_log,
-                start_percentage=5,
-                end_percentage=98,
-                width=15,
-                dt=1,
-            ):
-                dataset_to_netcdf(out, out_fn)
+        out = bc.adjust(res["sim"], interp=group["interp"], **adj).to_dataset(name=name)
+        _log("Adjustment object created.", 5)
 
-        except Exception as exc:
-            LOGGER.exception(exc)
-            err_msg = traceback.format_exc()
-            raise ProcessError(
-                err_msg, max_length=len(err_msg), allowed_chars=string.printable
-            ) from exc
+        out_fn = Path(self.workdir) / "bias_corrected.nc"
+        with FinchProgressBar(
+            logging_function=_log,
+            start_percentage=5,
+            end_percentage=98,
+            width=15,
+            dt=1,
+        ):
+            dataset_to_netcdf(out, out_fn)
 
-        metalink = make_metalink_output(
-            self,
-            [
-                out_fn,
-            ],
-        )
+        metalink = make_metalink_output(self, [out_fn])
 
         response.outputs["output"].file = str(out_fn)
         response.outputs["output_log"].file = str(log_file_path(self))
