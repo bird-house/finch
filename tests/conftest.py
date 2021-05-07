@@ -2,6 +2,7 @@ import tempfile
 from pathlib import Path
 from shutil import rmtree
 from typing import Dict
+import collections
 
 import pytest
 import numpy as np
@@ -9,9 +10,11 @@ import pandas as pd
 import xarray as xr
 from pywps import configuration
 from xclim.core.calendar import percentile_doy
+from scipy.stats import norm, uniform
 from xclim.testing.tests.conftest import pr_series, tas_series, q_series
 import finch.processes
 import finch.wsgi
+
 
 from .common import CFG_FILE, client_for
 
@@ -84,7 +87,7 @@ def _create_and_write_dataset(variable, **kwds) -> Path:
 
 
 def _write_dataset(variable, ds) -> Path:
-    _, filename = tempfile.mkstemp(f"finch_test_data{variable}.nc", dir=TEMP_DIR)
+    _, filename = tempfile.mkstemp(f"finch_test_data_{variable}.nc", dir=TEMP_DIR)
     ds.to_netcdf(filename)
     return Path(filename)
 
@@ -156,6 +159,29 @@ def netcdf_datasets(request) -> Dict[str, Path]:
     return datasets
 
 
+@pytest.fixture(scope="session")
+def netcdf_sdba_ds(request) -> Dict[str, Path]:
+    """Return datasets useful to test sdba."""
+    out = {}
+    u = np.random.rand(10000)
+
+    # Define distributions
+    xd = uniform(loc=10, scale=1)
+    yd = norm(loc=12, scale=1)
+
+    # Generate random numbers with u so we get exact results for comparison
+    x = xd.ppf(u)
+    y = yd.ppf(u)
+
+    # Test train
+    out["qdm_tas_hist"] = _write_dataset("qdm_tas_hist", series(x, "tas"))
+    out["qdm_tas_ref"] = _write_dataset("qdm_tas_ref", series(y, "tas"))
+    out["qdm_pr_hist"] = _write_dataset("qdm_pr_hist", series(x, "pr"))
+    out["qdm_pr_ref"] = _write_dataset("qdm_pr_ref", series(y, "pr"))
+
+    return out, series(u, "u")
+
+
 @pytest.fixture(scope="module")
 def client():
     service = finch.wsgi.create_app(cfgfiles=CFG_FILE)
@@ -166,3 +192,37 @@ def client():
     configuration.CONFIG.set("server", "outputpath", outputpath)
 
     return client_for(service)
+
+
+def series(values, name, start="2000-01-01"):
+    coords = collections.OrderedDict()
+    for dim, n in zip(("time", "lon", "lat"), values.shape):
+        if dim == "time":
+            coords[dim] = pd.date_range(start, periods=n, freq=pd.DateOffset(days=1))
+        else:
+            coords[dim] = xr.IndexVariable(dim, np.arange(n))
+
+    if name == "tas":
+        attrs = {
+            "standard_name": "air_temperature",
+            "cell_methods": "time: mean within days",
+            "units": "K",
+            "kind": "+",
+        }
+    elif name == "pr":
+        attrs = {
+            "standard_name": "precipitation_flux",
+            "cell_methods": "time: sum over day",
+            "units": "kg m-2 s-1",
+            "kind": "*",
+        }
+    else:
+        attrs = {}
+
+    return xr.DataArray(
+        values,
+        coords=coords,
+        dims=list(coords.keys()),
+        name=name,
+        attrs=attrs,
+    )

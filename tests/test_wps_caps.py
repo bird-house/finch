@@ -53,4 +53,5 @@ def test_wps_caps_no_datasets(client, monkeypatch):
     ).split()
 
     subset_processes_count = 4
-    assert len(indicators) + subset_processes_count == len(names)
+    sdba_processes_count = 1
+    assert len(indicators) + subset_processes_count + sdba_processes_count == len(names)
