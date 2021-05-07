@@ -1,6 +1,13 @@
 Changes
 *******
 
+0.7.4 (2021-05-04)
+==================
+* Update to xclim 0.26.
+* Default metadata attributes are given through configuration, instead of being hardcoded.
+* Inclusion of a list of input dataset urls in ensemble processes.
+* Correct ensemble statistics on day-of-year indicators.
+
 0.7.3 (2021-04-13)
 ==================
 * Workaround for clisops shutting down logging

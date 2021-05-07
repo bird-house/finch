@@ -32,6 +32,7 @@ from .utils import (
     dataset_to_dataframe,
     dataset_to_netcdf,
     format_metadata,
+    log_file_path,
     single_input_or_none,
     write_log,
     zip_files,
@@ -265,7 +266,6 @@ def _get_bccaqv2_inputs(
     workdir: str,
     variables: Optional[List[str]] = None,
     rcp=None,
-    catalog_url=None,
     models=None,
 ) -> List[PywpsInput]:
     """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
@@ -593,6 +593,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     output_basename = Path(process.workdir) / (output_filename + "_ensemble")
     ensemble = make_ensemble(indices_files, ensemble_percentiles)
+    ensemble.attrs['source_datasets'] = '\n'.join([dsinp.url for dsinp in netcdf_inputs])
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
@@ -614,6 +615,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         dataset_to_netcdf(ensemble, ensemble_output)
 
     response.outputs["output"].file = ensemble_output
+    response.outputs["output_log"].file = str(log_file_path(process))
 
     write_log(process, "Processing finished successfully", process_step="done")
     return response
