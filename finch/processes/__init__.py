@@ -20,7 +20,9 @@ from .wps_xsubset_point_dataset import (
     SubsetGridPointDatasetProcess,
 )
 from .wps_xsubset_polygon import SubsetPolygonProcess
+from .wps_sdba import EmpiricalQuantileMappingProcess
 from .wps_xaverage_polygon import AveragePolygonProcess
+
 
 logger = logging.getLogger("PYWPS")
 logger.disabled = False
@@ -79,6 +81,11 @@ def get_processes(all_processes=False):
             make_xclim_indicator_process(ind, suffix, base_class=base_class)
         )
 
+    # Statistical downscaling and bias adjustment
+    processes += [
+        EmpiricalQuantileMappingProcess(),
+    ]
+
     if datasets_configured or all_processes:
         # ensemble with grid point subset
         for ind in ensemble_indicators:
@@ -136,4 +143,4 @@ def _build_xclim():
     return mod
 
 
-xclim = _build_xclim() # noqa
+xclim = _build_xclim()  # noqa

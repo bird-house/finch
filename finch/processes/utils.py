@@ -420,6 +420,7 @@ def is_opendap_url(url):
 
 
 def single_input_or_none(inputs, identifier) -> Optional[str]:
+    """Return first input item."""
     try:
         return inputs[identifier][0].data
     except KeyError:
