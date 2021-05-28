@@ -1,7 +1,4 @@
-from pathlib import Path
-import collections
 import numpy as np
-import pandas as pd
 import pytest
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
@@ -45,4 +42,4 @@ def test_wps_empirical_quantile_mapping(netcdf_sdba_ds, kind, name):
 
     ref = xr.open_dataset(sdba_ds[f"qdm_{name}_ref"])[name]
     refc = convert_calendar(ref, "noleap")
-    np.testing.assert_array_almost_equal(p[middle], refc[middle], 1)
+    np.testing.assert_allclose(p[middle], refc[middle], rtol=0.02)
