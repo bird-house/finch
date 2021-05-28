@@ -109,13 +109,9 @@ def make_xclim_indicator_process(
     return process  # type: ignore
 
 
-NC_INPUT_VARIABLES = [
-    "tas",
-    "tasmin",
-    "tasmax",
-    "pr",
+# Read in the list of variables from xclim directly and add some other less documented.
+NC_INPUT_VARIABLES = list(xclim.core.utils.VARIABLES.keys()) + [
     "per",
-    "prsn",
     "tn10",
     "tn90",
     "tx90",
@@ -123,18 +119,6 @@ NC_INPUT_VARIABLES = [
     "t90",
     "q",
     "da",
-    "sic",
-    "snd",
-    "swe",
-    "area",
-    "uas",
-    "vas",
-    "ps",
-    "rh",
-    "huss",
-    "ws",
-    "sfcWind",
-    "sfcWindfromdir",
 ]
 
 
@@ -197,10 +181,11 @@ def make_freq(name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "A
 
 
 def make_nc_input(name):
+    desc = xclim.core.utils.VARIABLES.get(name, {}).get('description', '')
     return ComplexInput(
         name,
         "Resource",
-        abstract="NetCDF Files or archive (tar/zip) containing netCDF files.",
+        abstract="NetCDF Files or archive (tar/zip) containing netCDF files. " + desc,
         metadata=[Metadata("Info")],
         min_occurs=1,
         max_occurs=10000,

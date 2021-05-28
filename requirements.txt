@@ -1,6 +1,6 @@
 cftime
 pywps==4.4
-xclim==0.26
+xclim~=0.26
 xarray
 xesmf>=0.5.3
 clisops>=0.6.1
