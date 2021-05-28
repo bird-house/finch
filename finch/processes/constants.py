@@ -1,3 +1,5 @@
+from xclim.core.utils import VARIABLES
+
 BCCAQV2_MODELS = [
     "BNU-ESM",
     "CCSM4",
@@ -48,17 +50,18 @@ PCIC_12 = "PCIC12"
 ALLOWED_MODEL_NAMES = [ALL_24_MODELS, PCIC_12] + BCCAQV2_MODELS
 
 # a list of all posible netcdf arguments in xclim
-xclim_netcdf_variables = {
-    "tasmin",
-    "tasmax",
-    "tas",
-    "pr",
-    "prsn",
-    "tn10",
-    "tn90",
-    "tx90",
-    "t10",
-    "t90",
-}
+# Read in the list of variables from xclim directly and add some other less documented.
+xclim_netcdf_variables = set(VARIABLES.keys()).union(
+    {
+        "per",
+        "q",
+        "da",
+        "tn10",
+        "tn90",
+        "tx90",
+        "t10",
+        "t90",
+    }
+)
 
 bccaq_variables = {"tasmin", "tasmax", "pr"}

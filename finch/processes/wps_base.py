@@ -10,7 +10,8 @@ import xclim
 
 from xclim.core.utils import InputKind
 
-from finch.processes.utils import PywpsInput
+from .constants import xclim_netcdf_variables
+from .utils import PywpsInput
 
 
 LOGGER = logging.getLogger("PYWPS")
@@ -109,19 +110,6 @@ def make_xclim_indicator_process(
     return process  # type: ignore
 
 
-# Read in the list of variables from xclim directly and add some other less documented.
-NC_INPUT_VARIABLES = list(xclim.core.utils.VARIABLES.keys()) + [
-    "per",
-    "tn10",
-    "tn90",
-    "tx90",
-    "t10",
-    "t90",
-    "q",
-    "da",
-]
-
-
 def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]:
     """Convert xclim indicators properties to pywps inputs."""
     # Ideally this would be based on the Parameters docstring section rather than name conventions.
@@ -139,7 +127,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
     }
 
     for name, attrs in params.items():
-        if name in NC_INPUT_VARIABLES and attrs['kind'] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
+        if name in xclim_netcdf_variables and attrs['kind'] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
             inputs.append(make_nc_input(name))
         elif name in ["freq"]:
             inputs.append(make_freq(name, default=attrs['default'], abstract=attrs['description']))
@@ -160,7 +148,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
                     allowed_values=choices,
                 )
             )
-        elif name != 'ds':
+        elif attrs['kind'] < 50:
             # raise NotImplementedError(f"{parent}: {name}")
             LOGGER.warning(f"{parent}: Argument {name} of kind {attrs['kind']} is not implemented.")
 
