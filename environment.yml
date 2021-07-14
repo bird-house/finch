@@ -12,6 +12,7 @@ dependencies:
   - dask>=2.9
   - distributed
   - xarray>=0.18.2
+  - pandas<1.3
   - sentry-sdk
   - siphon
   # remember to match xclim version in environment-docs.yml as well

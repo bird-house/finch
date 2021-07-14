@@ -2,6 +2,7 @@ cftime
 pywps==4.4
 xclim~=0.26
 xarray>=0.18.2
+pandas<1.3
 xesmf>=0.5.3
 clisops>=0.6.4
 geopandas

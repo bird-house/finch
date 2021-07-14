@@ -86,3 +86,20 @@ def test_thredds():
     out = get_output(resp.xml)
     links = get_metalinks(lxml.etree.fromstring(out["ref"].encode()))
     assert len(links) == 2
+
+
+@pytest.mark.online
+def test_bad_link():
+    client = client_for(
+        Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
+    )
+    fn = "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/cmip5/bad_link.nc"
+    datainputs = (
+        f"resource=files@xlink:href={fn};"
+        "lat=45.0;"
+        "lon=150.0;"
+    )
+    resp = client.get(
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset_gridpoint&datainputs={datainputs}"
+    )
+    assert "NetCDF: file not found" in resp.response.decode()
