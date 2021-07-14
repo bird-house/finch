@@ -63,6 +63,10 @@ class FinchProgressBar(ProgressBar):
         self, logging_function, start_percentage=0, end_percentage=100, *args, **kwargs
     ):
         super(FinchProgressBar, self).__init__(*args, **kwargs)
+        # The only time dask writes to _file is in _finish.
+        # We put None to be sure nothing is ever written.
+        # because in rare cases writing to stdout causes bugs (on binder)
+        self._file = None
         self.start = start_percentage
         self.end = end_percentage
         self._logging_function = logging_function
