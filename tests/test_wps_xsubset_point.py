@@ -89,7 +89,7 @@ def test_thredds():
 
 
 """
-# This doesn't work yet. 
+# This doesn't work yet.
 @pytest.mark.online
 def test_bad_link():
     client = client_for(
