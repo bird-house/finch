@@ -37,7 +37,7 @@ jobs:
       - name: Install and test finch-wps
         run: |
           source activate finch-wps
-          pip install git+https://github.com/Ouranosinc/xclim.git@master#egg=xclim
+          # pip install git+https://github.com/Ouranosinc/xclim.git@master#egg=xclim
           make develop
           make start
           sleep 2
