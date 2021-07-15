@@ -1,4 +1,5 @@
 import logging
+import io
 from typing import Dict, List
 
 from dask.diagnostics import ProgressBar
@@ -63,10 +64,9 @@ class FinchProgressBar(ProgressBar):
         self, logging_function, start_percentage=0, end_percentage=100, *args, **kwargs
     ):
         super(FinchProgressBar, self).__init__(*args, **kwargs)
-        # The only time dask writes to _file is in _finish.
-        # We put None to be sure nothing is ever written.
-        # because in rare cases writing to stdout causes bugs (on binder)
-        self._file = None
+        # In rare cases writing to stdout causes bugs on binder
+        # Here we write to an in-memory file
+        self._file = io.StringIO()
         self.start = start_percentage
         self.end = end_percentage
         self._logging_function = logging_function
