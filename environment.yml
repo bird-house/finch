@@ -7,7 +7,7 @@ dependencies:
   - jinja2
   - click
   - psutil
-  - libnetcdf
+  - netcdf4
   - unidecode
   - dask>=2.9
   - distributed
