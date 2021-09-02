@@ -1,5 +1,5 @@
 cftime
-pywps==4.4
+pywps==4.5.0
 xclim==0.26
 xarray==0.17
 xesmf>=0.5.3
