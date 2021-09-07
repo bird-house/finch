@@ -12,13 +12,13 @@ dependencies:
   - dask>=2.9
   - distributed
   - xarray>=0.18.2
-  - pandas<1.3
+  - pandas
   - sentry-sdk
   - siphon
   # remember to match xclim version in environment-docs.yml as well
   - xclim==0.27
   - clisops>=0.6.4
-  - pywps==4.4
+  - pywps==4.4.5
   - parse
   - pandoc  # for building docs on Travis-CI, version on Pypi too old
   - xesmf>=0.5.3

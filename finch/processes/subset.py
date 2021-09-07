@@ -93,7 +93,7 @@ def finch_subset_gridpoint(
             LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
             return
 
-        p = Path(resource._file or resource._build_file_name(resource.url))
+        p = Path(resource.file or resource._build_file_name(resource.url))
         output_filename = Path(process.workdir) / (p.stem + "_sub" + p.suffix)
 
         dataset_to_netcdf(subsetted, output_filename)
@@ -169,7 +169,7 @@ def finch_subset_bbox(
             LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
             return
 
-        p = Path(resource._file or resource._build_file_name(resource.url))
+        p = Path(resource.file or resource._build_file_name(resource.url))
         output_filename = Path(process.workdir) / (p.stem + "_sub" + p.suffix)
 
         dataset_to_netcdf(subsetted, output_filename)
@@ -260,7 +260,7 @@ def finch_average_shape(
             LOGGER.warning(f"Average is empty for dataset: {resource.url}")
             return
 
-        p = Path(resource._file or resource._build_file_name(resource.url))
+        p = Path(resource.file or resource._build_file_name(resource.url))
         output_filename = Path(process.workdir) / (p.stem + "_avg" + p.suffix)
 
         dataset_to_netcdf(averaged, output_filename)
@@ -322,7 +322,7 @@ def finch_subset_shape(
             LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
             return
 
-        p = Path(resource._file or resource._build_file_name(resource.url))
+        p = Path(resource.file or resource._build_file_name(resource.url))
         output_filename = Path(process.workdir) / (p.stem + "_sub" + p.suffix)
 
         dataset_to_netcdf(subsetted, output_filename)
