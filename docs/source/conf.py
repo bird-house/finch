@@ -59,7 +59,7 @@ if os.environ.get('READTHEDOCS') == 'True':
                             "numba", "parse", "siphon", "sklearn", "cftime",
                             "netCDF4", "bottleneck", "ocgis", "geotiff", "geos",
                             "hdf4", "hdf5", "zlib", "pyproj", "proj", "cartopy",
-                            "scikit-learn", "cairo"]
+                            "scikit-learn", "cairo", "clisops"]
 
 # Monkeypatch constant because the following are mock imports.
 # Only works if numpy is actually installed and at the same time being mocked.
