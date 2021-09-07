@@ -7,6 +7,7 @@ Changes
 * Added ``empirical_quantile_mapping`` process calling ``xclim.sdba.EmpiricalQuantileMapping``.
 * Update to PyWPS 4.4.5
 
+
 0.7.4 (2021-05-04)
 ==================
 * Update to xclim 0.26.
