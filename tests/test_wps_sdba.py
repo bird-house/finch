@@ -35,7 +35,7 @@ def test_wps_empirical_quantile_mapping(netcdf_sdba_ds, kind, name):
     print(resp.response)
     assert_response_success(resp)
     out = get_output(resp.xml)
-    p = xr.open_dataset(out["output"][6:])[name]
+    p = xr.open_dataset(out["output"][7:])[name]
 
     uc = convert_calendar(u, "noleap")
     middle = ((uc > 1e-2) * (uc < 0.99)).data

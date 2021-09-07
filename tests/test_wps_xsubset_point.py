@@ -27,7 +27,7 @@ def test_wps_xsubsetpoint(netcdf_datasets):
 
     assert_response_success(resp)
     out = get_output(resp.xml)
-    ds = xr.open_dataset(out["output"][6:])
+    ds = xr.open_dataset(out["output"][7:])
     assert ds.lat == 2
     assert ds.lon == 3
 
@@ -50,7 +50,7 @@ def test_wps_multiple_xsubsetpoint(netcdf_datasets):
 
     assert_response_success(resp)
     out = get_output(resp.xml)
-    ds = xr.open_dataset(out["output"][6:])
+    ds = xr.open_dataset(out["output"][7:])
     assert_array_equal(ds.lon, [2, 3, 4])
     assert_array_equal(ds.lat, [1, 3, 4])
 
