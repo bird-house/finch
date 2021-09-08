@@ -184,6 +184,7 @@ check_missing = LiteralInput(
     data_type="string",
     default=OPTIONS[CHECK_MISSING],
     allowed_values=list(MISSING_METHODS.keys()),
+    min_occurs=0,
 )
 
 
@@ -204,6 +205,7 @@ cf_compliance = LiteralInput(
     data_type="string",
     default=OPTIONS[CF_COMPLIANCE],
     allowed_values=['log', 'warn', 'raise'],
+    min_occurs=0,
 )
 
 
@@ -214,6 +216,7 @@ data_validation = LiteralInput(
     data_type="string",
     default=OPTIONS[DATA_VALIDATION],
     allowed_values=['log', 'warn', 'raise'],
+    min_occurs=0,
 )
 
 
