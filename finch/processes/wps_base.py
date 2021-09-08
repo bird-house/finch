@@ -1,4 +1,5 @@
 import logging
+import io
 from typing import Dict, List
 
 from dask.diagnostics import ProgressBar
@@ -10,7 +11,8 @@ import xclim
 
 from xclim.core.utils import InputKind
 
-from finch.processes.utils import PywpsInput
+from .constants import xclim_netcdf_variables
+from .utils import PywpsInput
 
 
 LOGGER = logging.getLogger("PYWPS")
@@ -62,10 +64,9 @@ class FinchProgressBar(ProgressBar):
         self, logging_function, start_percentage=0, end_percentage=100, *args, **kwargs
     ):
         super(FinchProgressBar, self).__init__(*args, **kwargs)
-        # The only time dask writes to _file is in _finish.
-        # We put None to be sure nothing is ever written.
-        # because in rare cases writing to stdout causes bugs (on binder)
-        self._file = None
+        # In rare cases writing to stdout causes bugs on binder
+        # Here we write to an in-memory file
+        self._file = io.StringIO()
         self.start = start_percentage
         self.end = end_percentage
         self._logging_function = logging_function
@@ -113,35 +114,6 @@ def make_xclim_indicator_process(
     return process  # type: ignore
 
 
-NC_INPUT_VARIABLES = [
-    "tas",
-    "tasmin",
-    "tasmax",
-    "pr",
-    "per",
-    "prsn",
-    "tn10",
-    "tn90",
-    "tx90",
-    "t10",
-    "t90",
-    "q",
-    "da",
-    "sic",
-    "snd",
-    "swe",
-    "area",
-    "uas",
-    "vas",
-    "ps",
-    "rh",
-    "huss",
-    "ws",
-    "sfcWind",
-    "sfcWindfromdir",
-]
-
-
 def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]:
     """Convert xclim indicators properties to pywps inputs."""
     # Ideally this would be based on the Parameters docstring section rather than name conventions.
@@ -159,7 +131,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
     }
 
     for name, attrs in params.items():
-        if name in NC_INPUT_VARIABLES and attrs['kind'] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
+        if name in xclim_netcdf_variables and attrs['kind'] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
             inputs.append(make_nc_input(name))
         elif name in ["freq"]:
             inputs.append(make_freq(name, default=attrs['default'], abstract=attrs['description']))
@@ -201,10 +173,11 @@ def make_freq(name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "A
 
 
 def make_nc_input(name):
+    desc = xclim.core.utils.VARIABLES.get(name, {}).get('description', '')
     return ComplexInput(
         name,
         "Resource",
-        abstract="NetCDF Files or archive (tar/zip) containing netCDF files.",
+        abstract="NetCDF Files or archive (tar/zip) containing netCDF files. " + desc,
         metadata=[Metadata("Info")],
         min_occurs=1,
         max_occurs=10000,

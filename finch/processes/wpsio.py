@@ -10,7 +10,6 @@ from xclim.core.options import (
     CHECK_MISSING,
     CF_COMPLIANCE,
     DATA_VALIDATION,
-    _LOUDNESS_OPTIONS,
     MISSING_METHODS,
     MISSING_OPTIONS,
     OPTIONS

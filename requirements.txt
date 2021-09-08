@@ -1,9 +1,10 @@
 cftime
-pywps==4.4
-xclim==0.26
-xarray==0.17
+pywps==4.4.5
+xclim==0.27
+xarray>=0.18.2
+pandas
 xesmf>=0.5.3
-clisops>=0.6.1
+clisops>=0.6.4
 geopandas
 jinja2
 click

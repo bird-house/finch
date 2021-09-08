@@ -1,18 +1,20 @@
 import geojson
 import xarray as xr
 from tests.utils import execute_process, shapefile_zip, wps_input_file, wps_literal_input
+import pytest
+
+poly = {
+    "type": "Feature",
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[0.5, 0], [2.5, 0], [2.5, 2.5], [0.5, 2.5]]],
+    },
+}
 
 
 def test_wps_subsetpoly(client, netcdf_datasets):
     # --- given ---
     identifier = "subset_polygon"
-    poly = {
-        "type": "Feature",
-        "geometry": {
-            "type": "Polygon",
-            "coordinates": [[[0.5, 0], [2.5, 0], [2.5, 2.5], [0.5, 2.5]]],
-        },
-    }
     inputs = [
         wps_input_file("resource", f"file://{netcdf_datasets['tasmin']}"),
         wps_literal_input("shape", geojson.dumps(poly)),

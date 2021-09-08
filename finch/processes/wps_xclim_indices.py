@@ -9,6 +9,7 @@ from unidecode import unidecode
 import xarray as xr
 
 from . import wpsio
+from .constants import xclim_netcdf_variables
 from .utils import (
     compute_indices,
     dataset_to_netcdf,
@@ -20,7 +21,6 @@ from .utils import (
 from .wps_base import (
     FinchProcess,
     FinchProgressBar,
-    NC_INPUT_VARIABLES,
     convert_xclim_inputs_to_pywps,
 )
 
@@ -81,7 +81,7 @@ class XclimIndicatorBase(FinchProcess):
 
         nc_inputs, other_inputs = {}, {}
         for k, v in request.inputs.items():
-            if k in NC_INPUT_VARIABLES:
+            if k in xclim_netcdf_variables:
                 nc_inputs[k] = v
             else:
                 other_inputs[k] = v
