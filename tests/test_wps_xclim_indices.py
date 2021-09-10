@@ -44,6 +44,8 @@ def test_indicators_processes_discovery(indicator):
         parameters.remove("indexer")
         parameters.add("month")
         parameters.add("season")
+    if 'bootstrap' in parameters:
+        parameters.add("bootstrap")
 
     assert_equal(parameters, set(i.identifier for i in process.inputs), indicator.identifier)
 

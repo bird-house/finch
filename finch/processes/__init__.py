@@ -56,6 +56,7 @@ not_implemented = [
     "RH_FROMDEWPOINT",
     "E_SAT",
     "HUSS",
+    "POTENTIAL_EVAPOTRANSPIRATION",  # Should be functional in xclim 0.30
 ]
 
 

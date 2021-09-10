@@ -128,6 +128,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
         InputKind.STRING: "string",
         InputKind.DAY_OF_YEAR: "string",
         InputKind.DATE: "datetime",
+        InputKind.BOOL: "boolean",
     }
 
     for name, attrs in params.items():
