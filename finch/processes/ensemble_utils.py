@@ -531,69 +531,77 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     output_filename = make_output_filename(process, request.inputs)
 
-    write_log(process, "Fetching datasets")
-
-    rcp = single_input_or_none(request.inputs, "rcp")
+    rcps = [r.data.strip() for r in request.inputs["rcp"]]
+    write_log(process, f"Fetching datasets for rcps {rcps}")
     models = [m.data.strip() for m in request.inputs["models"]]
     dataset_name = single_input_or_none(request.inputs, "dataset")
-    netcdf_inputs = get_datasets(
-        dataset_name,
-        workdir=process.workdir,
-        variables=list(source_variable_names),
-        rcp=rcp,
-        models=models,
-    )
 
-    write_log(process, "Running subset", process_step="subset")
-
-    subsetted_files = subset_function(
-        process, netcdf_inputs=netcdf_inputs, request_inputs=request.inputs
-    )
-
-    if not subsetted_files:
-        message = "No data was produced when subsetting using the provided bounds."
-        raise ProcessError(message)
-
-    subsetted_intermediate_files = compute_intermediate_variables(
-        subsetted_files, dataset_input_names, process.workdir
-    )
-
-    write_log(process, "Computing indices", process_step="compute_indices")
-
-    input_groups = make_indicator_inputs(
-        process.xci, request_inputs_not_datasets, subsetted_intermediate_files
-    )
-    n_groups = len(input_groups)
-
-    indices_files = []
-
-    warnings.filterwarnings("ignore", category=FutureWarning)
-    warnings.filterwarnings("ignore", category=UserWarning)
-
-    for n, inputs in enumerate(input_groups):
-        write_log(
-            process,
-            f"Computing indices for file {n + 1} of {n_groups}",
-            subtask_percentage=n * 100 // n_groups,
+    ensembles = []
+    for rcp in rcps:
+        netcdf_inputs = get_datasets(
+            dataset_name,
+            workdir=process.workdir,
+            variables=list(source_variable_names),
+            rcp=rcp,
+            models=models,
         )
-        output_ds = compute_indices(process, process.xci, inputs)
 
-        output_name = f"{output_filename}_{process.identifier}_{n}.nc"
-        for variable in accepted_variables:
-            if variable in inputs:
-                input_name = Path(inputs.get(variable)[0].file).name
-                output_name = input_name.replace(variable, process.identifier)
+        write_log(process, f"Running subset rcp={rcp}", process_step="subset")
 
-        output_path = Path(process.workdir) / output_name
-        dataset_to_netcdf(output_ds, output_path)
-        indices_files.append(output_path)
+        subsetted_files = subset_function(
+            process, netcdf_inputs=netcdf_inputs, request_inputs=request.inputs
+        )
 
-    warnings.filterwarnings("default", category=FutureWarning)
-    warnings.filterwarnings("default", category=UserWarning)
+        if not subsetted_files:
+            message = "No data was produced when subsetting using the provided bounds."
+            raise ProcessError(message)
 
-    output_basename = Path(process.workdir) / (output_filename + "_ensemble")
-    ensemble = make_ensemble(indices_files, ensemble_percentiles)
-    ensemble.attrs['source_datasets'] = '\n'.join([dsinp.url for dsinp in netcdf_inputs])
+        subsetted_intermediate_files = compute_intermediate_variables(
+            subsetted_files, dataset_input_names, process.workdir
+        )
+
+        write_log(process, f"Computing indices rcp={rcp}", process_step="compute_indices")
+
+        input_groups = make_indicator_inputs(
+            process.xci, request_inputs_not_datasets, subsetted_intermediate_files
+        )
+        n_groups = len(input_groups)
+
+        indices_files = []
+
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        warnings.filterwarnings("ignore", category=UserWarning)
+
+        for n, inputs in enumerate(input_groups):
+            write_log(
+                process,
+                f"Computing indices for file {n + 1} of {n_groups}, rcp={rcp}",
+                subtask_percentage=n * 100 // n_groups,
+            )
+            output_ds = compute_indices(process, process.xci, inputs)
+
+            output_name = f"{output_filename}_{process.identifier}_{n}.nc"
+            for variable in accepted_variables:
+                if variable in inputs:
+                    input_name = Path(inputs.get(variable)[0].file).name
+                    output_name = input_name.replace(variable, process.identifier)
+
+            output_path = Path(process.workdir) / output_name
+            dataset_to_netcdf(output_ds, output_path)
+            indices_files.append(output_path)
+
+        warnings.filterwarnings("default", category=FutureWarning)
+        warnings.filterwarnings("default", category=UserWarning)
+
+        output_basename = Path(process.workdir) / (output_filename + "_ensemble")
+        ensemble = make_ensemble(indices_files, ensemble_percentiles)
+        ensemble.attrs['source_datasets'] = '\n'.join([dsinp.url for dsinp in netcdf_inputs])
+        ensembles.append(ensemble)
+
+    if len(rcps) > 1:
+        ensemble = xr.concat(ensembles, dim=xr.DataArray(rcps, dims=('rcp',), name='rcp'))
+    else:
+        ensemble = ensembles[0]
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
