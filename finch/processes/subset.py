@@ -97,6 +97,7 @@ def finch_subset_gridpoint(
         output_filename = Path(process.workdir) / (p.stem + "_sub" + p.suffix)
 
         dataset_to_netcdf(subsetted, output_filename)
+        subsetted.close()
 
         output_files.append(output_filename)
 

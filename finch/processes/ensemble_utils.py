@@ -2,6 +2,7 @@ from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
+import os
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, cast
 import warnings
@@ -315,10 +316,8 @@ def _formatted_coordinate(value) -> Optional[str]:
     return f"{float(value):.3f}"
 
 
-def make_output_filename(process: Process, inputs: List[PywpsInput]):
+def make_output_filename(process: Process, inputs: List[PywpsInput], rcp=None):
     """Returns a filename for the process's output, depending on its inputs"""
-
-    rcp = single_input_or_none(inputs, "rcp")
     lat = _formatted_coordinate(single_input_or_none(inputs, "lat"))
     lon = _formatted_coordinate(single_input_or_none(inputs, "lon"))
     lat0 = _formatted_coordinate(single_input_or_none(inputs, "lat0"))
@@ -527,17 +526,21 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     percentiles_string = request.inputs["ensemble_percentiles"][0].data
     ensemble_percentiles = [int(p.strip()) for p in percentiles_string.split(",")]
 
-    write_log(process, "Processing started", process_step="start")
-
-    output_filename = make_output_filename(process, request.inputs)
-
     rcps = [r.data.strip() for r in request.inputs["rcp"]]
-    write_log(process, f"Fetching datasets for rcps {rcps}")
+    write_log(process, f"Processing started ({len(rcps)} rcps)", process_step="start")
     models = [m.data.strip() for m in request.inputs["models"]]
     dataset_name = single_input_or_none(request.inputs, "dataset")
 
+    base_work_dir = Path(process.workdir)
     ensembles = []
     for rcp in rcps:
+        # Ensure no file name conflicts (i.e. if the rcp doesn't appear in the base filename)
+        work_dir = base_work_dir / rcp
+        work_dir.mkdir(exist_ok=True)
+        process.set_workdir(str(work_dir))
+
+        write_log(process, f"Fetching datasets for rcp={rcp}")
+        output_filename = make_output_filename(process, request.inputs, rcp=rcp)
         netcdf_inputs = get_datasets(
             dataset_name,
             workdir=process.workdir,
@@ -597,6 +600,8 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         ensemble = make_ensemble(indices_files, ensemble_percentiles)
         ensemble.attrs['source_datasets'] = '\n'.join([dsinp.url for dsinp in netcdf_inputs])
         ensembles.append(ensemble)
+
+    process.set_workdir(str(base_work_dir))
 
     if len(rcps) > 1:
         ensemble = xr.concat(ensembles, dim=xr.DataArray(rcps, dims=('rcp',), name='rcp'))
