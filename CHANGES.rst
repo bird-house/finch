@@ -1,6 +1,10 @@
 Changes
 *******
 
+0.7.6 (unreleased)
+==================
+* Possibility to pass multiple "rcp" inputs for ensemble processes.
+
 0.7.5 (2021-09-07)
 ==================
 * Update to xclim 0.27
