@@ -5,8 +5,10 @@ from pywps.app.Service import Service
 
 from .processes import get_processes
 
+SENTRY_ENV = os.environ.get("SENTRY_ENV", "production")
+
 if os.environ.get("SENTRY_DSN"):
-    sentry_sdk.init(os.environ["SENTRY_DSN"])
+    sentry_sdk.init(os.environ["SENTRY_DSN"], SENTRY_ENV)
 
 
 def create_app(cfgfiles=None):
