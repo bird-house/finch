@@ -2,7 +2,6 @@ from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
-import os
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, cast
 import warnings
@@ -317,7 +316,12 @@ def _formatted_coordinate(value) -> Optional[str]:
 
 
 def make_output_filename(process: Process, inputs: List[PywpsInput], rcp=None):
-    """Returns a filename for the process's output, depending on its inputs"""
+    """Returns a filename for the process's output, depending on its inputs.
+
+    The rcp part of the filename can be overriden.
+    """
+    if rcp is None:
+        rcp = single_input_or_none(inputs, "rcp")
     lat = _formatted_coordinate(single_input_or_none(inputs, "lat"))
     lon = _formatted_coordinate(single_input_or_none(inputs, "lon"))
     lat0 = _formatted_coordinate(single_input_or_none(inputs, "lat0"))

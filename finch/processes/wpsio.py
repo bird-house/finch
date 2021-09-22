@@ -140,7 +140,6 @@ rcp = LiteralInput(
     data_type="string",
     default=None,
     min_occurs=0,
-    max_occurs=3,
     allowed_values=["rcp26", "rcp45", "rcp85"],
 )
 
