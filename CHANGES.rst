@@ -1,6 +1,11 @@
 Changes
 *******
 
+Unreleased
+==================
+* Added `SENTRY_ENV` configuration
+
+
 0.7.5 (2021-09-07)
 ==================
 * Update to xclim 0.27
