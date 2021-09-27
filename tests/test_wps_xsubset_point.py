@@ -27,7 +27,7 @@ def test_wps_xsubsetpoint(netcdf_datasets):
 
     assert_response_success(resp)
     out = get_output(resp.xml)
-    ds = xr.open_dataset(out["output"][6:])
+    ds = xr.open_dataset(out["output"][7:])
     assert ds.lat == 2
     assert ds.lon == 3
 
@@ -50,7 +50,7 @@ def test_wps_multiple_xsubsetpoint(netcdf_datasets):
 
     assert_response_success(resp)
     out = get_output(resp.xml)
-    ds = xr.open_dataset(out["output"][6:])
+    ds = xr.open_dataset(out["output"][7:])
     assert_array_equal(ds.lon, [2, 3, 4])
     assert_array_equal(ds.lat, [1, 3, 4])
 
@@ -86,3 +86,24 @@ def test_thredds():
     out = get_output(resp.xml)
     links = get_metalinks(lxml.etree.fromstring(out["ref"].encode()))
     assert len(links) == 2
+
+
+"""
+# This doesn't work yet.
+@pytest.mark.online
+def test_bad_link():
+    client = client_for(
+        Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
+    )
+    fn = "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/cmip5/bad_link.nc"
+    datainputs = (
+        f"resource=files@xlink:href={fn};"
+        "lat=45.0;"
+        "lon=150.0;"
+    )
+    resp = client.get(
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset_gridpoint&datainputs={datainputs}"
+    )
+    print(resp.response)
+    assert "NetCDF: file not found" in resp.response.decode()
+"""

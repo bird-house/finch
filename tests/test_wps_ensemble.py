@@ -71,13 +71,14 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
     assert len(ds.attrs['source_datasets'].split('\n')) == 4
 
 
-def test_ensemble_dded_grid_point(mock_datasets, client):
+def test_ensemble_dded_grid_point_multircp(mock_datasets, client):
     # --- given ---
     identifier = "ensemble_grid_point_degree_days_exceedance_date"
     inputs = [
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
         wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("rcp", "rcp45"),
         wps_literal_input("thresh", "-5 degC"),
         wps_literal_input("sum_thresh", "30 K days"),
         wps_literal_input("op", ">"),
@@ -96,6 +97,7 @@ def test_ensemble_dded_grid_point(mock_datasets, client):
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
+        "rcp": 2,
     }
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
@@ -104,7 +106,7 @@ def test_ensemble_dded_grid_point(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"region": 1, "time": 4}
+        assert variable_dims == {"region": 1, "time": 4, "rcp": 2}
 
 
 def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):

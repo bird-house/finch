@@ -26,6 +26,6 @@ def test_wps_subsetbbox(netcdf_datasets):
 
     assert_response_success(resp)
     out = get_output(resp.xml)
-    ds = xr.open_dataset(out["output"][6:])
+    ds = xr.open_dataset(out["output"][7:])
     np.testing.assert_array_equal(ds.lat, [2, 3, 4])
     np.testing.assert_array_equal(ds.lon, [3, 4])
