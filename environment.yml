@@ -21,6 +21,6 @@ dependencies:
   - pywps ==4.4.5
   - parse
   - pandoc  # for building docs on Travis-CI, version on Pypi too old
-  - xesmf >=0.5.3
+  - xesmf >=0.5.3,!=0.6.1
   - nbconvert >6.0  # see: https://github.com/jupyter/jupyter_client/issues/637
   - jupyter_client >7.0  # see: https://github.com/jupyter/jupyter_client/issues/637

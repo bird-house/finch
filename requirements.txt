@@ -3,7 +3,7 @@ pywps==4.4.5
 xclim==0.31
 xarray>=0.18.2
 pandas
-xesmf>=0.5.3
+xesmf>=0.5.3,!=0.6.1
 clisops>=0.6.4
 geopandas
 jinja2
