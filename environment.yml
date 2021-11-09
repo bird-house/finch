@@ -16,7 +16,7 @@ dependencies:
   - sentry-sdk
   - siphon
   # remember to match xclim version in environment-docs.yml as well
-  - xclim ==0.27
+  - xclim == 0.31
   - clisops >=0.6.4
   - pywps ==4.4.5
   - parse
