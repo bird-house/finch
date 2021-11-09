@@ -48,6 +48,9 @@ def finch_subset_gridpoint(
     except AttributeError:
         latitudes = [float(lat_value)]
 
+    longitudes = xr.DataArray(longitudes, dims=('region',))
+    latitudes = xr.DataArray(latitudes, dims=('region',))
+
     start_date = single_input_or_none(request_inputs, wpsio.start_date.identifier)
     end_date = single_input_or_none(request_inputs, wpsio.end_date.identifier)
     variables = [r.data for r in request_inputs.get("variable", [])]
@@ -76,18 +79,13 @@ def finch_subset_gridpoint(
 
         dataset = dataset[variables] if variables else dataset
 
-        subsets = []
-        for longitude, latitude in zip(longitudes, latitudes):
-            subset = subset_gridpoint(
-                dataset,
-                lon=longitude,
-                lat=latitude,
-                start_date=start_date,
-                end_date=end_date,
-            )
-            subsets.append(subset)
-
-        subsetted = xr.concat(subsets, dim="region")
+        subsetted = subset_gridpoint(
+            dataset,
+            lon=longitudes,
+            lat=latitudes,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
         if not all(subsetted.dims.values()):
             LOGGER.warning(f"Subset is empty for dataset: {resource.url}")

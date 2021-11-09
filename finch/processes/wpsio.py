@@ -111,6 +111,15 @@ lat1 = LiteralInput(
     min_occurs=0,
 )
 
+average = LiteralInput(
+    "average",
+    "Perform spatial average.",
+    abstract="Whether to average over spatial dimensions or not. Averaging is done just before the ensemble percentiles.",
+    data_type="boolean",
+    default=False,
+    min_occurs=0,
+)
+
 variable = LiteralInput(
     "variable",
     "NetCDF Variable",
