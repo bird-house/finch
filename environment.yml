@@ -12,15 +12,18 @@ dependencies:
   - dask >=2.9
   - distributed
   - xarray >=0.18.2
+  - numpy
+  - geopandas
   - pandas
+  - scipy
+  - requests
   - sentry-sdk
   - siphon
+  - bottleneck
   # remember to match xclim version in environment-docs.yml as well
-  - xclim ==0.27
+  - xclim == 0.31
   - clisops >=0.6.4
   - pywps ==4.4.5
   - parse
-  - pandoc  # for building docs on Travis-CI, version on Pypi too old
-  - xesmf >=0.5.3
-  - nbconvert >6.0  # see: https://github.com/jupyter/jupyter_client/issues/637
-  - jupyter_client >7.0  # see: https://github.com/jupyter/jupyter_client/issues/637
+  - xesmf >=0.5.3,!=0.6.1  # clisops 0.7 bugs with xESMF 0.6.1
+  - ESMpy <= 8.1.1 # Bug in ESMF 8.2 with spatial averaging.

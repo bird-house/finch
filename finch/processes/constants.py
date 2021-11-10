@@ -61,6 +61,10 @@ xclim_netcdf_variables = set(VARIABLES.keys()).union(
         "tx90",
         "t10",
         "t90",
+        "tas_25",
+        "tas_75",
+        "pr_25",
+        "pr_75"
     }
 )
 
