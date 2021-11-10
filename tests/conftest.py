@@ -11,7 +11,7 @@ import xarray as xr
 from pywps import configuration
 from xclim.core.calendar import percentile_doy
 from scipy.stats import norm, uniform
-from xclim.testing.tests.conftest import pr_series, tas_series, q_series
+from xclim.testing.tests.conftest import pr_series, tas_series, q_series, pr_hr_series
 import finch.processes
 import finch.wsgi
 
@@ -226,3 +226,11 @@ def series(values, name, start="2000-01-01"):
         name=name,
         attrs=attrs,
     )
+
+
+@pytest.fixture
+def hourly_dataset(pr_hr_series):
+    a = np.arange(10 * 24.)
+    a[0] = np.nan
+    return _write_dataset("pr_hr", pr_hr_series(a))
+
