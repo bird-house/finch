@@ -427,11 +427,6 @@ def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
         if ensemble_percentiles[v].attrs.get('units', '').startswith('days after'):
             ensemble_percentiles[v] = days_since_to_doy(ensemble_percentiles[v])
 
-    if "realization" in ensemble_percentiles.coords:
-        # realization coordinate will probably be removed in xclim
-        # directly in the near future so this line will not be necessary
-        ensemble_percentiles = ensemble_percentiles.drop_vars("realization")
-
     # Depending on the datasets, I've found that writing the netcdf could hang
     # if the dataset was not loaded explicitely previously... Not sure why.
     # The datasets should be pretty small when computing the ensembles, so this is
