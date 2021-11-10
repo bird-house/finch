@@ -409,7 +409,7 @@ def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
     return groups
 
 
-def make_ensemble(files: List[Path], percentiles: List[int], average_dims: Optional[Tuple[str]]) -> None:
+def make_ensemble(files: List[Path], percentiles: List[int], average_dims: Optional[Tuple[str]] = None) -> None:
     ensemble = ensembles.create_ensemble(files)
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
@@ -540,6 +540,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
             average_dims = ("lat", "lon")
     else:
         average_dims = None
+    write_log(process, f"Will average over {average_dims}")
 
     base_work_dir = Path(process.workdir)
     ensembles = []
@@ -621,7 +622,11 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
         df = dataset_to_dataframe(ensemble)
-        df = df.reset_index().set_index({"lat", "lon", "time"}.intersection(ensemble.dims))
+        if average_dims is None:
+            dims = ['lat', 'lon', 'time']
+        else:
+            dims = ['time']
+        df = df.reset_index().set_index(dims)
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
 
