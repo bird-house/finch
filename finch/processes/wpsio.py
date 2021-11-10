@@ -114,7 +114,7 @@ lat1 = LiteralInput(
 average = LiteralInput(
     "average",
     "Perform spatial average.",
-    abstract="Whether to average over spatial dimensions or not. Averaging is done just before the ensemble percentiles.",
+    abstract="Whether to average over spatial dimensions or not. Averaging is done before the ensemble percentiles.",
     data_type="boolean",
     default=False,
     min_occurs=0,
