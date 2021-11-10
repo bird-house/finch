@@ -8,6 +8,6 @@ dependencies:
 - sphinx
 - nbsphinx
 - ipython
-- xclim~=0.27
+- xclim~=0.31
 - matplotlib
 - birdy
