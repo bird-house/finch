@@ -6,7 +6,7 @@ Changes
 * Update to xclim 0.31
 * Added `SENTRY_ENV` configuration
 * Possibility to pass multiple "rcp" inputs for ensemble processes.
-* Writing to netcdf is done using the single-threaded dask scheduler to avoid hanging PyWPS processes.
+* Writing to netcdf is done only after calling ``load()`` to avoid locks occurring within dask calls to ``to_netcdf`` in multi-processing mode.
 
 0.7.5 (2021-09-07)
 ==================
