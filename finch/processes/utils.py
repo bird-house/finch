@@ -660,5 +660,5 @@ def dataset_to_netcdf(
     # Perform computations
     ds.load()
 
-    # This is necessary when running with gunicorn to avoid lock-ups
+    # We had locking issues with dask and PyWPS multi-processing here, hence the explicit `load`
     ds.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)
