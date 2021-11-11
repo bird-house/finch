@@ -657,6 +657,8 @@ def dataset_to_netcdf(
         for v in ds.data_vars:
             encoding[v] = {"zlib": True, "complevel": compression_level}
 
-    # This is necessary when running with gunicorn
-    with dask.config.set(scheduler="single-threaded"):
-        ds.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)
+    # Perform computations
+    ds.load()
+
+    # This is necessary when running with gunicorn to avoid lock-ups
+    ds.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)
