@@ -661,5 +661,4 @@ def dataset_to_netcdf(
     ds.load()
 
     # This is necessary when running with gunicorn to avoid lock-ups
-    with dask.config.set(scheduler="single-threaded"):
-        ds.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)
+    ds.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)
