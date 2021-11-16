@@ -76,18 +76,18 @@ def finch_subset_gridpoint(
 
         dataset = dataset[variables] if variables else dataset
 
-        subsets = []
-        for longitude, latitude in zip(longitudes, latitudes):
-            subset = subset_gridpoint(
-                dataset,
-                lon=longitude,
-                lat=latitude,
-                start_date=start_date,
-                end_date=end_date,
-            )
-            subsets.append(subset)
+        subsetted = subset_gridpoint(
+            dataset,
+            lon=longitudes,
+            lat=latitudes,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
-        subsetted = xr.concat(subsets, dim="region")
+        if 'site' in subsetted.dims:
+            subsetted = subsetted.rename(site='region')
+        else:
+            subsetted = subsetted.expand_dims('region')
 
         if not all(subsetted.dims.values()):
             LOGGER.warning(f"Subset is empty for dataset: {resource.url}")

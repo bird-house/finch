@@ -7,6 +7,7 @@ Changes
 * Added `SENTRY_ENV` configuration
 * Possibility to pass multiple "rcp" inputs for ensemble processes.
 * Writing to netcdf is done only after calling ``load()`` to avoid locks occurring within dask calls to ``to_netcdf`` in multi-processing mode.
+* Add an ``average`` parameter to ensemble processes. When true, a spatial average is returned.
 
 0.7.5 (2021-09-07)
 ==================

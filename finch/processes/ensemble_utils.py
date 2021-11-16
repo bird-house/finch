@@ -3,7 +3,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, cast
+from typing import Dict, Iterable, List, Optional, Tuple, cast
 import warnings
 
 from parse import parse
@@ -409,7 +409,7 @@ def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
     return groups
 
 
-def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
+def make_ensemble(files: List[Path], percentiles: List[int], average_dims: Optional[Tuple[str]] = None) -> None:
     ensemble = ensembles.create_ensemble(files)
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
@@ -419,6 +419,9 @@ def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
     for v in ensemble.data_vars:
         if ensemble[v].attrs.get('is_dayofyear', 0) == 1:
             ensemble[v] = doy_to_days_since(ensemble[v])
+
+    if average_dims is not None:
+        ensemble = ensemble.mean(dim=average_dims)
 
     ensemble_percentiles = ensembles.ensemble_percentiles(ensemble, values=percentiles)
 
@@ -530,6 +533,15 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     models = [m.data.strip() for m in request.inputs["models"]]
     dataset_name = single_input_or_none(request.inputs, "dataset")
 
+    if single_input_or_none(request.inputs, "average"):
+        if subset_function == finch_subset_gridpoint:
+            average_dims = ("region",)
+        else:
+            average_dims = ("lat", "lon")
+    else:
+        average_dims = None
+    write_log(process, f"Will average over {average_dims}")
+
     base_work_dir = Path(process.workdir)
     ensembles = []
     for rcp in rcps:
@@ -596,7 +608,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         warnings.filterwarnings("default", category=UserWarning)
 
         output_basename = Path(process.workdir) / (output_filename + "_ensemble")
-        ensemble = make_ensemble(indices_files, ensemble_percentiles)
+        ensemble = make_ensemble(indices_files, ensemble_percentiles, average_dims)
         ensemble.attrs['source_datasets'] = '\n'.join([dsinp.url for dsinp in netcdf_inputs])
         ensembles.append(ensemble)
 
@@ -610,7 +622,11 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
         df = dataset_to_dataframe(ensemble)
-        df = df.reset_index().set_index(["lat", "lon", "time"])
+        if average_dims is None:
+            dims = ['lat', 'lon', 'time']
+        else:
+            dims = ['time']
+        df = df.reset_index().set_index(dims)
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
 
