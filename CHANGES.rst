@@ -1,6 +1,10 @@
 Changes
 *******
 
+0.7.7 (2021-11-16)
+==================
+* Fix Sentry SDK initialization error
+
 0.7.6 (2021-11-16)
 ==================
 * Update to xclim 0.31
