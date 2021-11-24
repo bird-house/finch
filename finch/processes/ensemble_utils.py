@@ -3,7 +3,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, cast
+from typing import Dict, Iterable, List, Optional, Tuple, cast
 import warnings
 
 from parse import parse
@@ -315,10 +315,13 @@ def _formatted_coordinate(value) -> Optional[str]:
     return f"{float(value):.3f}"
 
 
-def make_output_filename(process: Process, inputs: List[PywpsInput]):
-    """Returns a filename for the process's output, depending on its inputs"""
+def make_output_filename(process: Process, inputs: List[PywpsInput], rcp=None):
+    """Returns a filename for the process's output, depending on its inputs.
 
-    rcp = single_input_or_none(inputs, "rcp")
+    The rcp part of the filename can be overriden.
+    """
+    if rcp is None:
+        rcp = single_input_or_none(inputs, "rcp")
     lat = _formatted_coordinate(single_input_or_none(inputs, "lat"))
     lon = _formatted_coordinate(single_input_or_none(inputs, "lon"))
     lat0 = _formatted_coordinate(single_input_or_none(inputs, "lat0"))
@@ -406,7 +409,7 @@ def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
     return groups
 
 
-def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
+def make_ensemble(files: List[Path], percentiles: List[int], average_dims: Optional[Tuple[str]] = None) -> None:
     ensemble = ensembles.create_ensemble(files)
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
@@ -417,17 +420,15 @@ def make_ensemble(files: List[Path], percentiles: List[int]) -> None:
         if ensemble[v].attrs.get('is_dayofyear', 0) == 1:
             ensemble[v] = doy_to_days_since(ensemble[v])
 
+    if average_dims is not None:
+        ensemble = ensemble.mean(dim=average_dims)
+
     ensemble_percentiles = ensembles.ensemble_percentiles(ensemble, values=percentiles)
 
     # Doy data converted previously is converted back.
     for v in ensemble_percentiles.data_vars:
         if ensemble_percentiles[v].attrs.get('units', '').startswith('days after'):
             ensemble_percentiles[v] = days_since_to_doy(ensemble_percentiles[v])
-
-    if "realization" in ensemble_percentiles.coords:
-        # realization coordinate will probably be removed in xclim
-        # directly in the near future so this line will not be necessary
-        ensemble_percentiles = ensemble_percentiles.drop_vars("realization")
 
     # Depending on the datasets, I've found that writing the netcdf could hang
     # if the dataset was not loaded explicitely previously... Not sure why.
@@ -527,78 +528,105 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     percentiles_string = request.inputs["ensemble_percentiles"][0].data
     ensemble_percentiles = [int(p.strip()) for p in percentiles_string.split(",")]
 
-    write_log(process, "Processing started", process_step="start")
-
-    output_filename = make_output_filename(process, request.inputs)
-
-    write_log(process, "Fetching datasets")
-
-    rcp = single_input_or_none(request.inputs, "rcp")
+    rcps = [r.data.strip() for r in request.inputs["rcp"]]
+    write_log(process, f"Processing started ({len(rcps)} rcps)", process_step="start")
     models = [m.data.strip() for m in request.inputs["models"]]
     dataset_name = single_input_or_none(request.inputs, "dataset")
-    netcdf_inputs = get_datasets(
-        dataset_name,
-        workdir=process.workdir,
-        variables=list(source_variable_names),
-        rcp=rcp,
-        models=models,
-    )
 
-    write_log(process, "Running subset", process_step="subset")
+    if single_input_or_none(request.inputs, "average"):
+        if subset_function == finch_subset_gridpoint:
+            average_dims = ("region",)
+        else:
+            average_dims = ("lat", "lon")
+    else:
+        average_dims = None
+    write_log(process, f"Will average over {average_dims}")
 
-    subsetted_files = subset_function(
-        process, netcdf_inputs=netcdf_inputs, request_inputs=request.inputs
-    )
+    base_work_dir = Path(process.workdir)
+    ensembles = []
+    for rcp in rcps:
+        # Ensure no file name conflicts (i.e. if the rcp doesn't appear in the base filename)
+        work_dir = base_work_dir / rcp
+        work_dir.mkdir(exist_ok=True)
+        process.set_workdir(str(work_dir))
 
-    if not subsetted_files:
-        message = "No data was produced when subsetting using the provided bounds."
-        raise ProcessError(message)
-
-    subsetted_intermediate_files = compute_intermediate_variables(
-        subsetted_files, dataset_input_names, process.workdir
-    )
-
-    write_log(process, "Computing indices", process_step="compute_indices")
-
-    input_groups = make_indicator_inputs(
-        process.xci, request_inputs_not_datasets, subsetted_intermediate_files
-    )
-    n_groups = len(input_groups)
-
-    indices_files = []
-
-    warnings.filterwarnings("ignore", category=FutureWarning)
-    warnings.filterwarnings("ignore", category=UserWarning)
-
-    for n, inputs in enumerate(input_groups):
-        write_log(
-            process,
-            f"Computing indices for file {n + 1} of {n_groups}",
-            subtask_percentage=n * 100 // n_groups,
+        write_log(process, f"Fetching datasets for rcp={rcp}")
+        output_filename = make_output_filename(process, request.inputs, rcp=rcp)
+        netcdf_inputs = get_datasets(
+            dataset_name,
+            workdir=process.workdir,
+            variables=list(source_variable_names),
+            rcp=rcp,
+            models=models,
         )
-        output_ds = compute_indices(process, process.xci, inputs)
 
-        output_name = f"{output_filename}_{process.identifier}_{n}.nc"
-        for variable in accepted_variables:
-            if variable in inputs:
-                input_name = Path(inputs.get(variable)[0].file).name
-                output_name = input_name.replace(variable, process.identifier)
+        write_log(process, f"Running subset rcp={rcp}", process_step="subset")
 
-        output_path = Path(process.workdir) / output_name
-        dataset_to_netcdf(output_ds, output_path)
-        indices_files.append(output_path)
+        subsetted_files = subset_function(
+            process, netcdf_inputs=netcdf_inputs, request_inputs=request.inputs
+        )
 
-    warnings.filterwarnings("default", category=FutureWarning)
-    warnings.filterwarnings("default", category=UserWarning)
+        if not subsetted_files:
+            message = "No data was produced when subsetting using the provided bounds."
+            raise ProcessError(message)
 
-    output_basename = Path(process.workdir) / (output_filename + "_ensemble")
-    ensemble = make_ensemble(indices_files, ensemble_percentiles)
-    ensemble.attrs['source_datasets'] = '\n'.join([dsinp.url for dsinp in netcdf_inputs])
+        subsetted_intermediate_files = compute_intermediate_variables(
+            subsetted_files, dataset_input_names, process.workdir
+        )
+
+        write_log(process, f"Computing indices rcp={rcp}", process_step="compute_indices")
+
+        input_groups = make_indicator_inputs(
+            process.xci, request_inputs_not_datasets, subsetted_intermediate_files
+        )
+        n_groups = len(input_groups)
+
+        indices_files = []
+
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        warnings.filterwarnings("ignore", category=UserWarning)
+
+        for n, inputs in enumerate(input_groups):
+            write_log(
+                process,
+                f"Computing indices for file {n + 1} of {n_groups}, rcp={rcp}",
+                subtask_percentage=n * 100 // n_groups,
+            )
+            output_ds = compute_indices(process, process.xci, inputs)
+
+            output_name = f"{output_filename}_{process.identifier}_{n}.nc"
+            for variable in accepted_variables:
+                if variable in inputs:
+                    input_name = Path(inputs.get(variable)[0].file).name
+                    output_name = input_name.replace(variable, process.identifier)
+
+            output_path = Path(process.workdir) / output_name
+            dataset_to_netcdf(output_ds, output_path)
+            indices_files.append(output_path)
+
+        warnings.filterwarnings("default", category=FutureWarning)
+        warnings.filterwarnings("default", category=UserWarning)
+
+        output_basename = Path(process.workdir) / (output_filename + "_ensemble")
+        ensemble = make_ensemble(indices_files, ensemble_percentiles, average_dims)
+        ensemble.attrs['source_datasets'] = '\n'.join([dsinp.url for dsinp in netcdf_inputs])
+        ensembles.append(ensemble)
+
+    process.set_workdir(str(base_work_dir))
+
+    if len(rcps) > 1:
+        ensemble = xr.concat(ensembles, dim=xr.DataArray(rcps, dims=('rcp',), name='rcp'))
+    else:
+        ensemble = ensembles[0]
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
         df = dataset_to_dataframe(ensemble)
-        df = df.reset_index().set_index(["lat", "lon", "time"])
+        if average_dims is None:
+            dims = ['lat', 'lon', 'time']
+        else:
+            dims = ['time']
+        df = df.reset_index().set_index(dims)
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
 

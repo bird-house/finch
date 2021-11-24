@@ -71,13 +71,14 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
     assert len(ds.attrs['source_datasets'].split('\n')) == 4
 
 
-def test_ensemble_dded_grid_point(mock_datasets, client):
+def test_ensemble_dded_grid_point_multircp(mock_datasets, client):
     # --- given ---
     identifier = "ensemble_grid_point_degree_days_exceedance_date"
     inputs = [
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
         wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("rcp", "rcp45"),
         wps_literal_input("thresh", "-5 degC"),
         wps_literal_input("sum_thresh", "30 K days"),
         wps_literal_input("op", ">"),
@@ -96,6 +97,7 @@ def test_ensemble_dded_grid_point(mock_datasets, client):
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
+        "rcp": 2,
     }
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
@@ -104,7 +106,7 @@ def test_ensemble_dded_grid_point(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"region": 1, "time": 4}
+        assert variable_dims == {"region": 1, "time": 4, "rcp": 2}
 
 
 def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
@@ -144,6 +146,22 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"time": 4, "lat": 2, "lon": 2}
+
+    inputs.append(wps_literal_input("average", "True"))
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    assert len(outputs) == 1
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
+    assert dims == {"time": 4}  # Spatial average has been taken.
+
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
+    assert sorted(ensemble_variables) == [
+        f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
+    ]
+    for var in ensemble_variables.values():
+        variable_dims = dict(zip(var.dims, var.shape))
+        assert variable_dims == {"time": 4}
 
 
 def test_ensemble_heatwave_frequency_grid_point_csv(mock_datasets, client):
@@ -435,6 +453,23 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
         variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"lat": 11, "lon": 11, "time": 4}
 
+    inputs.append(wps_literal_input("average", "True"))
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert len(outputs) == 1
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
+    assert dims == {"time": 4}
+
+    ensemble_variables = dict(ds.data_vars)
+    assert sorted(ensemble_variables) == [
+        f"heat_wave_frequency_p{p}" for p in (20, 50, 80)
+    ]
+    for var in ensemble_variables.values():
+        variable_dims = dict(zip(var.dims, var.shape))
+        assert variable_dims == {"time": 4}
+
 
 def test_ensemble_heatwave_frequency_polygon_csv(mock_datasets, client):
     # --- given ---
@@ -464,3 +499,21 @@ def test_ensemble_heatwave_frequency_polygon_csv(mock_datasets, client):
     n_data_rows = len(lines) - 2  # header + ending line
     # lat-lon=66 (not NaN), time=3 (last month is NaN)
     assert n_data_rows == 66 * 3
+
+    # --- given ---
+    inputs.append(wps_literal_input("average", "True"))
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+
+    # --- then ---
+    assert len(outputs) == 1
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 2  # metadata + data
+    data_filename = [n for n in zf.namelist() if "metadata" not in n]
+    csv = zf.read(data_filename[0]).decode()
+    lines = csv.split("\n")
+    assert lines[0].startswith("time")
+    n_data_rows = len(lines) - 2  # header + ending line
+    # after spatial average, time=3 (last month is NaN)
+    assert n_data_rows == 3

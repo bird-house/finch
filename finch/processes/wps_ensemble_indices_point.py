@@ -27,8 +27,7 @@ class XclimEnsembleGridPointBase(FinchProcess):
                 "Use the `finch.processes.wps_base.make_xclim_indicator_process` function instead."
             )
 
-        attrs = self.xci.json()
-        xci_inputs = convert_xclim_inputs_to_pywps(attrs["parameters"], self.xci.identifier)
+        xci_inputs = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier)
         xci_inputs.extend(wpsio.xclim_common_options)
         self.xci_inputs_identifiers = [i.identifier for i in xci_inputs]
 
@@ -38,8 +37,9 @@ class XclimEnsembleGridPointBase(FinchProcess):
             wpsio.start_date,
             wpsio.end_date,
             wpsio.ensemble_percentiles,
+            wpsio.average,
             wpsio.dataset_name,
-            wpsio.copy_io(wpsio.rcp, min_occurs=1),
+            wpsio.copy_io(wpsio.rcp, min_occurs=1, max_occurs=3),
             wpsio.models,
         ]
 
@@ -52,13 +52,13 @@ class XclimEnsembleGridPointBase(FinchProcess):
 
         outputs = [wpsio.output_netcdf_zip, wpsio.output_log]
 
-        identifier = f"ensemble_grid_point_{attrs['identifier']}"
+        identifier = f"ensemble_grid_point_{self.xci.identifier}"
         super().__init__(
             self._handler,
             identifier=identifier,
             version="0.1",
-            title=unidecode(attrs["title"]),
-            abstract=unidecode(attrs["abstract"]),
+            title=unidecode(self.xci.title),
+            abstract=unidecode(self.xci.abstract),
             inputs=inputs,
             outputs=outputs,
             status_supported=True,

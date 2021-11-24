@@ -39,6 +39,7 @@ import sentry_sdk
 import xarray as xr
 from netCDF4 import num2date
 import xclim
+import dask
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -656,4 +657,8 @@ def dataset_to_netcdf(
         for v in ds.data_vars:
             encoding[v] = {"zlib": True, "complevel": compression_level}
 
+    # Perform computations
+    ds.load()
+
+    # This is necessary when running with gunicorn to avoid lock-ups
     ds.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)

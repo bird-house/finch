@@ -3,6 +3,7 @@ import io
 from typing import Dict, List
 
 from dask.diagnostics import ProgressBar
+from inspect import _empty as empty_default
 from pywps import ComplexInput, FORMATS, LiteralInput, Process
 from pywps.app.exceptions import ProcessError
 from pywps.app.Common import Metadata
@@ -122,6 +123,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
     # Mapping from xclim's InputKind to data_type
     # Only for generic types
     data_types = {
+        InputKind.BOOL: "boolean",
         InputKind.QUANTITY_STR: "string",
         InputKind.NUMBER: "integer",
         InputKind.NUMBER_SEQUENCE: "integer",
@@ -141,6 +143,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
             inputs.append(make_season())
         elif attrs['kind'] in data_types:
             choices = list(attrs['choices']) if 'choices' in attrs else None
+            default = attrs['default'] if attrs['default'] != empty_default else None
             inputs.append(
                 LiteralInput(
                     name,
@@ -149,7 +152,7 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
                     data_type=data_types[attrs['kind']],
                     min_occurs=0,
                     max_occurs=1 if attrs['kind'] != InputKind.NUMBER_SEQUENCE else 99,
-                    default=attrs["default"],
+                    default=default,
                     allowed_values=choices,
                 )
             )

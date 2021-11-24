@@ -1,17 +1,23 @@
 Changes
 *******
 
-Unreleased
+0.7.7 (2021-11-16)
 ==================
-* Added `SENTRY_ENV` configuration
+* Fix Sentry SDK initialization error
 
+0.7.6 (2021-11-16)
+==================
+* Update to xclim 0.31
+* Added `SENTRY_ENV` configuration
+* Possibility to pass multiple "rcp" inputs for ensemble processes.
+* Writing to netcdf is done only after calling ``load()`` to avoid locks occurring within dask calls to ``to_netcdf`` in multi-processing mode.
+* Add an ``average`` parameter to ensemble processes. When true, a spatial average is returned.
 
 0.7.5 (2021-09-07)
 ==================
 * Update to xclim 0.27
 * Added ``empirical_quantile_mapping`` process calling ``xclim.sdba.EmpiricalQuantileMapping``.
 * Update to PyWPS 4.4.5
-
 
 0.7.4 (2021-05-04)
 ==================
@@ -44,7 +50,6 @@ Unreleased
 * Update to xclim 0.24, allowing for considerable simplification of the indicator process building mechanism
 * Update to PyWPS 4.4
 
-
 0.6.1 (2021-01-26)
 ==================
 
@@ -54,7 +59,6 @@ Unreleased
 * Upgrade PyWPS to 4.2.10
 * Fix bug in variable name inference
 * Add support for non-standard variable name (univariate case only)
-
 
 0.6.0 (2021-01-12)
 ==================
@@ -106,8 +110,6 @@ Unreleased
 * Pin PyWPS to 4.2.4
 * Add DODS to supported formats for resources
 
-
-
 0.3.x (2020-01-17)
 ==================
 
@@ -123,12 +125,10 @@ Unreleased
 * deprecate lon0 and lat0 for SubsetGridPointBCCAQV2Process
 * change point subset processes to accept a comma separated list of floats for multiple grid cells
 
-
 0.2.7 (2019-12-09)
 ==================
 
 * Fix for segmentation fault in libnetcdf (pin version to 4.6.2 until a fix is released)
-
 
 0.2.6 (2019-12-04)
 ==================
@@ -138,13 +138,11 @@ Unreleased
 * Update `xclim` to >= 0.12.2
 * Update `pywps` to > 4.2.3
 
-
 0.2.5 (2019-10-03)
 ==================
 
 * Add test for DAP input to subsetting
 * Update notebook to run on the Jenkins test suite
-
 
 0.2.3 (2019-05-27)
 ==================
@@ -154,14 +152,12 @@ Unreleased
 * Add BCCAQV2HeatWave process
 * Add basic usage notebook
 
-
 0.2.1 (2019-05-06)
 ==================
 
 * Require Python>=3.6
 * Fix percentages in status update
 * Improve loggin
-
 
 0.2 (2019-05-02)
 ================
@@ -174,7 +170,6 @@ Unreleased
 * Use sentry to monitor error messages
 * Include Dockerfile
 * Use processes instead of threads
-
 
 0.1 (2018-11-15)
 ================
