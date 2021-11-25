@@ -311,10 +311,11 @@ def try_opendap(
 
         ds = xr.open_dataset(input.file, chunks=chunks, decode_times=decode_times)
 
-        # To handle large number of grid cells (50+) in subsetted data
-        if "region" in ds.dims and "time" in ds.dims:
-            chunks = dict(time=-1, region=5)
-            ds = ds.chunk(chunks)
+    # To handle large number of grid cells (50+) in subsetted data
+    if "region" in ds.dims and "time" in ds.dims:
+        chunks = dict(time=-1, region=5)
+        ds = ds.chunk(chunks)
+
     if not chunks:
         ds = ds.chunk(chunk_dataset(ds, max_size=1000000, chunk_dims=chunk_dims))
     return ds

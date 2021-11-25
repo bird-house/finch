@@ -88,10 +88,8 @@ def test_thredds():
     assert len(links) == 2
 
 
-"""
-# This doesn't work yet.
 @pytest.mark.online
-def test_bad_link():
+def test_bad_link_on_thredds():
     client = client_for(
         Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
     )
@@ -104,6 +102,22 @@ def test_bad_link():
     resp = client.get(
         f"?service=WPS&request=Execute&version=1.0.0&identifier=subset_gridpoint&datainputs={datainputs}"
     )
-    print(resp.response)
+
     assert "NetCDF: file not found" in resp.response.decode()
-"""
+
+
+def test_bad_link_on_fs():
+    client = client_for(
+        Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
+    )
+    fn = "file://tmp/bad_link.nc"
+    datainputs = (
+        f"resource=files@xlink:href={fn};"
+        "lat=45.0;"
+        "lon=150.0;"
+    )
+    resp = client.get(
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset_gridpoint&datainputs={datainputs}"
+    )
+
+    assert "No such file or directory" in resp.response.decode()
