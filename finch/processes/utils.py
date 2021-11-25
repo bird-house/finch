@@ -624,8 +624,9 @@ def fix_broken_time_index(ds: xr.Dataset):
             time_dim == cftime.DatetimeNoLeap(year=1850, month=1, day=1, hour=0)
         )
 
-    if not wrong_id:
+    if wrong_id.size == 0:
         return
+
     wrong_id = wrong_id[0, 0]
     if wrong_id == 0 or wrong_id == len(ds.time) - 1:
         return

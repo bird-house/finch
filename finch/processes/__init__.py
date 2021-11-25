@@ -22,7 +22,7 @@ from .wps_xsubset_point_dataset import (
 from .wps_xsubset_polygon import SubsetPolygonProcess
 from .wps_sdba import EmpiricalQuantileMappingProcess
 from .wps_xaverage_polygon import AveragePolygonProcess
-from .wps_hourly_to_daily import ResampleDailyProcess
+from .wps_hourly_to_daily import HourlyToDailyProcess
 
 logger = logging.getLogger("PYWPS")
 logger.disabled = False
@@ -85,7 +85,7 @@ def get_processes(all_processes=False):
     # Statistical downscaling and bias adjustment
     processes += [
         EmpiricalQuantileMappingProcess(),
-        ResampleDailyProcess(),
+        HourlyToDailyProcess(),
     ]
 
     if datasets_configured or all_processes:

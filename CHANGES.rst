@@ -1,6 +1,10 @@
 Changes
 *******
 
+0.8.0 (unreleased)
+==================
+* Add ``hourly_to_daily`` process, converting hourly data to daily data using a reduction operation (sum, mean, max, min).
+
 0.7.7 (2021-11-16)
 ==================
 * Fix Sentry SDK initialization error
