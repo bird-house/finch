@@ -31,9 +31,9 @@ def make_subset_file_name(resource, kind="sub"):
     elif resource.prop == "url":
         p = Path(resource._build_file_name(resource.url))
     else:
-        raise NotImplementedError
+        raise NotImplementedError()
 
-    return p.stem + f"_{kind}" + p.suffix
+    return f"{p.stem}_{kind}{p.suffix}"
 
 
 def finch_subset_gridpoint(
