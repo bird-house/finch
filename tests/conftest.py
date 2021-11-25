@@ -229,9 +229,8 @@ def series(values, name, start="2000-01-01"):
 
 
 @pytest.fixture
-def hourly_dataset(pr_hr_series):
+def hourly_dataset(pr_hr_series):  # noqa: F811
     """Ten days of precip with first hour missing."""
     a = np.arange(10 * 24.)
     a[0] = np.nan
     return _write_dataset("pr_hr", pr_hr_series(a))
-
