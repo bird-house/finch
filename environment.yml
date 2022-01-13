@@ -23,7 +23,7 @@ dependencies:
   # remember to match xclim version in environment-docs.yml as well
   - xclim == 0.31
   - clisops >= 0.8.0
-  - pywps ==4.4.5
+  - pywps >= 4.5.1
   - parse
   - xesmf >= 0.6.2
   - ESMpy <= 8.1.1 # Bug in ESMF 8.2 with spatial averaging.
