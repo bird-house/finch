@@ -184,6 +184,7 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
         _log("Grouper object created.", 2)
 
         bc = xclim.sdba.EmpiricalQuantileMapping.train(res["ref"], res["hist"], **train, group=group)
+
         _log("Training object created.", 3)
 
         out = bc.adjust(res["sim"], interp=group["interp"], **adj).to_dataset(name=name)

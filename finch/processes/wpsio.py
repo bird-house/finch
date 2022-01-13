@@ -280,6 +280,16 @@ tolerance = LiteralInput(
     min_occurs=0,
 )
 
+reducer = LiteralInput(
+    "reducer",
+    "Reduction operation",
+    abstract="Operation applied to hourly data to compute unique daily value.",
+    allowed_values=["mean", "sum", "min", "max"],
+    data_type="string",
+    min_occurs=1,
+    max_occurs=1
+)
+
 xclim_common_options = [
     check_missing,
     missing_options,
