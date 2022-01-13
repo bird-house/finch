@@ -25,5 +25,5 @@ dependencies:
   - clisops >= 0.8.0
   - pywps ==4.4.5
   - parse
-  - xesmf == 0.6.2  # clisops 0.7 bugs with xESMF 0.6.1
+  - xesmf >= 0.6.2
   - ESMpy <= 8.1.1 # Bug in ESMF 8.2 with spatial averaging.

@@ -102,7 +102,7 @@ def _hourly_to_daily(ds: xr.Dataset, reducer: str, check_missing: str, missing_o
     for key, da in out.data_vars.items():
         # Update cell_methods
         da.attrs["cell_methods"] = (
-            da.attrs.get("cell_methods", " ") + f" time: {reducer}"
+            da.attrs.get("cell_methods", " ") + f" time: {reducer} within days"
         ).strip()
 
         # Update history
