@@ -12,6 +12,6 @@ def test_wps_hourly_to_daily(client, hourly_dataset):
     ]
     outputs = execute_process(client, identifier, inputs)
     with xr.open_dataset(outputs[0]) as ds:
-        assert ds.pr.attrs["cell_methods"].endswith(" time: sum")
+        assert ds.pr.attrs["cell_methods"].endswith(" time: sum within days")
         assert ds.pr.isel(time=0).isnull()
         assert ds.pr.isel(time=1) == np.sum(np.arange(24, 48))
