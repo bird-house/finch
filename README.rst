@@ -5,9 +5,9 @@ Finch
    :target: http://finch.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://travis-ci.org/bird-house/finch.svg?branch=master
-   :target: https://travis-ci.org/bird-house/finch
-   :alt: Travis Build
+.. image:: https://github.com/bird-house/finch/actions/workflows/main.yml/badge.svg
+   :target: https://github.com/bird-house/finch/actions/workflows/main.yml
+   :alt: GitHub CI
 
 .. image:: https://img.shields.io/github/license/bird-house/finch.svg
     :target: https://github.com/bird-house/finch/blob/master/LICENSE.txt
