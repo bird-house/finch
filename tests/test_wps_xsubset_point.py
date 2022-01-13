@@ -103,7 +103,7 @@ def test_bad_link_on_thredds():
         f"?service=WPS&request=Execute&version=1.0.0&identifier=subset_gridpoint&datainputs={datainputs}"
     )
 
-    assert "NetCDF: file not found" in resp.response.decode()
+    assert "NetCDF: file not found" in resp.response[0].decode()
 
 
 def test_bad_link_on_fs():
@@ -120,4 +120,4 @@ def test_bad_link_on_fs():
         f"?service=WPS&request=Execute&version=1.0.0&identifier=subset_gridpoint&datainputs={datainputs}"
     )
 
-    assert "No such file or directory" in resp.response.decode()
+    assert "No such file or directory" in resp.response[0].decode()
