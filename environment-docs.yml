@@ -4,10 +4,10 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- pywps>=4.4.5
+- pywps >= 4.5.1
 - sphinx
 - nbsphinx
 - ipython
 - xclim~=0.31
 - matplotlib
-- birdy >= 0.8.1
+- birdy # >= 0.8.1 but pin fails because conda package seems to be tagged v0.8.1 instead of just 0.8.1.
