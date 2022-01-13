@@ -1,10 +1,16 @@
 Changes
 *******
 
-0.8.0 (unreleased)
+0.8.0 (2022-01-13)
 ==================
 * Add ``hourly_to_daily`` process, converting hourly data to daily data using a reduction operation (sum, mean, max, min).
+* Upgrade to clisops 0.8.0 to accelerate spatial averages over regions.
+* Upgrade to xesmf 0.6.2 to fix spatial averaging bug not weighing correctly cells with varing areas.
+* Update to PyWPS 4.5.1 to allow the creation of recursive directories for outputs.
 
+Notes
+-----
+* Upgrading to birdy 0.8.1 will remove annoying warnings when accessing netCDF files from THREDDS.
 
 0.7.7 (2021-11-16)
 ==================
