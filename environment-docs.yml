@@ -4,10 +4,10 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- pywps>=4.2
+- pywps>=4.4.5
 - sphinx
 - nbsphinx
 - ipython
 - xclim~=0.31
 - matplotlib
-- birdy
+- birdy >= 0.8.1

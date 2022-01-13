@@ -311,10 +311,11 @@ def try_opendap(
 
         ds = xr.open_dataset(input.file, chunks=chunks, decode_times=decode_times)
 
-        # To handle large number of grid cells (50+) in subsetted data
-        if "region" in ds.dims and "time" in ds.dims:
-            chunks = dict(time=-1, region=5)
-            ds = ds.chunk(chunks)
+    # To handle large number of grid cells (50+) in subsetted data
+    if "region" in ds.dims and "time" in ds.dims:
+        chunks = dict(time=-1, region=5)
+        ds = ds.chunk(chunks)
+
     if not chunks:
         ds = ds.chunk(chunk_dataset(ds, max_size=1000000, chunk_dims=chunk_dims))
     return ds
@@ -624,8 +625,9 @@ def fix_broken_time_index(ds: xr.Dataset):
             time_dim == cftime.DatetimeNoLeap(year=1850, month=1, day=1, hour=0)
         )
 
-    if not wrong_id:
+    if wrong_id.size == 0:
         return
+
     wrong_id = wrong_id[0, 0]
     if wrong_id == 0 or wrong_id == len(ds.time) - 1:
         return

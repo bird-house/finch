@@ -24,6 +24,18 @@ from .utils import (
 LOGGER = logging.getLogger("PYWPS")
 
 
+def make_subset_file_name(resource, kind="sub"):
+    """Create output file name."""
+    if resource.prop == "file":
+        p = Path(resource.file)
+    elif resource.prop == "url":
+        p = Path(resource._build_file_name(resource.url))
+    else:
+        raise NotImplementedError()
+
+    return f"{p.stem}_{kind}{p.suffix}"
+
+
 def finch_subset_gridpoint(
     process: Process, netcdf_inputs: List[ComplexInput], request_inputs: RequestInputs
 ) -> List[Path]:
@@ -93,8 +105,8 @@ def finch_subset_gridpoint(
             LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
             return
 
-        p = Path(resource.file or resource._build_file_name(resource.url))
-        output_filename = Path(process.workdir) / (p.stem + "_sub" + p.suffix)
+        p = make_subset_file_name(resource)
+        output_filename = Path(process.workdir) / p
 
         dataset_to_netcdf(subsetted, output_filename)
 
@@ -169,8 +181,8 @@ def finch_subset_bbox(
             LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
             return
 
-        p = Path(resource.file or resource._build_file_name(resource.url))
-        output_filename = Path(process.workdir) / (p.stem + "_sub" + p.suffix)
+        p = make_subset_file_name(resource)
+        output_filename = Path(process.workdir) / p
 
         dataset_to_netcdf(subsetted, output_filename)
 
@@ -260,8 +272,8 @@ def finch_average_shape(
             LOGGER.warning(f"Average is empty for dataset: {resource.url}")
             return
 
-        p = Path(resource.file or resource._build_file_name(resource.url))
-        output_filename = Path(process.workdir) / (p.stem + "_avg" + p.suffix)
+        p = make_subset_file_name(resource, kind="avg")
+        output_filename = Path(process.workdir) / p
 
         dataset_to_netcdf(averaged, output_filename)
 
@@ -322,8 +334,8 @@ def finch_subset_shape(
             LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
             return
 
-        p = Path(resource.file or resource._build_file_name(resource.url))
-        output_filename = Path(process.workdir) / (p.stem + "_sub" + p.suffix)
+        p = make_subset_file_name(resource)
+        output_filename = Path(process.workdir) / p
 
         dataset_to_netcdf(subsetted, output_filename)
 
