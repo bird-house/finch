@@ -17,13 +17,7 @@ sphinx:
 formats: []
 
 # Optionally set the version of Python and requirements required to build your docs
-#python:
-#  version: 3.6
-
-conda:
-  environment: environment-docs.yml
-
-build:
-  os: ubuntu-20.04
-  tools:
-    python: mambaforge-4.10
+python:
+  version: 3.9
+  install:
+    - requirements: requirements_docs.txt

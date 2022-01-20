@@ -1,0 +1,7 @@
+pywps >= 4.5.1
+sphinx
+nbsphinx
+ipython
+xclim~=0.31
+matplotlib
+birdhouse-birdy>=0.8.1
