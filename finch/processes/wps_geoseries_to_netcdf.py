@@ -21,7 +21,7 @@ class GeoseriesToNetcdfProcess(FinchProcess):
             ComplexInput(
                 "resource",
                 "Geospatial series",
-                abstract="Series of geographical features.",
+                abstract="Series of geographical features, or an url which requests such a series (ex: OGC-API)",
                 supported_formats=[FORMATS.GEOJSON],
                 min_occurs=1,
                 max_occurs=1,
@@ -37,7 +37,10 @@ class GeoseriesToNetcdfProcess(FinchProcess):
             LiteralInput(
                 "feat_dim",
                 "Feature dimension",
-                abstract="Name of the column in the data to be converted into the 'feature' dimension. Each geometry must be different along and only along this dimension.",
+                abstract=(
+                    "Name of a column in the data to be used as the coordinate and of "
+                    " the 'feature' dimension. Each geometry must be different along and only along this dimension."
+                ),
                 data_type="string",
                 default="",
                 min_occurs=0,
@@ -52,26 +55,24 @@ class GeoseriesToNetcdfProcess(FinchProcess):
                 min_occurs=0,
                 max_occurs=1,
             ),
-            LiteralInput(
-                "grid_mapping",
-                "Grid mapping",
-                abstract="Name of the grid mapping of the data, only longitude_latitude supported.",
-                data_type="string",
-                default="longitude_latitude",
-                min_occurs=0,
-                max_occurs=1,
-            )
+            # LiteralInput(
+            #     "grid_mapping",
+            #     "Grid mapping",
+            #     abstract="Name of the grid mapping of the data, only longitude_latitude supported.",
+            #     data_type="string",
+            #     default="longitude_latitude",
+            #     min_occurs=0,
+            #     max_occurs=1,
+            # )
         ]
 
         outputs = [
             ComplexOutput(
                 "output_netcdf",
-                "Timeseries as netCDF",
-                abstract="The timeseries as a netCDF, of dimensions (time, features).",
+                "Geospatial series as netCDF",
+                abstract="The geospatial series as a 2 dimension netCDF.",
                 as_reference=True,
-                supported_formats=[
-                    FORMATS.NETCDF,
-                ],
+                supported_formats=[FORMATS.NETCDF],
             ),
             wpsio.output_log,
         ]
@@ -80,8 +81,11 @@ class GeoseriesToNetcdfProcess(FinchProcess):
             self._handler,
             identifier="geoseries_to_netcdf",
             version="0.1",
-            title="Convert a geospatial series to a CF netCDF.",
-            abstract="Reshapes a geospatial series with a features dimensions and converts into the netCDf format, following CF convetions.",
+            title="Convert a geospatial series to a CF-compliant netCDF.",
+            abstract=(
+                "Reshapes a geospatial series with a features dimensions and "
+                "converts into the netCDf format, following CF convetions."
+            ),
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
@@ -103,7 +107,7 @@ class GeoseriesToNetcdfProcess(FinchProcess):
         index_dim = request.inputs['index_dim'][0].data
         feat_dim = request.inputs['feat_dim'][0].data
         squeeze = request.inputs['squeeze'][0].data
-        grid_map = request.inputs['grid_mapping'][0].data
+        grid_map = "longitude_latitude"  # request.inputs['grid_mapping'][0].data
 
         # Open URL
         gdf = gpd.read_file(geo_url)
@@ -153,7 +157,7 @@ class GeoseriesToNetcdfProcess(FinchProcess):
         else:
             source = f"data downloaded from {host}"
         ds.attrs["history"] = update_history(
-            f"Converted {source} to a CF Dataset.",
+            f"Converted {source} to a CF-compliant Dataset.",
             ds
         )
 
