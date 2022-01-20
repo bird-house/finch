@@ -10,4 +10,5 @@ dependencies:
 - ipython
 - xclim~=0.31
 - matplotlib
-- birdy # >= 0.8.1 but pin fails because conda package seems to be tagged v0.8.1 instead of just 0.8.1.
+- birdy > 0.8.0 # >= pin fails because conda package seems to be tagged v0.8.1 instead of just 0.8.1.
+- pip
