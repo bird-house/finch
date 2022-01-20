@@ -12,3 +12,10 @@ dependencies:
 - matplotlib
 - birdy > 0.8.0 # >= pin fails because conda package seems to be tagged v0.8.1 instead of just 0.8.1.
 - pip
+- pip:
+  - recommonmark
+  - readthedocs-sphinx-ext
+- mock
+- pillow
+- sphinx
+- sphinx_rtd_theme
