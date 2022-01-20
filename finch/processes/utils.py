@@ -709,5 +709,7 @@ def update_history(
     )
     if len(merged_history) > 0 and not merged_history.endswith("\n"):
         merged_history += "\n"
-    merged_history += f"[{datetime.now():%Y-%m-%d %H:%M:%S}] {new_name or ''}: {hist_str} - finch version: {__version__}."
+    merged_history += (
+        f"[{datetime.now():%Y-%m-%d %H:%M:%S}] {new_name or ''}: {hist_str} - finch version: {__version__}."
+    )
     return merged_history
