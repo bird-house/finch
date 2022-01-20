@@ -4,13 +4,11 @@ import logging
 from pathlib import Path
 from .wps_base import FinchProcess
 from . import wpsio
-from .utils import log_file_path, write_log, try_opendap, dataset_to_netcdf
-from xclim.core.formatting import update_history, merge_attributes
+from .utils import log_file_path, write_log, try_opendap, dataset_to_netcdf, update_history
 import xarray as xr
-
-LOGGER = logging.getLogger("PYWPS")
 import json
 from xclim.core.options import MISSING_METHODS
+LOGGER = logging.getLogger("PYWPS")
 
 
 class HourlyToDailyProcess(FinchProcess):

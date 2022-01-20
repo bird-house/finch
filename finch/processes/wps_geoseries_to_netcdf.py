@@ -4,8 +4,7 @@ import logging
 from pathlib import Path
 from .wps_base import FinchProcess
 from . import wpsio
-from .utils import log_file_path, write_log, dataset_to_netcdf
-from xclim.core.formatting import update_history
+from .utils import log_file_path, write_log, dataset_to_netcdf, update_history
 import xarray as xr
 import numpy as np
 import cf_xarray.geometry as cfgeo
