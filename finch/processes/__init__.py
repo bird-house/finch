@@ -84,9 +84,7 @@ def get_processes(all_processes=False):
 
     # Statistical downscaling and bias adjustment
     processes += [
-        EmpiricalQuantileMappingProcess(),
-        HourlyToDailyProcess(),
-        GeoseriesToNetcdfProcess()
+        EmpiricalQuantileMappingProcess()
     ]
 
     if datasets_configured or all_processes:
@@ -127,6 +125,8 @@ def get_processes(all_processes=False):
         SubsetGridPointProcess(),
         SubsetPolygonProcess(),
         AveragePolygonProcess(),
+        HourlyToDailyProcess(),
+        GeoseriesToNetcdfProcess()
     ]
 
     return processes
