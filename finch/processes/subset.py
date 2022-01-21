@@ -6,7 +6,6 @@ from typing import List
 import geopandas as gpd
 from pywps import ComplexInput, Process
 from pywps.app.exceptions import ProcessError
-import xarray as xr
 from clisops.core.subset import subset_bbox, subset_gridpoint, subset_shape, subset_time
 from clisops.core.average import average_shape
 

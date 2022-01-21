@@ -3,7 +3,6 @@ from threading import Lock
 
 from pywps import ComplexInput, ComplexOutput, FORMATS
 from pywps.inout.outputs import MetaLink4
-from xclim.subset import subset_shape
 
 from . import wpsio
 from .wps_base import FinchProcess

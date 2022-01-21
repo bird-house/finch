@@ -52,14 +52,31 @@ extensions = [
 # List of all tested working mock imports from all birds so new birds can
 # inherit without having to test which work which do not.
 if os.environ.get('READTHEDOCS') == 'True':
-    autodoc_mock_imports = ["numpy", "xarray", "fiona", "rasterio", "shapely",
-                            "osgeo", "pandas", "geopandas", "statsmodels",
-                            "affine", "rasterstats", "spotpy", "matplotlib",
-                            "scipy", "unidecode", "gdal", "sentry_sdk", "dask",
-                            "numba", "parse", "siphon", "sklearn", "cftime",
-                            "netCDF4", "bottleneck", "ocgis", "geotiff", "geos",
-                            "hdf4", "hdf5", "zlib", "pyproj", "proj", "cartopy",
-                            "scikit-learn", "cairo", "clisops"]
+    autodoc_mock_imports = [
+        "affine",
+        "cartopy",
+        "cf_xarray",
+        "clisops",
+        "gdal",
+        "geopandas",
+        "geos",
+        "hdf4",
+        "hdf5",
+        "netCDF4",
+        "ocgis",
+        "osgeo",
+        "parse",
+        "proj",
+        "rasterio",
+        "rasterstats",
+        "sentry_sdk",
+        "shapely",
+        "siphon",
+        "spotpy",
+        "statsmodels",
+        "unidecode",
+        "zlib",
+    ]
 
 # Monkeypatch constant because the following are mock imports.
 # Only works if numpy is actually installed and at the same time being mocked.
