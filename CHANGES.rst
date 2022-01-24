@@ -1,6 +1,11 @@
 Changes
 *******
 
+0.8.1 (unreleased)
+==================
+* Add ``geoseries_to_netcdf`` process, converting a geojson (like a OGC-API request) to a CF-compliant netCDF.
+
+
 0.8.0 (2022-01-13)
 ==================
 * Add ``hourly_to_daily`` process, converting hourly data to daily data using a reduction operation (sum, mean, max, min).

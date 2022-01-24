@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
@@ -664,3 +664,52 @@ def dataset_to_netcdf(
 
     # This is necessary when running with gunicorn to avoid lock-ups
     ds.to_netcdf(str(output_path), format="NETCDF4", encoding=encoding)
+
+
+def update_history(
+    hist_str: str,
+    *inputs_list: Union[xr.DataArray, xr.Dataset],
+    new_name: Optional[str] = None,
+    **inputs_kws: Union[xr.DataArray, xr.Dataset],
+):
+    """Return an history string with the timestamped message and the combination of the history of all inputs.
+
+    The new history entry is formatted as "[<timestamp>] <new_name>: <hist_str> - finch version : <finch version>."
+
+    Parameters
+    ----------
+    hist_str : str
+      The string describing what has been done on the data.
+    new_name : Optional[str]
+      The name of the newly created variable or dataset to prefix hist_msg.
+    *inputs_list : Union[xr.DataArray, xr.Dataset]
+      The datasets or variables that were used to produce the new object.
+      Inputs given that way will be prefixed by their "name" attribute if available.
+    **inputs_kws : Union[xr.DataArray, xr.Dataset]
+      Mapping from names to the datasets or variables that were used to produce the new object.
+      Inputs given that way will be prefixes by the passed name.
+
+    Returns
+    -------
+    str
+      The combine history of all inputs starting with `hist_str`.
+
+    See Also
+    --------
+    merge_attributes
+    """
+    from finch import __version__  # pylint: disable=cyclic-import
+
+    merged_history = xclim.core.formatting.merge_attributes(
+        "history",
+        *inputs_list,
+        new_line="\n",
+        missing_str="",
+        **inputs_kws,
+    )
+    if len(merged_history) > 0 and not merged_history.endswith("\n"):
+        merged_history += "\n"
+    merged_history += (
+        f"[{datetime.now():%Y-%m-%d %H:%M:%S}] {new_name or ''}: {hist_str} - finch version: {__version__}."
+    )
+    return merged_history

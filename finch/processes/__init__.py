@@ -23,6 +23,7 @@ from .wps_xsubset_polygon import SubsetPolygonProcess
 from .wps_sdba import EmpiricalQuantileMappingProcess
 from .wps_xaverage_polygon import AveragePolygonProcess
 from .wps_hourly_to_daily import HourlyToDailyProcess
+from .wps_geoseries_to_netcdf import GeoseriesToNetcdfProcess
 
 logger = logging.getLogger("PYWPS")
 logger.disabled = False
@@ -83,8 +84,7 @@ def get_processes(all_processes=False):
 
     # Statistical downscaling and bias adjustment
     processes += [
-        EmpiricalQuantileMappingProcess(),
-        HourlyToDailyProcess(),
+        EmpiricalQuantileMappingProcess()
     ]
 
     if datasets_configured or all_processes:
@@ -125,6 +125,8 @@ def get_processes(all_processes=False):
         SubsetGridPointProcess(),
         SubsetPolygonProcess(),
         AveragePolygonProcess(),
+        HourlyToDailyProcess(),
+        GeoseriesToNetcdfProcess()
     ]
 
     return processes
