@@ -20,6 +20,7 @@ from finch.processes.utils import (
     is_opendap_url,
     netcdf_file_list_to_csv,
     zip_files,
+    valid_filename,
 )
 
 test_data = Path(__file__).parent / "data"
@@ -314,3 +315,8 @@ def test_bccaqv2_filter(filename, variable, rcp, models, expected):
         models=models,
     )
     assert result == expected
+
+
+def test_invalid_filename():
+    with pytest.raises(ValueError):
+        valid_filename(" °°")

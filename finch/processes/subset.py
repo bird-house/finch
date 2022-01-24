@@ -18,6 +18,7 @@ from .utils import (
     write_log,
     dataset_to_netcdf,
     make_metalink_output,
+    valid_filename,
 )
 
 LOGGER = logging.getLogger("PYWPS")
@@ -32,7 +33,7 @@ def make_subset_file_name(resource, kind="sub"):
     else:
         raise NotImplementedError()
 
-    return f"{p.stem}_{kind}{p.suffix}"
+    return valid_filename(f"{p.stem}_{kind}{p.suffix}")
 
 
 def finch_subset_gridpoint(

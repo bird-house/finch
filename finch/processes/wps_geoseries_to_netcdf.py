@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from .wps_base import FinchProcess
 from . import wpsio
-from .utils import log_file_path, write_log, dataset_to_netcdf, update_history
+from .utils import log_file_path, write_log, dataset_to_netcdf, update_history, single_input_or_none, valid_filename
 import xarray as xr
 import numpy as np
 import cf_xarray.geometry as cfgeo
@@ -62,7 +62,8 @@ class GeoseriesToNetcdfProcess(FinchProcess):
             #     default="longitude_latitude",
             #     min_occurs=0,
             #     max_occurs=1,
-            # )
+            # ),
+            wpsio.output_name
         ]
 
         outputs = [
@@ -161,7 +162,8 @@ class GeoseriesToNetcdfProcess(FinchProcess):
         )
 
         # Write to disk
-        output_file = Path(self.workdir) / "geoseries.nc"
+        filename = valid_filename(single_input_or_none(request.inputs, "output_name") or "geoseries")
+        output_file = Path(self.workdir) / f"{filename}.nc"
         dataset_to_netcdf(ds, output_file)
 
         # Fill response

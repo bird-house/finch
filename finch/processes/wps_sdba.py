@@ -9,24 +9,20 @@ For the moment, both train-adjust operations are bundled into a single process.
 import logging
 import xclim
 from pathlib import Path
-import string
-import traceback
 from xclim.core.calendar import convert_calendar
 from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
 from pywps import ComplexInput, LiteralInput, ComplexOutput, FORMATS
-from pywps.app.exceptions import ProcessError
 from .wps_base import FinchProcess, FinchProgressBar
 from . import wpsio
 
 from .utils import (
-    RequestInputs,
-    process_threaded,
     log_file_path,
     single_input_or_none,
     try_opendap,
     write_log,
     dataset_to_netcdf,
     make_metalink_output,
+    valid_filename
 )
 
 LOGGER = logging.getLogger("PYWPS")
@@ -134,6 +130,7 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
                     allowed_values=[ADDITIVE, MULTIPLICATIVE],
                     min_occurs=0,
                 ),
+                wpsio.output_name
             ]
         )
 
@@ -190,7 +187,8 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
         out = bc.adjust(res["sim"], interp=group["interp"], **adj).to_dataset(name=name)
         _log("Adjustment object created.", 5)
 
-        out_fn = Path(self.workdir) / "bias_corrected.nc"
+        filename = valid_filename(single_input_or_none(request.inputs, "output_name") or "bias_corrected")
+        out_fn = Path(self.workdir) / f"{filename}.nc"
         with FinchProgressBar(
             logging_function=_log,
             start_percentage=5,

@@ -1,7 +1,7 @@
 from collections import deque
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from pywps import ComplexOutput, FORMATS
 from pywps.app.exceptions import ProcessError
@@ -16,6 +16,8 @@ from .utils import (
     drs_filename,
     log_file_path,
     make_metalink_output,
+    single_input_or_none,
+    valid_filename,
     write_log,
 )
 from .wps_base import (
@@ -57,7 +59,7 @@ class XclimIndicatorBase(FinchProcess):
         ]
 
         inputs = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier)
-        inputs += wpsio.xclim_common_options + [wpsio.variable_any]
+        inputs += wpsio.xclim_common_options + [wpsio.variable_any, wpsio.output_name]
 
         super().__init__(
             self._handler,
@@ -96,6 +98,7 @@ class XclimIndicatorBase(FinchProcess):
         def _log(message, percentage):
             write_log(self, message, subtask_percentage=percentage)
 
+        output_name = single_input_or_none(request.inputs, "output_name")
         output_files = []
         input_files = [Path(fn[0].url).name for fn in nc_inputs.values()]
 
@@ -105,7 +108,11 @@ class XclimIndicatorBase(FinchProcess):
             inputs = {**other_inputs, **netcdf_inputs}
 
             out = compute_indices(self, self.xci, inputs)
-            filename = _make_unique_drs_filename(out, [f.name for f in output_files] + input_files)
+            filename = _make_unique_drs_filename(
+                out,
+                [f.name for f in output_files] + input_files,
+                output_name=output_name,
+            )
             output_filename = Path(self.workdir, filename)
             output_files.append(output_filename)
 
@@ -140,16 +147,19 @@ class XclimIndicatorBase(FinchProcess):
 
 
 def _make_unique_drs_filename(
-        ds: xr.Dataset, existing_names: List[str],
+        ds: xr.Dataset, existing_names: List[str], output_name: Optional[str] = None
 ):
     """Generate a drs filename: avoid overwriting files by adding a dash and a number to the filename."""
-    try:
-        filename = drs_filename(ds)
-    except KeyError:
-        filename = "out.nc"
+    if output_name is not None:
+        filename = f"{output_name}.nc"
+    else:
+        try:
+            filename = drs_filename(ds)
+        except KeyError:
+            filename = "out.nc"
 
     count = 0
-    new_filename = filename
+    new_filename = valid_filename(filename)
     while new_filename in existing_names:
         count += 1
         new_filename = f"{filename.replace('.nc', '')}-{count}.nc"

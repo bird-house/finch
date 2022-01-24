@@ -290,6 +290,20 @@ reducer = LiteralInput(
     max_occurs=1
 )
 
+output_name = LiteralInput(
+    "output_name",
+    "Name of the output",
+    abstract="Filename of the output (no extension).",
+    data_type="string",
+    min_occurs=0,
+    max_occurs=1
+)
+
+output_prefix = copy_io(
+    output_name,
+    abstract="Prefix of the output filename, defaults to the identifier of the process."
+)
+
 xclim_common_options = [
     check_missing,
     missing_options,

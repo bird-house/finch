@@ -40,6 +40,7 @@ def test_indicators_processes_discovery(indicator):
     parameters.add("cf_compliance")
     parameters.add("data_validation")
     parameters.add("variable")
+    parameters.add("output_name")
     if "indexer" in parameters:
         parameters.remove("indexer")
         parameters.add("month")

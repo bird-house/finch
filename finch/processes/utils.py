@@ -713,3 +713,17 @@ def update_history(
         f"[{datetime.now():%Y-%m-%d %H:%M:%S}] {new_name or ''}: {hist_str} - finch version: {__version__}."
     )
     return merged_history
+
+
+def valid_filename(name):
+    """
+    Removes unsupported characters from a filename.
+
+    >>> valid_filename("summer's tasmin.nc")
+    'summers_tasmin.nc'
+    """
+    s = name.strip().replace(' ', '_')  # Fill spaces with underscore
+    s = re.sub(r'[^-\w.]', '', s)  # Remove any char other than alphanum, - or .
+    if s in {'', '.', '..'}:
+        raise ValueError(f"Filename not valid. Got {name}.")
+    return s
