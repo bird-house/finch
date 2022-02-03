@@ -1,7 +1,7 @@
 Changes
 *******
 
-0.8.1 (unreleased)
+0.8.1 (2022-02-03)
 ==================
 * Add ``geoseries_to_netcdf`` process, converting a geojson (like a OGC-API request) to a CF-compliant netCDF.
 
