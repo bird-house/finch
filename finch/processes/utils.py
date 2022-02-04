@@ -39,7 +39,7 @@ import sentry_sdk
 import xarray as xr
 from netCDF4 import num2date
 import xclim
-import dask
+from slugify import slugify
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -722,8 +722,8 @@ def valid_filename(name):
     >>> valid_filename("summer's tasmin.nc")
     'summers_tasmin.nc'
     """
-    s = name.strip().replace(' ', '_')  # Fill spaces with underscore
-    s = re.sub(r'[^-\w.]', '', s)  # Remove any char other than alphanum, - or .
-    if s in {'', '.', '..'}:
+    p = Path(name)
+    s = slugify(p.stem, separator='_')
+    if not s:
         raise ValueError(f"Filename not valid. Got {name}.")
-    return s
+    return p.parent / (s + p.suffix)
