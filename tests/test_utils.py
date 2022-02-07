@@ -319,4 +319,4 @@ def test_bccaqv2_filter(filename, variable, rcp, models, expected):
 
 def test_invalid_filename():
     with pytest.raises(ValueError):
-        valid_filename(" °°")
+        valid_filename("./..")
