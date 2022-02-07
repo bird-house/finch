@@ -715,9 +715,11 @@ def update_history(
     return merged_history
 
 
-def valid_filename(name):
+def valid_filename(name: Union[Path, str]) -> Union[Path, str]:
     """
     Removes unsupported characters from a filename.
+
+    Returns a string if given a string, a Path otherwise.
 
     >>> valid_filename("summer's tasmin.nc")
     'summers_tasmin.nc'
@@ -726,4 +728,7 @@ def valid_filename(name):
     s = slugify(p.stem, separator='_')
     if not s:
         raise ValueError(f"Filename not valid. Got {name}.")
-    return p.parent / (s + p.suffix)
+    out = p.parent / (s + p.suffix)
+    if isinstance(name, str):
+        return str(out)
+    return out
