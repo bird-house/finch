@@ -6,6 +6,7 @@ Changes
 * Add ``geoseries_to_netcdf`` process, converting a geojson (like a OGC-API request) to a CF-compliant netCDF.
 * Add ``output_name`` argument to most processes (excepted subsetting and averaging processes), to control the name (or prefix) of the output file.
 * New dependency ``python-slugify`` to ensure filenames are safe and valid.
+* Pinning dask to ``<=2022.1.0`` to avoid a performance issue with ``2022.1.1``.
 
 0.8.0 (2022-01-13)
 ==================
