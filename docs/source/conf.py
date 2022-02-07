@@ -72,6 +72,7 @@ if os.environ.get('READTHEDOCS') == 'True':
         "sentry_sdk",
         "shapely",
         "siphon",
+        "slugify",
         "spotpy",
         "statsmodels",
         "unidecode",
