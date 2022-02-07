@@ -34,6 +34,7 @@ from .utils import (
     format_metadata,
     log_file_path,
     single_input_or_none,
+    valid_filename,
     write_log,
     zip_files,
 )
@@ -329,7 +330,8 @@ def make_output_filename(process: Process, inputs: List[PywpsInput], rcp=None):
     lat1 = _formatted_coordinate(single_input_or_none(inputs, "lat1"))
     lon1 = _formatted_coordinate(single_input_or_none(inputs, "lon1"))
 
-    output_parts = [process.identifier]
+    # Get given prefix and if none given, default to the identifier.
+    output_parts = [single_input_or_none(inputs, "output_name") or process.identifier]
 
     if lat and lon:
         output_parts.append(f"{float(lat):.3f}")
@@ -345,7 +347,7 @@ def make_output_filename(process: Process, inputs: List[PywpsInput], rcp=None):
     if rcp:
         output_parts.append(rcp)
 
-    return "_".join(output_parts)
+    return valid_filename("_".join(output_parts))
 
 
 def uses_accepted_netcdf_variables(indicator: Indicator) -> bool:

@@ -13,6 +13,6 @@ twine
 cruft
 jupyter_client<7.0  # https://github.com/jupyter/jupyter_console/issues/241
 # Changing dependencies above this comment will create merge conflicts when updating the cookiecutter template with cruft. Add extra requirements below this line. 
-birdhouse-birdy
+birdhouse-birdy>=0.8.1
 geojson
 matplotlib

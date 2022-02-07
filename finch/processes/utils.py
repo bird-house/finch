@@ -39,7 +39,7 @@ import sentry_sdk
 import xarray as xr
 from netCDF4 import num2date
 import xclim
-import dask
+from slugify import slugify
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -713,3 +713,22 @@ def update_history(
         f"[{datetime.now():%Y-%m-%d %H:%M:%S}] {new_name or ''}: {hist_str} - finch version: {__version__}."
     )
     return merged_history
+
+
+def valid_filename(name: Union[Path, str]) -> Union[Path, str]:
+    """
+    Removes unsupported characters from a filename.
+
+    Returns a string if given a string, a Path otherwise.
+
+    >>> valid_filename("summer's tasmin.nc")
+    'summers_tasmin.nc'
+    """
+    p = Path(name)
+    s = slugify(p.stem, separator='_')
+    if not s:
+        raise ValueError(f"Filename not valid. Got {name}.")
+    out = p.parent / (s + p.suffix)
+    if isinstance(name, str):
+        return str(out)
+    return out

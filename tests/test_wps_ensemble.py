@@ -46,6 +46,7 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
         wps_literal_input("freq", "MS"),
         wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
+        wps_literal_input("output_name", "testens")
     ]
 
     # --- when ---
@@ -53,6 +54,7 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
 
     # --- then ---
     assert len(outputs) == 1
+    assert Path(outputs[0]).stem.startswith('testens')
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
     assert dims == {

@@ -4,7 +4,15 @@ import logging
 from pathlib import Path
 from .wps_base import FinchProcess
 from . import wpsio
-from .utils import log_file_path, write_log, try_opendap, dataset_to_netcdf, update_history
+from .utils import (
+    dataset_to_netcdf,
+    log_file_path,
+    single_input_or_none,
+    try_opendap,
+    update_history,
+    valid_filename,
+    write_log,
+)
 import xarray as xr
 import json
 from xclim.core.options import MISSING_METHODS
@@ -26,6 +34,7 @@ class HourlyToDailyProcess(FinchProcess):
             wpsio.check_missing,
             wpsio.missing_options,
             wpsio.variable_any,
+            wpsio.output_name
         ]
 
         outputs = [
@@ -34,9 +43,7 @@ class HourlyToDailyProcess(FinchProcess):
                 "Daily statistic in netCDF",
                 abstract="The daily statistic computed from hourly data.",
                 as_reference=True,
-                supported_formats=[
-                    FORMATS.NETCDF,
-                ],
+                supported_formats=[FORMATS.NETCDF],
             ),
             wpsio.output_log,
         ]
@@ -76,7 +83,8 @@ class HourlyToDailyProcess(FinchProcess):
         out = _hourly_to_daily(ds, reducer=reducer, check_missing=check_missing, missing_options=missing_options)
 
         # Write to disk
-        output_file = Path(self.workdir) / "daily.nc"
+        filename = valid_filename(single_input_or_none(request.inputs, "output_name") or "daily")
+        output_file = Path(self.workdir) / f"{filename}.nc"
         dataset_to_netcdf(out, output_file)
 
         # Fill response

@@ -4,7 +4,7 @@ Changes
 0.8.1 (unreleased)
 ==================
 * Add ``geoseries_to_netcdf`` process, converting a geojson (like a OGC-API request) to a CF-compliant netCDF.
-
+* Add ``output_name`` argument to most processes (excepted subsetting and averaging processes), to control the name (or prefix) of the output file.
 
 0.8.0 (2022-01-13)
 ==================

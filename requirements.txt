@@ -1,10 +1,10 @@
 cftime
-pywps >= 4.5.1
+pywps>=4.5.1
 xclim==0.31
 xarray>=0.18.2
 pandas
 xesmf>=0.6.2
-ESMpy <= 8.1.1
+ESMpy<=8.1.1
 clisops>=0.8.0
 geopandas
 jinja2
@@ -20,3 +20,4 @@ requests
 sentry-sdk
 siphon
 parse
+python-slugify
