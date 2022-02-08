@@ -42,4 +42,4 @@ def test_wps_empirical_quantile_mapping(netcdf_sdba_ds, kind, name):
 
     ref = xr.open_dataset(sdba_ds[f"qdm_{name}_ref"])[name]
     refc = convert_calendar(ref, "noleap")
-    np.testing.assert_allclose(p[middle], refc[middle], rtol=0.02)
+    np.testing.assert_allclose(p[middle], refc[middle], rtol=0.03)
