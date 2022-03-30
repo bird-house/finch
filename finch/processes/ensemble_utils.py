@@ -616,10 +616,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     process.set_workdir(str(base_work_dir))
 
-    if len(rcps) > 1:
-        ensemble = xr.concat(ensembles, dim=xr.DataArray(rcps, dims=('rcp',), name='rcp'))
-    else:
-        ensemble = ensembles[0]
+    ensemble = xr.concat(ensembles, dim=xr.DataArray(rcps, dims=('rcp',), name='rcp'))
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")

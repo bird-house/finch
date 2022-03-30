@@ -60,6 +60,7 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
+        "rcp": 1
     }
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
@@ -68,7 +69,7 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
-        assert variable_dims == {"region": 1, "time": 4}
+        assert variable_dims == {"region": 1, "time": 4, "rcp": 1}
 
     assert len(ds.attrs['source_datasets'].split('\n')) == 4
 
@@ -139,6 +140,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
         "lat": 2,
         "lon": 2,
         "time": 4,  # there are roughly 4 months in the test datasets
+        "rcp": 1
     }
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
@@ -147,7 +149,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"time": 4, "lat": 2, "lon": 2}
+        assert variable_dims == {"time": 4, "lat": 2, "lon": 2, "rcp": 1}
 
     inputs.append(wps_literal_input("average", "True"))
     outputs = execute_process(client, identifier, inputs, output_names=["output"])
@@ -155,7 +157,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
-    assert dims == {"time": 4}  # Spatial average has been taken.
+    assert dims == {"time": 4, "rcp": 1}  # Spatial average has been taken.
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
     assert sorted(ensemble_variables) == [
@@ -163,7 +165,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"time": 4}
+        assert variable_dims == {"time": 4, "rcp": 1}
 
 
 def test_ensemble_heatwave_frequency_grid_point_csv(mock_datasets, client):
@@ -191,7 +193,7 @@ def test_ensemble_heatwave_frequency_grid_point_csv(mock_datasets, client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,time")
+    assert lines[0].startswith("lat,lon,time,rcp")
     n_data_rows = len(lines) - 2
     assert n_data_rows == 3  # time=3 (last month is NaN)
 
@@ -251,6 +253,7 @@ def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
     assert dims == {
         "region": 1,
         "time": 3,
+        "rcp": 1
     }
 
     ensemble_variables = dict(ds.data_vars)
@@ -260,7 +263,7 @@ def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"region": 1, "time": 3}
+        assert variable_dims == {"region": 1, "time": 3, "rcp": 1}
 
 
 def test_ensemble_heatwave_frequency_grid_point_models(mock_datasets, client):
@@ -374,13 +377,14 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
     assert dims == {
         "region": 1,
         "time": 1,
+        "rcp": 1
     }
 
     ensemble_variables = dict(ds.data_vars)
     assert sorted(ensemble_variables) == [f"csdi_6_p{p}" for p in (20, 50, 80)]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"region": 1, "time": 1}
+        assert variable_dims == {"region": 1, "time": 1, "rcp": 1}
 
 
 def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
@@ -406,6 +410,7 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
     assert dims == {
         "region": 1,
         "time": 1,
+        "rcp": 1
     }
 
     ensemble_variables = dict(ds.data_vars)
@@ -414,7 +419,7 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"region": 1, "time": 1}
+        assert variable_dims == {"region": 1, "time": 1, "rcp": 1}
 
 
 def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
@@ -442,8 +447,9 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
         "lat": 11,
         "lon": 11,
         "time": 4,  # there are roughly 4 months in the test datasets
+        "rcp": 1
     }
-    data = ds["heat_wave_frequency_p20"][1, :].data
+    data = ds["heat_wave_frequency_p20"].isel(rcp=0, time=1).data
     assert np.isnan(data).sum() == 55
     assert (~np.isnan(data)).sum() == 66
 
@@ -453,7 +459,7 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"lat": 11, "lon": 11, "time": 4}
+        assert variable_dims == {"lat": 11, "lon": 11, "time": 4, "rcp": 1}
 
     inputs.append(wps_literal_input("average", "True"))
     outputs = execute_process(client, identifier, inputs, output_names=["output"])
@@ -462,7 +468,7 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
-    assert dims == {"time": 4}
+    assert dims == {"time": 4, "rcp": 1}
 
     ensemble_variables = dict(ds.data_vars)
     assert sorted(ensemble_variables) == [
@@ -470,7 +476,7 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"time": 4}
+        assert variable_dims == {"time": 4, "rcp": 1}
 
 
 def test_ensemble_heatwave_frequency_polygon_csv(mock_datasets, client):

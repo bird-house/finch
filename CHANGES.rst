@@ -1,6 +1,10 @@
 Changes
 *******
 
+0.8.3 (unreleased)
+==================
+* Preserve RCP dimension in ensemble processes, even when only RCP is selected.
+
 0.8.2 (2022-02-07)
 ==================
 * Add ``geoseries_to_netcdf`` process, converting a geojson (like a OGC-API request) to a CF-compliant netCDF.
