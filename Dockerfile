@@ -6,7 +6,8 @@ LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.8.2"
 # Update Debian system
 RUN apt-get update && apt-get install -y \
     build-essential git \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && conda update conda -n base
 
 WORKDIR /code
 
