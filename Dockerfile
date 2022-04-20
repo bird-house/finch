@@ -7,14 +7,15 @@ LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.8.2"
 RUN apt-get update && apt-get install -y \
     build-essential git \
     && rm -rf /var/lib/apt/lists/* \
-    && conda update conda -n base
+    && conda update conda -n base \
+    && conda install mamba -n base -c defaults -c conda-forge
 
 WORKDIR /code
 
 COPY environment.yml .
 RUN conda config --add channels conda-forge \
-    && conda env create -n finch -f environment.yml \
-    && conda install -c conda-forge -n finch gunicorn psycopg2 \
+    && mamba env create -n finch -f environment.yml \
+    && mamba install -c conda-forge -n finch gunicorn psycopg2 \
     && rm -rf /opt/conda/pkgs/*
 
 COPY . .
