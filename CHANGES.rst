@@ -1,7 +1,7 @@
 Changes
 *******
 
-0.8.3 (unreleased)
+0.8.3 (2022-04-21)
 ==================
 * Preserve RCP dimension in ensemble processes, even when only RCP is selected.
 * Pin ``dask`` and ``distributed`` at ``2022.1.0``, see https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/issues/100
