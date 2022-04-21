@@ -9,8 +9,8 @@ dependencies:
   - psutil
   - netcdf4
   - unidecode
-  - dask >=2.9
-  - distributed
+  - dask <= 2022.1.0
+  - distributed <= 2022.1.0
   - xarray >=0.18.2
   - numpy
   - geopandas
