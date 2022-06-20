@@ -26,17 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup conda
-        uses: s-weigand/setup-conda@v1
-        with:
-          update-conda: true
-      - name: Install mamba
-        run: conda install mamba -n base -c conda-forge
-      - name: Conda and mamba versions
-        run: |
-          mamba --version
-      - name: Create finch environment
-        run: mamba env update -f environment.yml -n base
+      - name: Setup conda and environment
+        uses: mamba-org/provision-with-micromamba@main
       - name: Install and test finch-wps
         run: |
           make develop
