@@ -30,7 +30,7 @@ def test_bccaqv2_heatwave_frequency(client, mock_datasets):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1

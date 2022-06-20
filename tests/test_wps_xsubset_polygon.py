@@ -1,7 +1,6 @@
 import geojson
 import xarray as xr
 from tests.utils import execute_process, shapefile_zip, wps_input_file, wps_literal_input
-import pytest
 
 poly = {
     "type": "Feature",
@@ -23,7 +22,7 @@ def test_wps_subsetpoly(client, netcdf_datasets):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     ds = xr.open_dataset(outputs[0])
@@ -43,7 +42,7 @@ def test_wps_subsetpoly_shapefile(client, netcdf_datasets):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     ds = xr.open_dataset(outputs[0])

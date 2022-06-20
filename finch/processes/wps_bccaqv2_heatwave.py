@@ -69,7 +69,6 @@ class BCCAQV2HeatWave(FinchProcess):
                 min_occurs=0,
             ),
             data_valid,
-            wpsio.output_format_netcdf_csv,
         ]
 
         outputs = [wpsio.output_netcdf_zip]
@@ -150,7 +149,9 @@ class BCCAQV2HeatWave(FinchProcess):
                 subtask_percentage=n * 100 // n_pairs,
             )
 
-            compute_inputs = [i.identifier for i in self.indices_process.inputs]
+            compute_inputs = [i.identifier
+                              for i in self.indices_process.inputs
+                              if i.identifier not in ['output_format']]
             inputs = {k: v for k, v in request.inputs.items() if k in compute_inputs}
 
             inputs["tasmin"] = deque([make_nc_input("tasmin")], maxlen=1)

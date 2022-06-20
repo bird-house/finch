@@ -68,7 +68,7 @@ class GeoseriesToNetcdfProcess(FinchProcess):
 
         outputs = [
             ComplexOutput(
-                "output_netcdf",
+                "output",
                 "Geospatial series as netCDF",
                 abstract="The geospatial series as a 2 dimension netCDF.",
                 as_reference=True,
@@ -167,7 +167,7 @@ class GeoseriesToNetcdfProcess(FinchProcess):
         dataset_to_netcdf(ds, output_file)
 
         # Fill response
-        response.outputs["output_netcdf"].file = str(output_file)
+        response.outputs["output"].file = str(output_file)
         response.outputs["output_log"].file = str(log_file_path(self))
 
 

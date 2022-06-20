@@ -39,7 +39,7 @@ class HourlyToDailyProcess(FinchProcess):
 
         outputs = [
             ComplexOutput(
-                "output_netcdf",
+                "output",
                 "Daily statistic in netCDF",
                 abstract="The daily statistic computed from hourly data.",
                 as_reference=True,
@@ -88,7 +88,7 @@ class HourlyToDailyProcess(FinchProcess):
         dataset_to_netcdf(out, output_file)
 
         # Fill response
-        response.outputs["output_netcdf"].file = str(output_file)
+        response.outputs["output"].file = str(output_file)
         response.outputs["output_log"].file = str(log_file_path(self))
 
 

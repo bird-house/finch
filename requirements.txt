@@ -4,7 +4,6 @@ xclim==0.31
 xarray>=0.18.2
 pandas
 xesmf>=0.6.2
-ESMpy<=8.1.1
 clisops>=0.8.0
 geopandas
 jinja2
@@ -14,7 +13,7 @@ bottleneck
 netcdf4
 numpy
 unidecode
-dask[complete]<=2022.1.0
+dask[complete]
 scipy
 requests
 sentry-sdk
