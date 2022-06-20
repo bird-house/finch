@@ -4,6 +4,7 @@ from lxml import etree
 import numpy as np
 import xarray as xr
 import pandas as pd
+from zipfile import ZipFile
 
 import finch
 import finch.processes
@@ -301,9 +302,12 @@ def test_degree_days_exceedance_date(client, tmp_path):
     inputs = [wps_input_file("tas", tmp_path / "tas.nc"),
               wps_literal_input("thresh", "4 degC"),
               wps_literal_input("op", ">"),
-              wps_literal_input("sum_thresh", "200 K days")
+              wps_literal_input("sum_thresh", "200 K days"),
+              wps_literal_input("output_format", "csv")
               ]
 
     outputs = execute_process(client, identifier, inputs)
-    with xr.open_dataset(outputs[0]) as ds:
-        np.testing.assert_array_equal(ds.degree_days_exceedance_date, np.array([[153, 136, 9, 6]]).T)
+    with ZipFile(outputs[0]) as thezip:
+        with thezip.open('out.csv') as thefile:
+            ds = pd.read_csv(thefile).to_xarray()
+    np.testing.assert_array_equal(ds.degree_days_exceedance_date, np.array([153, 136, 9, 6]))
