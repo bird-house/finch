@@ -30,14 +30,16 @@ jobs:
         uses: s-weigand/setup-conda@v1
         with:
           update-conda: true
-      - name: Conda version
-        run: conda --version
+      - name: Install mamba
+        run: conda install mamba -n base -c conda-forge
+      - name: Conda and mamba versions
+        run: |
+          conda --version
+          mamba --version
       - name: Create finch environment
-        run: conda env create -n finch-wps -f environment.yml
+        run: mambda env update -f environment.yml -n base
       - name: Install and test finch-wps
         run: |
-          source activate finch-wps
-          # pip install git+https://github.com/Ouranosinc/xclim.git@master#egg=xclim
           make develop
           make start
           sleep 2
