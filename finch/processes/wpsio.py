@@ -232,7 +232,7 @@ data_validation = LiteralInput(
 output_format_netcdf_csv = LiteralInput(
     "output_format",
     "Output format choice",
-    abstract="Choose in which format you want to receive the result",
+    abstract="Choose in which format you want to receive the result. CSV actually means a zip file of two csv files.",
     data_type="string",
     allowed_values=["netcdf", "csv"],
     default="netcdf",
