@@ -13,7 +13,7 @@ bottleneck
 netcdf4
 numpy
 unidecode
-dask[complete]<=2022.1.0
+dask[complete]
 scipy
 requests
 sentry-sdk
