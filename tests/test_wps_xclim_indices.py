@@ -4,6 +4,7 @@ from lxml import etree
 import numpy as np
 import xarray as xr
 import pandas as pd
+from zipfile import ZipFile
 
 import finch
 import finch.processes
@@ -41,6 +42,7 @@ def test_indicators_processes_discovery(indicator):
     parameters.add("data_validation")
     parameters.add("variable")
     parameters.add("output_name")
+    parameters.add("output_format")
     if "indexer" in parameters:
         parameters.remove("indexer")
         parameters.add("month")
@@ -112,7 +114,7 @@ def test_wps_daily_temperature_range_multiple(client, netcdf_datasets):
         "finch.processes.wps_xclim_indices.FinchProgressBar"
     ) as mock_progress:
         outputs = execute_process(
-            client, identifier, inputs, output_names=["output_netcdf", "ref"]
+            client, identifier, inputs, output_names=["output", "ref"]
         )
 
     assert mock_progress.call_args_list[0][1]["start_percentage"] == 0
@@ -139,7 +141,7 @@ def test_wps_daily_temperature_range_multiple_not_same_length(client, netcdf_dat
 
     with pytest.raises(ProcessError, match="must be equal"):
         execute_process(
-            client, identifier, inputs, output_names=["output_netcdf", "ref"]
+            client, identifier, inputs, output_names=["output", "ref"]
         )
 
 
@@ -300,9 +302,12 @@ def test_degree_days_exceedance_date(client, tmp_path):
     inputs = [wps_input_file("tas", tmp_path / "tas.nc"),
               wps_literal_input("thresh", "4 degC"),
               wps_literal_input("op", ">"),
-              wps_literal_input("sum_thresh", "200 K days")
+              wps_literal_input("sum_thresh", "200 K days"),
+              wps_literal_input("output_format", "csv")
               ]
 
     outputs = execute_process(client, identifier, inputs)
-    with xr.open_dataset(outputs[0]) as ds:
-        np.testing.assert_array_equal(ds.degree_days_exceedance_date, np.array([[153, 136, 9, 6]]).T)
+    with ZipFile(outputs[0]) as thezip:
+        with thezip.open('out.csv') as thefile:
+            ds = pd.read_csv(thefile).to_xarray()
+    np.testing.assert_array_equal(ds.degree_days_exceedance_date, np.array([153, 136, 9, 6]))

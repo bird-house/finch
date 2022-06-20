@@ -65,7 +65,7 @@ def wps_literal_input(identifier, value):
 
 
 def execute_process(
-    client, identifier, inputs, output_names=("output_netcdf",)
+    client, identifier, inputs, output_names=("output",)
 ) -> xr.Dataset:
     """Execute a process using the test client, and return the 'output_netcdf' output as an xarray.Dataset"""
     request_doc = WPS.Execute(

@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 
-from pywps import ComplexOutput, FORMATS
 from pywps.app.exceptions import ProcessError
 from unidecode import unidecode
 import xarray as xr
@@ -12,13 +11,16 @@ from . import wpsio
 from .constants import xclim_netcdf_variables
 from .utils import (
     compute_indices,
+    dataset_to_dataframe,
     dataset_to_netcdf,
     drs_filename,
+    format_metadata,
     log_file_path,
     make_metalink_output,
     single_input_or_none,
     valid_filename,
     write_log,
+    zip_files
 )
 from .wps_base import (
     FinchProcess,
@@ -44,22 +46,11 @@ class XclimIndicatorBase(FinchProcess):
                 "Use the `make_xclim_indicator_process` function instead."
             )
 
-        outputs = [
-            ComplexOutput(
-                "output_netcdf",
-                "Function output in netCDF",
-                abstract="The indicator values computed on the original input grid.",
-                as_reference=True,
-                supported_formats=[
-                    FORMATS.NETCDF,
-                ],  # To support FORMATS.DODS we need to get the URL.
-            ),
-            wpsio.output_log,
-            wpsio.output_metalink,
-        ]
+        outputs = [wpsio.output_netcdf_zip, wpsio.output_log, wpsio.output_metalink]
 
         inputs = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier)
-        inputs += wpsio.xclim_common_options + [wpsio.variable_any, wpsio.output_name]
+        inputs += wpsio.xclim_common_options
+        inputs += [wpsio.variable_any, wpsio.output_name, wpsio.output_format_netcdf_csv]
 
         super().__init__(
             self._handler,
@@ -73,19 +64,21 @@ class XclimIndicatorBase(FinchProcess):
             store_supported=True,
         )
 
-        self.status_percentage_steps = {
-            "start": 5,
-            "done": 99,
-        }
+        self.status_percentage_steps = {"start": 5, "convert_to_csv": 90, "done": 99}
 
     def _handler(self, request, response):
-        write_log(self, "Computing the output netcdf", process_step="start")
+        convert_to_csv = single_input_or_none(request.inputs, "output_format") == "csv"
+        if not convert_to_csv:
+            del self.status_percentage_steps["convert_to_csv"]
 
+        write_log(self, "Computing the output array", process_step="start")
+
+        # Get inputs of compute_indices, split by netCDFs and others
         nc_inputs, other_inputs = {}, {}
         for k, v in request.inputs.items():
             if k in xclim_netcdf_variables:
                 nc_inputs[k] = v
-            else:
+            elif k not in ['output_format', 'output_name']:
                 other_inputs[k] = v
 
         n_files = len(list(nc_inputs.values())[0])
@@ -135,9 +128,33 @@ class XclimIndicatorBase(FinchProcess):
                 dataset_to_netcdf(out, output_filename)
                 out.close()
 
+        if convert_to_csv:
+            write_log(self, "Converting netCDFs to CSV", process_step="convert_to_csv")
+            output_netcdfs = output_files
+            output_files = []
+            for outfile in output_netcdfs:
+                outcsv = outfile.with_suffix('.csv')
+                ds = xr.open_dataset(outfile, decode_timedelta=False)
+                df = dataset_to_dataframe(ds)
+                df.to_csv(outcsv)
+                output_files.append(outcsv)
+
+                metadata = format_metadata(ds)
+                outmeta = outfile.with_suffix('.metadata.txt')
+                outmeta.write_text(metadata)
+                output_files.append(outmeta)
+
+            if len(output_netcdfs) == 1:
+                output_final = output_netcdfs[0].with_suffix('.zip')
+            else:
+                output_final = Path(self.workdir) / f"{self.identifier}_output.zip"
+            zip_files(output_final, output_files)
+        else:
+            output_final = output_files[0]
+
         metalink = make_metalink_output(self, output_files)
 
-        response.outputs["output_netcdf"].file = str(output_files[0])
+        response.outputs["output"].file = str(output_final)
         response.outputs["output_log"].file = str(log_file_path(self))
         response.outputs["ref"].data = metalink.xml
 

@@ -1,6 +1,11 @@
 Changes
 *******
 
+0.9.0 (unreleased)
+==================
+* Fix use of ``output_name``, add ``output_format`` to xclim indicators.
+* Change all outputs to use ``output`` as the main output field name (instead of ``output_netcdf``).
+
 0.8.3 (2022-04-21)
 ==================
 * Preserve RCP dimension in ensemble processes, even when only RCP is selected.
