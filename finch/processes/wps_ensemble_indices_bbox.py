@@ -50,7 +50,7 @@ class XclimEnsembleBboxBase(FinchProcess):
             if i.identifier not in xclim_netcdf_variables:
                 inputs.append(i)
 
-        inputs.extend([wpsio.output_format_netcdf_csv, wpsio.output_prefix])
+        inputs.extend([wpsio.output_prefix, wpsio.output_format_netcdf_csv])
 
         outputs = [wpsio.output_netcdf_zip, wpsio.output_log]
 

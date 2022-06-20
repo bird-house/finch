@@ -41,6 +41,7 @@ def test_indicators_processes_discovery(indicator):
     parameters.add("data_validation")
     parameters.add("variable")
     parameters.add("output_name")
+    parameters.add("output_format")
     if "indexer" in parameters:
         parameters.remove("indexer")
         parameters.add("month")
@@ -112,7 +113,7 @@ def test_wps_daily_temperature_range_multiple(client, netcdf_datasets):
         "finch.processes.wps_xclim_indices.FinchProgressBar"
     ) as mock_progress:
         outputs = execute_process(
-            client, identifier, inputs, output_names=["output_netcdf", "ref"]
+            client, identifier, inputs, output_names=["output", "ref"]
         )
 
     assert mock_progress.call_args_list[0][1]["start_percentage"] == 0
@@ -139,7 +140,7 @@ def test_wps_daily_temperature_range_multiple_not_same_length(client, netcdf_dat
 
     with pytest.raises(ProcessError, match="must be equal"):
         execute_process(
-            client, identifier, inputs, output_names=["output_netcdf", "ref"]
+            client, identifier, inputs, output_names=["output", "ref"]
         )
 
 

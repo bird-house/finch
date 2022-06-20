@@ -23,7 +23,7 @@ def test_bccaqv2_subset_point(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -46,7 +46,7 @@ def test_bccaqv2_subset_point_csv(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -69,7 +69,7 @@ def test_bccaqv2_subset_point_multiple(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -92,7 +92,7 @@ def test_bccaqv2_subset_point_multiple_csv(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -115,7 +115,7 @@ def test_bccaqv2_subset_point_multiple_same_cell(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -139,7 +139,7 @@ def test_bccaqv2_subset_point_lat0_lon0_deprecation(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     zf = zipfile.ZipFile(outputs[0])
@@ -161,7 +161,7 @@ def test_bccaqv2_subset_bbox_process(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -186,7 +186,7 @@ def test_bccaqv2_subset_bbox_process_csv(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -215,6 +215,6 @@ def test_bccaqv2_subset_online(client):
         wps_literal_input("y1", "2011"),
     ]
 
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     print(outputs)

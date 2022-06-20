@@ -50,7 +50,7 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -91,7 +91,7 @@ def test_ensemble_dded_grid_point_multircp(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -130,7 +130,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -152,7 +152,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
         assert variable_dims == {"time": 4, "lat": 2, "lon": 2, "rcp": 1}
 
     inputs.append(wps_literal_input("average", "True"))
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
@@ -184,7 +184,7 @@ def test_ensemble_heatwave_frequency_grid_point_csv(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -216,7 +216,7 @@ def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -244,7 +244,7 @@ def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -289,7 +289,7 @@ def test_ensemble_heatwave_frequency_grid_point_models(mock_datasets, client):
         "finch.processes.ensemble_utils.get_bccaqv2_local_files_datasets"
     ) as mock_datasets:
         mock_datasets.return_value = [str(subset_sample / f) for f in mock_filenames]
-        execute_process(client, identifier, inputs, output_names=["output"])
+        execute_process(client, identifier, inputs)
 
     # --- then ---
     assert mock_datasets.call_args[1]["models"] == [
@@ -320,7 +320,7 @@ def test_ensemble_heatwave_frequency_grid_point_models_pcic(mock_datasets, clien
         "finch.processes.ensemble_utils.get_bccaqv2_local_files_datasets"
     ) as mock_datasets:
         mock_datasets.return_value = [str(subset_sample / f) for f in mock_filenames]
-        execute_process(client, identifier, inputs, output_names=["output"])
+        execute_process(client, identifier, inputs)
 
     # --- then ---
     assert mock_datasets.call_args[1]["models"] == [PCIC_12]
@@ -368,7 +368,7 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -401,7 +401,7 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -437,7 +437,7 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -462,7 +462,7 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
         assert variable_dims == {"lat": 11, "lon": 11, "time": 4, "rcp": 1}
 
     inputs.append(wps_literal_input("average", "True"))
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -494,7 +494,7 @@ def test_ensemble_heatwave_frequency_polygon_csv(mock_datasets, client):
     ]
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
@@ -512,7 +512,7 @@ def test_ensemble_heatwave_frequency_polygon_csv(mock_datasets, client):
     inputs.append(wps_literal_input("average", "True"))
 
     # --- when ---
-    outputs = execute_process(client, identifier, inputs, output_names=["output"])
+    outputs = execute_process(client, identifier, inputs)
 
     # --- then ---
     assert len(outputs) == 1
