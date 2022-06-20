@@ -1,5 +1,5 @@
 # https://github.com/computationalmodelling/nbval/issues/139 broken by pytest 6.0.0
-pytest==5.4.3
+pytest
 flake8
 pytest-flake8
 ipython
