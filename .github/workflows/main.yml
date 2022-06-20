@@ -34,10 +34,9 @@ jobs:
         run: conda install mamba -n base -c conda-forge
       - name: Conda and mamba versions
         run: |
-          conda --version
           mamba --version
       - name: Create finch environment
-        run: mambda env update -f environment.yml -n base
+        run: mamba env update -f environment.yml -n base
       - name: Install and test finch-wps
         run: |
           make develop
