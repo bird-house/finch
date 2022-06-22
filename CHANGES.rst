@@ -5,6 +5,7 @@ Changes
 ==================
 * Fix use of ``output_name``, add ``output_format`` to xclim indicators.
 * Change all outputs to use ``output`` as the main output field name (instead of ``output_netcdf``).
+* Removed deprecated processes ``subset_ensemble_bbox_BCCAQv2``, ``subset_ensemble_BCCAQv2`` and ``BCCAQv2_heat_wave_frequency_gridpoint``.
 
 0.8.3 (2022-04-21)
 ==================

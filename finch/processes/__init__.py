@@ -7,18 +7,14 @@ from xclim.core.indicator import build_indicator_module
 
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .wps_base import make_xclim_indicator_process
-from .wps_bccaqv2_heatwave import BCCAQV2HeatWave
 from .wps_ensemble_indices_bbox import XclimEnsembleBboxBase
 from .wps_ensemble_indices_point import XclimEnsembleGridPointBase
 from .wps_ensemble_indices_polygon import XclimEnsemblePolygonBase
 from .wps_xclim_indices import XclimIndicatorBase
 from .wps_xsubset_bbox import SubsetBboxProcess
-from .wps_xsubset_bbox_dataset import SubsetBboxBCCAQV2Process, SubsetBboxDatasetProcess
+from .wps_xsubset_bbox_dataset import SubsetBboxDatasetProcess
 from .wps_xsubset_point import SubsetGridPointProcess
-from .wps_xsubset_point_dataset import (
-    SubsetGridPointBCCAQV2Process,
-    SubsetGridPointDatasetProcess,
-)
+from .wps_xsubset_point_dataset import SubsetGridPointDatasetProcess
 from .wps_xsubset_polygon import SubsetPolygonProcess
 from .wps_sdba import EmpiricalQuantileMappingProcess
 from .wps_xaverage_polygon import AveragePolygonProcess
@@ -113,10 +109,7 @@ def get_processes(all_processes=False):
 
         processes += [
             SubsetGridPointDatasetProcess(),
-            SubsetGridPointBCCAQV2Process(),
             SubsetBboxDatasetProcess(),
-            SubsetBboxBCCAQV2Process(),
-            BCCAQV2HeatWave(),
         ]
 
     # others
