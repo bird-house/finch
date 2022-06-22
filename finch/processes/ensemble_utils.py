@@ -449,9 +449,7 @@ def compute_intermediate_variables(
     """Compute netcdf datasets from a list of required variable names and existing files."""
 
     output_files_list = []
-
     file_groups = make_file_groups(files_list)
-
     for group in file_groups:
         # add file paths that are required without any computation
         for variable, path in group.items():
@@ -563,11 +561,9 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         )
 
         write_log(process, f"Running subset rcp={rcp}", process_step="subset")
-
         subsetted_files = subset_function(
             process, netcdf_inputs=netcdf_inputs, request_inputs=request.inputs
         )
-
         if not subsetted_files:
             message = "No data was produced when subsetting using the provided bounds."
             raise ProcessError(message)
