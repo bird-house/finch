@@ -111,18 +111,3 @@ class SubsetBboxDatasetProcess(FinchProcess):
 
         write_log(self, "Processing finished successfully", process_step="done")
         return response
-
-
-class SubsetBboxBCCAQV2Process(SubsetBboxDatasetProcess):
-    def __init__(self):
-        """*** Deprecated *** to be removed in a future release"""
-        super().__init__()
-        self.identifier = "subset_ensemble_bbox_BCCAQv2"
-        self.title = "Subset of BCCAQv2 datasets, using a bounding box"
-        self.version = "0.1"
-        self.abstract = (
-            "For the BCCAQv2 datasets, "
-            "return the data for which grid cells intersect the "
-            "bounding box for each input dataset as well as "
-            "the time range selected."
-        )
