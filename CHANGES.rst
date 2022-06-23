@@ -9,6 +9,7 @@ Changes
 
     - Percentile inputs of xclim indicators have been renamed with generic names, excluding an explicit mention to the target percentile.
     - In ensemble processes, these percentiles can now be chosen through ``perc_[var]`` inputs. The default values are inherited from earlier versions of xclim.
+* Average shape process downgraded to be single-threaded, as ESMF seems to have issues with multithreading.
 
 0.8.3 (2022-04-21)
 ==================
