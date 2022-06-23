@@ -46,6 +46,8 @@ group_args = dict(
         default=1,
         min_occurs=0,
     ),
+)
+adjust_args = dict(
     interp=LiteralInput(
         "interp",
         "Quantile interpolation",
@@ -55,8 +57,6 @@ group_args = dict(
         allowed_values=["nearest", "linear", "cubic"],
         min_occurs=0,
     ),
-)
-adjust_args = dict(
     extrapolation=LiteralInput(
         "extrapolation",
         "Extrapolation method",
@@ -184,7 +184,7 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
 
         _log("Training object created.", 3)
 
-        out = bc.adjust(res["sim"], interp=group["interp"], **adj).to_dataset(name=name)
+        out = bc.adjust(res["sim"], **adj).to_dataset(name=name)
         _log("Adjustment object created.", 5)
 
         filename = valid_filename(single_input_or_none(request.inputs, "output_name") or "bias_corrected")

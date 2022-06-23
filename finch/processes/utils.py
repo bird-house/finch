@@ -2,7 +2,6 @@ from datetime import timedelta, datetime
 import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-import re
 import json
 from typing import (
     Callable,

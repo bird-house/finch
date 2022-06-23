@@ -12,7 +12,7 @@ import xclim
 
 from xclim.core.utils import InputKind
 
-from .constants import xclim_netcdf_variables
+from .constants import default_percentiles
 from .utils import PywpsInput
 
 
@@ -115,8 +115,12 @@ def make_xclim_indicator_process(
     return process  # type: ignore
 
 
-def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]:
-    """Convert xclim indicators properties to pywps inputs."""
+def convert_xclim_inputs_to_pywps(params: Dict, parent=None, parse_percentiles: bool = False) -> List[PywpsInput]:
+    """Convert xclim indicators properties to pywps inputs.
+
+    If parse_percentiles is True, percentile variables (*_per) are dropped and replaced by
+    a "percentile" input (a float) with a default taken from constants.
+    """
     # Ideally this would be based on the Parameters docstring section rather than name conventions.
     inputs = []
 
@@ -132,8 +136,28 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None) -> List[PywpsInput]
         InputKind.DATE: "datetime",
     }
 
+    if parse_percentiles and parent is None:
+        raise ValueError('The indicator identifier must be passed through `parent` if `parse_percentiles=True`.')
+
     for name, attrs in params.items():
-        if name in xclim_netcdf_variables and attrs['kind'] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
+        if (
+            parse_percentiles
+            and name.endswith('_per')
+            and attrs['kind'] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]
+        ):
+            var_name = name.split('_')[0]
+            inputs.append(
+                LiteralInput(
+                    f"perc_{var_name}",
+                    title=f"{var_name} percentile",
+                    abstract=f"Which percentile to compute and use as threshold for variable {var_name}.",
+                    data_type="integer",
+                    min_occurs=0,
+                    max_occurs=1,
+                    default=default_percentiles[parent][name]
+                )
+            )
+        elif attrs['kind'] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
             inputs.append(make_nc_input(name))
         elif name in ["freq"]:
             inputs.append(make_freq(name, default=attrs['default'], abstract=attrs['description']))

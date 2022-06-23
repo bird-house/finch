@@ -1,7 +1,6 @@
-from finch.processes.wpsio import copy_io
 from pathlib import Path
 
-from pywps import ComplexOutput, FORMATS, LiteralInput
+from pywps import LiteralInput
 from pywps.app import WPSRequest
 from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
@@ -136,17 +135,3 @@ class SubsetGridPointDatasetProcess(FinchProcess):
 
         write_log(self, "Processing finished successfully", process_step="done")
         return response
-
-
-class SubsetGridPointBCCAQV2Process(SubsetGridPointDatasetProcess):
-    def __init__(self):
-        """*** Deprecated *** to be removed in a future release"""
-        super().__init__()
-        self.identifier = "subset_ensemble_BCCAQv2"
-        self.title = "Subset of BCCAQv2 datasets grid cells using a list of coordinates"
-        self.version = "0.1"
-        self.abstract = (
-            "For the BCCAQv2 datasets, "
-            "return the closest grid cell for each provided coordinates pair, "
-            "for the time range selected."
-        )
