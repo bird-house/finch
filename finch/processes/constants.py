@@ -1,4 +1,4 @@
-from xclim.core.utils import VARIABLES
+from xclim.testing import list_input_variables
 
 BCCAQV2_MODELS = [
     "BNU-ESM",
@@ -49,23 +49,25 @@ PCIC_12 = "PCIC12"
 
 ALLOWED_MODEL_NAMES = [ALL_24_MODELS, PCIC_12] + BCCAQV2_MODELS
 
-# a list of all posible netcdf arguments in xclim
-# Read in the list of variables from xclim directly and add some other less documented.
-xclim_netcdf_variables = set(VARIABLES.keys()).union(
-    {
-        "per",
-        "q",
-        "da",
-        "tn10",
-        "tn90",
-        "tx90",
-        "t10",
-        "t90",
-        "tas_25",
-        "tas_75",
-        "pr_25",
-        "pr_75"
-    }
-)
-
 bccaq_variables = {"tasmin", "tasmax", "pr"}
+
+xclim_variables = set(list_input_variables(submodules=["atmos", "land", "seaIce"]).keys())
+
+default_percentiles = {
+    'days_over_precip_thresh': {'pr_per': 95},
+    'days_over_precip_doy_thresh': {'pr_per': 95},
+    'fraction_over_precip_doy_thresh': {'pr_per': 95},
+    'fraction_over_precip_thresh': {'pr_per': 95},
+    'cold_and_dry_days': {'pr_per': 25, 'tas_per': 25},
+    'warm_and_dry_days': {'pr_per': 25, 'tas_per': 75},
+    'warm_and_wet_days': {'pr_per': 75, 'tas_per': 75},
+    'cold_and_wet_days': {'pr_per': 75, 'tas_per': 25},
+    'tg90p': {'tas_per': 90},
+    'tg10p': {'tas_per': 10},
+    'tn90p': {'tasmin_per': 90},
+    'tn10p': {'tasmin_per': 10},
+    'tx90p': {'tasmax_per': 90},
+    'tx10p': {'tasmax_per': 10},
+    'cold_spell_duration_index': {'tasmin_per': 10},
+    'warm_spell_duration_index': {'tasmax_per': 90},
+}

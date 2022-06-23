@@ -1,3 +1,4 @@
+from collections import namedtuple
 from pathlib import Path
 from unittest import mock
 import zipfile
@@ -333,11 +334,12 @@ def test_compute_intermediate_variables(monkeypatch):
     subset_folder = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
     mock_paths = [subset_folder / p for p in mock_filenames]
 
-    required_variables = ["tn10"]
-
+    required_variables = ["tasmin_per"]
+    literal_input = namedtuple('LiteralInput', ['data', 'identifier'])
     # --- when ---
     files_outputs = ensemble_utils.compute_intermediate_variables(
-        mock_paths, required_variables, workdir
+        mock_paths, required_variables, workdir,
+        {'perc_tasmin': [literal_input(10, 'perc_tasmin')]}
     )
 
     # --- then ---
@@ -365,6 +367,7 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
         wps_literal_input("freq", "YS"),
         wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
+        wps_literal_input("perc_tasmin", "10")
     ]
 
     # --- when ---

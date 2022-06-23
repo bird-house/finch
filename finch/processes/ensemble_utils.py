@@ -12,9 +12,11 @@ from pywps import configuration
 from pywps.app.exceptions import ProcessError
 from siphon.catalog import TDSCatalog
 import xarray as xr
+from xclim.indicators.atmos import tg
 from xclim import ensembles
-from xclim.core.indicator import Indicator
 from xclim.core.calendar import percentile_doy, doy_to_days_since, days_since_to_doy
+from xclim.core.indicator import Indicator
+from xclim.core.utils import InputKind
 
 from .constants import (
     ALL_24_MODELS,
@@ -22,7 +24,7 @@ from .constants import (
     PCIC_12,
     PCIC_12_MODELS_REALIZATIONS,
     bccaq_variables,
-    xclim_netcdf_variables,
+    xclim_variables
 )
 from .subset import finch_subset_bbox, finch_subset_gridpoint, finch_subset_shape
 from .utils import (
@@ -72,49 +74,20 @@ class Bccaqv2File:
             return
 
 
-def _tas(tasmin: xr.Dataset, tasmax: xr.Dataset) -> xr.Dataset:
-    """Compute daily mean temperature, and set attributes in the output Dataset."""
-
-    tas = (tasmin["tasmin"] + tasmax["tasmax"]) / 2
-    tas_ds = tas.to_dataset(name="tas")
-    tas_ds.attrs = tasmin.attrs
-    tas_ds["tas"].attrs = tasmin["tasmin"].attrs
-    tas_ds["tas"].attrs["long_name"] = "Daily Mean Near-Surface Air Temperature"
-    tas_ds["tas"].attrs["cell_methods"] = "time: mean within days"
-    return tas_ds
-
-
-def _percentile_doy_tn10(tasmin: xr.Dataset):
-    return percentile_doy(tasmin.tasmin, per=10).sel(percentiles=10, drop=True).to_dataset(name="tn10")
-
-
-def _percentile_doy_tn90(tasmin: xr.Dataset):
-    return percentile_doy(tasmin.tasmin, per=90).sel(percentiles=90, drop=True).to_dataset(name="tn90")
-
-
-def _percentile_doy_tx90(tasmax: xr.Dataset):
-    return percentile_doy(tasmax.tasmax, per=90).sel(percentiles=90, drop=True).to_dataset(name="tx90")
-
-
-def _percentile_doy_t10(tas: xr.Dataset):
-    return percentile_doy(tas.tas, per=10).sel(percentiles=10, drop=True).to_dataset(name="t10")
-
-
-def _percentile_doy_t90(tas: xr.Dataset):
-    return percentile_doy(tas.tas, per=90).sel(percentiles=90, drop=True).to_dataset(name="t90")
+def _percentile_doy(var: xr.DataArray, perc: int) -> xr.DataArray:
+    return percentile_doy(var, per=perc).sel(percentiles=perc, drop=True)
 
 
 variable_computations = {
-    "tas": {"inputs": ["tasmin", "tasmax"], "function": _tas},
-    "tn10": {"inputs": ["tasmin"], "function": _percentile_doy_tn10},
-    "tn90": {"inputs": ["tasmin"], "function": _percentile_doy_tn90},
-    "tx90": {"inputs": ["tasmax"], "function": _percentile_doy_tx90},
-    "t10": {"inputs": ["tas"], "function": _percentile_doy_t10},
-    "t90": {"inputs": ["tas"], "function": _percentile_doy_t90},
+    "tas": {"inputs": ["tasmin", "tasmax"], "args": [], "function": tg},
+    "tasmax_per": {"inputs": ["tasmax"], "args": ["perc_tasmax"], "function": _percentile_doy},
+    "tasmin_per": {"inputs": ["tasmin"], "args": ["perc_tasmin"], "function": _percentile_doy},
+    "tas_per": {"inputs": ["tas"], "args": ["perc_tas"], "function": _percentile_doy},
+    "pr_per": {"inputs": ["pr"], "args": ["perc_pr"], "function": _percentile_doy}
 }
 
 accepted_variables = bccaq_variables.union(variable_computations)
-not_implemented_variables = xclim_netcdf_variables - accepted_variables
+not_implemented_variables = xclim_variables - accepted_variables
 
 
 class ParsingMethod(Enum):
@@ -352,7 +325,11 @@ def make_output_filename(process: Process, inputs: List[PywpsInput], rcp=None):
 
 def uses_accepted_netcdf_variables(indicator: Indicator) -> bool:
     """Returns True if this indicator uses  netcdf variables in `accepted_variables`."""
-    return not any(p in not_implemented_variables for p in indicator.parameters)
+    return not any(
+        n in not_implemented_variables
+        for n, p in indicator.parameters.items()
+        if p.kind in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]
+    )
 
 
 def make_indicator_inputs(
@@ -444,7 +421,7 @@ def make_ensemble(files: List[Path], percentiles: List[int], average_dims: Optio
 
 
 def compute_intermediate_variables(
-    files_list: List[Path], required_variable_names: Iterable[str], workdir: Path
+    files_list: List[Path], required_variable_names: Iterable[str], workdir: Path, request_inputs,
 ) -> List[Path]:
     """Compute netcdf datasets from a list of required variable names and existing files."""
 
@@ -473,10 +450,12 @@ def compute_intermediate_variables(
         while variables_to_compute:
             for variable in list(variables_to_compute):
                 input_names = variable_computations[variable]["inputs"]
-                if all(i in group for i in input_names):
-                    inputs = [xr.open_dataset(group[name]) for name in input_names]
+                arg_names = variable_computations[variable]["args"]
+                if all(i in group for i in input_names) and all(a in request_inputs for a in arg_names):
+                    inputs = [xr.open_dataset(group[name])[name] for name in input_names]
+                    args = [single_input_or_none(request_inputs, name) for name in arg_names]
 
-                    output = variable_computations[variable]["function"](*inputs)
+                    output = variable_computations[variable]["function"](*inputs, *args).to_dataset(name=variable)
                     output_file = Path(workdir) / f"{variable}_{output_basename}"
                     dataset_to_netcdf(output, output_file)
 
@@ -517,9 +496,10 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     xci_inputs = process.xci_inputs_identifiers
     request_inputs_not_datasets = {
-        k: v for k, v in request.inputs.items() if k in xci_inputs
+        k: v for k, v in request.inputs.items() if k in xci_inputs and not k.startswith('perc')
     }
-    dataset_input_names = accepted_variables.intersection(xci_inputs)
+    percentile_vars = {f"{k.split('_')[1]}_per" for k in xci_inputs if k.startswith('perc')}
+    dataset_input_names = accepted_variables.intersection(percentile_vars.union(xci_inputs))
     source_variable_names = bccaq_variables.intersection(
         get_sub_inputs(dataset_input_names)
     )
@@ -573,9 +553,8 @@ def ensemble_common_handler(process: Process, request, response, subset_function
             raise ProcessError(message)
 
         subsetted_intermediate_files = compute_intermediate_variables(
-            subsetted_files, dataset_input_names, process.workdir
+            subsetted_files, dataset_input_names, process.workdir, request.inputs,
         )
-
         write_log(process, f"Computing indices rcp={rcp}", process_step="compute_indices")
 
         input_groups = make_indicator_inputs(

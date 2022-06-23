@@ -5,7 +5,7 @@ from unidecode import unidecode
 from . import wpsio
 from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
 from .ensemble_utils import ensemble_common_handler
-from .constants import xclim_netcdf_variables
+from .constants import xclim_variables
 from .subset import finch_subset_shape
 
 LOGGER = logging.getLogger("PYWPS")
@@ -26,7 +26,7 @@ class XclimEnsemblePolygonBase(FinchProcess):
                 "Use the `finch.processes.wps_base.make_xclim_indicator_process` function instead."
             )
 
-        xci_inputs = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier)
+        xci_inputs = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier, parse_percentiles=True)
         xci_inputs.extend(wpsio.xclim_common_options)
         self.xci_inputs_identifiers = [i.identifier for i in xci_inputs]
 
@@ -43,7 +43,7 @@ class XclimEnsemblePolygonBase(FinchProcess):
 
         # all other inputs that are not the xarray data (window, threshold, etc.)
         for i in xci_inputs:
-            if i.identifier not in xclim_netcdf_variables:
+            if i.identifier not in xclim_variables:
                 inputs.append(i)
 
         inputs.extend([wpsio.output_prefix, wpsio.output_format_netcdf_csv])
