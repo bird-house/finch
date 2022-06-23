@@ -245,22 +245,17 @@ def finch_average_shape(
 
     output_files = []
 
-    lock = Lock()
-
-    def _average(resource):
-        nonlocal count
-
+    for resource in netcdf_inputs:
         # if not subsetting by time, it's not necessary to decode times
         time_subset = start_date is not None or end_date is not None
         dataset = try_opendap(resource, decode_times=time_subset, chunk_dims=['time', 'realization'])
 
-        with lock:
-            count += 1
-            write_log(
-                process,
-                f"Averaging file {count} of {n_files} ({resource.file})",
-                subtask_percentage=(count - 1) * 100 // n_files,
-            )
+        count += 1
+        write_log(
+            process,
+            f"Averaging file {count} of {n_files} ({resource.file})",
+            subtask_percentage=(count - 1) * 100 // n_files,
+        )
 
         dataset = dataset[variables] if variables else dataset
 
@@ -278,8 +273,6 @@ def finch_average_shape(
         dataset_to_netcdf(averaged, output_filename)
 
         output_files.append(output_filename)
-
-    process_threaded(_average, netcdf_inputs)
 
     return output_files
 
