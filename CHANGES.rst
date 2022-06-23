@@ -5,6 +5,11 @@ Changes
 ==================
 * Fix use of ``output_name``, add ``output_format`` to xclim indicators.
 * Change all outputs to use ``output`` as the main output field name (instead of ``output_netcdf``).
+* Updated to xclim 0.37:
+
+    - Percentile inputs of xclim indicators have been renamed with generic names, excluding an explicit mention to the target percentile.
+    - In ensemble processes, these percentiles can now be chosen through ``perc_[var]`` inputs. The default values are inherited from earlier versions of xclim.
+* Average shape process downgraded to be single-threaded, as ESMF seems to have issues with multithreading.
 * Removed deprecated processes ``subset_ensemble_bbox_BCCAQv2``, ``subset_ensemble_BCCAQv2`` and ``BCCAQv2_heat_wave_frequency_gridpoint``.
 
 0.8.3 (2022-04-21)

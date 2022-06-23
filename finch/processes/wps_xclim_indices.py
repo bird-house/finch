@@ -8,7 +8,7 @@ from unidecode import unidecode
 import xarray as xr
 
 from . import wpsio
-from .constants import xclim_netcdf_variables
+from .constants import xclim_variables
 from .utils import (
     compute_indices,
     dataset_to_dataframe,
@@ -76,7 +76,7 @@ class XclimIndicatorBase(FinchProcess):
         # Get inputs of compute_indices, split by netCDFs and others
         nc_inputs, other_inputs = {}, {}
         for k, v in request.inputs.items():
-            if k in xclim_netcdf_variables:
+            if k in xclim_variables:
                 nc_inputs[k] = v
             elif k not in ['output_format', 'output_name']:
                 other_inputs[k] = v
