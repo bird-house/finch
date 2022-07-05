@@ -38,6 +38,7 @@ class SubsetGridPointDatasetProcess(FinchProcess):
             wpsio.start_date,
             wpsio.end_date,
             wpsio.output_format_netcdf_csv,
+            wpsio.csv_precision,
             wpsio.dataset_name,
         ]
 
@@ -119,6 +120,7 @@ class SubsetGridPointDatasetProcess(FinchProcess):
                 output_files,
                 output_folder=Path(self.workdir),
                 filename_prefix=output_filename,
+                csv_precision=single_input_or_none(request.inputs, "csv_precision")
             )
             output_files = csv_files + [metadata_folder]
 

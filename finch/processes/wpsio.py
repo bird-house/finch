@@ -304,6 +304,15 @@ output_prefix = copy_io(
     abstract="Prefix of the output filename, defaults to the identifier of the process."
 )
 
+csv_precision = LiteralInput(
+    "csv_precision",
+    "Number of decimals places to round to in the CSV output.",
+    abstract="Only valid if output_format is CSV. Omission means the full float is printed. Can be negative.",
+    data_type="integer",
+    min_occurs=0,
+    max_occurs=1
+)
+
 xclim_common_options = [
     check_missing,
     missing_options,

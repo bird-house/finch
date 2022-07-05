@@ -429,7 +429,8 @@ def single_input_or_none(inputs, identifier) -> Optional[str]:
 
 
 def netcdf_file_list_to_csv(
-    netcdf_files: Union[List[Path], List[str]], output_folder, filename_prefix
+    netcdf_files: Union[List[Path], List[str]], output_folder, filename_prefix,
+    csv_precision: Optional[int] = None,
 ) -> Tuple[List[str], str]:
     """Write csv files for a list of netcdf files.
 
@@ -469,7 +470,8 @@ def netcdf_file_list_to_csv(
                 output_variable += f"_({units})"
 
             ds = ds.rename({variable: output_variable})
-
+            if csv_precision:
+                ds = ds.round(csv_precision)
             df = dataset_to_dataframe(ds)
 
             if calendar not in concat_by_calendar:
