@@ -43,6 +43,7 @@ def test_indicators_processes_discovery(indicator):
     parameters.add("variable")
     parameters.add("output_name")
     parameters.add("output_format")
+    parameters.add("csv_precision")
     if "indexer" in parameters:
         parameters.remove("indexer")
         parameters.add("month")
