@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from urllib.parse import urlparse
 from threading import Lock
 from typing import List
 
@@ -29,7 +30,13 @@ def make_subset_file_name(resource, kind="sub"):
     if resource.prop == "file":
         p = Path(resource.file)
     elif resource.prop == "url":
-        p = Path(resource._build_file_name(resource.url))
+        # Inspired by logic from ComplexInput._build_file_name
+        # but without the duplicate file name check as it inserts randomness in names
+        # See #228
+        url_path = urlparse(resource.url).path or ''
+        p = Path(url_path) or Path(resource.identifier)
+        if not p.suffix:
+            p = p.with_suffix(resource.extension)
     else:
         raise NotImplementedError()
 
@@ -82,7 +89,7 @@ def finch_subset_gridpoint(
             count += 1
             write_log(
                 process,
-                f"Subsetting file {count} of {n_files} ({resource.file})",
+                f"Subsetting file {count} of {n_files} ({getattr(resource, resource.prop)})",
                 subtask_percentage=(count - 1) * 100 // n_files,
             )
 
@@ -160,7 +167,7 @@ def finch_subset_bbox(
             count += 1
             write_log(
                 process,
-                f"Subsetting file {count} of {n_files} ({resource.file})",
+                f"Subsetting file {count} of {n_files} ({getattr(resource, resource.prop)})",
                 subtask_percentage=(count - 1) * 100 // n_files,
             )
 
@@ -253,7 +260,7 @@ def finch_average_shape(
         count += 1
         write_log(
             process,
-            f"Averaging file {count} of {n_files} ({resource.file})",
+            f"Averaging file {count} of {n_files} ({getattr(resource, resource.prop)})",
             subtask_percentage=(count - 1) * 100 // n_files,
         )
 
@@ -313,7 +320,7 @@ def finch_subset_shape(
             count += 1
             write_log(
                 process,
-                f"Subsetting file {count} of {n_files} ({resource.file})",
+                f"Subsetting file {count} of {n_files} ({getattr(resource, resource.prop)})",
                 subtask_percentage=(count - 1) * 100 // n_files,
             )
 
