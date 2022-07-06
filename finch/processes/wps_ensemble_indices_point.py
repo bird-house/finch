@@ -48,7 +48,7 @@ class XclimEnsembleGridPointBase(FinchProcess):
             if i.identifier not in xclim_variables:
                 inputs.append(i)
 
-        inputs.extend([wpsio.output_prefix, wpsio.output_format_netcdf_csv])
+        inputs.extend([wpsio.output_prefix, wpsio.output_format_netcdf_csv, wpsio.csv_precision])
 
         outputs = [wpsio.output_netcdf_zip, wpsio.output_log]
 

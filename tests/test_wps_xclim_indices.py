@@ -5,7 +5,7 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 from zipfile import ZipFile
-
+import warnings
 import finch
 import finch.processes
 from finch.processes.wps_xclim_indices import XclimIndicatorBase
@@ -43,6 +43,7 @@ def test_indicators_processes_discovery(indicator):
     parameters.add("variable")
     parameters.add("output_name")
     parameters.add("output_format")
+    parameters.add("csv_precision")
     if "indexer" in parameters:
         parameters.remove("indexer")
         parameters.add("month")
@@ -303,11 +304,12 @@ def test_degree_days_exceedance_date(client, tmp_path):
               wps_literal_input("thresh", "4 degC"),
               wps_literal_input("op", ">"),
               wps_literal_input("sum_thresh", "200 K days"),
-              wps_literal_input("output_format", "csv")
+              wps_literal_input("output_format", "csv"),
+              wps_literal_input("csv_precision", "-1")
               ]
 
     outputs = execute_process(client, identifier, inputs)
     with ZipFile(outputs[0]) as thezip:
         with thezip.open('out.csv') as thefile:
             ds = pd.read_csv(thefile).to_xarray()
-    np.testing.assert_array_equal(ds.degree_days_exceedance_date, np.array([153, 136, 9, 6]))
+    np.testing.assert_array_equal(ds.degree_days_exceedance_date, np.array([150, 140, 10, 10]))

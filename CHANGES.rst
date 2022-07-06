@@ -11,6 +11,7 @@ Changes
     - In ensemble processes, these percentiles can now be chosen through ``perc_[var]`` inputs. The default values are inherited from earlier versions of xclim.
 * Average shape process downgraded to be single-threaded, as ESMF seems to have issues with multithreading.
 * Removed deprecated processes ``subset_ensemble_bbox_BCCAQv2``, ``subset_ensemble_BCCAQv2`` and ``BCCAQv2_heat_wave_frequency_gridpoint``.
+* Added ``csv_precision`` to all processes allowing CSV output. When given, it controls the number of decimal places in the output.
 
 0.8.3 (2022-04-21)
 ==================

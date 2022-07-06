@@ -595,6 +595,9 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
+        prec = single_input_or_none(request.inputs, "csv_precision")
+        if prec:
+            ensemble = ensemble.round(prec)
         df = dataset_to_dataframe(ensemble)
         if average_dims is None:
             dims = ['lat', 'lon', 'time']

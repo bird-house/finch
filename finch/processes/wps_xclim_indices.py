@@ -50,7 +50,7 @@ class XclimIndicatorBase(FinchProcess):
 
         inputs = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier)
         inputs += wpsio.xclim_common_options
-        inputs += [wpsio.variable_any, wpsio.output_name, wpsio.output_format_netcdf_csv]
+        inputs += [wpsio.variable_any, wpsio.output_name, wpsio.output_format_netcdf_csv, wpsio.csv_precision]
 
         super().__init__(
             self._handler,
@@ -78,7 +78,7 @@ class XclimIndicatorBase(FinchProcess):
         for k, v in request.inputs.items():
             if k in xclim_variables:
                 nc_inputs[k] = v
-            elif k not in ['output_format', 'output_name']:
+            elif k not in ['output_format', 'output_name', 'csv_precision']:
                 other_inputs[k] = v
 
         n_files = len(list(nc_inputs.values())[0])
@@ -135,6 +135,9 @@ class XclimIndicatorBase(FinchProcess):
             for outfile in output_netcdfs:
                 outcsv = outfile.with_suffix('.csv')
                 ds = xr.open_dataset(outfile, decode_timedelta=False)
+                prec = single_input_or_none(request.inputs, "csv_precision")
+                if prec:
+                    ds = ds.round(prec)
                 df = dataset_to_dataframe(ds)
                 df.to_csv(outcsv)
                 output_files.append(outcsv)
