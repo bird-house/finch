@@ -307,7 +307,10 @@ output_prefix = copy_io(
 csv_precision = LiteralInput(
     "csv_precision",
     "Number of decimal places to round to in the CSV output.",
-    abstract="Only valid if output_format is CSV. If not set, all decimal places of a 64 bit floating precision number are printed. If negative, rounds before the decimal point.",
+    abstract=(
+        "Only valid if output_format is CSV. If not set, all decimal places of a 64 bit "
+        "floating precision number are printed. If negative, rounds before the decimal point."
+    ),
     data_type="integer",
     min_occurs=0,
     max_occurs=1
