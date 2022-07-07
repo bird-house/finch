@@ -1,6 +1,10 @@
 Changes
 *******
 
+0.9.1 (2022-07-07)
+==================
+* Avoid using a broken version of ``libarchive`` in the Docker image.
+
 0.9.0 (2022-07-06)
 ==================
 * Fix use of ``output_name``, add ``output_format`` to xclim indicators.
