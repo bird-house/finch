@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     build-essential git \
     && rm -rf /var/lib/apt/lists/* \
     && conda update conda -n base \
-    && conda install mamba -n base -c defaults -c conda-forge
+    && conda install mamba -n base -c conda-forge -c defaults
 
 WORKDIR /code
 
