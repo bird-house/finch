@@ -1,6 +1,10 @@
 Changes
 *******
 
+0.9.2 (2022-07-19)
+==================
+* Fix Finch unable to startup in the Docker image.
+
 0.9.1 (2022-07-07)
 ==================
 * Avoid using a broken version of ``libarchive`` in the Docker image.
