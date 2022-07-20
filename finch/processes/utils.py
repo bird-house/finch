@@ -301,6 +301,8 @@ def try_opendap(
     if is_opendap_url(url):
         ds = xr.open_dataset(url, chunks=chunks, decode_times=decode_times)
         logging_function(f"Opened dataset as an OPeNDAP url: {url}")
+        if not chunks:
+            ds = ds.chunk(chunk_dataset(ds, max_size=1000000, chunk_dims=chunk_dims))
     else:
         if url.startswith("http"):
             # Accessing the file property writes it to disk if it's a url
@@ -315,8 +317,6 @@ def try_opendap(
         chunks = dict(time=-1, region=5)
         ds = ds.chunk(chunks)
 
-    if not chunks:
-        ds = ds.chunk(chunk_dataset(ds, max_size=1000000, chunk_dims=chunk_dims))
     return ds
 
 
