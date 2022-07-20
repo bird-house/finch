@@ -1,6 +1,10 @@
 Changes
 *******
 
+0.9.3 (unreleased)
+==================
+* Improved subset_grid_point_dataset & subset_bbox_dataset performance when using local files
+
 0.9.2 (2022-07-19)
 ==================
 * Fix Finch unable to startup in the Docker image.
