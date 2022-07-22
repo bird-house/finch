@@ -286,23 +286,24 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
 def try_opendap(
     input: ComplexInput,
     *,
-    chunks=None,
+    chunks='auto',
     decode_times=True,
     chunk_dims=None,
     logging_function=lambda message: None,
 ) -> xr.Dataset:
     """Try to open the file as an OPeNDAP url and chunk it.
 
-    If OPeNDAP fails, access the file directly.
+    By default, chunks are to be determined by xarray/dask.
+    If `chunks=None` or `chunks_dims` is given, finch rechunks the dataset according to 
+    the logic of `chunk_dataset`.
+    Pass `chunks=False` to disable dask entirely on this dataset.
     """
     url = input.url
     logging_function(f"Try opening DAP link {url}")
 
     if is_opendap_url(url):
-        ds = xr.open_dataset(url, chunks=chunks, decode_times=decode_times)
+        ds = xr.open_dataset(url, chunks=chunks or None, decode_times=decode_times)
         logging_function(f"Opened dataset as an OPeNDAP url: {url}")
-        if not chunks:
-            ds = ds.chunk(chunk_dataset(ds, max_size=1000000, chunk_dims=chunk_dims))
     else:
         if url.startswith("http"):
             # Accessing the file property writes it to disk if it's a url
@@ -310,13 +311,14 @@ def try_opendap(
         else:
             logging_function(f"Opening as local file: {input.file}")
 
-        ds = xr.open_dataset(input.file, chunks=chunks, decode_times=decode_times)
+        ds = xr.open_dataset(input.file, chunks=chunks or None, decode_times=decode_times)
 
     # To handle large number of grid cells (50+) in subsetted data
     if "region" in ds.dims and "time" in ds.dims:
         chunks = dict(time=-1, region=5)
         ds = ds.chunk(chunks)
-
+    elif chunks is None or chunk_dims is not None:
+        ds = ds.chunk(chunk_dataset(ds, max_size=1000000, chunk_dims=chunk_dims))
     return ds
 
 
