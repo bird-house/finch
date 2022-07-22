@@ -294,7 +294,7 @@ def try_opendap(
     """Try to open the file as an OPeNDAP url and chunk it.
 
     By default, chunks are to be determined by xarray/dask.
-    If `chunks=None` or `chunks_dims` is given, finch rechunks the dataset according to 
+    If `chunks=None` or `chunks_dims` is given, finch rechunks the dataset according to
     the logic of `chunk_dataset`.
     Pass `chunks=False` to disable dask entirely on this dataset.
     """
