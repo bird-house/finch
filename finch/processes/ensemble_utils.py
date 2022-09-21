@@ -2,6 +2,7 @@ from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
+import logging
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, cast
 import warnings
@@ -41,6 +42,32 @@ from .utils import (
     zip_files,
 )
 from .wps_base import make_nc_input
+LOGGER = logging.getLogger("PYWPS")
+
+
+def _make_resource_input():
+    return ComplexInput(
+        "resource",
+        "NetCDF resource",
+        max_occurs=1000,
+        supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
+    )
+
+
+def _percentile_doy(var: xr.DataArray, perc: int) -> xr.DataArray:
+    return percentile_doy(var, per=perc).sel(percentiles=perc, drop=True)
+
+
+variable_computations = {
+    "tas": {"inputs": ["tasmin", "tasmax"], "args": [], "function": tg},
+    "tasmax_per": {"inputs": ["tasmax"], "args": ["perc_tasmax"], "function": _percentile_doy},
+    "tasmin_per": {"inputs": ["tasmin"], "args": ["perc_tasmin"], "function": _percentile_doy},
+    "tas_per": {"inputs": ["tas"], "args": ["perc_tas"], "function": _percentile_doy},
+    "pr_per": {"inputs": ["pr"], "args": ["perc_pr"], "function": _percentile_doy}
+}
+
+accepted_variables = bccaq_variables.union(variable_computations)
+not_implemented_variables = xclim_variables - accepted_variables
 
 
 @dataclass
@@ -73,57 +100,120 @@ class Bccaqv2File:
         except AttributeError:
             return
 
+    def is_required(
+        self,
+        variables: List[str] = None,
+        rcp: str = None,
+        models=None,
+    ):
+        """Parse metadata and filter BCCAQV2 datasets"""
 
-def _percentile_doy(var: xr.DataArray, perc: int) -> xr.DataArray:
-    return percentile_doy(var, per=perc).sel(percentiles=perc, drop=True)
+        if models is None or [m.lower() for m in models] == [ALL_24_MODELS.lower()]:
+            models = BCCAQV2_MODELS
+
+        models = [m.lower() for m in models]
+        
+        if variables and self.variable not in variables:
+            return False
+        if rcp and rcp not in self.driving_experiment_id:
+            return False
+
+        if models == [PCIC_12.lower()]:
+            for model, realization in PCIC_12_MODELS_REALIZATIONS:
+                model_ok = model.lower() == self.driving_model_id.lower()
+                r_ok = realization[1:] == self.driving_realization
+                if model_ok and r_ok:
+                    return True
+            return False
+
+        model_ok = self.driving_model_id.lower() in models
+        r_ok = self.driving_realization == "1"
+        return model_ok and r_ok
 
 
-variable_computations = {
-    "tas": {"inputs": ["tasmin", "tasmax"], "args": [], "function": tg},
-    "tasmax_per": {"inputs": ["tasmax"], "args": ["perc_tasmax"], "function": _percentile_doy},
-    "tasmin_per": {"inputs": ["tasmin"], "args": ["perc_tasmin"], "function": _percentile_doy},
-    "tas_per": {"inputs": ["tas"], "args": ["perc_tas"], "function": _percentile_doy},
-    "pr_per": {"inputs": ["pr"], "args": ["perc_pr"], "function": _percentile_doy}
-}
+@dataclass
+class CanDCSU6File:
+    variable: str
+    frequency: str
+    driving_model_id: str
+    driving_experiment_id: str
+    driving_realization: str
+    driving_initialization_method: str
+    driving_physics_version: str
+    date_start: Optional[str] = None
+    date_end: Optional[str] = None
 
-accepted_variables = bccaq_variables.union(variable_computations)
-not_implemented_variables = xclim_variables - accepted_variables
+    @classmethod
+    def from_filename(cls, filename):
+        pattern = "_".join(
+            [
+                "{variable}",
+                "{frequency}",
+                "BCCAQv2+ANUSPLIN300",
+                "{driving_model_id}",
+                "{driving_experiment_id}",
+                "r{driving_realization}i{driving_initialization_method}p{driving_physics_version}",
+                "{date_start}-{date_end}.nc",
+            ]
+        )
+        try:
+            return cls(**parse(pattern, filename).named)
+        except AttributeError:
+            return
+
+    def is_required(
+        self,
+        variables: List[str] = None,
+        rcp: str = None,
+        models=None,
+    ):
+        """Parse metadata and filter BCCAQV2 datasets"""
+
+        if models is None or [m.lower() for m in models] == [ALL_24_MODELS.lower()]:
+            models = BCCAQV2_MODELS
+
+        models = [m.lower() for m in models]
+        
+        if variables and self.variable not in variables:
+            return False
+        if rcp and rcp not in self.driving_experiment_id:
+            return False
+
+        if models == [PCIC_12.lower()]:
+            for model, realization in PCIC_12_MODELS_REALIZATIONS:
+                model_ok = model.lower() == self.driving_model_id.lower()
+                r_ok = realization[1:] == self.driving_realization
+                if model_ok and r_ok:
+                    return True
+            return False
+
+        model_ok = self.driving_model_id.lower() in models
+        r_ok = self.driving_realization == "1"
+        return model_ok and r_ok
 
 
-class ParsingMethod(Enum):
-    # parse the filename directly (faster and simpler, more likely to fail)
-    filename = 1
-    # parse each Data Attribute Structure (DAS) by appending .das to the url
-    # One request for each dataset, so lots of small requests to the Thredds server
-    opendap_das = 2
-    # open the dataset using xarray and look at the file attributes
-    # safer, but slower and lots of small requests are made to the Thredds server
-    xarray = 3
-
-
-def get_bccaqv2_local_files_datasets(
+def get_local_files_datasets(
     catalog_url,
+    fileclass,
     variables: List[str] = None,
     rcp: str = None,
-    method: ParsingMethod = ParsingMethod.filename,
     models=None,
 ) -> List[str]:
     """Get a list of filenames corresponding to variable and rcp on a local filesystem."""
 
     urls = []
     for file in Path(catalog_url).glob("*.nc"):
-        if _bccaqv2_filter(
-            method, file.name, str(file), variables=variables, rcp=rcp, models=models
-        ):
+        obj = fileclass.from_filename(file)
+        if obj and obj.is_required(variables=variables, rcp=rcp, models=models):
             urls.append(str(file))
     return urls
 
 
-def get_bccaqv2_opendap_datasets(
+def get_opendap_datasets(
     catalog_url,
+    fileclass,
     variables: List[str] = None,
     rcp: str = None,
-    method: ParsingMethod = ParsingMethod.filename,
     models=None,
 ) -> List[str]:
     """Get a list of urls corresponding to variable and rcp on a Thredds server.
@@ -138,84 +228,14 @@ def get_bccaqv2_opendap_datasets(
     urls = []
     for dataset in catalog.datasets.values():
         opendap_url = dataset.access_urls["OPENDAP"]
-        if _bccaqv2_filter(
-            method,
-            dataset.name,
-            opendap_url,
-            variables=variables,
-            rcp=rcp,
-            models=models,
-        ):
-            urls.append(opendap_url)
+        obj = fileclass.from_filename(dataset.name)
+        if obj:
+            if obj.is_required(variables=variables, rcp=rcp, models=models):
+                LOGGER.info(f'URL {opendap_url} is required.')
+                urls.append(opendap_url)
+        else:
+            LOGGER.info(f'URL {opendap_url} is NOT understood.')
     return urls
-
-
-def _bccaqv2_filter(
-    method: ParsingMethod,
-    filename,
-    url,
-    variables: List[str] = None,
-    rcp: str = None,
-    models=None,
-):
-    """Parse metadata and filter BCCAQV2 datasets"""
-
-    if models is None or [m.lower() for m in models] == [ALL_24_MODELS.lower()]:
-        models = BCCAQV2_MODELS
-
-    models = [m.lower() for m in models]
-
-    if method == ParsingMethod.filename:
-        parsed = Bccaqv2File.from_filename(filename)
-        if parsed is None:
-            return False
-
-        if variables and parsed.variable not in variables:
-            return False
-        if rcp and rcp not in parsed.driving_experiment_id:
-            return False
-
-        if models == [PCIC_12.lower()]:
-            for model, realization in PCIC_12_MODELS_REALIZATIONS:
-                model_ok = model.lower() == parsed.driving_model_id.lower()
-                r_ok = realization[1:] == parsed.driving_realization
-                if model_ok and r_ok:
-                    return True
-            return False
-
-        model_ok = parsed.driving_model_id.lower() in models
-        r_ok = parsed.driving_realization == "1"
-        return model_ok and r_ok
-
-    elif method == ParsingMethod.opendap_das:
-
-        raise NotImplementedError("todo: filter models and runs")
-
-        # re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
-        # lines = requests.get(url + ".das").content.decode().split("\n")
-        # variable_ok = variable_ok or any(
-        #     line.startswith(f"    {variable} {{") for line in lines
-        # )
-        # if not rcp_ok:
-        #     for line in lines:
-        #         match = re_experiment.search(line)
-        #         if match and rcp in match.group(1).split(","):
-        #             rcp_ok = True
-
-    elif method == ParsingMethod.xarray:
-
-        raise NotImplementedError("todo: filter models and runs")
-
-        # import xarray as xr
-
-        # ds = xr.open_dataset(url, decode_times=False)
-        # rcps = [
-        #     r
-        #     for r in ds.attrs.get("driving_experiment_id", "").split(",")
-        #     if "rcp" in r
-        # ]
-        # variable_ok = variable_ok or variable in ds.data_vars
-        # rcp_ok = rcp_ok or rcp in rcps
 
 
 def get_datasets(
@@ -226,48 +246,30 @@ def get_datasets(
     models: Optional[List[str]] = None,
 ) -> List[PywpsInput]:
 
-    dataset_functions = {"bccaqv2": _get_bccaqv2_inputs}
+    dataset_classes = {"bccaqv2": Bccaqv2File, "candcs-u6": CanDCSU6File}
 
     if dataset_name is None:
         dataset_name = configuration.get_config_value("finch", "default_dataset")
     dataset_name = cast(str, dataset_name)
-    return dataset_functions[dataset_name](
-        workdir=workdir, variables=variables, rcp=rcp, models=models
-    )
+    dataset_class = dataset_classes[dataset_name]
 
-
-def _get_bccaqv2_inputs(
-    workdir: str,
-    variables: Optional[List[str]] = None,
-    rcp=None,
-    models=None,
-) -> List[PywpsInput]:
-    """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
-    catalog_url = configuration.get_config_value("finch", "dataset_bccaqv2")
+    catalog_url = configuration.get_config_value("finch", f"dataset_{dataset_name}")
 
     inputs = []
 
-    def _make_bccaqv2_resource_input():
-        return ComplexInput(
-            "resource",
-            "NetCDF resource",
-            max_occurs=1000,
-            supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
-        )
-
     if catalog_url.startswith("http"):
-        for url in get_bccaqv2_opendap_datasets(
-            catalog_url, variables=variables, rcp=rcp, models=models
+        for url in get_opendap_datasets(
+            catalog_url, dataset_class, variables=variables, rcp=rcp, models=models,
         ):
-            resource = _make_bccaqv2_resource_input()
+            resource = _make_resource_input()
             resource.url = url
             resource.workdir = workdir
             inputs.append(resource)
     else:
-        for file in get_bccaqv2_local_files_datasets(
-            catalog_url, variables=variables, rcp=rcp, models=models
+        for file in get_local_files_datasets(
+            catalog_url, dataset_class, variables=variables, rcp=rcp, models=models
         ):
-            resource = _make_bccaqv2_resource_input()
+            resource = _make_resource_input()
             resource.file = file
             resource.workdir = workdir
             inputs.append(resource)
