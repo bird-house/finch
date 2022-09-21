@@ -41,7 +41,7 @@ class XclimEnsembleBboxBase(FinchProcess):
             wpsio.ensemble_percentiles,
             wpsio.average,
             wpsio.dataset_name,
-            wpsio.copy_io(wpsio.rcp, min_occurs=1, max_occurs=3),
+            wpsio.copy_io(wpsio.scenario, min_occurs=1, max_occurs=3),
             wpsio.models,
         ]
 

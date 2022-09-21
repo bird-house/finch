@@ -15,7 +15,7 @@ from xclim.core.options import (
     OPTIONS
 )
 
-from .constants import ALL_24_MODELS, ALLOWED_MODEL_NAMES
+from .constants import CANDCSU5_MODELS, CANDCSU6_MODELS
 from .utils import PywpsInput, PywpsOutput
 
 
@@ -135,34 +135,35 @@ variable_any = copy_io(variable, any_value=True, allowed_values=[AnyValue])
 dataset_name = LiteralInput(
     "dataset_name",
     "Dataset name",
-    abstract="Name of the dataset from which to get netcdf files for inputs.",
+    abstract="Name of the dataset from which to get netcdf files for inputs. 'BCCAQv2' redirects to CanDCS-U5 for backward compatibility.",
     data_type="string",
     default=None,
     min_occurs=0,
-    allowed_values=["bccaqv2"],
+    allowed_values=["bccaqv2", "candcs-u5", "candcs-u6"],
 )
 
-rcp = LiteralInput(
-    "rcp",
-    "RCP Scenario",
-    abstract="Representative Concentration Pathway (RCP)",
+scenario = LiteralInput(
+    "scenario",
+    "Emission Scenario",
+    abstract="Emission scenario (RCPs or SSPs, depending on the dataset)",
     data_type="string",
     default=None,
     min_occurs=0,
-    allowed_values=["rcp26", "rcp45", "rcp85"],
+    allowed_values=["rcp26", "rcp45", "rcp85", "ssp126", "ssp245", "ssp585"],
 )
 
 models = LiteralInput(
     "models",
     "Models to include in ensemble",
     abstract=(
-        "When calculating the ensemble, include only these models. By default, all 24 models are used."
+        "When calculating the ensemble, include only these models. The list depends on the dataset chosen. "
+        "By default, all models are used, taking the first realization of each. Special sublists are also available :"
+        f"CanDCS-U6 : {list(CANDCSU6_MODELS.keys())}, CanDCS-U5: {list(CANDCSU5_MODELS.keys())}."
     ),
     data_type="string",
-    default=ALL_24_MODELS,
     min_occurs=0,
     max_occurs=1000,
-    allowed_values=ALLOWED_MODEL_NAMES,
+    allowed_values=list(CANDCSU6_MODELS.keys()) + CANDCSU6_MODELS['26models'] + list(CANDCSU5_MODELS.keys()) + CANDCSU5_MODELS['24models']
 )
 
 shape = ComplexInput(

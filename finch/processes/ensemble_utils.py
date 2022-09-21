@@ -1,10 +1,9 @@
 from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass
-from enum import Enum
 import logging
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple, cast
+from typing import Dict, Iterable, List, Optional, Tuple, Union, cast
 import warnings
 
 from parse import parse
@@ -20,10 +19,8 @@ from xclim.core.indicator import Indicator
 from xclim.core.utils import InputKind
 
 from .constants import (
-    ALL_24_MODELS,
-    BCCAQV2_MODELS,
-    PCIC_12,
-    PCIC_12_MODELS_REALIZATIONS,
+    CANDCSU5_MODELS,
+    CANDCSU6_MODELS,
     bccaq_variables,
     xclim_variables
 )
@@ -45,15 +42,6 @@ from .wps_base import make_nc_input
 LOGGER = logging.getLogger("PYWPS")
 
 
-def _make_resource_input():
-    return ComplexInput(
-        "resource",
-        "NetCDF resource",
-        max_occurs=1000,
-        supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
-    )
-
-
 def _percentile_doy(var: xr.DataArray, perc: int) -> xr.DataArray:
     return percentile_doy(var, per=perc).sel(percentiles=perc, drop=True)
 
@@ -71,182 +59,104 @@ not_implemented_variables = xclim_variables - accepted_variables
 
 
 @dataclass
-class Bccaqv2File:
+class DatasetFile:
+    pattern: str
     variable: str
     frequency: str
-    driving_model_id: str
-    driving_experiment_id: str
-    driving_realization: str
-    driving_initialization_method: str
-    driving_physics_version: str
+    model: str
+    experiment: str
+    realization: str
     date_start: Optional[str] = None
     date_end: Optional[str] = None
+    model_lists: Optional[dict] = None
 
     @classmethod
     def from_filename(cls, filename):
-        pattern = "_".join(
-            [
-                "{variable}",
-                "{frequency}",
-                "BCCAQv2+ANUSPLIN300",
-                "{driving_model_id}",
-                "{driving_experiment_id}",
-                "r{driving_realization}i{driving_initialization_method}p{driving_physics_version}",
-                "{date_start}-{date_end}.nc",
-            ]
-        )
         try:
-            return cls(**parse(pattern, filename).named)
+            return cls(**parse(cls.pattern, filename).named.items())
         except AttributeError:
             return
 
     def is_required(
         self,
         variables: List[str] = None,
-        rcp: str = None,
-        models=None,
+        scenario: str = None,
+        models: List[Union[str, Tuple[str, int]]] = None,
     ):
-        """Parse metadata and filter BCCAQV2 datasets"""
+        """Parse metadata and filter datasets"""
 
-        if models is None or [m.lower() for m in models] == [ALL_24_MODELS.lower()]:
-            models = BCCAQV2_MODELS
-
-        models = [m.lower() for m in models]
-        
         if variables and self.variable not in variables:
             return False
-        if rcp and rcp not in self.driving_experiment_id:
+
+        if scenario and scenario not in self.driving_experiment_id:
             return False
 
-        if models == [PCIC_12.lower()]:
-            for model, realization in PCIC_12_MODELS_REALIZATIONS:
-                model_ok = model.lower() == self.driving_model_id.lower()
-                r_ok = realization[1:] == self.driving_realization
-                if model_ok and r_ok:
+        if models is None:
+            return True
+
+        if (
+            len(models) == 1
+            and isinstance(models[0], str)
+            and self.model_lists is not None
+            and models[0].lower() in self.model_lists
+        ):
+            models = self.model_lists[models[0]]
+
+        for modelspec in models:
+            if isinstance(modelspec, 'str'):  # case with a single model name
+                if self.model.lower() == modelspec and self.realization.startswith('r1i'):
                     return True
-            return False
-
-        model_ok = self.driving_model_id.lower() in models
-        r_ok = self.driving_realization == "1"
-        return model_ok and r_ok
-
-
-@dataclass
-class CanDCSU6File:
-    variable: str
-    frequency: str
-    driving_model_id: str
-    driving_experiment_id: str
-    driving_realization: str
-    driving_initialization_method: str
-    driving_physics_version: str
-    date_start: Optional[str] = None
-    date_end: Optional[str] = None
-
-    @classmethod
-    def from_filename(cls, filename):
-        pattern = "_".join(
-            [
-                "{variable}",
-                "{frequency}",
-                "BCCAQv2+ANUSPLIN300",
-                "{driving_model_id}",
-                "{driving_experiment_id}",
-                "r{driving_realization}i{driving_initialization_method}p{driving_physics_version}",
-                "{date_start}-{date_end}.nc",
-            ]
-        )
-        try:
-            return cls(**parse(pattern, filename).named)
-        except AttributeError:
-            return
-
-    def is_required(
-        self,
-        variables: List[str] = None,
-        rcp: str = None,
-        models=None,
-    ):
-        """Parse metadata and filter BCCAQV2 datasets"""
-
-        if models is None or [m.lower() for m in models] == [ALL_24_MODELS.lower()]:
-            models = BCCAQV2_MODELS
-
-        models = [m.lower() for m in models]
-        
-        if variables and self.variable not in variables:
-            return False
-        if rcp and rcp not in self.driving_experiment_id:
-            return False
-
-        if models == [PCIC_12.lower()]:
-            for model, realization in PCIC_12_MODELS_REALIZATIONS:
-                model_ok = model.lower() == self.driving_model_id.lower()
-                r_ok = realization[1:] == self.driving_realization
-                if model_ok and r_ok:
+            else:  # case with a couple model name, realization num.
+                if self.model.lower() == modelspec[0] and self.realization == modelspec[1]:
                     return True
-            return False
-
-        model_ok = self.driving_model_id.lower() in models
-        r_ok = self.driving_realization == "1"
-        return model_ok and r_ok
+        return False
 
 
-def get_local_files_datasets(
-    catalog_url,
-    fileclass,
-    variables: List[str] = None,
-    rcp: str = None,
-    models=None,
-) -> List[str]:
-    """Get a list of filenames corresponding to variable and rcp on a local filesystem."""
-
-    urls = []
-    for file in Path(catalog_url).glob("*.nc"):
-        obj = fileclass.from_filename(file)
-        if obj and obj.is_required(variables=variables, rcp=rcp, models=models):
-            urls.append(str(file))
-    return urls
+class CanDCSU5File(DatasetFile):
+    pattern = "{variable}_{frequency}_BCCAQv2_ANUSPLIN300_{model}_{experiment}_{realization}_{date_start}-{date_end}_bccaqv2.nc"
+    model_lists = CANDCSU5_MODELS
 
 
-def get_opendap_datasets(
-    catalog_url,
-    fileclass,
-    variables: List[str] = None,
-    rcp: str = None,
-    models=None,
-) -> List[str]:
-    """Get a list of urls corresponding to variable and rcp on a Thredds server.
+class CanDCSU6File(DatasetFile):
+    # :l catches the unused grid spec.
+    pattern = "{variable}_{frequency}_BCCAQv2_ANUSPLIN300_{model}_{experiment}_{realization}_{:l}_{date_start}-{date_end}_bccaqv2.nc"
+    model_lists = CANDCSU6_MODELS
 
-    We assume that the files are named in a certain way on the Thredds server.
 
-    This is the case for pavics.ouranos.ca/thredds
-    For more general use cases, see the `xarray` and `requests` methods below."""
+def iter_tdscatalog(cat, depth=-1):
+    """Generator listing all datasets recursively in a TDSCatalog. The search is limited to a certain depth if `depth` >= 0."""
+    for ds in cat.datasets.values():
+        yield ds.name, ds.access_urls["OPENDAP"]
 
-    catalog = TDSCatalog(catalog_url)
+    if depth != 0:
+        for subcat in cat.catalog_refs.values():
+            yield from iter_tdscatalog(subcat.follow(), depth=depth - 1)
 
-    urls = []
-    for dataset in catalog.datasets.values():
-        opendap_url = dataset.access_urls["OPENDAP"]
-        obj = fileclass.from_filename(dataset.name)
-        if obj:
-            if obj.is_required(variables=variables, rcp=rcp, models=models):
-                LOGGER.info(f'URL {opendap_url} is required.')
-                urls.append(opendap_url)
-        else:
-            LOGGER.info(f'URL {opendap_url} is NOT understood.')
-    return urls
+
+def _make_resource_input(url, workdir):
+    inp = ComplexInput(
+        "resource",
+        "NetCDF resource",
+        max_occurs=1000,
+        supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
+    )
+    inp.workdir = workdir
+    if url.startswith('http'):
+        inp.url = url
+    else:
+        inp.file = url
+    return inp
 
 
 def get_datasets(
     dataset_name: Optional[str],
     workdir: str,
     variables: Optional[List[str]] = None,
-    rcp=None,
+    scenario: Optional[str] = None,
     models: Optional[List[str]] = None,
 ) -> List[PywpsInput]:
 
-    dataset_classes = {"bccaqv2": Bccaqv2File, "candcs-u6": CanDCSU6File}
+    dataset_classes = {"candcs-u5": CanDCSU5File, "bccaqv2": CanDCSU5File, "candcs-u6": CanDCSU6File}
 
     if dataset_name is None:
         dataset_name = configuration.get_config_value("finch", "default_dataset")
@@ -258,22 +168,14 @@ def get_datasets(
     inputs = []
 
     if catalog_url.startswith("http"):
-        for url in get_opendap_datasets(
-            catalog_url, dataset_class, variables=variables, rcp=rcp, models=models,
-        ):
-            resource = _make_resource_input()
-            resource.url = url
-            resource.workdir = workdir
-            inputs.append(resource)
+        iterator = iter_tdscatalog(TDSCatalog(catalog_url))
     else:
-        for file in get_local_files_datasets(
-            catalog_url, dataset_class, variables=variables, rcp=rcp, models=models
-        ):
-            resource = _make_resource_input()
-            resource.file = file
-            resource.workdir = workdir
-            inputs.append(resource)
+        iterator = ((p.name, str(p)) for p in Path(catalog_url).rglob("*.nc"))
 
+    for name, url in iterator:
+        obj = dataset_class.from_filename(name)
+        if obj and obj.is_required(variables=variables, scenario=scenario, models=models):
+            inputs.append(_make_resource_input(url, workdir))
     return inputs
 
 
@@ -291,13 +193,13 @@ def _formatted_coordinate(value) -> Optional[str]:
     return f"{float(value):.3f}"
 
 
-def make_output_filename(process: Process, inputs: List[PywpsInput], rcp=None):
+def make_output_filename(process: Process, inputs: List[PywpsInput], scenario=None):
     """Returns a filename for the process's output, depending on its inputs.
 
-    The rcp part of the filename can be overriden.
+    The scenario part of the filename can be overriden.
     """
-    if rcp is None:
-        rcp = single_input_or_none(inputs, "rcp")
+    if scenario is None:
+        scenario = single_input_or_none(inputs, "scenario")
     lat = _formatted_coordinate(single_input_or_none(inputs, "lat"))
     lon = _formatted_coordinate(single_input_or_none(inputs, "lon"))
     lat0 = _formatted_coordinate(single_input_or_none(inputs, "lat0"))
@@ -319,8 +221,8 @@ def make_output_filename(process: Process, inputs: List[PywpsInput], rcp=None):
         output_parts.append(f"{float(lat1):.3f}")
         output_parts.append(f"{float(lon1):.3f}")
 
-    if rcp:
-        output_parts.append(rcp)
+    if scenario:
+        output_parts.append(scenario)
 
     return valid_filename("_".join(output_parts))
 
@@ -510,8 +412,8 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     percentiles_string = request.inputs["ensemble_percentiles"][0].data
     ensemble_percentiles = [int(p.strip()) for p in percentiles_string.split(",")]
 
-    rcps = [r.data.strip() for r in request.inputs["rcp"]]
-    write_log(process, f"Processing started ({len(rcps)} rcps)", process_step="start")
+    scenarios = [r.data.strip() for r in request.inputs["scenario"]]
+    write_log(process, f"Processing started ({len(scenarios)} scenarios)", process_step="start")
     models = [m.data.strip() for m in request.inputs["models"]]
     dataset_name = single_input_or_none(request.inputs, "dataset")
 
@@ -526,23 +428,23 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     base_work_dir = Path(process.workdir)
     ensembles = []
-    for rcp in rcps:
-        # Ensure no file name conflicts (i.e. if the rcp doesn't appear in the base filename)
-        work_dir = base_work_dir / rcp
+    for scenario in scenarios:
+        # Ensure no file name conflicts (i.e. if the scenario doesn't appear in the base filename)
+        work_dir = base_work_dir / scenario
         work_dir.mkdir(exist_ok=True)
         process.set_workdir(str(work_dir))
 
-        write_log(process, f"Fetching datasets for rcp={rcp}")
-        output_filename = make_output_filename(process, request.inputs, rcp=rcp)
+        write_log(process, f"Fetching datasets for scenario {scenario}")
+        output_filename = make_output_filename(process, request.inputs, scenario=scenario)
         netcdf_inputs = get_datasets(
             dataset_name,
             workdir=process.workdir,
             variables=list(source_variable_names),
-            rcp=rcp,
+            scenario=scenario,
             models=models,
         )
 
-        write_log(process, f"Running subset rcp={rcp}", process_step="subset")
+        write_log(process, f"Running subset scen={scenario}", process_step="subset")
         subsetted_files = subset_function(
             process, netcdf_inputs=netcdf_inputs, request_inputs=request.inputs
         )
@@ -553,7 +455,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         subsetted_intermediate_files = compute_intermediate_variables(
             subsetted_files, dataset_input_names, process.workdir, request.inputs,
         )
-        write_log(process, f"Computing indices rcp={rcp}", process_step="compute_indices")
+        write_log(process, f"Computing indices scen={scenario}", process_step="compute_indices")
 
         input_groups = make_indicator_inputs(
             process.xci, request_inputs_not_datasets, subsetted_intermediate_files
@@ -568,7 +470,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         for n, inputs in enumerate(input_groups):
             write_log(
                 process,
-                f"Computing indices for file {n + 1} of {n_groups}, rcp={rcp}",
+                f"Computing indices for file {n + 1} of {n_groups}, scen={scenario}",
                 subtask_percentage=n * 100 // n_groups,
             )
             output_ds = compute_indices(process, process.xci, inputs)
@@ -593,7 +495,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     process.set_workdir(str(base_work_dir))
 
-    ensemble = xr.concat(ensembles, dim=xr.DataArray(rcps, dims=('rcp',), name='rcp'))
+    ensemble = xr.concat(ensembles, dim=xr.DataArray(scenarios, dims=('scenario',), name='scenario'))
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")

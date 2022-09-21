@@ -18,7 +18,7 @@ class SubsetGridPointDatasetProcess(FinchProcess):
     def __init__(self):
         inputs = [
             wpsio.variable,
-            wpsio.rcp,
+            wpsio.scenario,
             wpsio.copy_io(wpsio.lat, min_occurs=0),
             wpsio.copy_io(wpsio.lon, min_occurs=0),
             LiteralInput(
@@ -94,11 +94,11 @@ class SubsetGridPointDatasetProcess(FinchProcess):
 
         variable = request.inputs["variable"][0].data
         variables = None if variable is None else [variable]
-        rcp = single_input_or_none(request.inputs, "rcp")
+        scenario = single_input_or_none(request.inputs, "scenario")
 
         dataset_name = single_input_or_none(request.inputs, "dataset_name")
         request.inputs["resource"] = get_datasets(
-            dataset_name, workdir=self.workdir, variables=variables, rcp=rcp
+            dataset_name, workdir=self.workdir, variables=variables, scenario=scenario
         )
 
         write_log(self, "Running subset", process_step="subset")

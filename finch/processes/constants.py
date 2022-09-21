@@ -1,53 +1,80 @@
 from xclim.testing import list_input_variables
 
-BCCAQV2_MODELS = [
-    "BNU-ESM",
-    "CCSM4",
-    "CESM1-CAM5",
-    "CNRM-CM5",
-    "CSIRO-Mk3-6-0",
-    "CanESM2",
-    "FGOALS-g2",
-    "GFDL-CM3",
-    "GFDL-ESM2G",
-    "GFDL-ESM2M",
-    "HadGEM2-AO",
-    "HadGEM2-ES",
-    "IPSL-CM5A-LR",
-    "IPSL-CM5A-MR",
-    "MIROC-ESM-CHEM",
-    "MIROC-ESM",
-    "MIROC5",
-    "MPI-ESM-LR",
-    "MPI-ESM-MR",
-    "MRI-CGCM3",
-    "NorESM1-M",
-    "NorESM1-ME",
-    "bcc-csm1-1-m",
-    "bcc-csm1-1",
-]
+CANDCSU5_MODELS = {
+    '24models': [  # The absence of realization specification implies r1 is taken.
+        "BNU-ESM",
+        "CCSM4",
+        "CESM1-CAM5",
+        "CNRM-CM5",
+        "CSIRO-Mk3-6-0",
+        "CanESM2",
+        "FGOALS-g2",
+        "GFDL-CM3",
+        "GFDL-ESM2G",
+        "GFDL-ESM2M",
+        "HadGEM2-AO",
+        "HadGEM2-ES",
+        "IPSL-CM5A-LR",
+        "IPSL-CM5A-MR",
+        "MIROC-ESM-CHEM",
+        "MIROC-ESM",
+        "MIROC5",
+        "MPI-ESM-LR",
+        "MPI-ESM-MR",
+        "MRI-CGCM3",
+        "NorESM1-M",
+        "NorESM1-ME",
+        "bcc-csm1-1-m",
+        "bcc-csm1-1",
+    ],
+    # taken from: https://www.pacificclimate.org/data/statistically-downscaled-climate-scenarios
+    'pcic12': [
+        ("ACCESS1-0", "r1i1p1"),
+        ("CCSM4", "r2i1p1"),
+        ("CNRM-CM5", "r1i1p1"),
+        ("CSIRO-Mk3-6-0", "r1i1p1"),
+        ("CanESM2", "r1i1p1"),
+        ("GFDL-ESM2G", "r1i1p1"),
+        ("HadGEM2-CC", "r1i1p1"),
+        ("HadGEM2-ES", "r1i1p1"),
+        ("MIROC5", "r3i1p1"),
+        ("MPI-ESM-LR", "r3i1p1"),
+        ("MRI-CGCM3", "r1i1p1"),
+        ("inmcm4", "r1i1p1"),
+    ]
+}
 
-# taken from: https://www.pacificclimate.org/data/statistically-downscaled-climate-scenarios
-PCIC_12_MODELS_REALIZATIONS = [
-    ("ACCESS1-0", "r1"),
-    ("CCSM4", "r2"),
-    ("CNRM-CM5", "r1"),
-    ("CSIRO-Mk3-6-0", "r1"),
-    ("CanESM2", "r1"),
-    ("GFDL-ESM2G", "r1"),
-    ("HadGEM2-CC", "r1"),
-    ("HadGEM2-ES", "r1"),
-    ("MIROC5", "r3"),
-    ("MPI-ESM-LR", "r3"),
-    ("MRI-CGCM3", "r1"),
-    ("inmcm4", "r1"),
-]
+CANDCSU6_MODELS {
+    "26models": [
+        'ACCESS-CM2',
+        'ACCESS-ESM1-5',
+        'BCC-CSM2-MR',
+        'CMCC-ESM2',
+        'CNRM-CM6-1',
+        'CNRM-ESM2-1',
+        'CanESM5',
+        'EC-Earth3',
+        'EC-Earth3-Veg',
+        'FGOALS-g3',
+        'GFDL-ESM4',
+        'HadGEM3-GC31-LL',
+        'INM-CM4-8',
+        'INM-CM5-0',
+        'IPSL-CM6A-LR',
+        'KACE-1-0-G',
+        'KIOST-ESM',
+        'MIROC-ES2L',
+        'MIROC6',
+        'MPI-ESM1-2-HR',
+        'MPI-ESM1-2-LR',
+        'MRI-ESM2-0',
+        'NorESM2-LM',
+        'NorESM2-MM',
+        'TaiESM1',
+        'UKESM1-0-LL'
+    ]
+}
 
-
-ALL_24_MODELS = "24MODELS"
-PCIC_12 = "PCIC12"
-
-ALLOWED_MODEL_NAMES = [ALL_24_MODELS, PCIC_12] + BCCAQV2_MODELS
 
 bccaq_variables = {"tasmin", "tasmax", "pr"}
 
