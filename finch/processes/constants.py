@@ -44,7 +44,8 @@ CANDCSU5_MODELS = {
     ]
 }
 
-CANDCSU6_MODELS {
+
+CANDCSU6_MODELS = {
     "26models": [
         'ACCESS-CM2',
         'ACCESS-ESM1-5',

@@ -3,7 +3,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 import logging
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple, Union, cast
+from typing import ClassVar, Dict, Iterable, List, Optional, Tuple, Union, cast
 import warnings
 
 from parse import parse
@@ -60,7 +60,8 @@ not_implemented_variables = xclim_variables - accepted_variables
 
 @dataclass
 class DatasetFile:
-    pattern: str
+    pattern: ClassVar[str]
+    model_lists: ClassVar[Optional[dict]] = None
     variable: str
     frequency: str
     model: str
@@ -68,12 +69,11 @@ class DatasetFile:
     realization: str
     date_start: Optional[str] = None
     date_end: Optional[str] = None
-    model_lists: Optional[dict] = None
 
     @classmethod
     def from_filename(cls, filename):
         try:
-            return cls(**parse(cls.pattern, filename).named.items())
+            return cls(**parse(cls.pattern, filename).named)
         except AttributeError:
             return
 
@@ -88,7 +88,7 @@ class DatasetFile:
         if variables and self.variable not in variables:
             return False
 
-        if scenario and scenario not in self.driving_experiment_id:
+        if scenario and scenario not in self.experiment:
             return False
 
         if models is None:
@@ -103,17 +103,17 @@ class DatasetFile:
             models = self.model_lists[models[0]]
 
         for modelspec in models:
-            if isinstance(modelspec, 'str'):  # case with a single model name
-                if self.model.lower() == modelspec and self.realization.startswith('r1i'):
+            if isinstance(modelspec, str):  # case with a single model name
+                if self.model.lower() == modelspec.lower() and self.realization.startswith('r1i'):
                     return True
             else:  # case with a couple model name, realization num.
-                if self.model.lower() == modelspec[0] and self.realization == modelspec[1]:
+                if self.model.lower() == modelspec[0].lower() and self.realization == modelspec[1]:
                     return True
         return False
 
 
 class CanDCSU5File(DatasetFile):
-    pattern = "{variable}_{frequency}_BCCAQv2_ANUSPLIN300_{model}_{experiment}_{realization}_{date_start}-{date_end}_bccaqv2.nc"
+    pattern = "{variable}_{frequency}_BCCAQv2+ANUSPLIN300_{model}_{experiment}_{realization}_{date_start}-{date_end}.nc"
     model_lists = CANDCSU5_MODELS
 
 
@@ -149,7 +149,7 @@ def _make_resource_input(url, workdir):
 
 
 def get_datasets(
-    dataset_name: Optional[str],
+    dataset_name: str,
     workdir: str,
     variables: Optional[List[str]] = None,
     scenario: Optional[str] = None,
@@ -172,10 +172,14 @@ def get_datasets(
     else:
         iterator = ((p.name, str(p)) for p in Path(catalog_url).rglob("*.nc"))
 
+    LOGGER.info(f'Get datasets got {dataset_name} {variables} {scenario} {models}')
     for name, url in iterator:
         obj = dataset_class.from_filename(name)
         if obj and obj.is_required(variables=variables, scenario=scenario, models=models):
+            LOGGER.info(f'Adding {name} to dataset list.')
             inputs.append(_make_resource_input(url, workdir))
+        else:
+            LOGGER.info(f'{name} rejected {obj}.')
     return inputs
 
 
