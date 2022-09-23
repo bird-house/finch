@@ -2,6 +2,7 @@
 
 import json
 from copy import deepcopy
+from itertools import chain
 from typing import Union
 
 from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
@@ -14,8 +15,7 @@ from xclim.core.options import (
     MISSING_OPTIONS,
     OPTIONS
 )
-
-from .constants import CANDCSU5_MODELS, CANDCSU6_MODELS
+from .constants import datasets_config
 from .utils import PywpsInput, PywpsOutput
 
 
@@ -123,23 +123,23 @@ average = LiteralInput(
 variable = LiteralInput(
     "variable",
     "NetCDF Variable",
-    abstract="Name of the variable in the NetCDF file.",
+    abstract="Name of the variable in the NetCDF file. Allowed values depend on the dataset.",
     data_type="string",
     default=None,
     min_occurs=0,
-    allowed_values=["tasmin", "tasmax", "pr"],
+    allowed_values=list(chain(*[d.allowed_values['variable'] for d in datasets_config.values()])),
 )
 
 variable_any = copy_io(variable, any_value=True, allowed_values=[AnyValue])
 
-dataset_name = LiteralInput(
-    "dataset_name",
+dataset = LiteralInput(
+    "dataset",
     "Dataset name",
     abstract="Name of the dataset from which to get netcdf files for inputs. 'BCCAQv2' redirects to CanDCS-U5 for backward compatibility.",
     data_type="string",
     default=None,
     min_occurs=0,
-    allowed_values=["bccaqv2", "candcs-u5", "candcs-u6"],
+    allowed_values=["bccaqv2"] + list(datasets_config.keys()),
 )
 
 scenario = LiteralInput(
@@ -149,21 +149,23 @@ scenario = LiteralInput(
     data_type="string",
     default=None,
     min_occurs=0,
-    allowed_values=["rcp26", "rcp45", "rcp85", "ssp126", "ssp245", "ssp585"],
+    allowed_values=list(chain(*[d.allowed_values['scenario'] for d in datasets_config.values()])),
 )
 
 models = LiteralInput(
     "models",
     "Models to include in ensemble",
     abstract=(
-        "When calculating the ensemble, include only these models. The list depends on the dataset chosen. "
+        "When calculating the ensemble, include only these models. Allowed values depend on the dataset chosen. "
         "By default, all models are used, taking the first realization of each. Special sublists are also available :"
-        f"CanDCS-U6 : {list(CANDCSU6_MODELS.keys())}, CanDCS-U5: {list(CANDCSU5_MODELS.keys())}."
-    ),
+    ) + ", ".join([f"{dsid}: {(d.model_lists or {}).keys()}" for dsid, d in datasets_config.items()]),
     data_type="string",
     min_occurs=0,
     max_occurs=1000,
-    allowed_values=list(CANDCSU6_MODELS.keys()) + CANDCSU6_MODELS['26models'] + list(CANDCSU5_MODELS.keys()) + CANDCSU5_MODELS['24models']
+    allowed_values=(
+        list(chain(*[d.allowed_values['model'] for d in datasets_config.values()]))
+        + list(chain(*[d.model_lists.keys() for d in datasets_config.values()]))
+    )
 )
 
 shape = ComplexInput(

@@ -38,6 +38,7 @@ import sentry_sdk
 import xarray as xr
 from netCDF4 import num2date
 import xclim
+from xclim.core.utils import InputKind
 from slugify import slugify
 
 LOGGER = logging.getLogger("PYWPS")
@@ -48,6 +49,12 @@ RequestInputs = Dict[str, Deque[PywpsInput]]
 
 # These are parameters that set options. They are not `compute` arguments.
 INDICATOR_OPTIONS = ['check_missing', 'missing_options', "cf_compliance", "data_validation"]
+
+
+def iter_xc_variables(indicator: xclim.core.indicator.Indicator):
+    for n, p in indicator.parameters.items():
+        if p.kind in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
+            yield n
 
 
 def log_file_path(process: Process) -> Path:

@@ -39,7 +39,7 @@ class SubsetGridPointDatasetProcess(FinchProcess):
             wpsio.end_date,
             wpsio.output_format_netcdf_csv,
             wpsio.csv_precision,
-            wpsio.dataset_name,
+            wpsio.dataset,
         ]
 
         outputs = [wpsio.output_netcdf_csv]
@@ -96,7 +96,7 @@ class SubsetGridPointDatasetProcess(FinchProcess):
         variables = None if variable is None else [variable]
         scenario = single_input_or_none(request.inputs, "scenario")
 
-        dataset_name = single_input_or_none(request.inputs, "dataset_name")
+        dataset_name = single_input_or_none(request.inputs, "dataset")
         request.inputs["resource"] = get_datasets(
             dataset_name, workdir=self.workdir, variables=variables, scenario=scenario
         )

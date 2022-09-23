@@ -27,3 +27,4 @@ dependencies:
   - parse
   - xesmf >= 0.6.2
   - python-slugify
+  - pyyaml

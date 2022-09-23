@@ -2,9 +2,8 @@ import logging
 
 from pywps.configuration import get_config_value
 import xclim
-import xclim.indicators.atmos
-from xclim.core.indicator import build_indicator_module
 
+from .constants import datasets_config
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .wps_base import make_xclim_indicator_process
 from .wps_ensemble_indices_bbox import XclimEnsembleBboxBase
@@ -30,8 +29,6 @@ def get_indicators(realms=["atmos"], exclude=()):
 
     module : A xclim module.
     """
-    from collections import OrderedDict
-    from xclim.core.indicator import registry
 
     def filter_func(elem):
         name, ind = elem
@@ -42,7 +39,7 @@ def get_indicators(realms=["atmos"], exclude=()):
             and ind.identifier.upper() == ind._registry_id  # official indicator
         )
 
-    out = OrderedDict(filter(filter_func, registry.items()))
+    out = dict(filter(filter_func, xclim.core.indicator.registry.items()))
     return [ind.get_instance() for ind in out.values()]
 
 
@@ -63,10 +60,11 @@ ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i
 def get_processes(all_processes=False):
     """Get wps processes, using the current global `pywps` configuration"""
     default_dataset = get_config_value("finch", "default_dataset")
-    datasets_configured = get_config_value("finch", f"dataset_{default_dataset}")
 
-    if not datasets_configured:
-        logger.warning("Datasets not configured. Some processes will not be available.")
+    if not datasets_config:
+        logger.warning("The datasets configured, many processes won't be available.")
+    if default_dataset not in datasets_config:
+        logger.warning("The default dataset is not configured, which is weird.")
 
     processes = []
 
@@ -83,7 +81,7 @@ def get_processes(all_processes=False):
         EmpiricalQuantileMappingProcess()
     ]
 
-    if datasets_configured or all_processes:
+    if datasets_config or all_processes:
         # ensemble with grid point subset
         for ind in ensemble_indicators:
             suffix = "_Ensemble_GridPoint_Process"
@@ -132,7 +130,7 @@ def _build_xclim():
     processes = get_processes(all_processes=True)
     objs = {p.__class__.__name__: p.__class__ for p in processes}
 
-    mod = build_indicator_module(
+    mod = xclim.core.indicator.build_indicator_module(
         "finch.processes.xclim", objs, doc="""XCLIM Processes"""
     )
     sys.modules["finch.processes.xclim"] = mod
