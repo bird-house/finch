@@ -135,7 +135,10 @@ variable_any = copy_io(variable, any_value=True, allowed_values=[AnyValue])
 dataset = LiteralInput(
     "dataset",
     "Dataset name",
-    abstract="Name of the dataset from which to get netcdf files for inputs. 'BCCAQv2' redirects to CanDCS-U5 for backward compatibility.",
+    abstract=(
+        "Name of the dataset from which to get netcdf files for inputs. "
+        "'BCCAQv2' redirects to CanDCS-U5 for backward compatibility."
+    ),
     data_type="string",
     default=None,
     min_occurs=0,
@@ -158,7 +161,7 @@ models = LiteralInput(
     abstract=(
         "When calculating the ensemble, include only these models. Allowed values depend on the dataset chosen. "
         "By default, all models are used, taking the first realization of each. Special sublists are also available :"
-    ) + ", ".join([f"{dsid}: {(d.model_lists or {}).keys()}" for dsid, d in datasets_config.items()]),
+    ) + ", ".join([f"{dsid}: {list((d.model_lists or {}).keys())}" for dsid, d in datasets_config.items()]),
     data_type="string",
     min_occurs=0,
     max_occurs=1000,

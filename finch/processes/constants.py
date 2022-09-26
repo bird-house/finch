@@ -28,7 +28,8 @@ class DatasetConfiguration:
         the latter defines which variable are available and thus which indicator can be used.
     model_lists : dict
         A mapping from list name to a list of model names to provide special sublists.
-        The values can also be a tuple of (model name, realization numer), in which case, pattern must include a "realization" field.
+        The values can also be a tuple of (model name, realization numer),
+        in which case, pattern must include a "realization" field.
     """
     path: str
     pattern: str

@@ -112,7 +112,8 @@ def file_is_required(
 
 
 def iter_remote(cat: TDSCatalog, depth: int = -1):
-    """Generator listing all datasets recursively in a TDSCatalog. The search is limited to a certain depth if `depth` >= 0."""
+    """Generator listing all datasets recursively in a TDSCatalog.
+    The search is limited to a certain depth if `depth` >= 0."""
     for ds in cat.datasets.values():
         yield ds.name, ds.access_urls["OPENDAP"]
 
@@ -122,7 +123,8 @@ def iter_remote(cat: TDSCatalog, depth: int = -1):
 
 
 def iter_local(root: Path, depth: int = -1, pattern: str = '*.nc'):
-    """Generator listing all datasets recursively in a local directory. The search is limited to a certain depth if `depth` >= 0."""
+    """Generator listing all datasets recursively in a local directory.
+    The search is limited to a certain depth if `depth` >= 0."""
     for file in root.rglob(pattern):
         yield file.name, file
 
