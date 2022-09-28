@@ -17,9 +17,12 @@ if not get_config_value('finch', 'datasets_config'):
 
 processes = sorted(get_processes(), key=lambda p: p.__class__.__name__)
 
-ens_proc = {p.__class__.__name__: p.__class__ for p in processes if "Ensemble" in p.__class__.__name__}
-ind_proc = {p.__class__.__name__: p.__class__ for p in processes if p.__class__.__name__.endswith("_Indicator_Process")}
-oth_proc = {p.__class__.__name__: p.__class__ for p in processes if p.__class__.__name__ not in (list(ens_proc) + list(ind_proc))}
+ens_proc = {p.__class__.__name__: p.__class__
+            for p in processes if "Ensemble" in p.__class__.__name__}
+ind_proc = {p.__class__.__name__: p.__class__
+            for p in processes if p.__class__.__name__.endswith("_Indicator_Process")}
+oth_proc = {p.__class__.__name__: p.__class__
+            for p in processes if p.__class__.__name__ not in (list(ens_proc) + list(ind_proc))}
 
 indicators = ModuleType('indicators', "Indicators Processes\n--------------------")
 indicators.__dict__.update(ind_proc)
