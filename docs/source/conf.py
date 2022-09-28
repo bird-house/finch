@@ -20,12 +20,12 @@
 #
 import os
 import sys
-from types import ModuleType
 
 # Add finch to sys.path to avoid having to full
 # install finch for autodoc.
 # Full install of finch will burst memory limit on ReadTheDocs.
 sys.path.insert(0, os.path.abspath("../../"))
+
 
 # -- General configuration ---------------------------------------------
 
@@ -79,27 +79,6 @@ if os.environ.get('READTHEDOCS') == 'True':
         "zlib",
     ]
 
-# Create processes module for the processes page:
-# This import needs to be done after the mock imports!
-import finch.processes  # noqa
-
-processes = sorted(finch.processes.get_processes(), key=lambda p: p.__class__.__name__)
-
-ensemble = {p.__class__.__name__: p.__class__ for p in processes if "Ensemble" in p.__class__.__name__}
-indicators = {p.__class__.__name__: p.__class__ for p in processes if p.__class__.__name__.endswith("_Indicator_Process")}
-others = {p.__class__.__name__: p.__class__ for p in processes if p.__class__.__name__ not in (list(ensemble) + list(indicators))}
-
-ind_mod = ModuleType('indicators', "Indicators Processes\n--------------------")
-ind_mod.__dict__.update(indicators)
-finch.processes.__dict__['indicators'] = ind_mod
-
-ens_mod = ModuleType('ensemble', "Ensemble Processes\n------------------")
-ens_mod.__dict__.update(ensemble)
-finch.processes.__dict__['ensemble'] = ens_mod
-
-oth_mod = ModuleType('other', "Other Processes\n---------------")
-oth_mod.__dict__.update(others)
-finch.processes.__dict__['other'] = oth_mod
 
 # Monkeypatch constant because the following are mock imports.
 # Only works if numpy is actually installed and at the same time being mocked.

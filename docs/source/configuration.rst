@@ -66,6 +66,8 @@ Finch always adds the following attributes:
 :product: ``derived climate index``
 
 
+.. _datasetconfig:
+
 Structure of the dataset configuration file
 -------------------------------------------
 The configuration value for `finch, datasets_config`, points to a YAML file that defines each ensemble datasets that are available for ensemble processes. These processes and their default values are generated according to the "allowed_values" of the datasets. This means that a user sees _all_ available values in the process's description, but not all are valid depending on the passed `dataset`.

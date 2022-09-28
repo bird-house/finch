@@ -1,4 +1,5 @@
 import logging
+import os
 
 from pywps.configuration import get_config_value
 from xclim.core.indicator import registry as xclim_registry
