@@ -30,6 +30,7 @@ jobs:
         uses: mamba-org/provision-with-micromamba@main
         with:
           cache-downloads: false
+          cache-env: false
       - name: Install and test finch-wps
         shell: bash -l {0}  # Needed to get into the proper activated env with previous action.
         run: |

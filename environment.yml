@@ -11,7 +11,7 @@ dependencies:
   - unidecode
   - dask <= 2022.1.0
   - distributed <= 2022.1.0
-  - xarray >=0.18.2
+  - xarray >= 0.18.2
   - numpy
   - geopandas
   - pandas
