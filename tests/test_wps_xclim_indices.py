@@ -5,12 +5,11 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 from zipfile import ZipFile
-import warnings
 import finch
-import finch.processes
+from finch.processes import get_indicators, not_implemented
 from finch.processes.wps_xclim_indices import XclimIndicatorBase
 from finch.processes.wps_base import make_xclim_indicator_process
-from . utils import execute_process, wps_input_file, wps_literal_input
+from .utils import execute_process, wps_input_file, wps_literal_input
 from pathlib import Path
 from pywps.app.exceptions import ProcessError
 from pywps import configuration
@@ -29,7 +28,10 @@ def _get_output_standard_name(process_identifier):
             return p.xci.standard_name
 
 
-@pytest.mark.parametrize("indicator", finch.processes.indicators)
+@pytest.mark.parametrize(
+    "indicator",
+    get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
+)
 def test_indicators_processes_discovery(indicator):
     process = make_xclim_indicator_process(indicator, "Process", XclimIndicatorBase)
     assert indicator.identifier == process.identifier
@@ -56,7 +58,7 @@ def test_indicators_processes_discovery(indicator):
 def test_processes(client, netcdf_datasets):
     """Run a dummy calculation for every process, keeping some default parameters."""
     # indicators = finch.processes.indicators
-    processes = filter(lambda x: isinstance(x, XclimIndicatorBase), finch.processes.xclim.__dict__.values())
+    processes = filter(lambda x: isinstance(x, XclimIndicatorBase), client.application.processes.values())
     literal_inputs = {
         "freq": "MS",
         "window": "3",
@@ -78,30 +80,31 @@ def test_processes(client, netcdf_datasets):
             elif name in keep_defaults:
                 pass
             else:
-                raise NotImplementedError
-        outputs = execute_process(client, process.identifier, inputs)
-        ds = xr.open_dataset(outputs[0])
-        output_variable = list(ds.data_vars)[0]
+                break
+        else:
+            outputs = execute_process(client, process.identifier, inputs)
+            ds = xr.open_dataset(outputs[0])
+            output_variable = list(ds.data_vars)[0]
 
-        assert getattr(ds, output_variable).standard_name == process.xci.standard_name
-        assert ds.attrs['testing_session']
+            assert getattr(ds, output_variable).standard_name == process.xci.standard_name
+            assert ds.attrs['testing_session']
 
-        model = attrs["driving_model_id"]
-        experiment = attrs["driving_experiment_id"].replace(",", "+")
-        ensemble = (
-            f"r{attrs['driving_realization']}"
-            f"i{attrs['driving_initialization_method']}"
-            f"p{attrs['driving_physics_version']}"
-        )
-        date_start = pd.to_datetime(str(ds.time[0].values))
-        date_end = pd.to_datetime(str(ds.time[-1].values))
+            model = attrs["driving_model_id"]
+            experiment = attrs["driving_experiment_id"].replace(",", "+")
+            ensemble = (
+                f"r{attrs['driving_realization']}"
+                f"i{attrs['driving_initialization_method']}"
+                f"p{attrs['driving_physics_version']}"
+            )
+            date_start = pd.to_datetime(str(ds.time[0].values))
+            date_end = pd.to_datetime(str(ds.time[-1].values))
 
-        expected = (
-            f"{output_variable.replace('_', '-')}_"
-            f"{model}_{experiment}_{ensemble}_"
-            f"{date_start:%Y%m%d}-{date_end:%Y%m%d}.nc"
-        )
-        assert Path(outputs[0]).name == expected
+            expected = (
+                f"{output_variable.replace('_', '-')}_"
+                f"{model}_{experiment}_{ensemble}_"
+                f"{date_start:%Y%m%d}-{date_end:%Y%m%d}.nc"
+            )
+            assert Path(outputs[0]).name == expected
 
 
 def test_wps_daily_temperature_range_multiple(client, netcdf_datasets):

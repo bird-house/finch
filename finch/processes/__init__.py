@@ -1,10 +1,10 @@
 import logging
 
 from pywps.configuration import get_config_value
-import xclim
+from xclim.core.indicator import registry as xclim_registry
 
-from .constants import datasets_config
 from .ensemble_utils import uses_accepted_netcdf_variables
+from .utils import get_available_variables, get_datasets_config
 from .wps_base import make_xclim_indicator_process
 from .wps_ensemble_indices_bbox import XclimEnsembleBboxBase
 from .wps_ensemble_indices_point import XclimEnsembleGridPointBase
@@ -39,7 +39,7 @@ def get_indicators(realms=["atmos"], exclude=()):
             and ind.identifier.upper() == ind._registry_id  # official indicator
         )
 
-    out = dict(filter(filter_func, xclim.core.indicator.registry.items()))
+    out = dict(filter(filter_func, xclim_registry.items()))
     return [ind.get_instance() for ind in out.values()]
 
 
@@ -53,18 +53,20 @@ not_implemented = [
 ]
 
 
-indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
-ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i)]
-
-
-def get_processes(all_processes=False):
+def get_processes():
     """Get wps processes, using the current global `pywps` configuration"""
-    default_dataset = get_config_value("finch", "default_dataset")
+    indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
 
-    if not datasets_config:
-        logger.warning("The datasets configured, many processes won't be available.")
-    if default_dataset not in datasets_config:
-        logger.warning("The default dataset is not configured, which is weird.")
+    dsconf = get_datasets_config()
+    if dsconf:
+        available_variables = get_available_variables()
+        ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i, available_variables)]
+    else:
+        ensemble_indicators = []
+        logger.warning("No ensemble datasets configured, many processes won't be available.")
+        default_dataset = get_config_value("finch", "default_dataset")
+        if default_dataset not in dsconf:
+            logger.warning("The default dataset is not configured, which is weird.")
 
     processes = []
 
@@ -81,30 +83,30 @@ def get_processes(all_processes=False):
         EmpiricalQuantileMappingProcess()
     ]
 
-    if datasets_config or all_processes:
-        # ensemble with grid point subset
-        for ind in ensemble_indicators:
-            suffix = "_Ensemble_GridPoint_Process"
-            base_class = XclimEnsembleGridPointBase
-            processes.append(
-                make_xclim_indicator_process(ind, suffix, base_class=base_class)
-            )
+    # ensemble with grid point subset
+    for ind in ensemble_indicators:
+        suffix = "_Ensemble_GridPoint_Process"
+        base_class = XclimEnsembleGridPointBase
+        processes.append(
+            make_xclim_indicator_process(ind, suffix, base_class=base_class)
+        )
 
-        # ensemble with bbox subset
-        for ind in ensemble_indicators:
-            suffix = "_Ensemble_Bbox_Process"
-            base_class = XclimEnsembleBboxBase
-            processes.append(
-                make_xclim_indicator_process(ind, suffix, base_class=base_class)
-            )
-        # ensemble with polygon subset
-        for ind in ensemble_indicators:
-            suffix = "_Ensemble_Polygon_Process"
-            base_class = XclimEnsemblePolygonBase
-            processes.append(
-                make_xclim_indicator_process(ind, suffix, base_class=base_class)
-            )
+    # ensemble with bbox subset
+    for ind in ensemble_indicators:
+        suffix = "_Ensemble_Bbox_Process"
+        base_class = XclimEnsembleBboxBase
+        processes.append(
+            make_xclim_indicator_process(ind, suffix, base_class=base_class)
+        )
+    # ensemble with polygon subset
+    for ind in ensemble_indicators:
+        suffix = "_Ensemble_Polygon_Process"
+        base_class = XclimEnsemblePolygonBase
+        processes.append(
+            make_xclim_indicator_process(ind, suffix, base_class=base_class)
+        )
 
+    if ensemble_indicators:
         processes += [
             SubsetGridPointDatasetProcess(),
             SubsetBboxDatasetProcess(),
@@ -121,20 +123,3 @@ def get_processes(all_processes=False):
     ]
 
     return processes
-
-
-# Create virtual module for indicators so Sphinx can find it.
-def _build_xclim():
-    import sys
-
-    processes = get_processes(all_processes=True)
-    objs = {p.__class__.__name__: p.__class__ for p in processes}
-
-    mod = xclim.core.indicator.build_indicator_module(
-        "finch.processes.xclim", objs, doc="""XCLIM Processes"""
-    )
-    sys.modules["finch.processes.xclim"] = mod
-    return mod
-
-
-xclim = _build_xclim()  # noqa

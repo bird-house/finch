@@ -3,12 +3,14 @@ from copy import deepcopy
 from dataclasses import dataclass
 import logging
 from pathlib import Path
+import sys
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 import warnings
 
 from parse import parse
 from pywps import ComplexInput, FORMATS, Process
 from pywps import configuration
+from pywps.exceptions import InvalidParameterValue
 from pywps.app.exceptions import ProcessError
 from siphon.catalog import TDSCatalog
 import xarray as xr
@@ -17,15 +19,16 @@ from xclim import ensembles
 from xclim.core.calendar import percentile_doy, doy_to_days_since, days_since_to_doy
 from xclim.core.indicator import Indicator
 
-from .constants import DatasetConfiguration, available_variables, datasets_config
 from .subset import finch_subset_bbox, finch_subset_gridpoint, finch_subset_shape
 from .utils import (
+    DatasetConfiguration,
     PywpsInput,
     RequestInputs,
     compute_indices,
     dataset_to_dataframe,
     dataset_to_netcdf,
     format_metadata,
+    get_datasets_config,
     iter_xc_variables,
     log_file_path,
     single_input_or_none,
@@ -87,7 +90,7 @@ def file_is_required(
     if scenario and scenario not in file.scenario:
         return False
 
-    if models is None:
+    if models is None or models[0].lower() == "all":
         return True
 
     if (
@@ -124,7 +127,11 @@ def iter_remote(cat: TDSCatalog, depth: int = -1):
 
 def iter_local(root: Path, depth: int = -1, pattern: str = '*.nc'):
     """Generator listing all datasets recursively in a local directory.
-    The search is limited to a certain depth if `depth` >= 0."""
+    The search is limited to a certain depth if `depth` >= 0.
+    The path can be given relative to the root finch code repo."""
+    if not root.is_absolute():
+        root = (Path(__file__).parent.parent / root).resolve()
+
     for file in root.rglob(pattern):
         yield file.name, file
 
@@ -200,7 +207,7 @@ def _formatted_coordinate(value) -> Optional[str]:
     return f"{float(value):.3f}"
 
 
-def make_output_filename(process: Process, inputs: List[PywpsInput], scenario=None):
+def make_output_filename(process: Process, inputs: List[PywpsInput], scenario=None, dataset=None):
     """Returns a filename for the process's output, depending on its inputs.
 
     The scenario part of the filename can be overriden.
@@ -215,26 +222,32 @@ def make_output_filename(process: Process, inputs: List[PywpsInput], scenario=No
     lon1 = _formatted_coordinate(single_input_or_none(inputs, "lon1"))
 
     # Get given prefix and if none given, default to the identifier.
-    output_parts = [single_input_or_none(inputs, "output_name") or process.identifier]
+    output_parts = []
+
+    if (prefix := single_input_or_none(inputs, "output_name")):
+        output_parts.append(prefix)
+    else:
+        if dataset:
+            output_parts.append(dataset)
+        output_parts.append(process.identifier)
 
     if lat and lon:
-        output_parts.append(f"{float(lat):.3f}")
-        output_parts.append(f"{float(lon):.3f}")
+        output_parts.extend([lat, lon])
     elif lat0 and lon0:
-        output_parts.append(f"{float(lat0):.3f}")
-        output_parts.append(f"{float(lon0):.3f}")
+        output_parts.extend([lat0, lon0])
 
     if lat1 and lon1:
-        output_parts.append(f"{float(lat1):.3f}")
-        output_parts.append(f"{float(lon1):.3f}")
+        output_parts.extend([lat1, lon1])
 
-    if scenario:
+    if isinstance(scenario, str):
         output_parts.append(scenario)
+    elif scenario:
+        output_parts.extend(scenario)
 
-    return valid_filename("_".join(output_parts))
+    return valid_filename("_".join(output_parts) + '.nc')
 
 
-def uses_accepted_netcdf_variables(indicator: Indicator) -> bool:
+def uses_accepted_netcdf_variables(indicator: Indicator, available_variables: set) -> bool:
     """Returns True if this indicator uses variables available by computation or in any dataset.
     This mean it may return indicators that are not compatible with all datasets.
     """
@@ -261,7 +274,7 @@ def make_indicator_inputs(
             inputs[variable_name][0].file = str(path)
             input_list.append(inputs)
     else:
-        for group in make_file_groups(files_list):
+        for group in make_file_groups(files_list, required_netcdf_args):
             inputs = deepcopy(wps_inputs)
             for variable_name, path in group.items():
                 if variable_name not in required_netcdf_args:
@@ -274,7 +287,8 @@ def make_indicator_inputs(
 
 
 def make_file_groups(files_list: List[Path], variables: set) -> List[Dict[str, Path]]:
-    """Groups files by filenames, changing only the netcdf variable name."""
+    """Groups files by filenames, changing only the netcdf variable name.
+    The list of variable names to search must be given."""
     groups = []
     filenames = {f.name: f for f in files_list}
 
@@ -283,8 +297,8 @@ def make_file_groups(files_list: List[Path], variables: set) -> List[Dict[str, P
             continue
         group = {}
         for variable in variables:
-            if file.name.startswith(f"{variable}_"):
-                for other_var in variables.difference([variable]):
+            if file.name.startswith(f"{variable}_") or f'_{variable}_' in file.name:
+                for other_var in variables.difference({variable}):
                     other_filename = file.name.replace(variable, other_var, 1)
                     if other_filename in filenames:
                         group[other_var] = filenames[other_filename]
@@ -331,12 +345,12 @@ def make_ensemble(files: List[Path], percentiles: List[int], average_dims: Optio
 
 
 def compute_intermediate_variables(
-    files_list: List[Path], required_variable_names: Iterable[str], workdir: Path, request_inputs,
+    files_list: List[Path], variables: set, required_variable_names: Iterable[str], workdir: Path, request_inputs,
 ) -> List[Path]:
     """Compute netcdf datasets from a list of required variable names and existing files."""
 
     output_files_list = []
-    file_groups = make_file_groups(files_list, set(required_variable_names))
+    file_groups = make_file_groups(files_list, variables)
     for group in file_groups:
         # add file paths that are required without any computation
         for variable, path in group.items():
@@ -419,7 +433,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     if dataset_name == 'bccaqv2':
         dataset_name = 'candcs-u5'
 
-    dataset = datasets_config[dataset_name]
+    dataset = get_datasets_config()[dataset_name]
 
     needed_variables = set(iter_xc_variables(process.xci))
     avail_variables = set(dataset.allowed_values['variable'])
@@ -430,17 +444,17 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     # Check if arguments are ok for this dataset
     if not set(dataset.allowed_values['scenario']).issuperset(scenarios):
-        raise ValueError(
+        raise InvalidParameterValue(
             f"Invalid scenarios for dataset {dataset_name}. "
             f"Should be in {dataset.allowed_values['scenario']}."
         )
-    if not set(dataset.allowed_values['model']).union(dataset.model_lists.keys()).issuperset(models):
-        raise ValueError(
+    if not set(dataset.allowed_values['model']).union(dataset.model_lists.keys()).union({'all'}).issuperset(models):
+        raise InvalidParameterValue(
             f"Invalid models or model list for dataset {dataset_name}. "
             f"Should be in {dataset.allowed_values['model']} + {list(dataset.model_lists.keys())}"
         )
     if extra_variables:
-        raise ValueError(
+        raise InvalidParameterValue(
             f"The {process.xci.identifier} indicator cannot be used with dataset {dataset_name}"
             f" because it does not provide the variables {extra_variables} or doesn't provide "
             "the variable that could be used to compute those."
@@ -465,6 +479,11 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     base_work_dir = Path(process.workdir)
     ensembles = []
+    output_basename = Path(
+        make_output_filename(
+            process, request.inputs, scenario=scenarios, dataset=dataset_name
+        )
+    )
     for scenario in scenarios:
         # Ensure no file name conflicts (i.e. if the scenario doesn't appear in the base filename)
         work_dir = base_work_dir / scenario
@@ -472,7 +491,6 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         process.set_workdir(str(work_dir))
 
         write_log(process, f"Fetching datasets for scenario {scenario}")
-        output_filename = make_output_filename(process, request.inputs, scenario=scenario)
         netcdf_inputs = get_datasets(
             dataset,
             workdir=process.workdir,
@@ -480,6 +498,11 @@ def ensemble_common_handler(process: Process, request, response, subset_function
             scenario=scenario,
             models=models,
         )
+
+        if len(netcdf_inputs) == 0:
+            raise ValueError(
+                f'No netCDF files were selected with filters {scenario=}, {models=} and variables={source_variables}'
+            )
 
         write_log(process, f"Running subset scen={scenario}", process_step="subset")
         subsetted_files = subset_function(
@@ -490,10 +513,11 @@ def ensemble_common_handler(process: Process, request, response, subset_function
             raise ProcessError(message)
 
         subsetted_intermediate_files = compute_intermediate_variables(
-            subsetted_files, needed_variables, process.workdir, request.inputs,
+            subsetted_files, source_variables, needed_variables, process.workdir, request.inputs,
         )
         write_log(process, f"Computing indices scen={scenario}", process_step="compute_indices")
 
+        print(subsetted_intermediate_files, file=sys.stderr)
         input_groups = make_indicator_inputs(
             process.xci, request_inputs_not_datasets, subsetted_intermediate_files
         )
@@ -511,10 +535,8 @@ def ensemble_common_handler(process: Process, request, response, subset_function
                 subtask_percentage=n * 100 // n_groups,
             )
             output_ds = compute_indices(process, process.xci, inputs)
-
-            output_name = f"{output_filename}_{process.identifier}_{n}.nc"
-            for variable in source_variables:
-                input_name = Path(inputs.get(variable)[0].file).name
+            for variable in needed_variables:
+                input_name = Path(inputs[variable][0].file).name
                 output_name = input_name.replace(variable, process.identifier)
 
             output_path = Path(process.workdir) / output_name
@@ -524,7 +546,6 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
 
-        output_basename = Path(process.workdir) / (output_filename + "_ensemble")
         ensemble = make_ensemble(indices_files, ensemble_percentiles, average_dims)
         ensemble.attrs['source_datasets'] = '\n'.join([dsinp.url for dsinp in netcdf_inputs])
         ensembles.append(ensemble)
@@ -550,17 +571,18 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         df.dropna().to_csv(ensemble_csv)
 
         metadata = format_metadata(ensemble)
-        metadata_file = output_basename.parent / f"{ensemble_csv.stem}_metadata.txt"
+        metadata_file = output_basename.parent / f"{output_basename}_metadata.txt"
         metadata_file.write_text(metadata)
 
-        ensemble_output = Path(process.workdir) / (output_filename + ".zip")
+        ensemble_output = Path(process.workdir) / output_basename.with_suffix(".zip")
         zip_files(ensemble_output, [metadata_file, ensemble_csv])
     else:
+        LOGGER.info(output_basename)
         ensemble_output = output_basename.with_suffix(".nc")
         dataset_to_netcdf(ensemble, ensemble_output)
 
     response.outputs["output"].file = ensemble_output
     response.outputs["output_log"].file = str(log_file_path(process))
 
-    write_log(process, "Processing finished successfully", process_step="done")
+    write_log(process, f"Processing finished successfully : {ensemble_output}", process_step="done")
     return response

@@ -1,6 +1,16 @@
 Changes
 *******
 
+0.10.0 (unreleased)
+===================
+* Generalize ensemble datasets configuration.
+    - Datasets usable by ensemble processes are not specified through a YAML file which is pointed to in the configuration.
+    - As a consequence processes are generated according to the available variables. Similarly for the allowed values of some inputs on these processes.
+    - The output name now includes the dataset name (if a custom name was not specified).
+    - ``finch.processes.xclim`` was removed, there is no static module of processes.
+    - Input "rcp" has been renamed to "scenario".
+    - Input "dataset_name" has been fixed and renamed to "dataset".
+
 0.9.2 (2022-07-19)
 ==================
 * Fix Finch unable to startup in the Docker image.

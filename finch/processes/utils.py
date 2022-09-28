@@ -1,4 +1,6 @@
+from dataclasses import dataclass, field
 from datetime import timedelta, datetime
+from itertools import chain
 import logging
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
@@ -31,15 +33,18 @@ from pywps import (
     Process,
     configuration
 )
+from pywps.configuration import get_config_value
 from pywps.inout.outputs import MetaFile, MetaLink4
 import requests
 from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
 import sentry_sdk
+from slugify import slugify
 import xarray as xr
 from netCDF4 import num2date
 import xclim
 from xclim.core.utils import InputKind
-from slugify import slugify
+from xclim.testing import list_input_variables
+import yaml
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -49,6 +54,64 @@ RequestInputs = Dict[str, Deque[PywpsInput]]
 
 # These are parameters that set options. They are not `compute` arguments.
 INDICATOR_OPTIONS = ['check_missing', 'missing_options', "cf_compliance", "data_validation"]
+
+# Some other constants
+xclim_variables = set(list_input_variables(submodules=["atmos", "land", "seaIce"]).keys())
+
+
+@dataclass
+class DatasetConfiguration:
+    """
+    Attributes
+    ----------
+    path: str
+        The path (or url) to the root directory where to search for the data.
+    pattern: str
+        The pattern of the filenames. Must include at least : "variable", "scenario" and "model".
+        Patterns must be understandable by :py:func:`parse.parse`.
+    local: bool
+        Whether the path points to a local directory or a remote THREDDS catalog.
+    depth : int
+        The depth to which search for files below the directory. < 0 will search recursively.
+    suffix : str
+        When the files are local, this is the suffix of the files.
+    allowed_values : dict
+        Mapping from field name to a list of allowed values.
+        Must include "scenario", "model" and "variable",
+        the latter defines which variable are available and thus which indicator can be used.
+    model_lists : dict
+        A mapping from list name to a list of model names to provide special sublists.
+        The values can also be a tuple of (model name, realization numer),
+        in which case, pattern must include a "realization" field.
+    """
+    path: str
+    pattern: str
+    local: bool
+    allowed_values: dict
+    depth: int = 0
+    suffix: str = '*nc'
+    model_lists: dict = field(default_factory=dict)
+
+
+def get_datasets_config():
+    p = get_config_value('finch', 'datasets_config')
+    if not p:  # No config given.
+        return {}
+
+    if not Path(p).is_absolute():
+        p = Path(__file__).parent.parent / p
+
+    with open(p) as f:
+        conf = yaml.safe_load(f)
+    return {
+        ds: DatasetConfiguration(**dsconf)
+        for ds, dsconf in conf.items()
+    }
+
+
+def get_available_variables():
+    conf = get_datasets_config()
+    return set(chain(*(d.allowed_values['variable'] for d in conf.values())))
 
 
 def iter_xc_variables(indicator: xclim.core.indicator.Indicator):

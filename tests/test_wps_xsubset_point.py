@@ -63,11 +63,11 @@ def test_thredds():
         Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
     )
     fn1 = (
-        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/cmip5/MRI/rcp85/fx/atmos/r0i0p0/sftlf/"
+        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/disk2/cmip5/MRI/rcp85/fx/atmos/r0i0p0/sftlf/"
         "sftlf_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
     )
     fn2 = (
-        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/cmip5/MRI/rcp85/fx/atmos/r0i0p0/orog/"
+        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/disk2/cmip5/MRI/rcp85/fx/atmos/r0i0p0/orog/"
         "orog_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
     )
 
@@ -93,7 +93,7 @@ def test_bad_link_on_thredds():
     client = client_for(
         Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
     )
-    fn = "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/cmip5/bad_link.nc"
+    fn = "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/disk2/cmip5/bad_link.nc"
     datainputs = (
         f"resource=files@xlink:href={fn};"
         "lat=45.0;"

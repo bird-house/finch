@@ -20,12 +20,34 @@
 #
 import os
 import sys
+from types import ModuleType
 
 # Add finch to sys.path to avoid having to full
 # install finch for autodoc.
 # Full install of finch will burst memory limit on ReadTheDocs.
 sys.path.insert(0, os.path.abspath("../../"))
 
+
+# Create processes module for the processes page:
+import finch.processes  # noqa
+
+processes = sorted(finch.processes.get_processes(), key=lambda p: p.__class__.__name__)
+
+ensemble = {p.__class__.__name__: p.__class__ for p in processes if "Ensemble" in p.__class__.__name__}
+indicators = {p.__class__.__name__: p.__class__ for p in processes if p.__class__.__name__.endswith("_Indicator_Process")}
+others = {p.__class__.__name__: p.__class__ for p in processes if p.__class__.__name__ not in (list(ensemble) + list(indicators))}
+
+ind_mod = ModuleType('indicators', "Indicators Processes\n--------------------")
+ind_mod.__dict__.update(indicators)
+finch.processes.__dict__['indicators'] = ind_mod
+
+ens_mod = ModuleType('ensemble', "Ensemble Processes\n------------------")
+ens_mod.__dict__.update(ensemble)
+finch.processes.__dict__['ensemble'] = ens_mod
+
+oth_mod = ModuleType('other', "Other Processes\n---------------")
+oth_mod.__dict__.update(others)
+finch.processes.__dict__['other'] = oth_mod
 
 # -- General configuration ---------------------------------------------
 
@@ -79,6 +101,7 @@ if os.environ.get('READTHEDOCS') == 'True':
         "zlib",
     ]
 
+
 # Monkeypatch constant because the following are mock imports.
 # Only works if numpy is actually installed and at the same time being mocked.
 #import numpy
@@ -118,7 +141,7 @@ release = "0.9.2"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

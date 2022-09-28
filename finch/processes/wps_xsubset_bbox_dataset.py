@@ -6,7 +6,7 @@ from pywps.response.execute import ExecuteResponse
 
 from .ensemble_utils import get_datasets, make_output_filename
 from .subset import finch_subset_bbox
-from .utils import netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
+from .utils import get_datasets_config, netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
 from .wps_base import FinchProcess
 from . import wpsio
 
@@ -16,8 +16,7 @@ class SubsetBboxDatasetProcess(FinchProcess):
 
     def __init__(self):
         inputs = [
-            wpsio.variable,
-            wpsio.scenario,
+            *wpsio.get_ensemble_inputs(),
             wpsio.lon0,
             wpsio.lon1,
             wpsio.lat0,
@@ -25,7 +24,6 @@ class SubsetBboxDatasetProcess(FinchProcess):
             wpsio.start_date,
             wpsio.end_date,
             wpsio.output_format_netcdf_csv,
-            wpsio.dataset,
         ]
 
         outputs = [wpsio.output_netcdf_csv]
@@ -70,10 +68,14 @@ class SubsetBboxDatasetProcess(FinchProcess):
         variable = request.inputs["variable"][0].data
         variables = None if variable is None else [variable]
         scenario = single_input_or_none(request.inputs, "scenario")
+        models = [m.data.strip() for m in request.inputs["models"]]
 
         dataset_name = single_input_or_none(request.inputs, "dataset")
+        if dataset_name == 'bccaqv2':
+            dataset = get_datasets_config()[dataset_name]
         request.inputs["resource"] = get_datasets(
-            dataset_name, workdir=self.workdir, variables=variables, scenario=scenario
+            dataset, workdir=self.workdir,
+            variables=variables, scenario=scenario, models=models
         )
 
         write_log(self, "Running subset", process_step="subset")

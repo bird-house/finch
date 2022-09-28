@@ -2,6 +2,7 @@ import os
 
 import sentry_sdk
 from pywps.app.Service import Service
+from .processes import get_processes
 
 
 if os.environ.get("SENTRY_DSN"):
@@ -18,9 +19,8 @@ def create_app(cfgfiles=None):
         config_files.append(os.environ["PYWPS_CFG"])
     service = Service(cfgfiles=config_files)
 
-    # delay the import of get_processes() so that the configuration is loaded
+    # delay the call of get_processes() so that the configuration is loaded
     # when instantiating the service
-    from .processes import get_processes
     service.processes = {p.identifier: p for p in get_processes()}
 
     return service

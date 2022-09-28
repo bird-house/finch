@@ -15,8 +15,7 @@ from xclim.core.options import (
     MISSING_OPTIONS,
     OPTIONS
 )
-from .constants import datasets_config
-from .utils import PywpsInput, PywpsOutput
+from .utils import PywpsInput, PywpsOutput, get_datasets_config
 
 
 def copy_io(
@@ -120,56 +119,76 @@ average = LiteralInput(
     min_occurs=0,
 )
 
-variable = LiteralInput(
+
+variable_any = LiteralInput(
     "variable",
-    "NetCDF Variable",
-    abstract="Name of the variable in the NetCDF file. Allowed values depend on the dataset.",
+    "Variable name",
+    abstract="Name of the variable in the input files.",
     data_type="string",
     default=None,
-    min_occurs=0,
-    allowed_values=list(chain(*[d.allowed_values['variable'] for d in datasets_config.values()])),
+    allowed_values=[AnyValue],
+    min_occurs=0
 )
 
-variable_any = copy_io(variable, any_value=True, allowed_values=[AnyValue])
 
-dataset = LiteralInput(
-    "dataset",
-    "Dataset name",
-    abstract=(
-        "Name of the dataset from which to get netcdf files for inputs. "
-        "'BCCAQv2' redirects to CanDCS-U5 for backward compatibility."
-    ),
-    data_type="string",
-    default=None,
-    min_occurs=0,
-    allowed_values=["bccaqv2"] + list(datasets_config.keys()),
-)
+def get_ensemble_inputs(novar=False):
+    datasets_config = get_datasets_config()
 
-scenario = LiteralInput(
-    "scenario",
-    "Emission Scenario",
-    abstract="Emission scenario (RCPs or SSPs, depending on the dataset)",
-    data_type="string",
-    default=None,
-    min_occurs=0,
-    allowed_values=list(chain(*[d.allowed_values['scenario'] for d in datasets_config.values()])),
-)
-
-models = LiteralInput(
-    "models",
-    "Models to include in ensemble",
-    abstract=(
-        "When calculating the ensemble, include only these models. Allowed values depend on the dataset chosen. "
-        "By default, all models are used, taking the first realization of each. Special sublists are also available :"
-    ) + ", ".join([f"{dsid}: {list((d.model_lists or {}).keys())}" for dsid, d in datasets_config.items()]),
-    data_type="string",
-    min_occurs=0,
-    max_occurs=1000,
-    allowed_values=(
-        list(chain(*[d.allowed_values['model'] for d in datasets_config.values()]))
-        + list(chain(*[d.model_lists.keys() for d in datasets_config.values()]))
+    dataset = LiteralInput(
+        "dataset",
+        "Dataset name",
+        abstract=(
+            "Name of the dataset from which to get netcdf files for inputs. "
+            "'BCCAQv2' redirects to CanDCS-U5 for backward compatibility."
+        ),
+        data_type="string",
+        default=None,
+        min_occurs=0,
+        allowed_values=["bccaqv2"] + list(datasets_config.keys()),
     )
-)
+
+    scenario = LiteralInput(
+        "scenario",
+        "Emission Scenario",
+        abstract="Emission scenario (RCPs or SSPs, depending on the dataset)",
+        data_type="string",
+        default=None,
+        min_occurs=0,
+        max_occurs=3,
+        allowed_values=list(set(chain(*[d.allowed_values['scenario'] for d in datasets_config.values()]))),
+    )
+
+    models = LiteralInput(
+        "models",
+        "Models to include in ensemble",
+        abstract=(
+            "When calculating the ensemble, include only these models. Allowed values depend on the dataset chosen. "
+            "By default, all models are used ('all'), taking the first realization of each. "
+            "Special sublists are also available :"
+        ) + ", ".join([f"{dsid}: {list((d.model_lists or {}).keys())}" for dsid, d in datasets_config.items()]),
+        data_type="string",
+        default="all",
+        min_occurs=0,
+        max_occurs=1000,
+        allowed_values=["all"] + (
+            list(chain(*[d.allowed_values['model'] for d in datasets_config.values()]))
+            + list(chain(*[d.model_lists.keys() for d in datasets_config.values()]))
+        )
+    )
+    if novar:
+        return dataset, scenario, models
+
+    variable = LiteralInput(
+        "variable",
+        "NetCDF Variable",
+        abstract="Name of the variable in the NetCDF file. Allowed values depend on the dataset.",
+        data_type="string",
+        default=None,
+        min_occurs=0,
+        allowed_values=list(chain(*[d.allowed_values['variable'] for d in datasets_config.values()])),
+    )
+    return dataset, scenario, models, variable
+
 
 shape = ComplexInput(
     "shape",
@@ -307,7 +326,7 @@ output_name = LiteralInput(
 
 output_prefix = copy_io(
     output_name,
-    abstract="Prefix of the output filename, defaults to the identifier of the process."
+    abstract="Prefix of the output filename, defaults to the dataset name and the identifier of the process."
 )
 
 csv_precision = LiteralInput(
