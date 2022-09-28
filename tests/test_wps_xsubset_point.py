@@ -63,12 +63,12 @@ def test_thredds():
         Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
     )
     fn1 = (
-        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/disk2/cmip5/MRI/rcp85/fx/atmos/r0i0p0/sftlf/"
-        "sftlf_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
+        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/"
+        "birdhouse/disk2/cmip5/MRI/rcp85/fx/atmos/r0i0p0/sftlf/sftlf_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
     )
     fn2 = (
-        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/disk2/cmip5/MRI/rcp85/fx/atmos/r0i0p0/orog/"
-        "orog_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
+        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/"
+        "birdhouse/disk2/cmip5/MRI/rcp85/fx/atmos/r0i0p0/orog/orog_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
     )
 
     datainputs = (
