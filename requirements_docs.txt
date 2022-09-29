@@ -5,3 +5,4 @@ ipython
 xclim==0.37
 matplotlib
 birdhouse-birdy>=0.8.1
+unidecode
