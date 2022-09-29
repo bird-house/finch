@@ -22,7 +22,7 @@ dependencies:
   - bottleneck
   # remember to match xclim version in environment-docs.yml as well
   - xclim=0.37.*
-  - clisops >= 0.8.0
+  - clisops >= 0.9.2
   - pywps >= 4.5.1
   - parse
   - xesmf >= 0.6.2
