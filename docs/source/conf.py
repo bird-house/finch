@@ -75,7 +75,6 @@ if os.environ.get('READTHEDOCS') == 'True':
         "slugify",
         "spotpy",
         "statsmodels",
-        "unidecode",
         "zlib",
     ]
 

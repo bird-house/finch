@@ -9,8 +9,8 @@ dependencies:
   - psutil
   - netcdf4
   - unidecode
-  - dask <= 2022.1.0
-  - distributed <= 2022.1.0
+  - dask
+  - distributed
   - xarray >= 0.18.2
   - numpy
   - geopandas
@@ -21,7 +21,7 @@ dependencies:
   - siphon
   - bottleneck
   # remember to match xclim version in environment-docs.yml as well
-  - xclim == 0.37
+  - xclim=0.37.*
   - clisops >= 0.8.0
   - pywps >= 4.5.1
   - parse
