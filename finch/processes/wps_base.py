@@ -116,9 +116,9 @@ def make_xclim_indicator_process(
 
 
 def convert_xclim_inputs_to_pywps(params: Dict, parent=None, parse_percentiles: bool = False) -> List[PywpsInput]:
-    """Convert xclim indicators properties to pywps inputs.
+    r"""Convert xclim indicators properties to pywps inputs.
 
-    If parse_percentiles is True, percentile variables (*_per) are dropped and replaced by
+    If parse_percentiles is True, percentile variables (\*_per) are dropped and replaced by
     a "percentile" input (a float) with a default taken from constants.
     """
     # Ideally this would be based on the Parameters docstring section rather than name conventions.

@@ -648,7 +648,7 @@ def fix_broken_time_index(ds: xr.Dataset):
 def dataset_to_netcdf(
     ds: xr.Dataset, output_path: Union[Path, str], compression_level=0
 ) -> None:
-    """Write an :class:`xarray.Dataset` dataset to disk, optionally using compression."""
+    """Write an :py:class:`xarray.Dataset` dataset to disk, optionally using compression."""
     encoding = {}
 
     if "time" in ds.dims:
@@ -673,7 +673,7 @@ def update_history(
     new_name: Optional[str] = None,
     **inputs_kws: Union[xr.DataArray, xr.Dataset],
 ):
-    """Return an history string with the timestamped message and the combination of the history of all inputs.
+    r"""Return a history string with the timestamped message and the combination of the history of all inputs.
 
     The new history entry is formatted as "[<timestamp>] <new_name>: <hist_str> - finch version : <finch version>."
 
@@ -683,7 +683,7 @@ def update_history(
       The string describing what has been done on the data.
     new_name : Optional[str]
       The name of the newly created variable or dataset to prefix hist_msg.
-    *inputs_list : Union[xr.DataArray, xr.Dataset]
+    \*inputs_list : Union[xr.DataArray, xr.Dataset]
       The datasets or variables that were used to produce the new object.
       Inputs given that way will be prefixed by their "name" attribute if available.
     **inputs_kws : Union[xr.DataArray, xr.Dataset]
