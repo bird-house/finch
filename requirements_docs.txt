@@ -1,5 +1,5 @@
-pywps >= 4.5.1
-sphinx >= 4.0
+pywps>=4.5.1
+sphinx>=4.0
 nbsphinx
 ipython
 xclim~=0.37
