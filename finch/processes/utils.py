@@ -1,8 +1,9 @@
-from datetime import timedelta, datetime
+import json
 import logging
+import zipfile
+from datetime import datetime, timedelta
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-import json
 from typing import (
     Callable,
     Deque,
@@ -14,30 +15,29 @@ from typing import (
     Tuple,
     Union,
 )
-import zipfile
 
 import cftime
 import netCDF4
 import numpy as np
 import pandas as pd
+import requests
+import sentry_sdk
+import xarray as xr
+import xclim
+from netCDF4 import num2date
 from pywps import (
+    FORMATS,
     BoundingBoxInput,
     BoundingBoxOutput,
     ComplexInput,
     ComplexOutput,
-    FORMATS,
     LiteralInput,
     LiteralOutput,
     Process,
-    configuration
+    configuration,
 )
 from pywps.inout.outputs import MetaFile, MetaLink4
-import requests
 from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
-import sentry_sdk
-import xarray as xr
-from netCDF4 import num2date
-import xclim
 from slugify import slugify
 
 LOGGER = logging.getLogger("PYWPS")
@@ -343,8 +343,8 @@ def chunk_dataset(ds, max_size=1000000, chunk_dims=None):
     found in the dataset.
     """
     from functools import reduce
-    from operator import mul
     from itertools import cycle
+    from operator import mul
 
     chunks = dict(ds.sizes)
 

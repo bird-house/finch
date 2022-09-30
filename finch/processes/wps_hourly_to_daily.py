@@ -1,8 +1,11 @@
-from pywps import ComplexInput, ComplexOutput, FORMATS
-
+import json
 import logging
 from pathlib import Path
-from .wps_base import FinchProcess
+
+import xarray as xr
+from pywps import FORMATS, ComplexInput, ComplexOutput
+from xclim.core.options import MISSING_METHODS
+
 from . import wpsio
 from .utils import (
     dataset_to_netcdf,
@@ -13,9 +16,8 @@ from .utils import (
     valid_filename,
     write_log,
 )
-import xarray as xr
-import json
-from xclim.core.options import MISSING_METHODS
+from .wps_base import FinchProcess
+
 LOGGER = logging.getLogger("PYWPS")
 
 

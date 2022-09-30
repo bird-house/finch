@@ -1,26 +1,26 @@
-from finch.processes.constants import ALL_24_MODELS, PCIC_12
-from pathlib import Path
 import shutil
-from unittest import mock
 import zipfile
+from pathlib import Path
+from unittest import mock
 
 import numpy as np
 import pandas as pd
 import pytest
-from pywps import configuration
 import xarray as xr
+from pywps import configuration
 
 from finch.processes import ensemble_utils
+from finch.processes.constants import ALL_24_MODELS, PCIC_12
 from finch.processes.ensemble_utils import (
-    get_bccaqv2_opendap_datasets,
     get_bccaqv2_local_files_datasets,
+    get_bccaqv2_opendap_datasets,
 )
 from finch.processes.utils import (
     drs_filename,
     is_opendap_url,
     netcdf_file_list_to_csv,
-    zip_files,
     valid_filename,
+    zip_files,
 )
 
 test_data = Path(__file__).parent / "data"

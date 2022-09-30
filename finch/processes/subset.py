@@ -1,25 +1,25 @@
 import logging
 from pathlib import Path
-from urllib.parse import urlparse
 from threading import Lock
 from typing import List
+from urllib.parse import urlparse
 
 import geopandas as gpd
+from clisops.core.average import average_shape
+from clisops.core.subset import subset_bbox, subset_gridpoint, subset_shape, subset_time
 from pywps import ComplexInput, Process
 from pywps.app.exceptions import ProcessError
-from clisops.core.subset import subset_bbox, subset_gridpoint, subset_shape, subset_time
-from clisops.core.average import average_shape
 
 from . import wpsio
 from .utils import (
     RequestInputs,
+    dataset_to_netcdf,
+    make_metalink_output,
     process_threaded,
     single_input_or_none,
     try_opendap,
-    write_log,
-    dataset_to_netcdf,
-    make_metalink_output,
     valid_filename,
+    write_log,
 )
 
 LOGGER = logging.getLogger("PYWPS")

@@ -1,11 +1,10 @@
-from pywps import get_ElementMakerForVersion
 from pathlib import Path
 
 import xarray as xr
 from owslib.wps import WPSExecution
+from pywps import get_ElementMakerForVersion
 from pywps.app.exceptions import ProcessError
 from pywps.tests import assert_response_success
-
 
 VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
@@ -31,6 +30,7 @@ def mock_local_datasets(monkeypatch, filenames=None):
         tasmax   (time, lat, lon) float32 ...
     """
     from pywps.configuration import CONFIG
+
     from finch.processes import ensemble_utils
 
     CONFIG.set("finch", "dataset_bccaqv2", "/mock_local/path")

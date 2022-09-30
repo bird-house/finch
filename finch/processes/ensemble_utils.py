@@ -1,22 +1,21 @@
+import warnings
 from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, cast
-import warnings
 
+import xarray as xr
 from parse import parse
-from pywps import ComplexInput, FORMATS, Process
-from pywps import configuration
+from pywps import FORMATS, ComplexInput, Process, configuration
 from pywps.app.exceptions import ProcessError
 from siphon.catalog import TDSCatalog
-import xarray as xr
-from xclim.indicators.atmos import tg
 from xclim import ensembles
-from xclim.core.calendar import percentile_doy, doy_to_days_since, days_since_to_doy
+from xclim.core.calendar import days_since_to_doy, doy_to_days_since, percentile_doy
 from xclim.core.indicator import Indicator
 from xclim.core.utils import InputKind
+from xclim.indicators.atmos import tg
 
 from .constants import (
     ALL_24_MODELS,
@@ -24,7 +23,7 @@ from .constants import (
     PCIC_12,
     PCIC_12_MODELS_REALIZATIONS,
     bccaq_variables,
-    xclim_variables
+    xclim_variables,
 )
 from .subset import finch_subset_bbox, finch_subset_gridpoint, finch_subset_shape
 from .utils import (

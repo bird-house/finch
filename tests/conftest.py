@@ -1,20 +1,20 @@
+import collections
 import tempfile
 from pathlib import Path
 from shutil import rmtree
 from typing import Dict
-import collections
 
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 import xarray as xr
 from pywps import configuration
-from xclim.core.calendar import percentile_doy
 from scipy.stats import norm, uniform
-from xclim.testing.tests.conftest import pr_series, tas_series, q_series, pr_hr_series
+from xclim.core.calendar import percentile_doy
+from xclim.testing.tests.conftest import pr_hr_series, pr_series, q_series, tas_series
+
 import finch.processes
 import finch.wsgi
-
 
 from .common import CFG_FILE, client_for
 

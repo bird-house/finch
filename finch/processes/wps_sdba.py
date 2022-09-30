@@ -7,23 +7,24 @@ Expose xclim.sdba algorithms as WPS.
 For the moment, both train-adjust operations are bundled into a single process.
 """
 import logging
-import xclim
 from pathlib import Path
+
+import xclim
+from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
 from xclim.core.calendar import convert_calendar
 from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
-from pywps import ComplexInput, LiteralInput, ComplexOutput, FORMATS
-from .wps_base import FinchProcess, FinchProgressBar
-from . import wpsio
 
+from . import wpsio
 from .utils import (
+    dataset_to_netcdf,
     log_file_path,
+    make_metalink_output,
     single_input_or_none,
     try_opendap,
+    valid_filename,
     write_log,
-    dataset_to_netcdf,
-    make_metalink_output,
-    valid_filename
 )
+from .wps_base import FinchProcess, FinchProgressBar
 
 LOGGER = logging.getLogger("PYWPS")
 

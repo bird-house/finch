@@ -4,11 +4,11 @@ from pywps.app import WPSRequest
 from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 
+from . import wpsio
 from .ensemble_utils import get_datasets, make_output_filename
 from .subset import finch_subset_bbox
 from .utils import netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
 from .wps_base import FinchProcess
-from . import wpsio
 
 
 class SubsetBboxDatasetProcess(FinchProcess):

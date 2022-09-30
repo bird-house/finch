@@ -1,12 +1,12 @@
+import zipfile
 from collections import namedtuple
 from pathlib import Path
 from unittest import mock
-import zipfile
 
-import numpy as np
 import geojson
-from xarray import open_dataset
+import numpy as np
 import pytest
+from xarray import open_dataset
 
 from finch.processes import ensemble_utils
 from finch.processes.constants import PCIC_12

@@ -1,20 +1,18 @@
-import logging
 import io
+import logging
+from inspect import _empty as empty_default  # noqa
 from typing import Dict, List
 
-from dask.diagnostics import ProgressBar
-from inspect import _empty as empty_default
-from pywps import ComplexInput, FORMATS, LiteralInput, Process
-from pywps.app.exceptions import ProcessError
-from pywps.app.Common import Metadata
-from sentry_sdk import configure_scope
 import xclim
-
+from dask.diagnostics import ProgressBar
+from pywps import FORMATS, ComplexInput, LiteralInput, Process
+from pywps.app.Common import Metadata
+from pywps.app.exceptions import ProcessError
+from sentry_sdk import configure_scope
 from xclim.core.utils import InputKind
 
 from .constants import default_percentiles
 from .utils import PywpsInput
-
 
 LOGGER = logging.getLogger("PYWPS")
 

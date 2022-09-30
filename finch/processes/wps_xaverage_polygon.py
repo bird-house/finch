@@ -1,10 +1,10 @@
 import logging
 
-from pywps import ComplexInput, ComplexOutput, FORMATS
+from pywps import FORMATS, ComplexInput, ComplexOutput
 
 from . import wpsio
-from .wps_base import FinchProcess
 from .subset import common_subset_handler, finch_average_shape
+from .wps_base import FinchProcess
 
 LOGGER = logging.getLogger("PYWPS")
 

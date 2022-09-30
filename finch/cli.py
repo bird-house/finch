@@ -6,13 +6,14 @@
 ###########################################################
 
 import os
-import psutil
+from urllib.parse import urlparse
+
 import click
+import psutil
 from jinja2 import Environment, PackageLoader
 from pywps import configuration
 
 from . import wsgi
-from urllib.parse import urlparse
 
 PID_FILE = os.path.abspath(os.path.join(os.path.curdir, "pywps.pid"))
 
@@ -75,6 +76,7 @@ def run_process_action(action=None):
 
 def _run(application, bind_host=None, daemon=False):
     from werkzeug.serving import run_simple
+
     # call this *after* app is initialized ... needs pywps config.
     host, port = get_host()
     bind_host = bind_host or host

@@ -7,12 +7,12 @@ from typing import Union
 from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
 from pywps.inout.literaltypes import AnyValue
 from xclim.core.options import (
-    CHECK_MISSING,
     CF_COMPLIANCE,
+    CHECK_MISSING,
     DATA_VALIDATION,
     MISSING_METHODS,
     MISSING_OPTIONS,
-    OPTIONS
+    OPTIONS,
 )
 
 from .constants import ALL_24_MODELS, ALLOWED_MODEL_NAMES

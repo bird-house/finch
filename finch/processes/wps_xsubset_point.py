@@ -1,7 +1,7 @@
-from pywps import ComplexInput, ComplexOutput, FORMATS
+from pywps import FORMATS, ComplexInput, ComplexOutput
 
 from . import wpsio
-from .subset import finch_subset_gridpoint, common_subset_handler
+from .subset import common_subset_handler, finch_subset_gridpoint
 from .wps_base import FinchProcess
 
 

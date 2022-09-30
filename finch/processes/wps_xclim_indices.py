@@ -1,11 +1,11 @@
-from collections import deque
 import logging
+from collections import deque
 from pathlib import Path
 from typing import List, Optional
 
+import xarray as xr
 from pywps.app.exceptions import ProcessError
 from unidecode import unidecode
-import xarray as xr
 
 from . import wpsio
 from .constants import xclim_variables
@@ -20,13 +20,9 @@ from .utils import (
     single_input_or_none,
     valid_filename,
     write_log,
-    zip_files
+    zip_files,
 )
-from .wps_base import (
-    FinchProcess,
-    FinchProgressBar,
-    convert_xclim_inputs_to_pywps,
-)
+from .wps_base import FinchProcess, FinchProgressBar, convert_xclim_inputs_to_pywps
 
 LOGGER = logging.getLogger("PYWPS")
 

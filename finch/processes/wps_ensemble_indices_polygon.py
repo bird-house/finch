@@ -3,10 +3,10 @@ import logging
 from unidecode import unidecode
 
 from . import wpsio
-from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
-from .ensemble_utils import ensemble_common_handler
 from .constants import xclim_variables
+from .ensemble_utils import ensemble_common_handler
 from .subset import finch_subset_shape
+from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
 
 LOGGER = logging.getLogger("PYWPS")
 

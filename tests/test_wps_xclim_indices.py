@@ -1,23 +1,25 @@
 import json
-import pytest
-from lxml import etree
-import numpy as np
-import xarray as xr
-import pandas as pd
-from zipfile import ZipFile
 import warnings
-import finch
-import finch.processes
-from finch.processes.wps_xclim_indices import XclimIndicatorBase
-from finch.processes.wps_base import make_xclim_indicator_process
-from . utils import execute_process, wps_input_file, wps_literal_input
 from pathlib import Path
-from pywps.app.exceptions import ProcessError
-from pywps import configuration
 from unittest import mock
+from zipfile import ZipFile
+
+import numpy as np
+import pandas as pd
+import pytest
+import xarray as xr
+from lxml import etree
 from numpy.testing import assert_equal
+from pywps import configuration
+from pywps.app.exceptions import ProcessError
 from xclim.testing import open_dataset
 
+import finch
+import finch.processes
+from finch.processes.wps_base import make_xclim_indicator_process
+from finch.processes.wps_xclim_indices import XclimIndicatorBase
+
+from .utils import execute_process, wps_input_file, wps_literal_input
 
 K2C = 273.16
 configuration.CONFIG['finch:metadata']['testing_session'] = "True"
