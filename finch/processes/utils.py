@@ -352,7 +352,7 @@ def chunk_dataset(ds, max_size=1000000, chunk_dims=None):
     if not dims:
         LOGGER.warning(
             f"Provided dimension names for chunking ({chunk_dims}) were "
-             f"not found in dataset dims ({ds.dims}). No chunking was done."
+            f"not found in dataset dims ({ds.dims}). No chunking was done."
         )
         return chunks
 
