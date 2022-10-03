@@ -351,8 +351,8 @@ def chunk_dataset(ds, max_size=1000000, chunk_dims=None):
     dims = set(ds.dims).intersection(chunk_dims or ds.dims)
     if not dims:
         LOGGER.warning(
-            (f"Provided dimension names for chunking ({chunk_dims}) were "
-             f"not found in dataset dims ({ds.dims}). No chunking was done.")
+            f"Provided dimension names for chunking ({chunk_dims}) were "
+             f"not found in dataset dims ({ds.dims}). No chunking was done."
         )
         return chunks
 

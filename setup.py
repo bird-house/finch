@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """The setup script."""
 
@@ -14,7 +13,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 REQUIRES_PYTHON = ">=3.8"
 
 about = {}
-with open(os.path.join(here, "finch", "__version__.py"), "r") as f:
+with open(os.path.join(here, "finch", "__version__.py")) as f:
     exec(f.read(), about)
 
 egg_regex = re.compile(r"#egg=(\w+)")

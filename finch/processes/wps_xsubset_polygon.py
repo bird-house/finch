@@ -37,7 +37,7 @@ class SubsetPolygonProcess(FinchProcess):
             wpsio.output_metalink,
         ]
 
-        super(SubsetPolygonProcess, self).__init__(
+        super().__init__(
             self._handler,
             identifier="subset_polygon",
             title="Subset with one or more polygons",

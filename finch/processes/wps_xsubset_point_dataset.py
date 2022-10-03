@@ -78,10 +78,10 @@ class SubsetGridPointDatasetProcess(FinchProcess):
 
         # Temporary backward-compatibility adjustment.
         # Remove me when lon0 and lat0 are removed
-        lon, lat, lon0, lat0 = [
+        lon, lat, lon0, lat0 = (
             single_input_or_none(request.inputs, var)
             for var in "lon lat lon0 lat0".split()
-        ]
+        )
         if not (lon and lat or lon0 and lat0):
             raise ProcessError("Provide both lat and lon or both lon0 and lat0.")
         request.inputs.setdefault("lon", request.inputs.get("lon0"))

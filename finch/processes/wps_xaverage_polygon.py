@@ -38,7 +38,7 @@ class AveragePolygonProcess(FinchProcess):
             wpsio.output_metalink,
         ]
 
-        super(AveragePolygonProcess, self).__init__(
+        super().__init__(
             self._handler,
             identifier="average_polygon",
             title="Average over one or more polygons",

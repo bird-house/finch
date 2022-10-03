@@ -62,7 +62,7 @@ class FinchProgressBar(ProgressBar):
     def __init__(
         self, logging_function, start_percentage=0, end_percentage=100, *args, **kwargs
     ):
-        super(FinchProgressBar, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # In rare cases writing to stdout causes bugs on binder
         # Here we write to an in-memory file
         self._file = io.StringIO()
