@@ -4,7 +4,7 @@ xclim==0.37
 xarray>=0.18.2
 pandas
 xesmf>=0.6.2
-clisops>=0.8.0
+clisops>=0.9.3
 geopandas
 jinja2
 click
