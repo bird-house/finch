@@ -318,7 +318,7 @@ def try_opendap(
     except NotImplementedError:
         if chunks == 'auto':
             # Some dtypes are not compatible with auto chunking (object, so unbounded strings)
-            logging_function(f"xarray auto-chunking failed, opening with no chunks and inferring chunks ourselves.")
+            logging_function("xarray auto-chunking failed, opening with no chunks and inferring chunks ourselves.")
             chunks = None
             ds = xr.open_dataset(path, chunks=None, decode_times=decode_times)
         else:
