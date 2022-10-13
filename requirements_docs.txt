@@ -6,3 +6,4 @@ xclim==0.38
 matplotlib
 birdhouse-birdy>=0.8.1
 unidecode
+sphinxcontrib-bibtex

@@ -32,6 +32,7 @@ xclim references
 
 .. bibliography::
 
+.. There are other categories, but only those with references appearing in the indicator's abstract, title, parameters or returns are needed here. Those in notes don't make it to the process docstring.
 McArthur Forest Fire Danger Indices methods
 *******************************************
 
