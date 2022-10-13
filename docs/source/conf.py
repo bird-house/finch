@@ -19,7 +19,10 @@
 # absolute, like shown here.
 #
 import os
+from pathlib import Path
 import sys
+from urllib.request import urlopen
+from xclim import __version__ as xcver
 
 # Add finch to sys.path to avoid having to full
 # install finch for autodoc.
@@ -46,6 +49,7 @@ extensions = [
     "sphinx.ext.imgconverter",
     "nbsphinx",
     "IPython.sphinxext.ipython_console_highlighting",
+    "sphinxcontrib.bibtex"
 ]
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
@@ -78,6 +82,13 @@ if os.environ.get('READTHEDOCS') == 'True':
         "zlib",
     ]
 
+# Bibliography stuff, for correct xclim docstring formatting
+# We need to download the reference file from xclim for the correct version.
+r = urlopen(f"https://github.com/Ouranosinc/xclim/raw/v{xcver}/docs/references.bib")
+with (Path(__file__).parent / 'references.bib').open('wb') as f:
+    f.write(r.read())
+bibtex_bibfiles = ["references.bib"]
+bibtex_reference_style = "author_year"
 
 # Monkeypatch constant because the following are mock imports.
 # Only works if numpy is actually installed and at the same time being mocked.
@@ -101,7 +112,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "Finch"
-copyright = "2018-2020, David Huard"
+copyright = "2018-2022, David Huard"
 author = "David Huard"
 
 # The version info for the project you're documenting, acts as replacement
