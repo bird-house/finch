@@ -18,11 +18,13 @@
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 #
+from datetime import datetime
 import os
 from pathlib import Path
 import sys
 from urllib.request import urlopen
 from xclim import __version__ as xcver
+import warnings
 
 # Add finch to sys.path to avoid having to full
 # install finch for autodoc.
@@ -84,11 +86,19 @@ if os.environ.get('READTHEDOCS') == 'True':
 
 # Bibliography stuff, for correct xclim docstring formatting
 # We need to download the reference file from xclim for the correct version.
-r = urlopen(f"https://github.com/Ouranosinc/xclim/raw/v{xcver}/docs/references.bib")
-with (Path(__file__).parent / 'references.bib').open('wb') as f:
-    f.write(r.read())
-bibtex_bibfiles = ["references.bib"]
-bibtex_reference_style = "author_year"
+bibfile = Path(__file__).parent / 'references.bib'
+if not bibfile.is_file():
+    try:
+        r = urlopen(f"https://github.com/Ouranosinc/xclim/raw/v{xcver}/docs/references.bib")
+    except Exception as err:
+        warnings.warn(f'Unable to download xclim references file, docstrings will be incomplete. (Got {err})')
+    else:
+        with bibfile.open('wb') as f:
+            f.write(r.read())
+
+if bibfile.is_file():
+    bibtex_bibfiles = ["references.bib"]
+    bibtex_reference_style = "author_year"
 
 # Monkeypatch constant because the following are mock imports.
 # Only works if numpy is actually installed and at the same time being mocked.
