@@ -302,7 +302,7 @@ def try_opendap(
     logging_function(f"Try opening DAP link {url}")
 
     if is_opendap_url(url):
-        ds = xr.open_dataset(url, chunks=chunks or None, decode_times=decode_times)
+        path = url
         logging_function(f"Opened dataset as an OPeNDAP url: {url}")
     else:
         if url.startswith("http"):
@@ -310,8 +310,19 @@ def try_opendap(
             logging_function(f"Downloading dataset for url: {url}")
         else:
             logging_function(f"Opening as local file: {input.file}")
+        path = input.file
 
-        ds = xr.open_dataset(input.file, chunks=chunks or None, decode_times=decode_times)
+    try:
+        # Try to open the dataset
+        ds = xr.open_dataset(path, chunks=chunks or None, decode_times=decode_times)
+    except NotImplementedError:
+        if chunks == 'auto':
+            # Some dtypes are not compatible with auto chunking (object, so unbounded strings)
+            logging_function(f"xarray auto-chunking failed, opening with no chunks and inferring chunks ourselves.")
+            chunks = None
+            ds = xr.open_dataset(path, chunks=None, decode_times=decode_times)
+        else:
+            raise
 
     # To handle large number of grid cells (50+) in subsetted data
     if "region" in ds.dims and "time" in ds.dims:

@@ -163,8 +163,8 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
                 ds = try_opendap(request.inputs[key][0])
                 name = variable or list(ds.data_vars)[0]
 
-                # Force calendar to noleap
-                res[key] = convert_calendar(ds[name], "noleap")
+                # Force calendar to noleap and rechunk
+                res[key] = convert_calendar(ds[name], "noleap").chunk({'time': -1})
 
             elif key in group_args:
                 group[key] = single_input_or_none(request.inputs, key)
