@@ -112,7 +112,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "Finch"
-copyright = "2018-2022, David Huard"
+copyright = f"2018-{date.today().year()}, David Huard"
 author = "David Huard"
 
 # The version info for the project you're documenting, acts as replacement
