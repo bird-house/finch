@@ -25,3 +25,17 @@ This page documents the processes available with the default configuration of fi
     :members:
     :imported-members:
     :undoc-members:
+
+
+xclim references
+----------------
+
+.. bibliography::
+
+.. There are other categories, but only those with references appearing in the indicator's abstract, title, parameters or returns are needed here. Those in notes don't make it to the process docstring.
+McArthur Forest Fire Danger Indices methods
+*******************************************
+
+.. bibliography::
+   :labelprefix: FFDI-
+   :keyprefix: ffdi-

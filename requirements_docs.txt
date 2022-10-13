@@ -2,7 +2,8 @@ pywps >= 4.5.1
 sphinx >= 4.0
 nbsphinx
 ipython
-xclim==0.37
+xclim==0.38
 matplotlib
 birdhouse-birdy>=0.8.1
 unidecode
+sphinxcontrib-bibtex

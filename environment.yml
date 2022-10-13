@@ -20,8 +20,8 @@ dependencies:
   - sentry-sdk
   - siphon
   - bottleneck
-  # remember to match xclim version in environment-docs.yml as well
-  - xclim =0.37.*
+  # remember to match xclim version in requirements_docs.txt as well
+  - xclim =0.38.*
   - clisops >=0.9.3
   - pywps >=4.5.1
   - parse
