@@ -12,14 +12,12 @@ from finch.processes.wps_base import make_xclim_indicator_process
 from .utils import execute_process, wps_input_file, wps_literal_input
 from pathlib import Path
 from pywps.app.exceptions import ProcessError
-from pywps import configuration
 from unittest import mock
 from numpy.testing import assert_equal
 from xclim.testing import open_dataset
 
 
 K2C = 273.16
-configuration.CONFIG['finch:metadata']['testing_session'] = "True"
 
 
 def _get_output_standard_name(process_identifier):

@@ -61,12 +61,9 @@ class SubsetBboxDatasetProcess(FinchProcess):
 
         write_log(self, "Processing started", process_step="start")
 
-        output_filename = make_output_filename(self, request.inputs)
-
         write_log(self, "Fetching datasets")
 
-        variable = request.inputs["variable"][0].data
-        variables = None if variable is None else [variable]
+        variables = [v.data for v in request.inputs.get("variable", [])] or None
         scenario = single_input_or_none(request.inputs, "scenario")
         models = [m.data.strip() for m in request.inputs["models"]]
 
@@ -77,7 +74,9 @@ class SubsetBboxDatasetProcess(FinchProcess):
             variables=variables, scenario=scenario, models=models
         )
 
-        write_log(self, "Running subset", process_step="subset")
+        output_filename = Path(make_output_filename(self, request.inputs))
+
+        write_log(self, f"Running subset on {len(request.inputs['resource'])} resources.", process_step="subset")
 
         output_files = finch_subset_bbox(
             self,
@@ -101,7 +100,7 @@ class SubsetBboxDatasetProcess(FinchProcess):
 
         write_log(self, "Zipping outputs", process_step="zip_outputs")
 
-        output_zip = Path(self.workdir) / (output_filename + ".zip")
+        output_zip = Path(self.workdir) / output_filename.with_suffix(".zip")
 
         def _log(message, percentage):
             write_log(self, message, subtask_percentage=percentage)

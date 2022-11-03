@@ -545,8 +545,9 @@ def netcdf_file_list_to_csv(
             df = dataset_to_dataframe(ds)
 
             if calendar not in concat_by_calendar:
-                if "lat" in df.index.names and "lon" in df.index.names:
-                    df = df.reset_index(["lat", "lon"])
+                # TODO: Why was this there? When we have a time axis, this makes the concat fail.
+                # if "lat" in df.index.names and "lon" in df.index.names:
+                #     df = df.reset_index(["lat", "lon"])
                 concat_by_calendar[calendar] = [df]
             else:
                 concat_by_calendar[calendar].append(df[output_variable])

@@ -24,6 +24,3 @@ def create_app(cfgfiles=None):
     service.processes = {p.identifier: p for p in get_processes()}
 
     return service
-
-
-application = create_app()

@@ -1,3 +1,4 @@
+from pathlib import Path
 import pytest
 import numpy as np
 import xarray as xr
@@ -52,17 +53,20 @@ def test_wps_subsetbbox_dataset(client, outfmt):
 
     # --- then ---
     assert len(outputs) == 1
-    assert outputs[0] == 'test_subset_subset_bbox_dataset_45_000_-74_000_46_000_-73_000_rcp45.zip'
+    assert Path(outputs[0]).stem == 'test_subset_subset_bbox_dataset_45_000_74_000_46_000_73_000_rcp45'
 
     zf = zipfile.ZipFile(outputs[0])
-    assert len(zf.namelist()) == 4 if outfmt == 'netcdf' else 5
-    data_filenames = [n for n in zf.namelist() if "metadata" not in n]
+    assert len(zf.namelist()) == (4 if outfmt == 'netcdf' else 5)
 
-    ds = xr.open_dataset(zf.read(data_filenames[0]))
+    if outfmt == 'netcdf':
+        data_filenames = [n for n in zf.namelist() if "metadata" not in n]
 
-    dims = dict(ds.dims)
-    assert dims == {
-        "lon": 6,
-        "lat": 6,
-        "time": 100,
-    }
+        with zf.open(data_filenames[0]) as f:
+            ds = xr.open_dataset(f)
+
+            dims = dict(ds.dims)
+            assert dims == {
+                "lon": 6,
+                "lat": 6,
+                "time": 100,
+            }

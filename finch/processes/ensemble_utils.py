@@ -214,6 +214,8 @@ def make_output_filename(process: Process, inputs: List[PywpsInput], scenario=No
     """
     if scenario is None:
         scenario = single_input_or_none(inputs, "scenario")
+    if dataset is None:
+        dataset = single_input_or_none(inputs, "dataset")
     lat = _formatted_coordinate(single_input_or_none(inputs, "lat"))
     lon = _formatted_coordinate(single_input_or_none(inputs, "lon"))
     lat0 = _formatted_coordinate(single_input_or_none(inputs, "lat0"))
