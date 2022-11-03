@@ -2,15 +2,15 @@ name: finch
 channels:
   - conda-forge
 dependencies:
-  - python >=3.7
+  - python >=3.8
   - pip
   - jinja2
   - click
   - psutil
   - netcdf4
   - unidecode
-  - dask <= 2022.1.0
-  - distributed <= 2022.1.0
+  - dask
+  - distributed
   - xarray >=0.18.2
   - numpy
   - geopandas
@@ -20,10 +20,11 @@ dependencies:
   - sentry-sdk
   - siphon
   - bottleneck
-  # remember to match xclim version in environment-docs.yml as well
-  - xclim == 0.37
-  - clisops >= 0.8.0
-  - pywps >= 4.5.1
+  # remember to match xclim version in requirements_docs.txt as well
+  - xclim =0.38.*
+  - clisops >=0.9.3
+  - pywps >=4.5.1
   - parse
-  - xesmf >= 0.6.2
+  - xesmf >=0.6.2
   - python-slugify
+  - pyyaml

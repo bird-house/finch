@@ -2,9 +2,11 @@
 
 import json
 from copy import deepcopy
+from itertools import chain
 from typing import Union
 
 from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
+from pywps.configuration import get_config_value
 from pywps.inout.literaltypes import AnyValue
 from xclim.core.options import (
     CHECK_MISSING,
@@ -14,9 +16,7 @@ from xclim.core.options import (
     MISSING_OPTIONS,
     OPTIONS
 )
-
-from .constants import ALL_24_MODELS, ALLOWED_MODEL_NAMES
-from .utils import PywpsInput, PywpsOutput
+from .utils import PywpsInput, PywpsOutput, get_datasets_config
 
 
 def copy_io(
@@ -120,50 +120,74 @@ average = LiteralInput(
     min_occurs=0,
 )
 
-variable = LiteralInput(
+
+variable_any = LiteralInput(
     "variable",
-    "NetCDF Variable",
-    abstract="Name of the variable in the NetCDF file.",
+    "Variable name",
+    abstract="Name of the variable in the input files.",
     data_type="string",
     default=None,
-    min_occurs=0,
-    allowed_values=["tasmin", "tasmax", "pr"],
+    allowed_values=[AnyValue],
+    min_occurs=0
 )
 
-variable_any = copy_io(variable, any_value=True, allowed_values=[AnyValue])
 
-dataset_name = LiteralInput(
-    "dataset_name",
-    "Dataset name",
-    abstract="Name of the dataset from which to get netcdf files for inputs.",
-    data_type="string",
-    default=None,
-    min_occurs=0,
-    allowed_values=["bccaqv2"],
-)
+def get_ensemble_inputs(novar=False):
+    datasets_config = get_datasets_config()
+    default_dataset = get_config_value('finch', 'default_dataset')
 
-rcp = LiteralInput(
-    "rcp",
-    "RCP Scenario",
-    abstract="Representative Concentration Pathway (RCP)",
-    data_type="string",
-    default=None,
-    min_occurs=0,
-    allowed_values=["rcp26", "rcp45", "rcp85"],
-)
+    dataset = LiteralInput(
+        "dataset",
+        "Dataset name",
+        abstract="Name of the dataset from which to get netcdf files for inputs.",
+        data_type="string",
+        default=default_dataset,
+        min_occurs=0,
+        allowed_values=list(datasets_config.keys()),
+    )
 
-models = LiteralInput(
-    "models",
-    "Models to include in ensemble",
-    abstract=(
-        "When calculating the ensemble, include only these models. By default, all 24 models are used."
-    ),
-    data_type="string",
-    default=ALL_24_MODELS,
-    min_occurs=0,
-    max_occurs=1000,
-    allowed_values=ALLOWED_MODEL_NAMES,
-)
+    scenario = LiteralInput(
+        "scenario",
+        "Emission Scenario",
+        abstract="Emission scenario (RCPs or SSPs, depending on the dataset)",
+        data_type="string",
+        default=None,
+        min_occurs=0,
+        max_occurs=3,
+        allowed_values=list(set(chain(*[d.allowed_values['scenario'] for d in datasets_config.values()]))),
+    )
+
+    models = LiteralInput(
+        "models",
+        "Models to include in ensemble",
+        abstract=(
+            "When calculating the ensemble, include only these models. Allowed values depend on the dataset chosen. "
+            "By default, all models are used ('all'), taking the first realization of each. "
+            "Special sublists are also available :"
+        ) + ", ".join([f"{dsid}: {list((d.model_lists or {}).keys())}" for dsid, d in datasets_config.items()]),
+        data_type="string",
+        default="all",
+        min_occurs=0,
+        max_occurs=1000,
+        allowed_values=["all"] + (
+            list(chain(*[d.allowed_values['model'] for d in datasets_config.values()]))
+            + list(chain(*[d.model_lists.keys() for d in datasets_config.values()]))
+        )
+    )
+    if novar:
+        return dataset, scenario, models
+
+    variable = LiteralInput(
+        "variable",
+        "NetCDF Variable",
+        abstract="Name of the variable in the NetCDF file. Allowed values depend on the dataset.",
+        data_type="string",
+        default=None,
+        min_occurs=0,
+        allowed_values=list(chain(*[d.allowed_values['variable'] for d in datasets_config.values()])),
+    )
+    return dataset, scenario, models, variable
+
 
 shape = ComplexInput(
     "shape",
@@ -301,7 +325,7 @@ output_name = LiteralInput(
 
 output_prefix = copy_io(
     output_name,
-    abstract="Prefix of the output filename, defaults to the identifier of the process."
+    abstract="Prefix of the output filename, defaults to the dataset name and the identifier of the process."
 )
 
 csv_precision = LiteralInput(

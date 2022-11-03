@@ -8,7 +8,6 @@ from unidecode import unidecode
 import xarray as xr
 
 from . import wpsio
-from .constants import xclim_variables
 from .utils import (
     compute_indices,
     dataset_to_dataframe,
@@ -20,6 +19,7 @@ from .utils import (
     single_input_or_none,
     valid_filename,
     write_log,
+    xclim_variables,
     zip_files
 )
 from .wps_base import (

@@ -18,8 +18,13 @@
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 #
+from datetime import datetime
 import os
+from pathlib import Path
 import sys
+from urllib.request import urlopen
+from xclim import __version__ as xcver
+import warnings
 
 # Add finch to sys.path to avoid having to full
 # install finch for autodoc.
@@ -46,6 +51,7 @@ extensions = [
     "sphinx.ext.imgconverter",
     "nbsphinx",
     "IPython.sphinxext.ipython_console_highlighting",
+    "sphinxcontrib.bibtex"
 ]
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
@@ -75,14 +81,29 @@ if os.environ.get('READTHEDOCS') == 'True':
         "slugify",
         "spotpy",
         "statsmodels",
-        "unidecode",
         "zlib",
     ]
 
+# Bibliography stuff, for correct xclim docstring formatting
+# We need to download the reference file from xclim for the correct version.
+bibfile = Path(__file__).parent / 'references.bib'
+if not bibfile.is_file():
+    try:
+        r = urlopen(f"https://github.com/Ouranosinc/xclim/raw/v{xcver}/docs/references.bib")
+    except Exception as err:
+        warnings.warn(f'Unable to download xclim references file, docstrings will be incomplete. (Got {err})')
+    else:
+        with bibfile.open('wb') as f:
+            f.write(r.read())
+
+if bibfile.is_file():
+    bibtex_bibfiles = ["references.bib"]
+    bibtex_reference_style = "author_year"
+
 # Monkeypatch constant because the following are mock imports.
 # Only works if numpy is actually installed and at the same time being mocked.
-#import numpy
-#numpy.pi = 3.1416
+# import numpy
+# numpy.pi = 3.1416
 
 # We are using mock imports in readthedocs, so probably safer to not run the notebooks
 nbsphinx_execute = 'never'
@@ -101,7 +122,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "Finch"
-copyright = "2018-2020, David Huard"
+copyright = f"2018-{datetime.today().year}, David Huard"
 author = "David Huard"
 
 # The version info for the project you're documenting, acts as replacement
@@ -118,7 +139,7 @@ release = "0.9.2"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
