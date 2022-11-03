@@ -86,8 +86,6 @@ class SubsetGridPointDatasetProcess(FinchProcess):
         request.inputs.setdefault("lat", request.inputs.get("lat0"))
         # End of 'remove me'
 
-        output_filename = make_output_filename(self, request.inputs)
-
         write_log(self, "Fetching datasets")
 
         variable = request.inputs["variable"][0].data
@@ -96,13 +94,13 @@ class SubsetGridPointDatasetProcess(FinchProcess):
         models = [m.data.strip() for m in request.inputs["models"]]
 
         dataset_name = single_input_or_none(request.inputs, "dataset")
-        if dataset_name == 'bccaqv2':
-            dataset_name = 'candcs-u5'
         dataset = get_datasets_config()[dataset_name]
         request.inputs["resource"] = get_datasets(
             dataset, workdir=self.workdir,
             variables=variables, scenario=scenario, models=models
         )
+
+        output_filename = make_output_filename(self, request.inputs, scenario=scenario, dataset=dataset_name)
 
         write_log(self, "Running subset", process_step="subset")
 

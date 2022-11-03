@@ -71,8 +71,7 @@ class SubsetBboxDatasetProcess(FinchProcess):
         models = [m.data.strip() for m in request.inputs["models"]]
 
         dataset_name = single_input_or_none(request.inputs, "dataset")
-        if dataset_name == 'bccaqv2':
-            dataset = get_datasets_config()[dataset_name]
+        dataset = get_datasets_config()[dataset_name]
         request.inputs["resource"] = get_datasets(
             dataset, workdir=self.workdir,
             variables=variables, scenario=scenario, models=models

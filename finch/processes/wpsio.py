@@ -6,6 +6,7 @@ from itertools import chain
 from typing import Union
 
 from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
+from pywps.configuration import get_config_value
 from pywps.inout.literaltypes import AnyValue
 from xclim.core.options import (
     CHECK_MISSING,
@@ -133,18 +134,16 @@ variable_any = LiteralInput(
 
 def get_ensemble_inputs(novar=False):
     datasets_config = get_datasets_config()
+    default_dataset = get_config_value('finch', 'default_dataset')
 
     dataset = LiteralInput(
         "dataset",
         "Dataset name",
-        abstract=(
-            "Name of the dataset from which to get netcdf files for inputs. "
-            "'BCCAQv2' redirects to CanDCS-U5 for backward compatibility."
-        ),
+        abstract="Name of the dataset from which to get netcdf files for inputs.",
         data_type="string",
-        default=None,
+        default=default_dataset,
         min_occurs=0,
-        allowed_values=["bccaqv2"] + list(datasets_config.keys()),
+        allowed_values=list(datasets_config.keys()),
     )
 
     scenario = LiteralInput(

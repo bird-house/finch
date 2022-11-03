@@ -428,11 +428,6 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     }
 
     dataset_name = single_input_or_none(request.inputs, "dataset")
-    if dataset_name is None:
-        dataset_name = configuration.get_config_value('finch', 'default_dataset')
-    if dataset_name == 'bccaqv2':
-        dataset_name = 'candcs-u5'
-
     dataset = get_datasets_config()[dataset_name]
 
     needed_variables = set(iter_xc_variables(process.xci))

@@ -54,7 +54,7 @@ Configuration sections and values specific to Finch are:
 finch
 ^^^^^
 :datasets_config: Path to the YAML files defining the available ensemble datasets (see below). The path can be given relative to the "finch/finch/" folder, where `default.cfg` lives.
-:default_dataset: Default dataset to use when none is requested. Should be a top-level key of the yaml.
+:default_dataset: Default dataset to use. Should be a top-level key of the yaml.
 :subset_threads: Number of threads to use when performing the subsetting.
 
 finch:metadata

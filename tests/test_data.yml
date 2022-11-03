@@ -50,6 +50,7 @@ test_single_cell:
       - [ MPI-ESM-LR , r3i1p1 ]
       - [ MRI-CGCM3 , r1i1p1 ]
       - [ inmcm4 , r1i1p1 ]
+
 test_subset:
   local: true
   depth: 0

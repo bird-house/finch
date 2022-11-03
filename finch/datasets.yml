@@ -1,4 +1,5 @@
 candcs-u5:
+  &candcsu5
   local: false
   depth: 0
   path: https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/catalog/birdhouse/disk2/pcic/BCCAQv2/catalog.xml
@@ -50,6 +51,9 @@ candcs-u5:
       - [ MPI-ESM-LR , r3i1p1 ]
       - [ MRI-CGCM3 , r1i1p1 ]
       - [ inmcm4 , r1i1p1 ]
+
+# This is a copy of the above for backward compatibility reasons.
+bccaqv2: *candcsu5
 
 candcs-u6:
   local: false

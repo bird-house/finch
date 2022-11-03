@@ -2,7 +2,7 @@
 Processes as a virtual submodule
 --------------------------------
 When imported, this module exposes the default list of processes as virtual modules : indicators, ensemble and other.
-It forces the loading of the "default.cfg" file is no datasets were configured.
+It forces the loading of the "default.cfg" file if no datasets were configured.
 
 It is meant to provide sphinx with something to document, not to be used in reality.
 We needed to have this code within finch, so that the autodoc mock imports are functional.
