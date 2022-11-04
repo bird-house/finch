@@ -1,9 +1,18 @@
 Changes
 *******
 
-0.9.3 (unreleased)
-==================
-* Improved subset_grid_point_dataset & subset_bbox_dataset performance when using local files
+0.10.0 (unreleased)
+===================
+* Generalize ensemble datasets configuration.
+    - Datasets usable by ensemble processes are now specified through a YAML file which is pointed to in the configuration.
+    - As a consequence processes are generated according to the available variables. Similarly for the allowed values of some inputs on these processes.
+    - The output name now includes the dataset name (if a custom name was not specified).
+    - ``finch.processes.xclim`` was removed, there is no static module of processes.
+    - Input "rcp" has been renamed to "scenario".
+    - Input "dataset_name" has been fixed and renamed to "dataset".
+* ``finch.wsgi.application`` had been removed.
+* Update to xclim 0.38.0.
+* Improved subset_grid_point_dataset & subset_bbox_dataset performance when using local files.
 
 0.9.2 (2022-07-19)
 ==================

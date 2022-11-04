@@ -1,14 +1,16 @@
 from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass
-from enum import Enum
+import logging
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple, cast
+import sys
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 import warnings
 
 from parse import parse
 from pywps import ComplexInput, FORMATS, Process
 from pywps import configuration
+from pywps.exceptions import InvalidParameterValue
 from pywps.app.exceptions import ProcessError
 from siphon.catalog import TDSCatalog
 import xarray as xr
@@ -16,24 +18,18 @@ from xclim.indicators.atmos import tg
 from xclim import ensembles
 from xclim.core.calendar import percentile_doy, doy_to_days_since, days_since_to_doy
 from xclim.core.indicator import Indicator
-from xclim.core.utils import InputKind
 
-from .constants import (
-    ALL_24_MODELS,
-    BCCAQV2_MODELS,
-    PCIC_12,
-    PCIC_12_MODELS_REALIZATIONS,
-    bccaq_variables,
-    xclim_variables
-)
 from .subset import finch_subset_bbox, finch_subset_gridpoint, finch_subset_shape
 from .utils import (
+    DatasetConfiguration,
     PywpsInput,
     RequestInputs,
     compute_indices,
     dataset_to_dataframe,
     dataset_to_netcdf,
     format_metadata,
+    get_datasets_config,
+    iter_xc_variables,
     log_file_path,
     single_input_or_none,
     valid_filename,
@@ -41,37 +37,7 @@ from .utils import (
     zip_files,
 )
 from .wps_base import make_nc_input
-
-
-@dataclass
-class Bccaqv2File:
-    variable: str
-    frequency: str
-    driving_model_id: str
-    driving_experiment_id: str
-    driving_realization: str
-    driving_initialization_method: str
-    driving_physics_version: str
-    date_start: Optional[str] = None
-    date_end: Optional[str] = None
-
-    @classmethod
-    def from_filename(cls, filename):
-        pattern = "_".join(
-            [
-                "{variable}",
-                "{frequency}",
-                "BCCAQv2+ANUSPLIN300",
-                "{driving_model_id}",
-                "{driving_experiment_id}",
-                "r{driving_realization}i{driving_initialization_method}p{driving_physics_version}",
-                "{date_start}-{date_end}.nc",
-            ]
-        )
-        try:
-            return cls(**parse(pattern, filename).named)
-        except AttributeError:
-            return
+LOGGER = logging.getLogger("PYWPS")
 
 
 def _percentile_doy(var: xr.DataArray, perc: int) -> xr.DataArray:
@@ -86,192 +52,144 @@ variable_computations = {
     "pr_per": {"inputs": ["pr"], "args": ["perc_pr"], "function": _percentile_doy}
 }
 
-accepted_variables = bccaq_variables.union(variable_computations)
-not_implemented_variables = xclim_variables - accepted_variables
+
+@dataclass
+class Dataset:
+    variable: str
+    model: str
+    scenario: str
+    frequency: str = "day"
+    realization: Optional[str] = None
+    date_start: Optional[str] = None
+    date_end: Optional[str] = None
+
+    @classmethod
+    def from_filename(cls, filename, pattern):
+        match = parse(pattern, filename)
+        if not match:
+            return None
+        return cls(**match.named)
 
 
-class ParsingMethod(Enum):
-    # parse the filename directly (faster and simpler, more likely to fail)
-    filename = 1
-    # parse each Data Attribute Structure (DAS) by appending .das to the url
-    # One request for each dataset, so lots of small requests to the Thredds server
-    opendap_das = 2
-    # open the dataset using xarray and look at the file attributes
-    # safer, but slower and lots of small requests are made to the Thredds server
-    xarray = 3
-
-
-def get_bccaqv2_local_files_datasets(
-    catalog_url,
+def file_is_required(
+    filename: str,
+    pattern: str,
+    model_lists: Optional[Dict[str, List[str]]] = None,
     variables: List[str] = None,
-    rcp: str = None,
-    method: ParsingMethod = ParsingMethod.filename,
-    models=None,
-) -> List[str]:
-    """Get a list of filenames corresponding to variable and rcp on a local filesystem."""
-
-    urls = []
-    for file in Path(catalog_url).glob("*.nc"):
-        if _bccaqv2_filter(
-            method, file.name, str(file), variables=variables, rcp=rcp, models=models
-        ):
-            urls.append(str(file))
-    return urls
-
-
-def get_bccaqv2_opendap_datasets(
-    catalog_url,
-    variables: List[str] = None,
-    rcp: str = None,
-    method: ParsingMethod = ParsingMethod.filename,
-    models=None,
-) -> List[str]:
-    """Get a list of urls corresponding to variable and rcp on a Thredds server.
-
-    We assume that the files are named in a certain way on the Thredds server.
-
-    This is the case for pavics.ouranos.ca/thredds
-    For more general use cases, see the `xarray` and `requests` methods below."""
-
-    catalog = TDSCatalog(catalog_url)
-
-    urls = []
-    for dataset in catalog.datasets.values():
-        opendap_url = dataset.access_urls["OPENDAP"]
-        if _bccaqv2_filter(
-            method,
-            dataset.name,
-            opendap_url,
-            variables=variables,
-            rcp=rcp,
-            models=models,
-        ):
-            urls.append(opendap_url)
-    return urls
-
-
-def _bccaqv2_filter(
-    method: ParsingMethod,
-    filename,
-    url,
-    variables: List[str] = None,
-    rcp: str = None,
-    models=None,
+    scenario: str = None,
+    models: List[Union[str, Tuple[str, int]]] = None,
 ):
-    """Parse metadata and filter BCCAQV2 datasets"""
+    """Parse metadata and filter datasets"""
+    file = Dataset.from_filename(filename, pattern)
+    if not file:
+        return False
 
-    if models is None or [m.lower() for m in models] == [ALL_24_MODELS.lower()]:
-        models = BCCAQV2_MODELS
+    if variables and file.variable not in variables:
+        return False
 
-    models = [m.lower() for m in models]
+    if scenario and scenario not in file.scenario:
+        return False
 
-    if method == ParsingMethod.filename:
-        parsed = Bccaqv2File.from_filename(filename)
-        if parsed is None:
-            return False
+    if models is None or models[0].lower() == "all":
+        return True
 
-        if variables and parsed.variable not in variables:
-            return False
-        if rcp and rcp not in parsed.driving_experiment_id:
-            return False
+    if (
+        len(models) == 1
+        and isinstance(models[0], str)
+        and model_lists is not None
+        and models[0].lower() in model_lists
+    ):
+        models = model_lists[models[0]]
 
-        if models == [PCIC_12.lower()]:
-            for model, realization in PCIC_12_MODELS_REALIZATIONS:
-                model_ok = model.lower() == parsed.driving_model_id.lower()
-                r_ok = realization[1:] == parsed.driving_realization
-                if model_ok and r_ok:
-                    return True
-            return False
+    for modelspec in models:
+        if isinstance(modelspec, str):  # case with a single model name
+            if (
+                file.model.lower() == modelspec.lower()
+                and (file.realization is None or file.realization.startswith('r1i'))
+            ):
+                return True
+        else:  # case with a couple model name, realization num.
+            if file.model.lower() == modelspec[0].lower() and file.realization == modelspec[1]:
+                return True
+    return False
 
-        model_ok = parsed.driving_model_id.lower() in models
-        r_ok = parsed.driving_realization == "1"
-        return model_ok and r_ok
 
-    elif method == ParsingMethod.opendap_das:
+def iter_remote(cat: TDSCatalog, depth: int = -1):
+    """Generator listing all datasets recursively in a TDSCatalog.
+    The search is limited to a certain depth if `depth` >= 0."""
+    for ds in cat.datasets.values():
+        yield ds.name, ds.access_urls["OPENDAP"]
 
-        raise NotImplementedError("todo: filter models and runs")
+    if depth != 0:
+        for subcat in cat.catalog_refs.values():
+            yield from iter_remote(subcat.follow(), depth=depth - 1)
 
-        # re_experiment = re.compile(r'String driving_experiment_id "(.+)"')
-        # lines = requests.get(url + ".das").content.decode().split("\n")
-        # variable_ok = variable_ok or any(
-        #     line.startswith(f"    {variable} {{") for line in lines
-        # )
-        # if not rcp_ok:
-        #     for line in lines:
-        #         match = re_experiment.search(line)
-        #         if match and rcp in match.group(1).split(","):
-        #             rcp_ok = True
 
-    elif method == ParsingMethod.xarray:
+def iter_local(root: Path, depth: int = -1, pattern: str = '*.nc'):
+    """Generator listing all datasets recursively in a local directory.
+    The search is limited to a certain depth if `depth` >= 0.
+    The path can be given relative to the root finch code repo."""
+    if not root.is_absolute():
+        root = (Path(__file__).parent.parent / root).resolve()
 
-        raise NotImplementedError("todo: filter models and runs")
+    for file in root.rglob(pattern):
+        yield file.name, file
 
-        # import xarray as xr
+    if depth != 0:
+        for sub in root.iterdir():
+            if sub.is_dir():
+                yield from iter_local(sub, depth=depth - 1, pattern=pattern)
 
-        # ds = xr.open_dataset(url, decode_times=False)
-        # rcps = [
-        #     r
-        #     for r in ds.attrs.get("driving_experiment_id", "").split(",")
-        #     if "rcp" in r
-        # ]
-        # variable_ok = variable_ok or variable in ds.data_vars
-        # rcp_ok = rcp_ok or rcp in rcps
+
+def _make_resource_input(url: str, workdir: str, local: bool):
+    inp = ComplexInput(
+        "resource",
+        "NetCDF resource",
+        max_occurs=1000,
+        supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
+    )
+    inp.workdir = workdir
+    if local:
+        inp.file = url
+    else:
+        inp.url = url
+    return inp
 
 
 def get_datasets(
-    dataset_name: Optional[str],
+    dsconf: DatasetConfiguration,
     workdir: str,
     variables: Optional[List[str]] = None,
-    rcp=None,
+    scenario: Optional[str] = None,
     models: Optional[List[str]] = None,
 ) -> List[PywpsInput]:
+    """Parse a directory to find files and filters the list to return only the needed ones, as resource inputs.
 
-    dataset_functions = {"bccaqv2": _get_bccaqv2_inputs}
-
-    if dataset_name is None:
-        dataset_name = configuration.get_config_value("finch", "default_dataset")
-    dataset_name = cast(str, dataset_name)
-    return dataset_functions[dataset_name](
-        workdir=workdir, variables=variables, rcp=rcp, models=models
-    )
-
-
-def _get_bccaqv2_inputs(
-    workdir: str,
-    variables: Optional[List[str]] = None,
-    rcp=None,
-    models=None,
-) -> List[PywpsInput]:
-    """Adds a 'resource' input list with bccaqv2 urls to WPS inputs."""
-    catalog_url = configuration.get_config_value("finch", "dataset_bccaqv2")
+    Parameters
+    ----------
+    dsconf : DatasetConfiguration
+        The dataclass defining a specific ensemble dataset.
+    workdir: str
+        The working directory where files will be downloaded if needed.
+    variables: list of strings
+        A list of the needed variables
+    scenario: str
+        The name of the scenario (experiment), rcps or ssps.
+    models: list of strings
+        A list of the requested models (or name of a models sublist)
+    """
+    if dsconf.local:
+        iterator = iter_local(Path(dsconf.path), dsconf.depth, dsconf.suffix)
+    else:
+        iterator = iter_remote(TDSCatalog(dsconf.path), depth=dsconf.depth)
 
     inputs = []
-
-    def _make_bccaqv2_resource_input():
-        return ComplexInput(
-            "resource",
-            "NetCDF resource",
-            max_occurs=1000,
-            supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
-        )
-
-    if catalog_url.startswith("http"):
-        for url in get_bccaqv2_opendap_datasets(
-            catalog_url, variables=variables, rcp=rcp, models=models
+    for name, url in iterator:
+        if file_is_required(
+            name, dsconf.pattern, dsconf.model_lists,
+            variables=variables, scenario=scenario, models=models
         ):
-            resource = _make_bccaqv2_resource_input()
-            resource.url = url
-            resource.workdir = workdir
-            inputs.append(resource)
-    else:
-        for file in get_bccaqv2_local_files_datasets(
-            catalog_url, variables=variables, rcp=rcp, models=models
-        ):
-            resource = _make_bccaqv2_resource_input()
-            resource.file = file
-            resource.workdir = workdir
-            inputs.append(resource)
-
+            inputs.append(_make_resource_input(url, workdir, dsconf.local))
     return inputs
 
 
@@ -289,13 +207,15 @@ def _formatted_coordinate(value) -> Optional[str]:
     return f"{float(value):.3f}"
 
 
-def make_output_filename(process: Process, inputs: List[PywpsInput], rcp=None):
+def make_output_filename(process: Process, inputs: List[PywpsInput], scenario=None, dataset=None):
     """Returns a filename for the process's output, depending on its inputs.
 
-    The rcp part of the filename can be overriden.
+    The scenario part of the filename can be overriden.
     """
-    if rcp is None:
-        rcp = single_input_or_none(inputs, "rcp")
+    if scenario is None:
+        scenario = single_input_or_none(inputs, "scenario")
+    if dataset is None:
+        dataset = single_input_or_none(inputs, "dataset")
     lat = _formatted_coordinate(single_input_or_none(inputs, "lat"))
     lon = _formatted_coordinate(single_input_or_none(inputs, "lon"))
     lat0 = _formatted_coordinate(single_input_or_none(inputs, "lat0"))
@@ -304,31 +224,38 @@ def make_output_filename(process: Process, inputs: List[PywpsInput], rcp=None):
     lon1 = _formatted_coordinate(single_input_or_none(inputs, "lon1"))
 
     # Get given prefix and if none given, default to the identifier.
-    output_parts = [single_input_or_none(inputs, "output_name") or process.identifier]
+    output_parts = []
+
+    if (prefix := single_input_or_none(inputs, "output_name")):
+        output_parts.append(prefix)
+    else:
+        if dataset:
+            output_parts.append(dataset)
+        output_parts.append(process.identifier)
 
     if lat and lon:
-        output_parts.append(f"{float(lat):.3f}")
-        output_parts.append(f"{float(lon):.3f}")
+        output_parts.extend([lat, lon])
     elif lat0 and lon0:
-        output_parts.append(f"{float(lat0):.3f}")
-        output_parts.append(f"{float(lon0):.3f}")
+        output_parts.extend([lat0, lon0])
 
     if lat1 and lon1:
-        output_parts.append(f"{float(lat1):.3f}")
-        output_parts.append(f"{float(lon1):.3f}")
+        output_parts.extend([lat1, lon1])
 
-    if rcp:
-        output_parts.append(rcp)
+    if isinstance(scenario, str):
+        output_parts.append(scenario)
+    elif scenario:
+        output_parts.extend(scenario)
 
-    return valid_filename("_".join(output_parts))
+    return valid_filename("_".join(output_parts) + '.nc')
 
 
-def uses_accepted_netcdf_variables(indicator: Indicator) -> bool:
-    """Returns True if this indicator uses  netcdf variables in `accepted_variables`."""
-    return not any(
-        n in not_implemented_variables
-        for n, p in indicator.parameters.items()
-        if p.kind in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]
+def uses_accepted_netcdf_variables(indicator: Indicator, available_variables: set) -> bool:
+    """Returns True if this indicator uses variables available by computation or in any dataset.
+    This mean it may return indicators that are not compatible with all datasets.
+    """
+    return all(
+        n in available_variables or n in variable_computations
+        for n in iter_xc_variables(indicator)
     )
 
 
@@ -337,9 +264,7 @@ def make_indicator_inputs(
 ) -> List[RequestInputs]:
     """From a list of files, make a list of inputs used to call the given xclim indicator."""
 
-    arguments = set(indicator.parameters)
-
-    required_netcdf_args = accepted_variables.intersection(arguments)
+    required_netcdf_args = set(iter_xc_variables(indicator))
 
     input_list = []
 
@@ -351,7 +276,7 @@ def make_indicator_inputs(
             inputs[variable_name][0].file = str(path)
             input_list.append(inputs)
     else:
-        for group in make_file_groups(files_list):
+        for group in make_file_groups(files_list, required_netcdf_args):
             inputs = deepcopy(wps_inputs)
             for variable_name, path in group.items():
                 if variable_name not in required_netcdf_args:
@@ -363,8 +288,9 @@ def make_indicator_inputs(
     return input_list
 
 
-def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
-    """Groups files by filenames, changing only the netcdf variable name."""
+def make_file_groups(files_list: List[Path], variables: set) -> List[Dict[str, Path]]:
+    """Groups files by filenames, changing only the netcdf variable name.
+    The list of variable names to search must be given."""
     groups = []
     filenames = {f.name: f for f in files_list}
 
@@ -372,9 +298,9 @@ def make_file_groups(files_list: List[Path]) -> List[Dict[str, Path]]:
         if file.name not in filenames:
             continue
         group = {}
-        for variable in accepted_variables:
-            if file.name.startswith(f"{variable}_"):
-                for other_var in accepted_variables.difference([variable]):
+        for variable in variables:
+            if file.name.startswith(f"{variable}_") or f'_{variable}_' in file.name:
+                for other_var in variables.difference({variable}):
                     other_filename = file.name.replace(variable, other_var, 1)
                     if other_filename in filenames:
                         group[other_var] = filenames[other_filename]
@@ -421,12 +347,12 @@ def make_ensemble(files: List[Path], percentiles: List[int], average_dims: Optio
 
 
 def compute_intermediate_variables(
-    files_list: List[Path], required_variable_names: Iterable[str], workdir: Path, request_inputs,
+    files_list: List[Path], variables: set, required_variable_names: Iterable[str], workdir: Path, request_inputs,
 ) -> List[Path]:
     """Compute netcdf datasets from a list of required variable names and existing files."""
 
     output_files_list = []
-    file_groups = make_file_groups(files_list)
+    file_groups = make_file_groups(files_list, variables)
     for group in file_groups:
         # add file paths that are required without any computation
         for variable, path in group.items():
@@ -470,19 +396,25 @@ def compute_intermediate_variables(
     return output_files_list
 
 
-def get_sub_inputs(variables):
+def get_input_lists(needed: set, available: set):
     """From a list of dataset variables, get the source variable names to compute them."""
+    raw = available.intersection(needed)
+    unknown = needed.difference(raw)
+    compute = set()
+    extra = set()
 
-    output_variables = list(variables)
-    while any(v in variable_computations for v in output_variables):
-        new_output_variables = []
-        for variable in output_variables:
-            if variable in variable_computations:
-                new_output_variables += variable_computations[variable]["inputs"]
+    while unknown:
+        for var in list(unknown):
+            if var in variable_computations:
+                this_needed = set(variable_computations[var]['inputs'])
+                compute.add(var)
+                unknown.remove(var)
+                raw.update(this_needed.intersection(available))
+                unknown.update(this_needed.difference(available))
             else:
-                new_output_variables.append(variable)
-        output_variables = new_output_variables
-    return output_variables
+                unknown.remove(var)
+                extra.add(var)
+    return raw, compute, extra
 
 
 def ensemble_common_handler(process: Process, request, response, subset_function):
@@ -496,11 +428,34 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     request_inputs_not_datasets = {
         k: v for k, v in request.inputs.items() if k in xci_inputs and not k.startswith('perc')
     }
-    percentile_vars = {f"{k.split('_')[1]}_per" for k in xci_inputs if k.startswith('perc')}
-    dataset_input_names = accepted_variables.intersection(percentile_vars.union(xci_inputs))
-    source_variable_names = bccaq_variables.intersection(
-        get_sub_inputs(dataset_input_names)
-    )
+
+    dataset_name = single_input_or_none(request.inputs, "dataset")
+    dataset = get_datasets_config()[dataset_name]
+
+    needed_variables = set(iter_xc_variables(process.xci))
+    avail_variables = set(dataset.allowed_values['variable'])
+    source_variables, computed_variables, extra_variables = get_input_lists(needed_variables, avail_variables)
+
+    scenarios = [r.data.strip() for r in request.inputs["scenario"]]
+    models = [m.data.strip() for m in request.inputs["models"]]
+
+    # Check if arguments are ok for this dataset
+    if not set(dataset.allowed_values['scenario']).issuperset(scenarios):
+        raise InvalidParameterValue(
+            f"Invalid scenarios for dataset {dataset_name}. "
+            f"Should be in {dataset.allowed_values['scenario']}."
+        )
+    if not set(dataset.allowed_values['model']).union(dataset.model_lists.keys()).union({'all'}).issuperset(models):
+        raise InvalidParameterValue(
+            f"Invalid models or model list for dataset {dataset_name}. "
+            f"Should be in {dataset.allowed_values['model']} + {list(dataset.model_lists.keys())}"
+        )
+    if extra_variables:
+        raise InvalidParameterValue(
+            f"The {process.xci.identifier} indicator cannot be used with dataset {dataset_name}"
+            f" because it does not provide the variables {extra_variables} or doesn't provide "
+            "the variable that could be used to compute those."
+        )
 
     convert_to_csv = request.inputs["output_format"][0].data == "csv"
     if not convert_to_csv:
@@ -508,10 +463,7 @@ def ensemble_common_handler(process: Process, request, response, subset_function
     percentiles_string = request.inputs["ensemble_percentiles"][0].data
     ensemble_percentiles = [int(p.strip()) for p in percentiles_string.split(",")]
 
-    rcps = [r.data.strip() for r in request.inputs["rcp"]]
-    write_log(process, f"Processing started ({len(rcps)} rcps)", process_step="start")
-    models = [m.data.strip() for m in request.inputs["models"]]
-    dataset_name = single_input_or_none(request.inputs, "dataset")
+    write_log(process, f"Processing started ({len(scenarios)} scenarios)", process_step="start")
 
     if single_input_or_none(request.inputs, "average"):
         if subset_function == finch_subset_gridpoint:
@@ -524,23 +476,32 @@ def ensemble_common_handler(process: Process, request, response, subset_function
 
     base_work_dir = Path(process.workdir)
     ensembles = []
-    for rcp in rcps:
-        # Ensure no file name conflicts (i.e. if the rcp doesn't appear in the base filename)
-        work_dir = base_work_dir / rcp
+    output_basename = Path(
+        make_output_filename(
+            process, request.inputs, scenario=scenarios, dataset=dataset_name
+        )
+    )
+    for scenario in scenarios:
+        # Ensure no file name conflicts (i.e. if the scenario doesn't appear in the base filename)
+        work_dir = base_work_dir / scenario
         work_dir.mkdir(exist_ok=True)
         process.set_workdir(str(work_dir))
 
-        write_log(process, f"Fetching datasets for rcp={rcp}")
-        output_filename = make_output_filename(process, request.inputs, rcp=rcp)
+        write_log(process, f"Fetching datasets for scenario {scenario}")
         netcdf_inputs = get_datasets(
-            dataset_name,
+            dataset,
             workdir=process.workdir,
-            variables=list(source_variable_names),
-            rcp=rcp,
+            variables=list(source_variables),
+            scenario=scenario,
             models=models,
         )
 
-        write_log(process, f"Running subset rcp={rcp}", process_step="subset")
+        if len(netcdf_inputs) == 0:
+            raise ValueError(
+                f'No netCDF files were selected with filters {scenario=}, {models=} and variables={source_variables}'
+            )
+
+        write_log(process, f"Running subset scen={scenario}", process_step="subset")
         subsetted_files = subset_function(
             process, netcdf_inputs=netcdf_inputs, request_inputs=request.inputs
         )
@@ -549,10 +510,11 @@ def ensemble_common_handler(process: Process, request, response, subset_function
             raise ProcessError(message)
 
         subsetted_intermediate_files = compute_intermediate_variables(
-            subsetted_files, dataset_input_names, process.workdir, request.inputs,
+            subsetted_files, source_variables, needed_variables, process.workdir, request.inputs,
         )
-        write_log(process, f"Computing indices rcp={rcp}", process_step="compute_indices")
+        write_log(process, f"Computing indices scen={scenario}", process_step="compute_indices")
 
+        print(subsetted_intermediate_files, file=sys.stderr)
         input_groups = make_indicator_inputs(
             process.xci, request_inputs_not_datasets, subsetted_intermediate_files
         )
@@ -566,16 +528,13 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         for n, inputs in enumerate(input_groups):
             write_log(
                 process,
-                f"Computing indices for file {n + 1} of {n_groups}, rcp={rcp}",
+                f"Computing indices for file {n + 1} of {n_groups}, scen={scenario}",
                 subtask_percentage=n * 100 // n_groups,
             )
             output_ds = compute_indices(process, process.xci, inputs)
-
-            output_name = f"{output_filename}_{process.identifier}_{n}.nc"
-            for variable in accepted_variables:
-                if variable in inputs:
-                    input_name = Path(inputs.get(variable)[0].file).name
-                    output_name = input_name.replace(variable, process.identifier)
+            for variable in needed_variables:
+                input_name = Path(inputs[variable][0].file).name
+                output_name = input_name.replace(variable, process.identifier)
 
             output_path = Path(process.workdir) / output_name
             dataset_to_netcdf(output_ds, output_path)
@@ -584,14 +543,13 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
 
-        output_basename = Path(process.workdir) / (output_filename + "_ensemble")
         ensemble = make_ensemble(indices_files, ensemble_percentiles, average_dims)
         ensemble.attrs['source_datasets'] = '\n'.join([dsinp.url for dsinp in netcdf_inputs])
         ensembles.append(ensemble)
 
     process.set_workdir(str(base_work_dir))
 
-    ensemble = xr.concat(ensembles, dim=xr.DataArray(rcps, dims=('rcp',), name='rcp'))
+    ensemble = xr.concat(ensembles, dim=xr.DataArray(scenarios, dims=('scenario',), name='scenario'))
 
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
@@ -610,17 +568,18 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         df.dropna().to_csv(ensemble_csv)
 
         metadata = format_metadata(ensemble)
-        metadata_file = output_basename.parent / f"{ensemble_csv.stem}_metadata.txt"
+        metadata_file = output_basename.parent / f"{output_basename}_metadata.txt"
         metadata_file.write_text(metadata)
 
-        ensemble_output = Path(process.workdir) / (output_filename + ".zip")
+        ensemble_output = Path(process.workdir) / output_basename.with_suffix(".zip")
         zip_files(ensemble_output, [metadata_file, ensemble_csv])
     else:
+        LOGGER.info(output_basename)
         ensemble_output = output_basename.with_suffix(".nc")
         dataset_to_netcdf(ensemble, ensemble_output)
 
     response.outputs["output"].file = ensemble_output
     response.outputs["output_log"].file = str(log_file_path(process))
 
-    write_log(process, "Processing finished successfully", process_step="done")
+    write_log(process, f"Processing finished successfully : {ensemble_output}", process_step="done")
     return response

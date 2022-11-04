@@ -1,0 +1,66 @@
+test_single_cell:
+  local: true
+  depth: 0
+  path: ../tests/data/bccaqv2_single_cell/
+  suffix: "*.nc"
+  pattern: "{variable}_{frequency}_BCCAQv2+ANUSPLIN300_{model}_{scenario}_{realization}_{date_start}-{date_end}.nc"
+  allowed_values:
+    scenario: [rcp26, rcp45, rcp85]
+    variable: [tasmin, tasmax, pr]
+    model:
+      &u5models
+      - BNU-ESM
+      - CCSM4
+      - CESM1-CAM5
+      - CNRM-CM5
+      - CSIRO-Mk3-6-0
+      - CanESM2
+      - FGOALS-g2
+      - GFDL-CM3
+      - GFDL-ESM2G
+      - GFDL-ESM2M
+      - HadGEM2-AO
+      - HadGEM2-ES
+      - IPSL-CM5A-LR
+      - IPSL-CM5A-MR
+      - MIROC-ESM-CHEM
+      - MIROC-ESM
+      - MIROC5
+      - MPI-ESM-LR
+      - MPI-ESM-MR
+      - MRI-CGCM3
+      - NorESM1-M
+      - NorESM1-ME
+      - bcc-csm1-1-m
+      - bcc-csm1-1
+  model_lists:
+    # The absence of realization specification implies r1 is taken.
+    24models: *u5models
+    pcic12:
+    # taken from: https://www.pacificclimate.org/data/statistically-downscaled-climate-scenarios
+      - [ ACCESS1-0 , r1i1p1 ]
+      - [ CCSM4 , r2i1p1 ]
+      - [ CNRM-CM5 , r1i1p1 ]
+      - [ CSIRO-Mk3-6-0 , r1i1p1 ]
+      - [ CanESM2 , r1i1p1 ]
+      - [ GFDL-ESM2G , r1i1p1 ]
+      - [ HadGEM2-CC , r1i1p1 ]
+      - [ HadGEM2-ES , r1i1p1 ]
+      - [ MIROC5 , r3i1p1 ]
+      - [ MPI-ESM-LR , r3i1p1 ]
+      - [ MRI-CGCM3 , r1i1p1 ]
+      - [ inmcm4 , r1i1p1 ]
+
+test_subset:
+  local: true
+  depth: 0
+  path: ../tests/data/bccaqv2_subset_sample/
+  suffix: "*.nc"
+  pattern: "{variable}_{model}_{scenario}_subset.nc"
+  allowed_values:
+    scenario: [rcp26, rcp45]
+    variable: [tasmin, tasmax]
+    model:
+      - inmcm4
+      - bcc-csm1-1
+  model_lists: {}

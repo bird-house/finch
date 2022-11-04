@@ -67,7 +67,6 @@ adjust_args = dict(
         min_occurs=0,
     )
 )
-variable = wpsio.variable
 
 resources = dict(
     ref=ComplexInput(
@@ -156,7 +155,7 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
         train = {}
         adj = {}
 
-        variable = request.inputs.pop(wpsio.variable.identifier, None)
+        variable = request.inputs.pop(wpsio.variable_any.identifier, None)
 
         for key, input in request.inputs.items():
             if key in resources:

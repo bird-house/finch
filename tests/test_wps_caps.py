@@ -2,8 +2,8 @@ from finch.wsgi import create_app
 import pywps.configuration
 import pytest
 
-import finch.processes
-from finch.processes import indicators, get_processes
+from finch.processes import get_indicators, get_processes, not_implemented
+import finch.processes.utils
 from .common import client_for, CFG_FILE
 
 
@@ -26,24 +26,15 @@ def test_wps_caps(client):
     assert len(names) == len(pnames)
 
 
-@pytest.fixture
-def monkeypatch_config(request):
-    previous = pywps.configuration.CONFIG.get("finch", "dataset_bccaqv2")
-    pywps.configuration.CONFIG.set("finch", "dataset_bccaqv2", "")
-    request.addfinalizer(
-        lambda: pywps.configuration.CONFIG.set("finch", "dataset_bccaqv2", previous)
-    )
-
-
 def test_wps_caps_no_datasets(client, monkeypatch):
     """Check that when no default dataset is configured, we get a lot less indicators. """
     def mock_config_get(*args, **kwargs):
-        if args[:2] == ("finch", "dataset_bccaqv2"):
+        if args[:2] == ("finch", "datasets_config"):
             return ""
         return old_get_config_value(*args, **kwargs)
 
     old_get_config_value = pywps.configuration.get_config_value
-    monkeypatch.setattr(finch.processes, "get_config_value", mock_config_get)
+    monkeypatch.setattr(finch.processes.utils, "get_config_value", mock_config_get)
 
     client = client_for(create_app(cfgfiles=CFG_FILE))
 
@@ -52,6 +43,7 @@ def test_wps_caps_no_datasets(client, monkeypatch):
         "/wps:Capabilities/wps:ProcessOfferings/wps:Process/ows:Identifier"
     ).split()
 
+    indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
     subset_processes_count = 4
     sdba_processes_count = 1
     others = 2
