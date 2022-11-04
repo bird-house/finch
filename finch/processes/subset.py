@@ -83,7 +83,8 @@ def finch_subset_gridpoint(
 
         # if not subsetting by time, it's not necessary to decode times
         time_subset = start_date is not None or end_date is not None
-        dataset = try_opendap(resource, decode_times=time_subset)
+        # No chunking needed for a single gridpoint.
+        dataset = try_opendap(resource, chunks=False, decode_times=time_subset)
 
         with lock:
             count += 1
