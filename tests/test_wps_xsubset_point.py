@@ -1,12 +1,15 @@
+from pathlib import Path
 import pytest
 import xarray as xr
 from numpy.testing import assert_array_equal
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
+import zipfile
 
 from finch.processes import SubsetGridPointProcess
 
 from .common import CFG_FILE, get_metalinks, get_output
+from .utils import execute_process, wps_literal_input
 
 
 def test_wps_xsubsetpoint(netcdf_datasets):
@@ -63,12 +66,12 @@ def test_thredds():
         Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
     )
     fn1 = (
-        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/cmip5/MRI/rcp85/fx/atmos/r0i0p0/sftlf/"
-        "sftlf_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
+        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/"
+        "birdhouse/disk2/cmip5/MRI/rcp85/fx/atmos/r0i0p0/sftlf/sftlf_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
     )
     fn2 = (
-        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/cmip5/MRI/rcp85/fx/atmos/r0i0p0/orog/"
-        "orog_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
+        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/"
+        "birdhouse/disk2/cmip5/MRI/rcp85/fx/atmos/r0i0p0/orog/orog_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
     )
 
     datainputs = (
@@ -93,7 +96,7 @@ def test_bad_link_on_thredds():
     client = client_for(
         Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
     )
-    fn = "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/cmip5/bad_link.nc"
+    fn = "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/disk2/cmip5/bad_link.nc"
     datainputs = (
         f"resource=files@xlink:href={fn};"
         "lat=45.0;"
@@ -121,3 +124,38 @@ def test_bad_link_on_fs():
     )
 
     assert "No such file or directory" in resp.response[0].decode()
+
+
+@pytest.mark.parametrize("outfmt", ['netcdf', 'csv'])
+def test_wps_subsetpoint_dataset(client, outfmt):
+    # --- given ---
+    identifier = "subset_grid_point_dataset"
+    inputs = [
+        wps_literal_input("lat", "45"),
+        wps_literal_input("lon", "-74"),
+        wps_literal_input("scenario", "rcp45"),
+        wps_literal_input("dataset", "test_subset"),
+        wps_literal_input("output_format", outfmt),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+    assert Path(outputs[0]).stem == 'test_subset_subset_grid_point_dataset_45_000_74_000_rcp45'
+
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == (4 if outfmt == 'netcdf' else 5)
+
+    if outfmt == 'netcdf':
+        data_filenames = [n for n in zf.namelist() if "metadata" not in n]
+
+        with zf.open(data_filenames[0]) as f:
+            ds = xr.open_dataset(f)
+
+            dims = dict(ds.dims)
+            assert dims == {
+                "region": 1,
+                "time": 100,
+            }

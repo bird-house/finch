@@ -9,12 +9,33 @@ from pywps import FORMATS, ComplexInput, LiteralInput, Process
 from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 from sentry_sdk import configure_scope
+
 from xclim.core.utils import InputKind
 
-from .constants import default_percentiles
+
 from .utils import PywpsInput
 
 LOGGER = logging.getLogger("PYWPS")
+
+
+default_percentiles = {
+    'days_over_precip_thresh': {'pr_per': 95},
+    'days_over_precip_doy_thresh': {'pr_per': 95},
+    'fraction_over_precip_doy_thresh': {'pr_per': 95},
+    'fraction_over_precip_thresh': {'pr_per': 95},
+    'cold_and_dry_days': {'pr_per': 25, 'tas_per': 25},
+    'warm_and_dry_days': {'pr_per': 25, 'tas_per': 75},
+    'warm_and_wet_days': {'pr_per': 75, 'tas_per': 75},
+    'cold_and_wet_days': {'pr_per': 75, 'tas_per': 25},
+    'tg90p': {'tas_per': 90},
+    'tg10p': {'tas_per': 10},
+    'tn90p': {'tasmin_per': 90},
+    'tn10p': {'tasmin_per': 10},
+    'tx90p': {'tasmax_per': 90},
+    'tx10p': {'tasmax_per': 10},
+    'cold_spell_duration_index': {'tasmin_per': 10},
+    'warm_spell_duration_index': {'tasmax_per': 90},
+}
 
 
 class FinchProcess(Process):
@@ -40,7 +61,7 @@ class FinchProcess(Process):
             return self.wrapped_handler(request, response)
         except Exception as err:
             LOGGER.exception('FinchProcess handler wrapper failed with:')
-            raise ProcessError(f"Finch failed with {err!r}")
+            raise ProcessError(f"Finch failed with {err!s}")
 
     def sentry_configure_scope(self, request):
         """Add additional data to sentry error messages.

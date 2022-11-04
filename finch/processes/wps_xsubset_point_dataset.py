@@ -8,8 +8,9 @@ from pywps.response.execute import ExecuteResponse
 from . import wpsio
 from .ensemble_utils import get_datasets, make_output_filename
 from .subset import finch_subset_gridpoint
-from .utils import netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
-from .wps_base import FinchProcess
+
+from .utils import get_datasets_config, netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
+from . import wpsio
 
 
 class SubsetGridPointDatasetProcess(FinchProcess):
@@ -17,8 +18,7 @@ class SubsetGridPointDatasetProcess(FinchProcess):
 
     def __init__(self):
         inputs = [
-            wpsio.variable,
-            wpsio.rcp,
+            *wpsio.get_ensemble_inputs(),
             wpsio.copy_io(wpsio.lat, min_occurs=0),
             wpsio.copy_io(wpsio.lon, min_occurs=0),
             LiteralInput(
@@ -39,7 +39,6 @@ class SubsetGridPointDatasetProcess(FinchProcess):
             wpsio.end_date,
             wpsio.output_format_netcdf_csv,
             wpsio.csv_precision,
-            wpsio.dataset_name,
         ]
 
         outputs = [wpsio.output_netcdf_csv]
@@ -88,18 +87,20 @@ class SubsetGridPointDatasetProcess(FinchProcess):
         request.inputs.setdefault("lat", request.inputs.get("lat0"))
         # End of 'remove me'
 
-        output_filename = make_output_filename(self, request.inputs)
-
         write_log(self, "Fetching datasets")
 
-        variable = request.inputs["variable"][0].data
-        variables = None if variable is None else [variable]
-        rcp = single_input_or_none(request.inputs, "rcp")
+        variables = [v.data for v in request.inputs.get("variable", [])] or None
+        scenario = single_input_or_none(request.inputs, "scenario")
+        models = [m.data.strip() for m in request.inputs["models"]]
 
-        dataset_name = single_input_or_none(request.inputs, "dataset_name")
+        dataset_name = single_input_or_none(request.inputs, "dataset")
+        dataset = get_datasets_config()[dataset_name]
         request.inputs["resource"] = get_datasets(
-            dataset_name, workdir=self.workdir, variables=variables, rcp=rcp
+            dataset, workdir=self.workdir,
+            variables=variables, scenario=scenario, models=models
         )
+
+        output_filename = Path(make_output_filename(self, request.inputs))
 
         write_log(self, "Running subset", process_step="subset")
 
@@ -126,7 +127,7 @@ class SubsetGridPointDatasetProcess(FinchProcess):
 
         write_log(self, "Zipping outputs", process_step="zip_outputs")
 
-        output_zip = Path(self.workdir) / (output_filename + ".zip")
+        output_zip = Path(self.workdir) / output_filename.with_suffix(".zip")
 
         def _log(message, percentage):
             write_log(self, message, subtask_percentage=percentage)

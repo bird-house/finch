@@ -1,22 +1,23 @@
 import zipfile
 from collections import namedtuple
 from pathlib import Path
-from unittest import mock
+
+import zipfile
 
 import geojson
-import numpy as np
+
 import pytest
 from xarray import open_dataset
 
 from finch.processes import ensemble_utils
-from finch.processes.constants import PCIC_12
-from tests.utils import execute_process, mock_local_datasets, wps_literal_input
+from pywps.app.exceptions import ProcessError
+from tests.utils import execute_process, wps_literal_input
 
 mock_filenames = [
-    "tasmax_bcc-csm1-1_subset.nc",
-    "tasmax_inmcm4_subset.nc",
-    "tasmin_bcc-csm1-1_subset.nc",
-    "tasmin_inmcm4_subset.nc",
+    "tasmax_bcc-csm1-1_rcp45_subset.nc",
+    "tasmax_inmcm4_rcp45_subset.nc",
+    "tasmin_bcc-csm1-1_rcp45_subset.nc",
+    "tasmin_inmcm4_rcp45_subset.nc",
 ]
 
 poly = {
@@ -29,18 +30,14 @@ poly = {
 }
 
 
-@pytest.fixture
-def mock_datasets(monkeypatch):
-    mock_local_datasets(monkeypatch, filenames=mock_filenames)
-
-
-def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
+def test_ensemble_heatwave_frequency_grid_point(client):
     # --- given ---
     identifier = "ensemble_grid_point_heat_wave_frequency"
     inputs = [
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp45"),
+        wps_literal_input("dataset", "test_subset"),
         wps_literal_input("thresh_tasmin", "22.0 degC"),
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
@@ -55,13 +52,13 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
 
     # --- then ---
     assert len(outputs) == 1
-    assert Path(outputs[0]).stem.startswith('testens')
+    assert Path(outputs[0]).stem.startswith('testens_46_000_72_800_rcp45')
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
-        "rcp": 1
+        "scenario": 1
     }
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
@@ -70,19 +67,20 @@ def test_ensemble_heatwave_frequency_grid_point(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
-        assert variable_dims == {"region": 1, "time": 4, "rcp": 1}
+        assert variable_dims == {"region": 1, "time": 4, "scenario": 1}
 
     assert len(ds.attrs['source_datasets'].split('\n')) == 4
 
 
-def test_ensemble_dded_grid_point_multircp(mock_datasets, client):
+def test_ensemble_dded_grid_point_multiscenario(client):
     # --- given ---
     identifier = "ensemble_grid_point_degree_days_exceedance_date"
     inputs = [
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
-        wps_literal_input("rcp", "rcp26"),
-        wps_literal_input("rcp", "rcp45"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("scenario", "rcp45"),
+        wps_literal_input("dataset", "test_subset"),
         wps_literal_input("thresh", "-5 degC"),
         wps_literal_input("sum_thresh", "30 K days"),
         wps_literal_input("op", ">"),
@@ -101,7 +99,7 @@ def test_ensemble_dded_grid_point_multircp(mock_datasets, client):
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
-        "rcp": 2,
+        "scenario": 2,
     }
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
@@ -110,10 +108,10 @@ def test_ensemble_dded_grid_point_multircp(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"region": 1, "time": 4, "rcp": 2}
+        assert variable_dims == {"region": 1, "time": 4, "scenario": 2}
 
 
-def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
+def test_ensemble_heatwave_frequency_bbox(client):
     # --- given ---
     identifier = "ensemble_bbox_heat_wave_frequency"
     inputs = [
@@ -121,7 +119,8 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
         wps_literal_input("lat1", "46.2"),
         wps_literal_input("lon0", "-73.0"),
         wps_literal_input("lon1", "-72.8"),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("dataset", "test_subset"),
         wps_literal_input("thresh_tasmin", "22.0 degC"),
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
@@ -141,7 +140,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
         "lat": 2,
         "lon": 2,
         "time": 4,  # there are roughly 4 months in the test datasets
-        "rcp": 1
+        "scenario": 1
     }
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
@@ -150,7 +149,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"time": 4, "lat": 2, "lon": 2, "rcp": 1}
+        assert variable_dims == {"time": 4, "lat": 2, "lon": 2, "scenario": 1}
 
     inputs.append(wps_literal_input("average", "True"))
     outputs = execute_process(client, identifier, inputs)
@@ -158,7 +157,7 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
-    assert dims == {"time": 4, "rcp": 1}  # Spatial average has been taken.
+    assert dims == {"time": 4, "scenario": 1}  # Spatial average has been taken.
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
     assert sorted(ensemble_variables) == [
@@ -166,16 +165,17 @@ def test_ensemble_heatwave_frequency_bbox(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"time": 4, "rcp": 1}
+        assert variable_dims == {"time": 4, "scenario": 1}
 
 
-def test_ensemble_heatwave_frequency_grid_point_csv(mock_datasets, client):
+def test_ensemble_heatwave_frequency_grid_point_csv(client):
     # --- given ---
     identifier = "ensemble_grid_point_heat_wave_frequency"
     inputs = [
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("dataset", "test_subset"),
         wps_literal_input("thresh_tasmin", "22.0 degC"),
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
@@ -194,12 +194,12 @@ def test_ensemble_heatwave_frequency_grid_point_csv(mock_datasets, client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,time,rcp")
+    assert lines[0].startswith("lat,lon,time,scenario")
     n_data_rows = len(lines) - 2
     assert n_data_rows == 3  # time=3 (last month is NaN)
 
 
-def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
+def test_ensemble_heatwave_frequency_bbox_csv(client):
     # --- given ---
     identifier = "ensemble_bbox_heat_wave_frequency"
     inputs = [
@@ -207,7 +207,8 @@ def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
         wps_literal_input("lat1", "46.2"),
         wps_literal_input("lon0", "-73.0"),
         wps_literal_input("lon1", "-72.8"),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("dataset", "test_subset"),
         wps_literal_input("thresh_tasmin", "22.0 degC"),
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
@@ -231,13 +232,14 @@ def test_ensemble_heatwave_frequency_bbox_csv(mock_datasets, client):
     assert n_data_rows == 2 * 2 * 3  # lat=2, lon=2, time=3 (last month is NaN)
 
 
-def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
+def test_ensemble_heatwave_frequency_grid_point_dates(client):
     # --- given ---
     identifier = "ensemble_grid_point_heat_wave_frequency"
     inputs = [
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("dataset", "test_subset"),
         wps_literal_input("start_date", "1950"),
         wps_literal_input("end_date", "1950-03-31"),
         wps_literal_input("freq", "MS"),
@@ -254,7 +256,7 @@ def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
     assert dims == {
         "region": 1,
         "time": 3,
-        "rcp": 1
+        "scenario": 1
     }
 
     ensemble_variables = dict(ds.data_vars)
@@ -264,67 +266,40 @@ def test_ensemble_heatwave_frequency_grid_point_dates(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"region": 1, "time": 3, "rcp": 1}
+        assert variable_dims == {"region": 1, "time": 3, "scenario": 1}
 
 
-def test_ensemble_heatwave_frequency_grid_point_models(mock_datasets, client):
+def test_ensemble_heatwave_frequency_grid_point_models(client):
     # --- given ---
     identifier = "ensemble_grid_point_heat_wave_frequency"
     inputs = [
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("dataset", "test_single_cell"),
         wps_literal_input("freq", "MS"),
         wps_literal_input("models", "CSIRO-Mk3-6-0"),
         wps_literal_input("models", "HadGEM2-ES"),
         wps_literal_input("models", "MRI-CGCM3"),
         wps_literal_input("output_format", "netcdf"),
     ]
-    from pywps.configuration import CONFIG
 
-    CONFIG.set("finch", "dataset_bccaqv2", "/mock_local/path")
-    subset_sample = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
-
-    # --- when ---
-    with mock.patch(
-        "finch.processes.ensemble_utils.get_bccaqv2_local_files_datasets"
-    ) as mock_datasets:
-        mock_datasets.return_value = [str(subset_sample / f) for f in mock_filenames]
-        execute_process(client, identifier, inputs)
-
-    # --- then ---
-    assert mock_datasets.call_args[1]["models"] == [
-        "CSIRO-Mk3-6-0",
-        "HadGEM2-ES",
-        "MRI-CGCM3",
-    ]
+    execute_process(client, identifier, inputs)
 
 
-def test_ensemble_heatwave_frequency_grid_point_models_pcic(mock_datasets, client):
+def test_ensemble_heatwave_frequency_grid_point_models_pcic(client):
     # --- given ---
     identifier = "ensemble_grid_point_heat_wave_frequency"
     inputs = [
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("dataset", "test_single_cell"),
         wps_literal_input("freq", "MS"),
-        wps_literal_input("models", PCIC_12),
+        wps_literal_input("models", "pcic12"),
         wps_literal_input("output_format", "netcdf"),
     ]
-    from pywps.configuration import CONFIG
-
-    CONFIG.set("finch", "dataset_bccaqv2", "/mock_local/path")
-    subset_sample = Path(__file__).parent / "data" / "bccaqv2_subset_sample"
-
-    # --- when ---
-    with mock.patch(
-        "finch.processes.ensemble_utils.get_bccaqv2_local_files_datasets"
-    ) as mock_datasets:
-        mock_datasets.return_value = [str(subset_sample / f) for f in mock_filenames]
-        execute_process(client, identifier, inputs)
-
-    # --- then ---
-    assert mock_datasets.call_args[1]["models"] == [PCIC_12]
+    execute_process(client, identifier, inputs)
 
 
 def test_compute_intermediate_variables(monkeypatch):
@@ -338,14 +313,14 @@ def test_compute_intermediate_variables(monkeypatch):
     literal_input = namedtuple('LiteralInput', ['data', 'identifier'])
     # --- when ---
     files_outputs = ensemble_utils.compute_intermediate_variables(
-        mock_paths, required_variables, workdir,
+        mock_paths, {'tasmin', 'tasmax'}, required_variables, workdir,
         {'perc_tasmin': [literal_input(10, 'perc_tasmin')]}
     )
 
     # --- then ---
     datasets = [
-        "bcc-csm1-1_subset.nc",
-        "inmcm4_subset.nc",
+        "bcc-csm1-1_rcp45_subset.nc",
+        "inmcm4_rcp45_subset.nc",
     ]
     expected = [
         workdir / f"{v}_{dataset}" for v in required_variables for dataset in datasets
@@ -355,14 +330,15 @@ def test_compute_intermediate_variables(monkeypatch):
 
 
 def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
-    mock_datasets, client
+    client
 ):
     # --- given ---
     identifier = "ensemble_grid_point_cold_spell_duration_index"
     inputs = [
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("dataset", "test_subset"),
         wps_literal_input("window", "6"),
         wps_literal_input("freq", "YS"),
         wps_literal_input("ensemble_percentiles", "20, 50, 80"),
@@ -380,25 +356,26 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
     assert dims == {
         "region": 1,
         "time": 1,
-        "rcp": 1
+        "scenario": 1
     }
 
     ensemble_variables = dict(ds.data_vars)
     assert sorted(ensemble_variables) == [f"csdi_6_p{p}" for p in (20, 50, 80)]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"region": 1, "time": 1, "rcp": 1}
+        assert variable_dims == {"region": 1, "time": 1, "scenario": 1}
 
 
 def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
-    mock_datasets, client
+    client
 ):
     # --- given ---
     identifier = "ensemble_grid_point_growing_degree_days"
     inputs = [
         wps_literal_input("lat", "46"),
         wps_literal_input("lon", "-72.8"),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("dataset", "test_subset"),
         wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
     ]
@@ -413,7 +390,7 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
     assert dims == {
         "region": 1,
         "time": 1,
-        "rcp": 1
+        "scenario": 1
     }
 
     ensemble_variables = dict(ds.data_vars)
@@ -422,15 +399,16 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"region": 1, "time": 1, "rcp": 1}
+        assert variable_dims == {"region": 1, "time": 1, "scenario": 1}
 
 
-def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
+def test_ensemble_heatwave_frequency_polygon(client):
     # --- given ---
     identifier = "ensemble_polygon_heat_wave_frequency"
     inputs = [
         wps_literal_input("shape", geojson.dumps(poly)),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("dataset", "test_subset"),
         wps_literal_input("thresh_tasmin", "22.0 degC"),
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
@@ -450,9 +428,9 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
         "lat": 11,
         "lon": 11,
         "time": 4,  # there are roughly 4 months in the test datasets
-        "rcp": 1
+        "scenario": 1
     }
-    data = ds["heat_wave_frequency_p20"].isel(rcp=0, time=1).data
+    data = ds["heat_wave_frequency_p20"].isel(scenario=0, time=1).data
     assert np.isnan(data).sum() == 55
     assert (~np.isnan(data)).sum() == 66
 
@@ -462,7 +440,7 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"lat": 11, "lon": 11, "time": 4, "rcp": 1}
+        assert variable_dims == {"lat": 11, "lon": 11, "time": 4, "scenario": 1}
 
     inputs.append(wps_literal_input("average", "True"))
     outputs = execute_process(client, identifier, inputs)
@@ -471,7 +449,7 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
-    assert dims == {"time": 4, "rcp": 1}
+    assert dims == {"time": 4, "scenario": 1}
 
     ensemble_variables = dict(ds.data_vars)
     assert sorted(ensemble_variables) == [
@@ -479,15 +457,16 @@ def test_ensemble_heatwave_frequency_polygon(mock_datasets, client):
     ]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"time": 4, "rcp": 1}
+        assert variable_dims == {"time": 4, "scenario": 1}
 
 
-def test_ensemble_heatwave_frequency_polygon_csv(mock_datasets, client):
+def test_ensemble_heatwave_frequency_polygon_csv(client):
     # --- given ---
     identifier = "ensemble_polygon_heat_wave_frequency"
     inputs = [
         wps_literal_input("shape", geojson.dumps(poly)),
-        wps_literal_input("rcp", "rcp26"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("dataset", "test_subset"),
         wps_literal_input("thresh_tasmin", "22.0 degC"),
         wps_literal_input("thresh_tasmax", "30 degC"),
         wps_literal_input("window", "3"),
@@ -528,3 +507,35 @@ def test_ensemble_heatwave_frequency_polygon_csv(mock_datasets, client):
     n_data_rows = len(lines) - 2  # header + ending line
     # after spatial average, time=3 (last month is NaN)
     assert n_data_rows == 3
+
+
+def test_ensemble_invalid_parameters(client):
+    identifier = "ensemble_grid_point_heat_wave_frequency"
+    inputs = [
+        wps_literal_input("lat", "46"),
+        wps_literal_input("lon", "-72.8"),
+        wps_literal_input("scenario", "rcp85"),
+        wps_literal_input("dataset", "test_subset"),
+        wps_literal_input("thresh_tasmin", "22.0 degC"),
+        wps_literal_input("thresh_tasmax", "30 degC"),
+        wps_literal_input("window", "3"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
+        wps_literal_input("output_format", "netcdf"),
+        wps_literal_input("output_name", "testens")
+    ]
+
+    # --- when ---
+    # scenario not in this dataset
+    with pytest.raises(ProcessError, match="InvalidParameterValue"):
+        execute_process(client, identifier, inputs)
+
+    inputs[2] = wps_literal_input("scenario", "rcp45")
+    inputs.append(wps_literal_input("models", "MIROC5"))  # model not in this dataset
+    with pytest.raises(ProcessError, match="InvalidParameterValue"):
+        execute_process(client, identifier, inputs)
+
+    inputs.pop(-1)
+    identifier = "ensemble_grid_point_cwd"  # dataset doesnt have PR
+    with pytest.raises(ProcessError, match="InvalidParameterValue"):
+        execute_process(client, identifier, inputs)
