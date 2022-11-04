@@ -22,6 +22,7 @@ dependencies:
   - bottleneck
   # remember to match xclim version in requirements_docs.txt as well
   - xclim =0.38.*
+  - pint < 0.20  # xclim < 0.39 is broken by pint >= 0.20
   - clisops >=0.9.3
   - pywps >=4.5.1
   - parse
