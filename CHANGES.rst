@@ -1,7 +1,7 @@
 Changes
 *******
 
-0.10.0 (unreleased)
+0.10.0 (2022-11-04)
 ===================
 * Generalize ensemble datasets configuration.
     - Datasets usable by ensemble processes are now specified through a YAML file which is pointed to in the configuration.
