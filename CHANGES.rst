@@ -10,7 +10,6 @@ Changes
     - ``finch.processes.xclim`` was removed, there is no static module of processes.
     - Input "rcp" has been renamed to "scenario".
     - Input "dataset_name" has been fixed and renamed to "dataset".
-* ``finch.wsgi.application`` had been removed.
 * Update to xclim 0.38.0.
 
 0.9.2 (2022-07-19)
