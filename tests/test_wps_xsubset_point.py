@@ -1,10 +1,11 @@
+import zipfile
 from pathlib import Path
+
 import pytest
 import xarray as xr
 from numpy.testing import assert_array_equal
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
-import zipfile
 
 from finch.processes import SubsetGridPointProcess
 

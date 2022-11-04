@@ -13,18 +13,20 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import os
+import sys
+import warnings
+
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory is
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 #
 from datetime import datetime
-import os
 from pathlib import Path
-import sys
 from urllib.request import urlopen
+
 from xclim import __version__ as xcver
-import warnings
 
 # Add finch to sys.path to avoid having to full
 # install finch for autodoc.

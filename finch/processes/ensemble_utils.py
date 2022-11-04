@@ -1,24 +1,22 @@
+import logging
+import sys
 import warnings
 from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass
-import logging
 from pathlib import Path
-
-import sys
 from typing import Dict, Iterable, List, Optional, Tuple, Union
-import warnings
 
 import xarray as xr
 from parse import parse
-from pywps import ComplexInput, FORMATS, Process
-from pywps import configuration
-from pywps.exceptions import InvalidParameterValue
+from pywps import FORMATS, ComplexInput, Process, configuration
 from pywps.app.exceptions import ProcessError
+from pywps.exceptions import InvalidParameterValue
 from siphon.catalog import TDSCatalog
 from xclim import ensembles
 from xclim.core.calendar import days_since_to_doy, doy_to_days_since, percentile_doy
 from xclim.core.indicator import Indicator
+from xclim.indicators.atmos import tg
 
 from .subset import finch_subset_bbox, finch_subset_gridpoint, finch_subset_shape
 from .utils import (
@@ -38,6 +36,7 @@ from .utils import (
     zip_files,
 )
 from .wps_base import make_nc_input
+
 LOGGER = logging.getLogger("PYWPS")
 
 

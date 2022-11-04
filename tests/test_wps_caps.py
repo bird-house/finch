@@ -1,10 +1,10 @@
-import pytest
 import pywps.configuration
 
-
-from finch.processes import get_indicators, get_processes, not_implemented
 import finch.processes.utils
-from .common import client_for, CFG_FILE
+from finch.processes import get_indicators, get_processes, not_implemented
+from finch.wsgi import create_app
+
+from .common import CFG_FILE, client_for
 
 
 def test_wps_caps(client):

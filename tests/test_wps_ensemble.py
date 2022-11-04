@@ -2,15 +2,13 @@ import zipfile
 from collections import namedtuple
 from pathlib import Path
 
-import zipfile
-
 import geojson
-
+import numpy as np
 import pytest
+from pywps.app.exceptions import ProcessError
 from xarray import open_dataset
 
 from finch.processes import ensemble_utils
-from pywps.app.exceptions import ProcessError
 from tests.utils import execute_process, wps_literal_input
 
 mock_filenames = [

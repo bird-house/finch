@@ -1,10 +1,10 @@
 
-from dataclasses import dataclass, field
-from datetime import timedelta, datetime
-from itertools import chain
+import json
 import logging
 import zipfile
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from itertools import chain
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import (
@@ -27,6 +27,7 @@ import requests
 import sentry_sdk
 import xarray as xr
 import xclim
+import yaml
 from netCDF4 import num2date
 from pywps import (
     FORMATS,
@@ -42,15 +43,9 @@ from pywps import (
 from pywps.configuration import get_config_value
 from pywps.inout.outputs import MetaFile, MetaLink4
 from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
-
-import sentry_sdk
 from slugify import slugify
-import xarray as xr
-from netCDF4 import num2date
-import xclim
 from xclim.core.utils import InputKind
 from xclim.testing import list_input_variables
-import yaml
 
 LOGGER = logging.getLogger("PYWPS")
 

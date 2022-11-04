@@ -5,10 +5,10 @@ from unidecode import unidecode
 from finch.processes.subset import finch_subset_bbox
 
 from . import wpsio
-
-from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
 from .ensemble_utils import ensemble_common_handler
 from .utils import iter_xc_variables
+from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
+
 LOGGER = logging.getLogger("PYWPS")
 
 

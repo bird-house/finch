@@ -9,9 +9,7 @@ from pywps import FORMATS, ComplexInput, LiteralInput, Process
 from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 from sentry_sdk import configure_scope
-
 from xclim.core.utils import InputKind
-
 
 from .utils import PywpsInput
 

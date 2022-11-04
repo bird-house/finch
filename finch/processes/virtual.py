@@ -9,8 +9,10 @@ We needed to have this code within finch, so that the autodoc mock imports are f
 """
 from pathlib import Path
 from types import ModuleType
+
+from pywps.configuration import get_config_value, load_configuration
+
 from finch.processes import get_processes
-from pywps.configuration import load_configuration, get_config_value
 
 if not get_config_value('finch', 'datasets_config'):
     load_configuration(Path(__file__).parent.parent / 'default.cfg')

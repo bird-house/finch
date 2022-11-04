@@ -11,7 +11,6 @@ import xarray as xr
 from pywps import configuration
 
 from finch.processes import ensemble_utils
-
 from finch.processes.utils import (
     drs_filename,
     is_opendap_url,

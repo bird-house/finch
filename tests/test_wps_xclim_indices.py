@@ -1,18 +1,5 @@
 import json
-
-import pytest
-from lxml import etree
-import numpy as np
-import xarray as xr
-import pandas as pd
-from zipfile import ZipFile
-import finch
-from finch.processes import get_indicators, not_implemented
-from finch.processes.wps_xclim_indices import XclimIndicatorBase
-from finch.processes.wps_base import make_xclim_indicator_process
-from .utils import execute_process, wps_input_file, wps_literal_input
 from pathlib import Path
-from pywps.app.exceptions import ProcessError
 from unittest import mock
 from zipfile import ZipFile
 
@@ -28,6 +15,7 @@ from xclim.testing import open_dataset
 
 import finch
 import finch.processes
+from finch.processes import get_indicators, not_implemented
 from finch.processes.wps_base import make_xclim_indicator_process
 from finch.processes.wps_xclim_indices import XclimIndicatorBase
 

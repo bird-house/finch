@@ -19,14 +19,8 @@ from .utils import (
     single_input_or_none,
     valid_filename,
     write_log,
-
     xclim_variables,
-    zip_files
-)
-from .wps_base import (
-    FinchProcess,
-    FinchProgressBar,
-    convert_xclim_inputs_to_pywps,
+    zip_files,
 )
 from .wps_base import FinchProcess, FinchProgressBar, convert_xclim_inputs_to_pywps
 
