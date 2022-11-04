@@ -1,7 +1,7 @@
 # vim:set ft=dockerfile:
 FROM condaforge/mambaforge
 MAINTAINER https://github.com/bird-house/finch
-LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.9.2"
+LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.10.0"
 
 WORKDIR /code
 
