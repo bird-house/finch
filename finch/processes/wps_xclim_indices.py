@@ -136,10 +136,8 @@ class XclimIndicatorBase(FinchProcess):
                 outcsv = outfile.with_suffix('.csv')
                 ds = xr.open_dataset(outfile, decode_timedelta=False)
                 prec = single_input_or_none(request.inputs, "csv_precision")
-                if prec:
-                    ds = ds.round(prec)
                 df = dataset_to_dataframe(ds)
-                df.to_csv(outcsv)
+                df.to_csv(outcsv, **({"float_format": f'%.{prec}f'} if prec is not None else {}))
                 output_files.append(outcsv)
 
                 metadata = format_metadata(ds)

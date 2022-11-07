@@ -553,8 +553,6 @@ def netcdf_file_list_to_csv(
                 output_variable += f"_({units})"
 
             ds = ds.rename({variable: output_variable})
-            if csv_precision:
-                ds = ds.round(csv_precision)
             df = dataset_to_dataframe(ds)
 
             if calendar not in concat_by_calendar:
@@ -580,7 +578,7 @@ def netcdf_file_list_to_csv(
         dropna_threshold = 3  # lat + lon + at least one value
         concat.dropna(thresh=dropna_threshold, inplace=True)
 
-        concat.to_csv(output_csv)
+        concat.to_csv(output_csv, **({"float_format": f'%.{csv_precision}f'} if csv_precision is not None else {}))
         output_csv_list.append(output_csv)
 
     metadata_folder = output_folder / "metadata"
