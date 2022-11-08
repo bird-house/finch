@@ -147,7 +147,7 @@ def iter_local(root: Path, depth: int = -1, pattern: str = "*.nc"):
     if not root.is_absolute():
         root = (Path(__file__).parent.parent / root).resolve()
 
-    for file in root.rglob(pattern):
+    for file in root.glob(pattern):
         yield file.name, file
 
     if depth != 0:

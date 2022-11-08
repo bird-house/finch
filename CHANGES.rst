@@ -1,6 +1,10 @@
 Changes
 *******
 
+TBD (unreleased)
+===================
+* Fixed iter_local when depth > 0 to avoid all files to be considered twice
+
 0.10.0 (2022-11-04)
 ===================
 * Generalize ensemble datasets configuration.
