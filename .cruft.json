@@ -1,34 +1,34 @@
 {
-    "template": "https://github.com/bird-house/cookiecutter-birdhouse",
-    "commit": "b6969697401008114c8e25846ae5801e7e65224d",
-    "skip": [
-        "finch/processes/wps_say_hello.py",
-        "tests/test_wps_hello.py",
-        "docs/source/notebooks/example.ipynb",
-        "environment.yml",
-        "requirements.txt",
-        "docs/source/notebooks/index.rst",
-        "docs/source/processes.rst",
-        "finch/processes/__init__.py",
-        "tests/test_wps_caps.py"
-    ],
-    "context": {
-        "cookiecutter": {
-            "full_name": "David Huard",
-            "email": "huard.david@ouranos.ca",
-            "github_username": "bird-house",
-            "project_name": "Finch",
-            "project_slug": "finch",
-            "project_repo_name": "finch",
-            "project_readthedocs_name": "finch",
-            "project_short_description": "A Web Processing Service for Climate Indicators.",
-            "version": "0.10.0",
-            "open_source_license": "Apache Software License 2.0",
-            "http_port": "5000",
-            "_copy_without_render": [
-                "{{cookiecutter.project_slug}}/templates/*.cfg"
-            ],
-            "_template": "https://github.com/bird-house/cookiecutter-birdhouse"
-        }
+  "template": "https://github.com/bird-house/cookiecutter-birdhouse",
+  "commit": "b6969697401008114c8e25846ae5801e7e65224d",
+  "skip": [
+    "finch/processes/wps_say_hello.py",
+    "tests/test_wps_hello.py",
+    "docs/source/notebooks/example.ipynb",
+    "environment.yml",
+    "requirements.txt",
+    "docs/source/notebooks/index.rst",
+    "docs/source/processes.rst",
+    "finch/processes/__init__.py",
+    "tests/test_wps_caps.py"
+  ],
+  "context": {
+    "cookiecutter": {
+      "full_name": "David Huard",
+      "email": "huard.david@ouranos.ca",
+      "github_username": "bird-house",
+      "project_name": "Finch",
+      "project_slug": "finch",
+      "project_repo_name": "finch",
+      "project_readthedocs_name": "finch",
+      "project_short_description": "A Web Processing Service for Climate Indicators.",
+      "version": "0.10.0",
+      "open_source_license": "Apache Software License 2.0",
+      "http_port": "5000",
+      "_copy_without_render": [
+        "{{cookiecutter.project_slug}}/templates/*.cfg"
+      ],
+      "_template": "https://github.com/bird-house/cookiecutter-birdhouse"
     }
+  }
 }

@@ -1,3 +1,4 @@
+# noqa: D100
 from pathlib import Path
 
 from pywps.app import WPSRequest
@@ -76,13 +77,20 @@ class SubsetBboxDatasetProcess(FinchProcess):
         dataset_name = single_input_or_none(request.inputs, "dataset")
         dataset = get_datasets_config()[dataset_name]
         request.inputs["resource"] = get_datasets(
-            dataset, workdir=self.workdir,
-            variables=variables, scenario=scenario, models=models
+            dataset,
+            workdir=self.workdir,
+            variables=variables,
+            scenario=scenario,
+            models=models,
         )
 
         output_filename = Path(make_output_filename(self, request.inputs))
 
-        write_log(self, f"Running subset on {len(request.inputs['resource'])} resources.", process_step="subset")
+        write_log(
+            self,
+            f"Running subset on {len(request.inputs['resource'])} resources.",
+            process_step="subset",
+        )
 
         output_files = finch_subset_bbox(
             self,

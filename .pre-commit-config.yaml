@@ -59,7 +59,6 @@ repos:
     rev: v0.3.7
     hooks:
       - id: blackdoc
-        exclude: '(xclim/indices/__init__.py|docs/installation.rst)'
         additional_dependencies: [ 'black==22.8.0' ]
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.28.0

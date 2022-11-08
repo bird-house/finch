@@ -1,3 +1,4 @@
+# noqa: D100
 from pywps import FORMATS, ComplexInput, ComplexOutput
 
 from . import wpsio

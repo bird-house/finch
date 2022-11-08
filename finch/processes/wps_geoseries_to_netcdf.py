@@ -1,3 +1,4 @@
+# noqa: D100
 import logging
 from pathlib import Path
 from urllib.parse import urlparse
@@ -23,6 +24,8 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class GeoseriesToNetcdfProcess(FinchProcess):
+    """Convert a geospatial series to a CF-compliant netCDF."""
+
     def __init__(self):
         inputs = [
             ComplexInput(
@@ -51,7 +54,7 @@ class GeoseriesToNetcdfProcess(FinchProcess):
                 data_type="string",
                 default="",
                 min_occurs=0,
-                max_occurs=1
+                max_occurs=1,
             ),
             LiteralInput(
                 "squeeze",
@@ -71,7 +74,7 @@ class GeoseriesToNetcdfProcess(FinchProcess):
             #     min_occurs=0,
             #     max_occurs=1,
             # ),
-            wpsio.output_name
+            wpsio.output_name,
         ]
 
         outputs = [
@@ -112,9 +115,9 @@ class GeoseriesToNetcdfProcess(FinchProcess):
 
         # --- Process inputs ---
         geo_url = request.inputs["resource"][0].url
-        index_dim = request.inputs['index_dim'][0].data
-        feat_dim = request.inputs['feat_dim'][0].data
-        squeeze = request.inputs['squeeze'][0].data
+        index_dim = request.inputs["index_dim"][0].data
+        feat_dim = request.inputs["feat_dim"][0].data
+        squeeze = request.inputs["squeeze"][0].data
         grid_map = "longitude_latitude"  # request.inputs['grid_mapping'][0].data
 
         # Open URL
@@ -134,17 +137,19 @@ class GeoseriesToNetcdfProcess(FinchProcess):
         coords = cfgeo.shapely_to_cf(ds.geometry, grid_mapping=grid_map)
         if coords.features.size == coords.node.size:
             # Then it's only single points, we can drop 'node'
-            coords = coords.drop_dims('node')
+            coords = coords.drop_dims("node")
 
-        ds = xr.merge([ds.drop_vars('geometry'), coords])
+        ds = xr.merge([ds.drop_vars("geometry"), coords])
 
         # feat dim
         if feat_dim:
             feat = _maybe_squeeze(ds[feat_dim], index_dim)
             if feat.ndim == 2:
-                raise ValueError("'feat_dim' was given but it cannot be squeezed along the index dimension.")
+                raise ValueError(
+                    "'feat_dim' was given but it cannot be squeezed along the index dimension."
+                )
             ds[feat_dim] = feat
-            ds = ds.drop_vars('features').rename(features=feat_dim).set_coords(feat_dim)
+            ds = ds.drop_vars("features").rename(features=feat_dim).set_coords(feat_dim)
 
         # squeeze
         if squeeze:
@@ -165,12 +170,13 @@ class GeoseriesToNetcdfProcess(FinchProcess):
         else:
             source = f"data downloaded from {host}"
         ds.attrs["history"] = update_history(
-            f"Converted {source} to a CF-compliant Dataset.",
-            ds
+            f"Converted {source} to a CF-compliant Dataset.", ds
         )
 
         # Write to disk
-        filename = valid_filename(single_input_or_none(request.inputs, "output_name") or "geoseries")
+        filename = valid_filename(
+            single_input_or_none(request.inputs, "output_name") or "geoseries"
+        )
         output_file = Path(self.workdir) / f"{filename}.nc"
         dataset_to_netcdf(ds, output_file)
 

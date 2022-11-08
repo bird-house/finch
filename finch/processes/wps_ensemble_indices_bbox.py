@@ -1,3 +1,4 @@
+# noqa: D100
 import logging
 
 from unidecode import unidecode
@@ -13,21 +14,23 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class XclimEnsembleBboxBase(FinchProcess):
-    """Ensemble with bbox subset base class
+    """Ensemble with bbox subset base class.
 
-    Set xci to the xclim indicator in order to have a working class"""
+    Set xci to the xclim indicator in order to have a working class.
+    """
 
     xci = None
 
     def __init__(self):
         """Create a WPS process from an xclim indicator class instance."""
-
         if self.xci is None:
             raise AttributeError(
                 "Use the `finch.processes.wps_base.make_xclim_indicator_process` function instead."
             )
 
-        xci_inputs = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier, parse_percentiles=True)
+        xci_inputs = convert_xclim_inputs_to_pywps(
+            self.xci.parameters, self.xci.identifier, parse_percentiles=True
+        )
         xci_inputs.extend(wpsio.xclim_common_options)
         self.xci_inputs_identifiers = [i.identifier for i in xci_inputs]
 
@@ -40,7 +43,7 @@ class XclimEnsembleBboxBase(FinchProcess):
             wpsio.end_date,
             wpsio.ensemble_percentiles,
             wpsio.average,
-            *wpsio.get_ensemble_inputs(novar=True)
+            *wpsio.get_ensemble_inputs(novar=True),
         ]
 
         # all other inputs that are not the xarray data (window, threshold, etc.)
@@ -48,7 +51,9 @@ class XclimEnsembleBboxBase(FinchProcess):
             if i.identifier not in list(iter_xc_variables(self.xci)):
                 inputs.append(i)
 
-        inputs.extend([wpsio.output_prefix, wpsio.output_format_netcdf_csv, wpsio.csv_precision])
+        inputs.extend(
+            [wpsio.output_prefix, wpsio.output_format_netcdf_csv, wpsio.csv_precision]
+        )
 
         outputs = [wpsio.output_netcdf_zip, wpsio.output_log]
 

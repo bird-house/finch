@@ -42,7 +42,7 @@ def test_ensemble_heatwave_frequency_grid_point(client):
         wps_literal_input("freq", "MS"),
         wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
-        wps_literal_input("output_name", "testens")
+        wps_literal_input("output_name", "testens"),
     ]
 
     # --- when ---
@@ -50,13 +50,13 @@ def test_ensemble_heatwave_frequency_grid_point(client):
 
     # --- then ---
     assert len(outputs) == 1
-    assert Path(outputs[0]).stem.startswith('testens_46_000_72_800_rcp45')
+    assert Path(outputs[0]).stem.startswith("testens_46_000_72_800_rcp45")
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
-        "scenario": 1
+        "scenario": 1,
     }
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
@@ -67,7 +67,7 @@ def test_ensemble_heatwave_frequency_grid_point(client):
         variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
         assert variable_dims == {"region": 1, "time": 4, "scenario": 1}
 
-    assert len(ds.attrs['source_datasets'].split('\n')) == 4
+    assert len(ds.attrs["source_datasets"].split("\n")) == 4
 
 
 def test_ensemble_dded_grid_point_multiscenario(client):
@@ -138,7 +138,7 @@ def test_ensemble_heatwave_frequency_bbox(client):
         "lat": 2,
         "lon": 2,
         "time": 4,  # there are roughly 4 months in the test datasets
-        "scenario": 1
+        "scenario": 1,
     }
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
@@ -251,11 +251,7 @@ def test_ensemble_heatwave_frequency_grid_point_dates(client):
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
-    assert dims == {
-        "region": 1,
-        "time": 3,
-        "scenario": 1
-    }
+    assert dims == {"region": 1, "time": 3, "scenario": 1}
 
     ensemble_variables = dict(ds.data_vars)
 
@@ -308,11 +304,14 @@ def test_compute_intermediate_variables(monkeypatch):
     mock_paths = [subset_folder / p for p in mock_filenames]
 
     required_variables = ["tasmin_per"]
-    literal_input = namedtuple('LiteralInput', ['data', 'identifier'])
+    literal_input = namedtuple("LiteralInput", ["data", "identifier"])
     # --- when ---
     files_outputs = ensemble_utils.compute_intermediate_variables(
-        mock_paths, {'tasmin', 'tasmax'}, required_variables, workdir,
-        {'perc_tasmin': [literal_input(10, 'perc_tasmin')]}
+        mock_paths,
+        {"tasmin", "tasmax"},
+        required_variables,
+        workdir,
+        {"perc_tasmin": [literal_input(10, "perc_tasmin")]},
     )
 
     # --- then ---
@@ -327,9 +326,7 @@ def test_compute_intermediate_variables(monkeypatch):
     assert sorted(files_outputs) == sorted(expected)
 
 
-def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
-    client
-):
+def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(client):
     # --- given ---
     identifier = "ensemble_grid_point_cold_spell_duration_index"
     inputs = [
@@ -341,7 +338,7 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
         wps_literal_input("freq", "YS"),
         wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
-        wps_literal_input("perc_tasmin", "10")
+        wps_literal_input("perc_tasmin", "10"),
     ]
 
     # --- when ---
@@ -351,11 +348,7 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
-    assert dims == {
-        "region": 1,
-        "time": 1,
-        "scenario": 1
-    }
+    assert dims == {"region": 1, "time": 1, "scenario": 1}
 
     ensemble_variables = dict(ds.data_vars)
     assert sorted(ensemble_variables) == [f"csdi_6_p{p}" for p in (20, 50, 80)]
@@ -364,9 +357,7 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(
         assert variable_dims == {"region": 1, "time": 1, "scenario": 1}
 
 
-def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
-    client
-):
+def test_ensemble_compute_intermediate_growing_degree_days_grid_point(client):
     # --- given ---
     identifier = "ensemble_grid_point_growing_degree_days"
     inputs = [
@@ -385,11 +376,7 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
-    assert dims == {
-        "region": 1,
-        "time": 1,
-        "scenario": 1
-    }
+    assert dims == {"region": 1, "time": 1, "scenario": 1}
 
     ensemble_variables = dict(ds.data_vars)
     assert sorted(ensemble_variables) == [
@@ -426,7 +413,7 @@ def test_ensemble_heatwave_frequency_polygon(client):
         "lat": 11,
         "lon": 11,
         "time": 4,  # there are roughly 4 months in the test datasets
-        "scenario": 1
+        "scenario": 1,
     }
     data = ds["heat_wave_frequency_p20"].isel(scenario=0, time=1).data
     assert np.isnan(data).sum() == 55
@@ -520,7 +507,7 @@ def test_ensemble_invalid_parameters(client):
         wps_literal_input("freq", "MS"),
         wps_literal_input("ensemble_percentiles", "20, 50, 80"),
         wps_literal_input("output_format", "netcdf"),
-        wps_literal_input("output_name", "testens")
+        wps_literal_input("output_name", "testens"),
     ]
 
     # --- when ---

@@ -1,4 +1,3 @@
-
 import shutil
 import zipfile
 from pathlib import Path
@@ -126,7 +125,7 @@ def test_is_opendap_url():
 def test_make_file_groups():
     folder = Path(__file__).parent / "data" / "bccaqv2_single_cell"
     files_list = list(folder.glob("*.nc"))
-    groups = ensemble_utils.make_file_groups(files_list, {'tasmin', 'tasmax', 'pr'})
+    groups = ensemble_utils.make_file_groups(files_list, {"tasmin", "tasmax", "pr"})
 
     assert len(groups) == 85
     assert all(len(g) == 3 for g in groups)

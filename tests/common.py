@@ -1,3 +1,4 @@
+# noqa: D100
 from pathlib import Path
 
 from pywps import get_ElementMakerForVersion
@@ -12,21 +13,21 @@ TESTS_HOME = Path(__file__).parent
 CFG_FILE = str(TESTS_HOME / "test.cfg")
 
 
-class WpsTestClient(WpsClient):
-    def get(self, *args, **kwargs):
+class WpsTestClient(WpsClient):  # noqa: D101
+    def get(self, *args, **kwargs):  # noqa: D102
         query = "?"
         for key, value in kwargs.items():
             query += f"{key}={value}&"
         return super().get(query)
 
 
-def client_for(service):
+def client_for(service):  # noqa: D103
     return WpsTestClient(service, WpsTestResponse)
 
 
-def get_output(doc):
-    """Copied from pywps/tests/test_execute.py.
-    TODO: make this helper method public in pywps."""
+def get_output(doc):  # noqa: D103
+    # Copied from pywps/tests/test_execute.py.
+    # TODO: make this helper method public in pywps.
     output = {}
     for output_el in xpath_ns(
         doc, "/wps:ExecuteResponse" "/wps:ProcessOutputs/wps:Output"
@@ -54,7 +55,7 @@ def get_metalinks(doc):
     Parameters
     ----------
     doc : lxml.etree.Element
-      Metalink XML etree.
+        Metalink XML etree.
     """
     output = {}
     for child in doc.iterchildren():

@@ -1,3 +1,4 @@
+# noqa: D100
 import logging
 from collections import deque
 from pathlib import Path
@@ -30,13 +31,13 @@ LOGGER = logging.getLogger("PYWPS")
 class XclimIndicatorBase(FinchProcess):
     """Dummy xclim indicator process class.
 
-    Set xci to the xclim indicator in order to have a working class"""
+    Set xci to the xclim indicator in order to have a working class.
+    """
 
     xci = None
 
     def __init__(self):
         """Create a WPS process from an xclim indicator class instance."""
-
         if self.xci is None:
             raise AttributeError(
                 "Use the `make_xclim_indicator_process` function instead."
@@ -46,7 +47,12 @@ class XclimIndicatorBase(FinchProcess):
 
         inputs = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier)
         inputs += wpsio.xclim_common_options
-        inputs += [wpsio.variable_any, wpsio.output_name, wpsio.output_format_netcdf_csv, wpsio.csv_precision]
+        inputs += [
+            wpsio.variable_any,
+            wpsio.output_name,
+            wpsio.output_format_netcdf_csv,
+            wpsio.csv_precision,
+        ]
 
         super().__init__(
             self._handler,
@@ -74,7 +80,7 @@ class XclimIndicatorBase(FinchProcess):
         for k, v in request.inputs.items():
             if k in xclim_variables:
                 nc_inputs[k] = v
-            elif k not in ['output_format', 'output_name', 'csv_precision']:
+            elif k not in ["output_format", "output_name", "csv_precision"]:
                 other_inputs[k] = v
 
         n_files = len(list(nc_inputs.values())[0])
@@ -114,11 +120,11 @@ class XclimIndicatorBase(FinchProcess):
             )
 
             with FinchProgressBar(
-                    logging_function=_log,
-                    start_percentage=start_percentage,
-                    end_percentage=end_percentage,
-                    width=15,
-                    dt=1,
+                logging_function=_log,
+                start_percentage=start_percentage,
+                end_percentage=end_percentage,
+                width=15,
+                dt=1,
             ):
                 write_log(self, f"Writing file {output_filename} to disk.")
                 dataset_to_netcdf(out, output_filename)
@@ -129,7 +135,7 @@ class XclimIndicatorBase(FinchProcess):
             output_netcdfs = output_files
             output_files = []
             for outfile in output_netcdfs:
-                outcsv = outfile.with_suffix('.csv')
+                outcsv = outfile.with_suffix(".csv")
                 ds = xr.open_dataset(outfile, decode_timedelta=False)
                 prec = single_input_or_none(request.inputs, "csv_precision")
                 if prec:
@@ -139,12 +145,12 @@ class XclimIndicatorBase(FinchProcess):
                 output_files.append(outcsv)
 
                 metadata = format_metadata(ds)
-                outmeta = outfile.with_suffix('.metadata.txt')
+                outmeta = outfile.with_suffix(".metadata.txt")
                 outmeta.write_text(metadata)
                 output_files.append(outmeta)
 
             if len(output_netcdfs) == 1:
-                output_final = output_netcdfs[0].with_suffix('.zip')
+                output_final = output_netcdfs[0].with_suffix(".zip")
             else:
                 output_final = Path(self.workdir) / f"{self.identifier}_output.zip"
             zip_files(output_final, output_files)
@@ -163,7 +169,7 @@ class XclimIndicatorBase(FinchProcess):
 
 
 def _make_unique_drs_filename(
-        ds: xr.Dataset, existing_names: List[str], output_name: Optional[str] = None
+    ds: xr.Dataset, existing_names: List[str], output_name: Optional[str] = None
 ):
     """Generate a drs filename: avoid overwriting files by adding a dash and a number to the filename."""
     if output_name is not None:

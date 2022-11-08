@@ -67,8 +67,8 @@ def _create_test_dataset(
 
     obj = xr.Dataset(attrs=attrs)
     obj["time"] = ("time", pd.date_range("2000-01-01", periods=_dims["time"]))
-    obj["lon"] = ("lon", np.arange(_dims["lon"]), {'standard_name': 'longitude'})
-    obj["lat"] = ("lat", np.arange(_dims["lat"]), {'standard_name': 'latitude'})
+    obj["lon"] = ("lon", np.arange(_dims["lon"]), {"standard_name": "longitude"})
+    obj["lat"] = ("lat", np.arange(_dims["lat"]), {"standard_name": "latitude"})
 
     for v, dims in sorted(_vars.items()):
         data = rs.normal(size=tuple(_dims[d] for d in dims))
@@ -153,7 +153,9 @@ def netcdf_datasets(request) -> Dict[str, Path]:
 
     # Create file with two variables
     keys = ["pr", "discharge"]
-    ds = xr.merge([_create_test_dataset(k, **variable_descriptions[k], seed=1) for k in keys])
+    ds = xr.merge(
+        [_create_test_dataset(k, **variable_descriptions[k], seed=1) for k in keys]
+    )
     datasets["pr_discharge"] = _write_dataset("pr_discharge", ds)
 
     return datasets
@@ -231,6 +233,6 @@ def series(values, name, start="2000-01-01"):
 @pytest.fixture
 def hourly_dataset(pr_hr_series):  # noqa: F811
     """Ten days of precip with first hour missing."""
-    a = np.arange(10 * 24.)
+    a = np.arange(10 * 24.0)
     a[0] = np.nan
     return _write_dataset("pr_hr", pr_hr_series(a))

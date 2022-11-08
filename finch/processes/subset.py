@@ -1,3 +1,4 @@
+# noqa: D100
 import logging
 from pathlib import Path
 from threading import Lock
@@ -33,7 +34,7 @@ def make_subset_file_name(resource, kind="sub"):
         # Inspired by logic from ComplexInput._build_file_name
         # but without the duplicate file name check as it inserts randomness in names
         # See #228
-        url_path = urlparse(resource.url).path or ''
+        url_path = urlparse(resource.url).path or ""
         p = Path(url_path) or Path(resource.identifier)
         if not p.suffix:
             p = p.with_suffix(resource.extension)
@@ -54,7 +55,6 @@ def finch_subset_gridpoint(
      - start_date: Initial date for temporal subsetting.
      - end_date: Final date for temporal subsetting.
     """
-
     lon_value = request_inputs[wpsio.lon.identifier][0].data
     try:
         longitudes = [float(lon) for lon in lon_value.split(",")]
@@ -104,10 +104,10 @@ def finch_subset_gridpoint(
             end_date=end_date,
         )
 
-        if 'site' in subsetted.dims:
-            subsetted = subsetted.rename(site='region')
+        if "site" in subsetted.dims:
+            subsetted = subsetted.rename(site="region")
         else:
-            subsetted = subsetted.expand_dims('region')
+            subsetted = subsetted.expand_dims("region")
 
         if not all(subsetted.dims.values()):
             LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
@@ -217,6 +217,7 @@ def extract_shp(path):
       zip:///<path to zip file>!<relative path to shapefile>
     """
     from zipfile import ZipFile
+
     z = ZipFile(path)
 
     fn = next(filter(lambda x: x.endswith(".shp"), z.namelist()))
@@ -226,7 +227,9 @@ def extract_shp(path):
 
 
 def finch_average_shape(
-    process: Process, netcdf_inputs: List[ComplexInput], request_inputs: RequestInputs,
+    process: Process,
+    netcdf_inputs: List[ComplexInput],
+    request_inputs: RequestInputs,
 ) -> List[Path]:
     """Parse wps `request_inputs` based on their name and average `netcdf_inputs`.
 
@@ -246,7 +249,7 @@ def finch_average_shape(
 
     shape = gpd.read_file(shp)
     if tolerance > 0:
-        shape['geometry'] = shape.simplify(tolerance)
+        shape["geometry"] = shape.simplify(tolerance)
 
     n_files = len(netcdf_inputs)
     count = 0
@@ -256,7 +259,9 @@ def finch_average_shape(
     for resource in netcdf_inputs:
         # if not subsetting by time, it's not necessary to decode times
         time_subset = start_date is not None or end_date is not None
-        dataset = try_opendap(resource, decode_times=time_subset, chunk_dims=['time', 'realization'])
+        dataset = try_opendap(
+            resource, decode_times=time_subset, chunk_dims=["time", "realization"]
+        )
 
         count += 1
         write_log(
@@ -286,7 +291,9 @@ def finch_average_shape(
 
 
 def finch_subset_shape(
-    process: Process, netcdf_inputs: List[ComplexInput], request_inputs: RequestInputs,
+    process: Process,
+    netcdf_inputs: List[ComplexInput],
+    request_inputs: RequestInputs,
 ) -> List[Path]:
     """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
@@ -328,7 +335,10 @@ def finch_subset_shape(
         dataset = dataset[variables] if variables else dataset
 
         subsetted = subset_shape(
-            dataset, shape=shp, start_date=start_date, end_date=end_date,
+            dataset,
+            shape=shp,
+            start_date=start_date,
+            end_date=end_date,
         )
 
         if not all(subsetted.dims.values()):
@@ -347,7 +357,9 @@ def finch_subset_shape(
     return output_files
 
 
-def common_subset_handler(process: Process, request, response, subset_function):
+def common_subset_handler(
+    process: Process, request, response, subset_function
+):  # noqa: D103
     assert subset_function in [
         finch_subset_bbox,
         finch_subset_gridpoint,

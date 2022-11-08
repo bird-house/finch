@@ -1,3 +1,4 @@
+# noqa: D100
 from pathlib import Path
 
 from pywps import LiteralInput
@@ -101,8 +102,11 @@ class SubsetGridPointDatasetProcess(FinchProcess):
         dataset_name = single_input_or_none(request.inputs, "dataset")
         dataset = get_datasets_config()[dataset_name]
         request.inputs["resource"] = get_datasets(
-            dataset, workdir=self.workdir,
-            variables=variables, scenario=scenario, models=models
+            dataset,
+            workdir=self.workdir,
+            variables=variables,
+            scenario=scenario,
+            models=models,
         )
 
         output_filename = Path(make_output_filename(self, request.inputs))
@@ -126,7 +130,7 @@ class SubsetGridPointDatasetProcess(FinchProcess):
                 output_files,
                 output_folder=Path(self.workdir),
                 filename_prefix=output_filename,
-                csv_precision=single_input_or_none(request.inputs, "csv_precision")
+                csv_precision=single_input_or_none(request.inputs, "csv_precision"),
             )
             output_files = csv_files + [metadata_folder]
 

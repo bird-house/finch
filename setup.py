@@ -8,8 +8,8 @@ import re
 from setuptools import find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, 'README.rst')).read()
-CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
+README = open(os.path.join(here, "README.rst")).read()
+CHANGES = open(os.path.join(here, "CHANGES.rst")).read()
 REQUIRES_PYTHON = ">=3.8"
 
 about = {}
@@ -25,7 +25,7 @@ for req in open("requirements.txt"):
         req = git_url_match.group(1)
     requirements.append(req)
 
-dev_reqs = [line.strip() for line in open('requirements_dev.txt')]
+dev_reqs = [line.strip() for line in open("requirements_dev.txt")]
 
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -45,22 +45,22 @@ classifiers = [
 
 setup(
     name="finch",
-    version=about['__version__'],
+    version=about["__version__"],
     description="A Web Processing Service for Climate Indicators.",
-    long_description=README + '\n\n' + CHANGES,
+    long_description=README + "\n\n" + CHANGES,
     long_description_content_type="text/x-rst",
-    author=about['__author__'],
-    author_email=about['__email__'],
-    url='https://github.com/bird-house/finch',
+    author=about["__author__"],
+    author_email=about["__email__"],
+    url="https://github.com/bird-house/finch",
     python_requires=REQUIRES_PYTHON,
     classifiers=classifiers,
     license="Apache Software License 2.0",
-    keywords='wps pywps birdhouse finch',
+    keywords="wps pywps birdhouse finch",
     packages=find_packages(),
     include_package_data=True,
     install_requires=requirements,
     extras_require={
-        "dev": dev_reqs,              # pip install ".[dev]"
+        "dev": dev_reqs,  # pip install ".[dev]"
     },
     entry_points={"console_scripts": ["finch=finch.cli:cli"]},
 )

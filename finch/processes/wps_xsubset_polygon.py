@@ -1,3 +1,4 @@
+# noqa: D100
 import logging
 
 from pywps import FORMATS, ComplexInput, ComplexOutput

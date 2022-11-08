@@ -53,7 +53,7 @@ extensions = [
     "sphinx.ext.imgconverter",
     "nbsphinx",
     "IPython.sphinxext.ipython_console_highlighting",
-    "sphinxcontrib.bibtex"
+    "sphinxcontrib.bibtex",
 ]
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
@@ -88,14 +88,18 @@ if os.environ.get("READTHEDOCS") == "True":
 
 # Bibliography stuff, for correct xclim docstring formatting
 # We need to download the reference file from xclim for the correct version.
-bibfile = Path(__file__).parent / 'references.bib'
+bibfile = Path(__file__).parent / "references.bib"
 if not bibfile.is_file():
     try:
-        r = urlopen(f"https://github.com/Ouranosinc/xclim/raw/v{xcver}/docs/references.bib")
+        r = urlopen(
+            f"https://github.com/Ouranosinc/xclim/raw/v{xcver}/docs/references.bib"
+        )
     except Exception as err:
-        warnings.warn(f'Unable to download xclim references file, docstrings will be incomplete. (Got {err})')
+        warnings.warn(
+            f"Unable to download xclim references file, docstrings will be incomplete. (Got {err})"
+        )
     else:
-        with bibfile.open('wb') as f:
+        with bibfile.open("wb") as f:
             f.write(r.read())
 
 if bibfile.is_file():

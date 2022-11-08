@@ -1,3 +1,4 @@
+# noqa: D104
 import logging
 
 from pywps.configuration import get_config_value
@@ -54,18 +55,26 @@ not_implemented = [
 
 
 def get_processes():
-    """Get wps processes, using the current global `pywps` configuration"""
-    indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
+    """Get wps processes using the current global `pywps` configuration."""
+    indicators = get_indicators(
+        realms=["atmos", "land", "seaIce"], exclude=not_implemented
+    )
 
-    dsconf = get_datasets_config()
-    if dsconf:
+    ds_conf = get_datasets_config()
+    if ds_conf:
         available_variables = get_available_variables()
-        ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i, available_variables)]
+        ensemble_indicators = [
+            i
+            for i in indicators
+            if uses_accepted_netcdf_variables(i, available_variables)
+        ]
     else:
         ensemble_indicators = []
-        logger.warning("No ensemble datasets configured, many processes won't be available.")
+        logger.warning(
+            "No ensemble datasets configured, many processes won't be available."
+        )
         default_dataset = get_config_value("finch", "default_dataset")
-        if default_dataset not in dsconf:
+        if default_dataset not in ds_conf:
             logger.warning("The default dataset is not configured, which is weird.")
 
     processes = []
@@ -79,9 +88,7 @@ def get_processes():
         )
 
     # Statistical downscaling and bias adjustment
-    processes += [
-        EmpiricalQuantileMappingProcess()
-    ]
+    processes += [EmpiricalQuantileMappingProcess()]
 
     # ensemble with grid point subset
     for ind in ensemble_indicators:
@@ -119,7 +126,7 @@ def get_processes():
         SubsetPolygonProcess(),
         AveragePolygonProcess(),
         HourlyToDailyProcess(),
-        GeoseriesToNetcdfProcess()
+        GeoseriesToNetcdfProcess(),
     ]
 
     return processes

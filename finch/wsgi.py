@@ -1,3 +1,4 @@
+# noqa: D100
 import os
 
 import sentry_sdk
@@ -9,7 +10,7 @@ if os.environ.get("SENTRY_DSN"):
     sentry_sdk.init(os.environ["SENTRY_DSN"])
 
 
-def create_app(cfgfiles=None):
+def create_app(cfgfiles=None):  # noqa: D103
     config_files = [os.path.join(os.path.dirname(__file__), "default.cfg")]
     if isinstance(cfgfiles, str):
         cfgfiles = [cfgfiles]

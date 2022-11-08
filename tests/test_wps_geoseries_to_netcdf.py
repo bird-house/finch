@@ -18,7 +18,7 @@ def test_wps_geoseries_to_netcdf(client):
     ]
     outputs = execute_process(client, identifier, inputs)
     with xr.open_dataset(outputs[0]) as ds:
-        assert set(ds.dims) == {'features', 'LOCAL_DATE'}
+        assert set(ds.dims) == {"features", "LOCAL_DATE"}
         assert ds.features.size == 23
         assert np.issubdtype(ds.LOCAL_DATE.dtype, np.datetime64)
         print(ds.attrs)
@@ -30,10 +30,10 @@ def test_wps_geoseries_to_netcdf_feat_squeeze(client):
         wps_input_file("resource", geomet_geojson()),
         wps_literal_input("index_dim", "LOCAL_DATE"),
         wps_literal_input("feat_dim", "STATION_NAME"),
-        wps_literal_input("squeeze", "True")
+        wps_literal_input("squeeze", "True"),
     ]
     outputs = execute_process(client, identifier, inputs)
     with xr.open_dataset(outputs[0]) as ds:
-        assert set(ds.dims) == {'STATION_NAME', 'LOCAL_DATE'}
+        assert set(ds.dims) == {"STATION_NAME", "LOCAL_DATE"}
         assert ds.STATION_NAME.size == 23
-        assert set(ds.CLIMATE_IDENTIFIER.dims) == {'STATION_NAME'}
+        assert set(ds.CLIMATE_IDENTIFIER.dims) == {"STATION_NAME"}
