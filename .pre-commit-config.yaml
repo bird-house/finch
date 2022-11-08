@@ -6,7 +6,7 @@ repos:
     rev: v2.38.2
     hooks:
       - id: pyupgrade
-        args: [ "--py38-plus" ]
+        args: [ '--py38-plus' ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
     hooks:
@@ -30,7 +30,7 @@ repos:
     rev: 22.8.0
     hooks:
       - id: black
-        args: [ "--target-version=py38" ]
+        args: [ '--target-version=py38' ]
   - repo: https://github.com/PyCQA/isort
     rev: 5.10.1
     hooks:
@@ -40,16 +40,17 @@ repos:
     rev: 1.5.1
     hooks:
       - id: nbqa-black
-        args: [ "--target-version=py38" ]
+        args: [ '--target-version=py38' ]
       - id: nbqa-pyupgrade
-        args: [ "--py38-plus" ]
+        args: [ '--py38-plus' ]
       - id: nbqa-isort
-        args: [ "--settings-file=setup.cfg" ]
+        args: [ '--settings-file=setup.cfg' ]
   - repo: https://github.com/kynan/nbstripout
     rev: 0.6.1
     hooks:
       - id: nbstripout
         files: ".ipynb"
+        args: [ '--keep-output', '--keep-count' ]
   - repo: https://github.com/pycqa/pydocstyle
     rev: 6.1.1
     hooks:
