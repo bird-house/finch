@@ -26,11 +26,11 @@ from datetime import datetime
 from pathlib import Path
 from urllib.request import urlopen
 
-from xclim import __version__ as xcver
+from xclim import __version__ as __xclim_version__
 
 # Add finch to sys.path to avoid having to full
 # install finch for autodoc.
-# Full install of finch will burst memory limit on ReadTheDocs.
+# Full installation of finch will burst memory limit on ReadTheDocs.
 sys.path.insert(0, os.path.abspath("../../"))
 
 
@@ -92,7 +92,7 @@ bibfile = Path(__file__).parent / "references.bib"
 if not bibfile.is_file():
     try:
         r = urlopen(
-            f"https://github.com/Ouranosinc/xclim/raw/v{xcver}/docs/references.bib"
+            f"https://github.com/Ouranosinc/xclim/raw/v{__xclim_version__}/docs/references.bib"
         )
     except Exception as err:
         warnings.warn(
