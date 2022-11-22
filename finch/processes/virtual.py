@@ -1,3 +1,4 @@
+# noqa: D205, D400
 """
 Processes as a virtual submodule
 --------------------------------
@@ -9,26 +10,37 @@ We needed to have this code within finch, so that the autodoc mock imports are f
 """
 from pathlib import Path
 from types import ModuleType
-from finch.processes import get_processes
-from pywps.configuration import load_configuration, get_config_value
 
-if not get_config_value('finch', 'datasets_config'):
-    load_configuration(Path(__file__).parent.parent / 'default.cfg')
+from pywps.configuration import get_config_value, load_configuration
+
+from finch.processes import get_processes
+
+if not get_config_value("finch", "datasets_config"):
+    load_configuration(Path(__file__).parent.parent / "default.cfg")
 
 processes = sorted(get_processes(), key=lambda p: p.__class__.__name__)
 
-ens_proc = {p.__class__.__name__: p.__class__
-            for p in processes if "Ensemble" in p.__class__.__name__}
-ind_proc = {p.__class__.__name__: p.__class__
-            for p in processes if p.__class__.__name__.endswith("_Indicator_Process")}
-oth_proc = {p.__class__.__name__: p.__class__
-            for p in processes if p.__class__.__name__ not in (list(ens_proc) + list(ind_proc))}
+ens_proc = {
+    p.__class__.__name__: p.__class__
+    for p in processes
+    if "Ensemble" in p.__class__.__name__
+}
+ind_proc = {
+    p.__class__.__name__: p.__class__
+    for p in processes
+    if p.__class__.__name__.endswith("_Indicator_Process")
+}
+oth_proc = {
+    p.__class__.__name__: p.__class__
+    for p in processes
+    if p.__class__.__name__ not in (list(ens_proc) + list(ind_proc))
+}
 
-indicators = ModuleType('indicators', "Indicators Processes\n--------------------")
+indicators = ModuleType("indicators", "Indicators Processes\n--------------------")
 indicators.__dict__.update(ind_proc)
 
-ensemble = ModuleType('ensemble', "Ensemble Processes\n------------------")
+ensemble = ModuleType("ensemble", "Ensemble Processes\n------------------")
 ensemble.__dict__.update(ens_proc)
 
-other = ModuleType('other', "Other Processes\n---------------")
+other = ModuleType("other", "Other Processes\n---------------")
 other.__dict__.update(oth_proc)

@@ -1,10 +1,11 @@
+# noqa: D100
 import logging
 
-from pywps import ComplexInput, ComplexOutput, FORMATS
+from pywps import FORMATS, ComplexInput, ComplexOutput
 
 from . import wpsio
-from .wps_base import FinchProcess
 from .subset import common_subset_handler, finch_average_shape
+from .wps_base import FinchProcess
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -38,7 +39,7 @@ class AveragePolygonProcess(FinchProcess):
             wpsio.output_metalink,
         ]
 
-        super(AveragePolygonProcess, self).__init__(
+        super().__init__(
             self._handler,
             identifier="average_polygon",
             title="Average over one or more polygons",

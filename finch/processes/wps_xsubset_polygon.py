@@ -1,12 +1,11 @@
+# noqa: D100
 import logging
-from threading import Lock
 
-from pywps import ComplexInput, ComplexOutput, FORMATS
-from pywps.inout.outputs import MetaLink4
+from pywps import FORMATS, ComplexInput, ComplexOutput
 
 from . import wpsio
-from .wps_base import FinchProcess
 from .subset import common_subset_handler, finch_subset_shape
+from .wps_base import FinchProcess
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -39,7 +38,7 @@ class SubsetPolygonProcess(FinchProcess):
             wpsio.output_metalink,
         ]
 
-        super(SubsetPolygonProcess, self).__init__(
+        super().__init__(
             self._handler,
             identifier="subset_polygon",
             title="Subset with one or more polygons",

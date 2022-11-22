@@ -1,4 +1,4 @@
-"""Module storing inputs and outputs used in multiple processes. """
+"""Module storing inputs and outputs used in multiple processes."""
 
 import json
 from copy import deepcopy
@@ -9,20 +9,21 @@ from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
 from pywps.configuration import get_config_value
 from pywps.inout.literaltypes import AnyValue
 from xclim.core.options import (
-    CHECK_MISSING,
     CF_COMPLIANCE,
+    CHECK_MISSING,
     DATA_VALIDATION,
     MISSING_METHODS,
     MISSING_OPTIONS,
-    OPTIONS
+    OPTIONS,
 )
+
 from .utils import PywpsInput, PywpsOutput, get_datasets_config
 
 
 def copy_io(
     io: Union[PywpsInput, PywpsOutput], **kwargs
 ) -> Union[PywpsInput, PywpsOutput]:
-    """Creates a new input or output with modified parameters.
+    """Create a new input or output with modified parameters.
 
     Use this if you want one of the inputs in this file, but want to modify it.
 
@@ -128,13 +129,14 @@ variable_any = LiteralInput(
     data_type="string",
     default=None,
     allowed_values=[AnyValue],
-    min_occurs=0
+    min_occurs=0,
 )
 
 
 def get_ensemble_inputs(novar=False):
+    """Gather all necessary inputs for climate ensemble analysis."""
     datasets_config = get_datasets_config()
-    default_dataset = get_config_value('finch', 'default_dataset')
+    default_dataset = get_config_value("finch", "default_dataset")
 
     dataset = LiteralInput(
         "dataset",
@@ -154,7 +156,11 @@ def get_ensemble_inputs(novar=False):
         default=None,
         min_occurs=0,
         max_occurs=3,
-        allowed_values=list(set(chain(*[d.allowed_values['scenario'] for d in datasets_config.values()]))),
+        allowed_values=list(
+            set(
+                chain(*[d.allowed_values["scenario"] for d in datasets_config.values()])
+            )
+        ),
     )
 
     models = LiteralInput(
@@ -163,16 +169,23 @@ def get_ensemble_inputs(novar=False):
         abstract=(
             "When calculating the ensemble, include only these models. Allowed values depend on the dataset chosen. "
             "By default, all models are used ('all'), taking the first realization of each. "
-            "Special sublists are also available :"
-        ) + ", ".join([f"{dsid}: {list((d.model_lists or {}).keys())}" for dsid, d in datasets_config.items()]),
+            "Special sub-lists are also available :"
+        )
+        + ", ".join(
+            [
+                f"{dsid}: {list((d.model_lists or {}).keys())}"
+                for dsid, d in datasets_config.items()
+            ]
+        ),
         data_type="string",
         default="all",
         min_occurs=0,
         max_occurs=1000,
-        allowed_values=["all"] + (
-            list(chain(*[d.allowed_values['model'] for d in datasets_config.values()]))
+        allowed_values=["all"]
+        + (
+            list(chain(*[d.allowed_values["model"] for d in datasets_config.values()]))
             + list(chain(*[d.model_lists.keys() for d in datasets_config.values()]))
-        )
+        ),
     )
     if novar:
         return dataset, scenario, models
@@ -184,7 +197,9 @@ def get_ensemble_inputs(novar=False):
         data_type="string",
         default=None,
         min_occurs=0,
-        allowed_values=list(chain(*[d.allowed_values['variable'] for d in datasets_config.values()])),
+        allowed_values=list(
+            chain(*[d.allowed_values["variable"] for d in datasets_config.values()])
+        ),
     )
     return dataset, scenario, models, variable
 
@@ -237,7 +252,7 @@ cf_compliance = LiteralInput(
     abstract="Whether to log, warn or raise when inputs have non-CF-compliant attributes.",
     data_type="string",
     default=OPTIONS[CF_COMPLIANCE],
-    allowed_values=['log', 'warn', 'raise'],
+    allowed_values=["log", "warn", "raise"],
     min_occurs=0,
 )
 
@@ -248,7 +263,7 @@ data_validation = LiteralInput(
     abstract="Whether to log, warn or raise when inputs fail data validation checks.",
     data_type="string",
     default=OPTIONS[DATA_VALIDATION],
-    allowed_values=['log', 'warn', 'raise'],
+    allowed_values=["log", "warn", "raise"],
     min_occurs=0,
 )
 
@@ -311,7 +326,7 @@ reducer = LiteralInput(
     allowed_values=["mean", "sum", "min", "max"],
     data_type="string",
     min_occurs=1,
-    max_occurs=1
+    max_occurs=1,
 )
 
 output_name = LiteralInput(
@@ -320,12 +335,12 @@ output_name = LiteralInput(
     abstract="Filename of the output (no extension).",
     data_type="string",
     min_occurs=0,
-    max_occurs=1
+    max_occurs=1,
 )
 
 output_prefix = copy_io(
     output_name,
-    abstract="Prefix of the output filename, defaults to the dataset name and the identifier of the process."
+    abstract="Prefix of the output filename, defaults to the dataset name and the identifier of the process.",
 )
 
 csv_precision = LiteralInput(
@@ -337,7 +352,7 @@ csv_precision = LiteralInput(
     ),
     data_type="integer",
     min_occurs=0,
-    max_occurs=1
+    max_occurs=1,
 )
 
 xclim_common_options = [

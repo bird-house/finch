@@ -1,3 +1,4 @@
+# noqa: D100
 import logging
 
 from unidecode import unidecode
@@ -5,29 +6,31 @@ from unidecode import unidecode
 from finch.processes.subset import finch_subset_gridpoint
 
 from . import wpsio
-from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
 from .ensemble_utils import ensemble_common_handler
 from .utils import iter_xc_variables
+from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
 
 LOGGER = logging.getLogger("PYWPS")
 
 
 class XclimEnsembleGridPointBase(FinchProcess):
-    """Ensemble with grid point subset base class
+    """Ensemble with grid point subset base class.
 
-    Set xci to the xclim indicator in order to have a working class"""
+    Set xci to the xclim indicator in order to have a working class.
+    """
 
     xci = None
 
     def __init__(self):
         """Create a WPS process from an xclim indicator class instance."""
-
         if self.xci is None:
             raise AttributeError(
                 "Use the `finch.processes.wps_base.make_xclim_indicator_process` function instead."
             )
 
-        xci_inputs = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier, parse_percentiles=True)
+        xci_inputs = convert_xclim_inputs_to_pywps(
+            self.xci.parameters, self.xci.identifier, parse_percentiles=True
+        )
         xci_inputs.extend(wpsio.xclim_common_options)
         self.xci_inputs_identifiers = [i.identifier for i in xci_inputs]
 
@@ -38,7 +41,7 @@ class XclimEnsembleGridPointBase(FinchProcess):
             wpsio.end_date,
             wpsio.ensemble_percentiles,
             wpsio.average,
-            *wpsio.get_ensemble_inputs(novar=True)
+            *wpsio.get_ensemble_inputs(novar=True),
         ]
 
         # all other inputs that are not the xarray data (window, threshold, etc.)
@@ -46,7 +49,9 @@ class XclimEnsembleGridPointBase(FinchProcess):
             if i.identifier not in list(iter_xc_variables(self.xci)):
                 inputs.append(i)
 
-        inputs.extend([wpsio.output_prefix, wpsio.output_format_netcdf_csv, wpsio.csv_precision])
+        inputs.extend(
+            [wpsio.output_prefix, wpsio.output_format_netcdf_csv, wpsio.csv_precision]
+        )
 
         outputs = [wpsio.output_netcdf_zip, wpsio.output_log]
 

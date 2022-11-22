@@ -75,4 +75,3 @@ The configuration value for `finch, datasets_config`, points to a YAML file that
 The YAML file must consist in a mapping of dataset name to dataset configuration, the latter having the same structure as this dataclass:
 
 .. autoclass:: finch.processes.utils.DatasetConfiguration
-
