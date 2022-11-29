@@ -1,8 +1,12 @@
-from pywps import ComplexInput, ComplexOutput, FORMATS
-
+# noqa: D100
+import json
 import logging
 from pathlib import Path
-from .wps_base import FinchProcess
+
+import xarray as xr
+from pywps import FORMATS, ComplexInput, ComplexOutput
+from xclim.core.options import MISSING_METHODS
+
 from . import wpsio
 from .utils import (
     dataset_to_netcdf,
@@ -13,13 +17,14 @@ from .utils import (
     valid_filename,
     write_log,
 )
-import xarray as xr
-import json
-from xclim.core.options import MISSING_METHODS
+from .wps_base import FinchProcess
+
 LOGGER = logging.getLogger("PYWPS")
 
 
 class HourlyToDailyProcess(FinchProcess):
+    """Resample from hourly frequency to daily frequency."""
+
     def __init__(self):
         inputs = [
             ComplexInput(
@@ -34,7 +39,7 @@ class HourlyToDailyProcess(FinchProcess):
             wpsio.check_missing,
             wpsio.missing_options,
             wpsio.variable_any,
-            wpsio.output_name
+            wpsio.output_name,
         ]
 
         outputs = [
@@ -80,10 +85,17 @@ class HourlyToDailyProcess(FinchProcess):
         ds = ds[variables] if variables else ds
 
         # --- Do the resampling computation ---
-        out = _hourly_to_daily(ds, reducer=reducer, check_missing=check_missing, missing_options=missing_options)
+        out = _hourly_to_daily(
+            ds,
+            reducer=reducer,
+            check_missing=check_missing,
+            missing_options=missing_options,
+        )
 
         # Write to disk
-        filename = valid_filename(single_input_or_none(request.inputs, "output_name") or "daily")
+        filename = valid_filename(
+            single_input_or_none(request.inputs, "output_name") or "daily"
+        )
         output_file = Path(self.workdir) / f"{filename}.nc"
         dataset_to_netcdf(out, output_file)
 
@@ -92,9 +104,10 @@ class HourlyToDailyProcess(FinchProcess):
         response.outputs["output_log"].file = str(log_file_path(self))
 
 
-def _hourly_to_daily(ds: xr.Dataset, reducer: str, check_missing: str, missing_options: dict) -> xr.Dataset:
+def _hourly_to_daily(
+    ds: xr.Dataset, reducer: str, check_missing: str, missing_options: dict
+) -> xr.Dataset:
     """Convert an hourly time series to a daily time series."""
-
     # Validate missing values algorithm options
     kls = MISSING_METHODS[check_missing]
     missing = kls.execute

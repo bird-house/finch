@@ -1,10 +1,12 @@
+import zipfile
 from pathlib import Path
-import pytest
+
 import numpy as np
+import pytest
 import xarray as xr
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
-import zipfile
+
 from finch.processes import SubsetBboxProcess
 
 from .common import CFG_FILE, get_output
@@ -34,7 +36,7 @@ def test_wps_subsetbbox(netcdf_datasets):
     np.testing.assert_array_equal(ds.lon, [3, 4])
 
 
-@pytest.mark.parametrize("outfmt", ['netcdf', 'csv'])
+@pytest.mark.parametrize("outfmt", ["netcdf", "csv"])
 def test_wps_subsetbbox_dataset(client, outfmt):
     # --- given ---
     identifier = "subset_bbox_dataset"
@@ -53,12 +55,15 @@ def test_wps_subsetbbox_dataset(client, outfmt):
 
     # --- then ---
     assert len(outputs) == 1
-    assert Path(outputs[0]).stem == 'test_subset_subset_bbox_dataset_45_000_74_000_46_000_73_000_rcp45'
+    assert (
+        Path(outputs[0]).stem
+        == "test_subset_subset_bbox_dataset_45_000_74_000_46_000_73_000_rcp45"
+    )
 
     zf = zipfile.ZipFile(outputs[0])
-    assert len(zf.namelist()) == (4 if outfmt == 'netcdf' else 5)
+    assert len(zf.namelist()) == (4 if outfmt == "netcdf" else 5)
 
-    if outfmt == 'netcdf':
+    if outfmt == "netcdf":
         data_filenames = [n for n in zf.namelist() if "metadata" not in n]
 
         with zf.open(data_filenames[0]) as f:

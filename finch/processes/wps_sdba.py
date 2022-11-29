@@ -1,3 +1,4 @@
+# noqa: D205, D400
 """
 Statistical downscaling and bias adjustment
 ===========================================
@@ -7,23 +8,24 @@ Expose xclim.sdba algorithms as WPS.
 For the moment, both train-adjust operations are bundled into a single process.
 """
 import logging
-import xclim
 from pathlib import Path
+
+import xclim
+from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
 from xclim.core.calendar import convert_calendar
 from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
-from pywps import ComplexInput, LiteralInput, ComplexOutput, FORMATS
-from .wps_base import FinchProcess, FinchProgressBar
-from . import wpsio
 
+from . import wpsio
 from .utils import (
+    dataset_to_netcdf,
     log_file_path,
+    make_metalink_output,
     single_input_or_none,
     try_opendap,
+    valid_filename,
     write_log,
-    dataset_to_netcdf,
-    make_metalink_output,
-    valid_filename
 )
+from .wps_base import FinchProcess, FinchProgressBar
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -65,7 +67,7 @@ adjust_args = dict(
         default="constant",
         allowed_values=["constant", "nan"],
         min_occurs=0,
-    )
+    ),
 )
 
 resources = dict(
@@ -105,6 +107,8 @@ common_outputs = [
 
 
 class EmpiricalQuantileMappingProcess(FinchProcess):
+    """Calculate Empirical Quantile Mapping bias-adjustment."""
+
     def __init__(self):
         inputs = (
             list(resources.values())
@@ -129,7 +133,7 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
                     allowed_values=[ADDITIVE, MULTIPLICATIVE],
                     min_occurs=0,
                 ),
-                wpsio.output_name
+                wpsio.output_name,
             ]
         )
 
@@ -163,7 +167,7 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
                 name = variable or list(ds.data_vars)[0]
 
                 # Force calendar to noleap and rechunk
-                res[key] = convert_calendar(ds[name], "noleap").chunk({'time': -1})
+                res[key] = convert_calendar(ds[name], "noleap").chunk({"time": -1})
 
             elif key in group_args:
                 group[key] = single_input_or_none(request.inputs, key)
@@ -179,14 +183,18 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
         group = xclim.sdba.Grouper(**group)
         _log("Grouper object created.", 2)
 
-        bc = xclim.sdba.EmpiricalQuantileMapping.train(res["ref"], res["hist"], **train, group=group)
+        bc = xclim.sdba.EmpiricalQuantileMapping.train(
+            res["ref"], res["hist"], **train, group=group
+        )
 
         _log("Training object created.", 3)
 
         out = bc.adjust(res["sim"], **adj).to_dataset(name=name)
         _log("Adjustment object created.", 5)
 
-        filename = valid_filename(single_input_or_none(request.inputs, "output_name") or "bias_corrected")
+        filename = valid_filename(
+            single_input_or_none(request.inputs, "output_name") or "bias_corrected"
+        )
         out_fn = Path(self.workdir) / f"{filename}.nc"
         with FinchProgressBar(
             logging_function=_log,

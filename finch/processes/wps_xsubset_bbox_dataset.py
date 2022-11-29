@@ -1,14 +1,21 @@
+# noqa: D100
 from pathlib import Path
 
 from pywps.app import WPSRequest
 from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 
+from . import wpsio
 from .ensemble_utils import get_datasets, make_output_filename
 from .subset import finch_subset_bbox
-from .utils import get_datasets_config, netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
+from .utils import (
+    get_datasets_config,
+    netcdf_file_list_to_csv,
+    single_input_or_none,
+    write_log,
+    zip_files,
+)
 from .wps_base import FinchProcess
-from . import wpsio
 
 
 class SubsetBboxDatasetProcess(FinchProcess):
@@ -70,13 +77,20 @@ class SubsetBboxDatasetProcess(FinchProcess):
         dataset_name = single_input_or_none(request.inputs, "dataset")
         dataset = get_datasets_config()[dataset_name]
         request.inputs["resource"] = get_datasets(
-            dataset, workdir=self.workdir,
-            variables=variables, scenario=scenario, models=models
+            dataset,
+            workdir=self.workdir,
+            variables=variables,
+            scenario=scenario,
+            models=models,
         )
 
         output_filename = Path(make_output_filename(self, request.inputs))
 
-        write_log(self, f"Running subset on {len(request.inputs['resource'])} resources.", process_step="subset")
+        write_log(
+            self,
+            f"Running subset on {len(request.inputs['resource'])} resources.",
+            process_step="subset",
+        )
 
         output_files = finch_subset_bbox(
             self,

@@ -1,44 +1,45 @@
-import logging
+# noqa: D100
 import io
+import logging
+from inspect import _empty as empty_default  # noqa
 from typing import Dict, List
 
-from dask.diagnostics import ProgressBar
-from inspect import _empty as empty_default
-from pywps import ComplexInput, FORMATS, LiteralInput, Process
-from pywps.app.exceptions import ProcessError
-from pywps.app.Common import Metadata
-from sentry_sdk import configure_scope
 import xclim
+from dask.diagnostics import ProgressBar
+from pywps import FORMATS, ComplexInput, LiteralInput, Process
+from pywps.app.Common import Metadata
+from pywps.app.exceptions import ProcessError
+from sentry_sdk import configure_scope
 from xclim.core.utils import InputKind
 
-
 from .utils import PywpsInput
-
 
 LOGGER = logging.getLogger("PYWPS")
 
 
 default_percentiles = {
-    'days_over_precip_thresh': {'pr_per': 95},
-    'days_over_precip_doy_thresh': {'pr_per': 95},
-    'fraction_over_precip_doy_thresh': {'pr_per': 95},
-    'fraction_over_precip_thresh': {'pr_per': 95},
-    'cold_and_dry_days': {'pr_per': 25, 'tas_per': 25},
-    'warm_and_dry_days': {'pr_per': 25, 'tas_per': 75},
-    'warm_and_wet_days': {'pr_per': 75, 'tas_per': 75},
-    'cold_and_wet_days': {'pr_per': 75, 'tas_per': 25},
-    'tg90p': {'tas_per': 90},
-    'tg10p': {'tas_per': 10},
-    'tn90p': {'tasmin_per': 90},
-    'tn10p': {'tasmin_per': 10},
-    'tx90p': {'tasmax_per': 90},
-    'tx10p': {'tasmax_per': 10},
-    'cold_spell_duration_index': {'tasmin_per': 10},
-    'warm_spell_duration_index': {'tasmax_per': 90},
+    "days_over_precip_thresh": {"pr_per": 95},
+    "days_over_precip_doy_thresh": {"pr_per": 95},
+    "fraction_over_precip_doy_thresh": {"pr_per": 95},
+    "fraction_over_precip_thresh": {"pr_per": 95},
+    "cold_and_dry_days": {"pr_per": 25, "tas_per": 25},
+    "warm_and_dry_days": {"pr_per": 25, "tas_per": 75},
+    "warm_and_wet_days": {"pr_per": 75, "tas_per": 75},
+    "cold_and_wet_days": {"pr_per": 75, "tas_per": 25},
+    "tg90p": {"tas_per": 90},
+    "tg10p": {"tas_per": 10},
+    "tn90p": {"tasmin_per": 90},
+    "tn10p": {"tasmin_per": 10},
+    "tx90p": {"tasmax_per": 90},
+    "tx10p": {"tasmax_per": 10},
+    "cold_spell_duration_index": {"tasmin_per": 10},
+    "warm_spell_duration_index": {"tasmax_per": 90},
 }
 
 
 class FinchProcess(Process):
+    """Finch Process."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -60,7 +61,7 @@ class FinchProcess(Process):
         try:
             return self.wrapped_handler(request, response)
         except Exception as err:
-            LOGGER.exception('FinchProcess handler wrapper failed with:')
+            LOGGER.exception("FinchProcess handler wrapper failed with:")
             raise ProcessError(f"Finch failed with {err!s}")
 
     def sentry_configure_scope(self, request):
@@ -80,10 +81,12 @@ class FinchProcess(Process):
 
 
 class FinchProgressBar(ProgressBar):
+    """Finch ProgressBar."""
+
     def __init__(
         self, logging_function, start_percentage=0, end_percentage=100, *args, **kwargs
     ):
-        super(FinchProgressBar, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # In rare cases writing to stdout causes bugs on binder
         # Here we write to an in-memory file
         self._file = io.StringIO()
@@ -127,17 +130,21 @@ def make_xclim_indicator_process(
 
     process = process_class()
     process.translations = {  # type: ignore
-        locale: xclim.core.locales.get_local_attrs(xci.identifier.upper(), locale, append_locale_name=False)
+        locale: xclim.core.locales.get_local_attrs(
+            xci.identifier.upper(), locale, append_locale_name=False
+        )
         for locale in xclim.core.locales.list_locales()
     }
 
     return process  # type: ignore
 
 
-def convert_xclim_inputs_to_pywps(params: Dict, parent=None, parse_percentiles: bool = False) -> List[PywpsInput]:
-    """Convert xclim indicators properties to pywps inputs.
+def convert_xclim_inputs_to_pywps(
+    params: Dict, parent=None, parse_percentiles: bool = False
+) -> List[PywpsInput]:
+    r"""Convert xclim indicators properties to pywps inputs.
 
-    If parse_percentiles is True, percentile variables (*_per) are dropped and replaced by
+    If parse_percentiles is True, percentile variables (\*_per) are dropped and replaced by
     a "percentile" input (a float) with a default taken from constants.
     """
     # Ideally this would be based on the Parameters docstring section rather than name conventions.
@@ -156,15 +163,17 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None, parse_percentiles: 
     }
 
     if parse_percentiles and parent is None:
-        raise ValueError('The indicator identifier must be passed through `parent` if `parse_percentiles=True`.')
+        raise ValueError(
+            "The indicator identifier must be passed through `parent` if `parse_percentiles=True`."
+        )
 
     for name, attrs in params.items():
         if (
             parse_percentiles
-            and name.endswith('_per')
-            and attrs['kind'] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]
+            and name.endswith("_per")
+            and attrs["kind"] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]
         ):
-            var_name = name.split('_')[0]
+            var_name = name.split("_")[0]
             inputs.append(
                 LiteralInput(
                     f"perc_{var_name}",
@@ -173,39 +182,45 @@ def convert_xclim_inputs_to_pywps(params: Dict, parent=None, parse_percentiles: 
                     data_type="integer",
                     min_occurs=0,
                     max_occurs=1,
-                    default=default_percentiles[parent][name]
+                    default=default_percentiles[parent][name],
                 )
             )
-        elif attrs['kind'] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
+        elif attrs["kind"] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
             inputs.append(make_nc_input(name))
         elif name in ["freq"]:
-            inputs.append(make_freq(name, default=attrs['default'], abstract=attrs['description']))
+            inputs.append(
+                make_freq(name, default=attrs["default"], abstract=attrs["description"])
+            )
         elif name in ["indexer"]:
             inputs.append(make_month())
             inputs.append(make_season())
-        elif attrs['kind'] in data_types:
-            choices = list(attrs['choices']) if 'choices' in attrs else None
-            default = attrs['default'] if attrs['default'] != empty_default else None
+        elif attrs["kind"] in data_types:
+            choices = list(attrs["choices"]) if "choices" in attrs else None
+            default = attrs["default"] if attrs["default"] != empty_default else None
             inputs.append(
                 LiteralInput(
                     name,
-                    title=name.capitalize().replace('_', ' '),
-                    abstract=attrs['description'],
-                    data_type=data_types[attrs['kind']],
+                    title=name.capitalize().replace("_", " "),
+                    abstract=attrs["description"],
+                    data_type=data_types[attrs["kind"]],
                     min_occurs=0,
-                    max_occurs=1 if attrs['kind'] != InputKind.NUMBER_SEQUENCE else 99,
+                    max_occurs=1 if attrs["kind"] != InputKind.NUMBER_SEQUENCE else 99,
                     default=default,
                     allowed_values=choices,
                 )
             )
-        elif attrs['kind'] < 50:
+        elif attrs["kind"] < 50:
             # raise NotImplementedError(f"{parent}: {name}")
-            LOGGER.warning(f"{parent}: Argument {name} of kind {attrs['kind']} is not implemented.")
+            LOGGER.warning(
+                f"{parent}: Argument {name} of kind {attrs['kind']} is not implemented."
+            )
 
     return inputs
 
 
-def make_freq(name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "AS-JUL")):
+def make_freq(
+    name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "AS-JUL")
+):  # noqa: D103
     return LiteralInput(
         name,
         "Frequency",
@@ -218,8 +233,8 @@ def make_freq(name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "A
     )
 
 
-def make_nc_input(name):
-    desc = xclim.core.utils.VARIABLES.get(name, {}).get('description', '')
+def make_nc_input(name):  # noqa: D103
+    desc = xclim.core.utils.VARIABLES.get(name, {}).get("description", "")
     return ComplexInput(
         name,
         "Resource",
@@ -231,7 +246,7 @@ def make_nc_input(name):
     )
 
 
-def make_month():
+def make_month():  # noqa: D103
     return LiteralInput(
         identifier="month",
         title="Select by month",
@@ -239,11 +254,11 @@ def make_month():
         data_type="integer",
         min_occurs=0,
         max_occurs=12,
-        allowed_values=list(range(1, 13))
+        allowed_values=list(range(1, 13)),
     )
 
 
-def make_season():
+def make_season():  # noqa: D103
     return LiteralInput(
         identifier="season",
         title="Select by season",
@@ -251,5 +266,5 @@ def make_season():
         data_type="string",
         min_occurs=0,
         max_occurs=1,
-        allowed_values=["DJF", "MAM", "JJA", "SON"]
+        allowed_values=["DJF", "MAM", "JJA", "SON"],
     )

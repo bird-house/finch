@@ -1,13 +1,15 @@
-import numpy as np
-import pytest
-from pywps import Service
-from pywps.tests import assert_response_success, client_for
-import xarray as xr
 from urllib.parse import quote_plus
 
-from finch.processes import EmpiricalQuantileMappingProcess
-from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
+import numpy as np
+import pytest
+import xarray as xr
+from pywps import Service
+from pywps.tests import assert_response_success, client_for
 from xclim.core.calendar import convert_calendar
+from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
+
+from finch.processes import EmpiricalQuantileMappingProcess
+
 from .common import CFG_FILE, get_output
 
 

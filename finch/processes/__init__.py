@@ -1,3 +1,4 @@
+# noqa: D104
 import logging
 
 from pywps.configuration import get_config_value
@@ -9,16 +10,16 @@ from .wps_base import make_xclim_indicator_process
 from .wps_ensemble_indices_bbox import XclimEnsembleBboxBase
 from .wps_ensemble_indices_point import XclimEnsembleGridPointBase
 from .wps_ensemble_indices_polygon import XclimEnsemblePolygonBase
+from .wps_geoseries_to_netcdf import GeoseriesToNetcdfProcess
+from .wps_hourly_to_daily import HourlyToDailyProcess
+from .wps_sdba import EmpiricalQuantileMappingProcess
+from .wps_xaverage_polygon import AveragePolygonProcess
 from .wps_xclim_indices import XclimIndicatorBase
 from .wps_xsubset_bbox import SubsetBboxProcess
 from .wps_xsubset_bbox_dataset import SubsetBboxDatasetProcess
 from .wps_xsubset_point import SubsetGridPointProcess
 from .wps_xsubset_point_dataset import SubsetGridPointDatasetProcess
 from .wps_xsubset_polygon import SubsetPolygonProcess
-from .wps_sdba import EmpiricalQuantileMappingProcess
-from .wps_xaverage_polygon import AveragePolygonProcess
-from .wps_hourly_to_daily import HourlyToDailyProcess
-from .wps_geoseries_to_netcdf import GeoseriesToNetcdfProcess
 
 logger = logging.getLogger("PYWPS")
 logger.disabled = False
@@ -54,18 +55,26 @@ not_implemented = [
 
 
 def get_processes():
-    """Get wps processes, using the current global `pywps` configuration"""
-    indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
+    """Get wps processes using the current global `pywps` configuration."""
+    indicators = get_indicators(
+        realms=["atmos", "land", "seaIce"], exclude=not_implemented
+    )
 
-    dsconf = get_datasets_config()
-    if dsconf:
+    ds_conf = get_datasets_config()
+    if ds_conf:
         available_variables = get_available_variables()
-        ensemble_indicators = [i for i in indicators if uses_accepted_netcdf_variables(i, available_variables)]
+        ensemble_indicators = [
+            i
+            for i in indicators
+            if uses_accepted_netcdf_variables(i, available_variables)
+        ]
     else:
         ensemble_indicators = []
-        logger.warning("No ensemble datasets configured, many processes won't be available.")
+        logger.warning(
+            "No ensemble datasets configured, many processes won't be available."
+        )
         default_dataset = get_config_value("finch", "default_dataset")
-        if default_dataset not in dsconf:
+        if default_dataset not in ds_conf:
             logger.warning("The default dataset is not configured, which is weird.")
 
     processes = []
@@ -79,9 +88,7 @@ def get_processes():
         )
 
     # Statistical downscaling and bias adjustment
-    processes += [
-        EmpiricalQuantileMappingProcess()
-    ]
+    processes += [EmpiricalQuantileMappingProcess()]
 
     # ensemble with grid point subset
     for ind in ensemble_indicators:
@@ -119,7 +126,7 @@ def get_processes():
         SubsetPolygonProcess(),
         AveragePolygonProcess(),
         HourlyToDailyProcess(),
-        GeoseriesToNetcdfProcess()
+        GeoseriesToNetcdfProcess(),
     ]
 
     return processes

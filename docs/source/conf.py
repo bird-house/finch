@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# noqa: D100
 #
 # finch documentation build configuration file, created by
 # sphinx-quickstart on Fri Jun  9 13:47:02 2017.
@@ -13,22 +13,24 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import os
+import sys
+import warnings
+
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory is
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 #
 from datetime import datetime
-import os
 from pathlib import Path
-import sys
 from urllib.request import urlopen
-from xclim import __version__ as xcver
-import warnings
+
+from xclim import __version__ as __xclim_version__
 
 # Add finch to sys.path to avoid having to full
 # install finch for autodoc.
-# Full install of finch will burst memory limit on ReadTheDocs.
+# Full installation of finch will burst memory limit on ReadTheDocs.
 sys.path.insert(0, os.path.abspath("../../"))
 
 
@@ -51,13 +53,13 @@ extensions = [
     "sphinx.ext.imgconverter",
     "nbsphinx",
     "IPython.sphinxext.ipython_console_highlighting",
-    "sphinxcontrib.bibtex"
+    "sphinxcontrib.bibtex",
 ]
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
 # List of all tested working mock imports from all birds so new birds can
 # inherit without having to test which work which do not.
-if os.environ.get('READTHEDOCS') == 'True':
+if os.environ.get("READTHEDOCS") == "True":
     autodoc_mock_imports = [
         "affine",
         "cartopy",
@@ -86,14 +88,18 @@ if os.environ.get('READTHEDOCS') == 'True':
 
 # Bibliography stuff, for correct xclim docstring formatting
 # We need to download the reference file from xclim for the correct version.
-bibfile = Path(__file__).parent / 'references.bib'
+bibfile = Path(__file__).parent / "references.bib"
 if not bibfile.is_file():
     try:
-        r = urlopen(f"https://github.com/Ouranosinc/xclim/raw/v{xcver}/docs/references.bib")
+        r = urlopen(
+            f"https://github.com/Ouranosinc/xclim/raw/v{__xclim_version__}/docs/references.bib"
+        )
     except Exception as err:
-        warnings.warn(f'Unable to download xclim references file, docstrings will be incomplete. (Got {err})')
+        warnings.warn(
+            f"Unable to download xclim references file, docstrings will be incomplete. (Got {err})"
+        )
     else:
-        with bibfile.open('wb') as f:
+        with bibfile.open("wb") as f:
             f.write(r.read())
 
 if bibfile.is_file():
@@ -106,7 +112,7 @@ if bibfile.is_file():
 # numpy.pi = 3.1416
 
 # We are using mock imports in readthedocs, so probably safer to not run the notebooks
-nbsphinx_execute = 'never'
+nbsphinx_execute = "never"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -153,7 +159,7 @@ pygments_style = "sphinx"
 todo_include_todos = False
 
 # Suppress "WARNING: unknown mimetype for ..." when building EPUB.
-suppress_warnings = ['epub.unknown_project_files']
+suppress_warnings = ["epub.unknown_project_files"]
 
 # Avoid "configuration.rst:4:duplicate label configuration, other instance in configuration.rst"
 autosectionlabel_prefix_document = True

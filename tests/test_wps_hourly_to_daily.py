@@ -1,7 +1,9 @@
 from pathlib import Path
+
 import numpy as np
 import xarray as xr
-from . utils import execute_process, wps_input_file, wps_literal_input
+
+from .utils import execute_process, wps_input_file, wps_literal_input
 
 
 def test_wps_hourly_to_daily(client, hourly_dataset):
@@ -10,7 +12,7 @@ def test_wps_hourly_to_daily(client, hourly_dataset):
         wps_input_file("resource", hourly_dataset),
         wps_literal_input("reducer", "sum"),
         wps_literal_input("missing", "any"),
-        wps_literal_input("output_name", "quotidien")
+        wps_literal_input("output_name", "quotidien"),
     ]
     outputs = execute_process(client, identifier, inputs)
     assert Path(outputs[0]).stem == "quotidien"

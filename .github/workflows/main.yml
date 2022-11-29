@@ -11,10 +11,14 @@ jobs:
     name: Code linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.11.0
         with:
-          python-version: 3.8
+          access_token: ${{ github.token }}
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
       - name: Install flake8
         run: pip install flake8
       - name: Run linting suite
@@ -25,7 +29,7 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup conda and environment
         uses: mamba-org/provision-with-micromamba@main
         with:

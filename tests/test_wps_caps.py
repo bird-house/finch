@@ -1,10 +1,10 @@
-from finch.wsgi import create_app
 import pywps.configuration
-import pytest
 
-from finch.processes import get_indicators, get_processes, not_implemented
 import finch.processes.utils
-from .common import client_for, CFG_FILE
+from finch.processes import get_indicators, get_processes, not_implemented
+from finch.wsgi import create_app
+
+from .common import CFG_FILE, client_for
 
 
 def test_wps_caps(client):
@@ -27,7 +27,8 @@ def test_wps_caps(client):
 
 
 def test_wps_caps_no_datasets(client, monkeypatch):
-    """Check that when no default dataset is configured, we get a lot less indicators. """
+    """Check that when no default dataset is configured, we get a lot less indicators."""
+
     def mock_config_get(*args, **kwargs):
         if args[:2] == ("finch", "datasets_config"):
             return ""
@@ -43,8 +44,12 @@ def test_wps_caps_no_datasets(client, monkeypatch):
         "/wps:Capabilities/wps:ProcessOfferings/wps:Process/ows:Identifier"
     ).split()
 
-    indicators = get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
+    indicators = get_indicators(
+        realms=["atmos", "land", "seaIce"], exclude=not_implemented
+    )
     subset_processes_count = 4
     sdba_processes_count = 1
     others = 2
-    assert len(indicators) + others + subset_processes_count + sdba_processes_count == len(names)
+    assert len(
+        indicators
+    ) + others + subset_processes_count + sdba_processes_count == len(names)

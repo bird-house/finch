@@ -1,7 +1,13 @@
 import geojson
 import pytest
 import xarray as xr
-from tests.utils import execute_process, shapefile_zip, wps_input_file, wps_literal_input
+
+from tests.utils import (
+    execute_process,
+    shapefile_zip,
+    wps_input_file,
+    wps_literal_input,
+)
 
 
 def test_wps_averagepoly(client, netcdf_datasets):

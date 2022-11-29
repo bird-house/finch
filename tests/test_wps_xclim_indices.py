@@ -1,21 +1,25 @@
 import json
-import pytest
-from lxml import etree
-import numpy as np
-import xarray as xr
-import pandas as pd
-from zipfile import ZipFile
-import finch
-from finch.processes import get_indicators, not_implemented
-from finch.processes.wps_xclim_indices import XclimIndicatorBase
-from finch.processes.wps_base import make_xclim_indicator_process
-from .utils import execute_process, wps_input_file, wps_literal_input
 from pathlib import Path
-from pywps.app.exceptions import ProcessError
 from unittest import mock
+from zipfile import ZipFile
+
+import numpy as np
+import pandas as pd
+import pytest
+import xarray as xr
+from lxml import etree
 from numpy.testing import assert_equal
+from pywps import configuration
+from pywps.app.exceptions import ProcessError
 from xclim.testing import open_dataset
 
+import finch
+import finch.processes
+from finch.processes import get_indicators, not_implemented
+from finch.processes.wps_base import make_xclim_indicator_process
+from finch.processes.wps_xclim_indices import XclimIndicatorBase
+
+from .utils import execute_process, wps_input_file, wps_literal_input
 
 K2C = 273.16
 
@@ -28,14 +32,16 @@ def _get_output_standard_name(process_identifier):
 
 @pytest.mark.parametrize(
     "indicator",
-    get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented)
+    get_indicators(realms=["atmos", "land", "seaIce"], exclude=not_implemented),
 )
 def test_indicators_processes_discovery(indicator):
     process = make_xclim_indicator_process(indicator, "Process", XclimIndicatorBase)
     assert indicator.identifier == process.identifier
     # Remove args not supported by finch: we remove special kinds,
     # 50 is "kwargs". 70 is Dataset ('ds') and 99 is "unknown". All normal types are 0-9.
-    parameters = set([k for k, v in indicator.parameters.items() if v['kind'] < 50 or k == 'indexer'])
+    parameters = {
+        k for k, v in indicator.parameters.items() if v["kind"] < 50 or k == "indexer"
+    }
     parameters.add("check_missing")
     parameters.add("missing_options")
     parameters.add("cf_compliance")
@@ -49,14 +55,19 @@ def test_indicators_processes_discovery(indicator):
         parameters.add("month")
         parameters.add("season")
 
-    assert_equal(parameters, set(i.identifier for i in process.inputs), indicator.identifier)
+    assert_equal(
+        parameters, {i.identifier for i in process.inputs}, indicator.identifier
+    )
 
 
 # TODO : Extend test coverage
 def test_processes(client, netcdf_datasets):
     """Run a dummy calculation for every process, keeping some default parameters."""
     # indicators = finch.processes.indicators
-    processes = filter(lambda x: isinstance(x, XclimIndicatorBase), client.application.processes.values())
+    processes = filter(
+        lambda x: isinstance(x, XclimIndicatorBase),
+        client.application.processes.values(),
+    )
     literal_inputs = {
         "freq": "MS",
         "window": "3",
@@ -84,8 +95,10 @@ def test_processes(client, netcdf_datasets):
             ds = xr.open_dataset(outputs[0])
             output_variable = list(ds.data_vars)[0]
 
-            assert getattr(ds, output_variable).standard_name == process.xci.standard_name
-            assert ds.attrs['testing_session']
+            assert (
+                getattr(ds, output_variable).standard_name == process.xci.standard_name
+            )
+            assert ds.attrs["testing_session"]
 
             model = attrs["driving_model_id"]
             experiment = attrs["driving_experiment_id"].replace(",", "+")
@@ -142,9 +155,7 @@ def test_wps_daily_temperature_range_multiple_not_same_length(client, netcdf_dat
     inputs.pop()
 
     with pytest.raises(ProcessError, match="must be equal"):
-        execute_process(
-            client, identifier, inputs, output_names=["output", "ref"]
-        )
+        execute_process(client, identifier, inputs, output_names=["output", "ref"])
 
 
 def test_heat_wave_frequency_window_thresh_parameters(client, netcdf_datasets):
@@ -190,7 +201,7 @@ def test_missing_options(client, netcdf_datasets):
         wps_input_file("tas", netcdf_datasets["tas_missing"]),
         wps_literal_input("freq", "YS"),
         wps_literal_input("check_missing", "pct"),
-        wps_literal_input("missing_options", json.dumps({"pct": {"tolerance": 0.1}}))
+        wps_literal_input("missing_options", json.dumps({"pct": {"tolerance": 0.1}})),
     ]
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
@@ -206,7 +217,7 @@ def test_stats_process(client, netcdf_datasets):
         wps_literal_input("freq", "YS"),
         wps_literal_input("op", "max"),
         wps_literal_input("season", "JJA"),
-        wps_literal_input("variable", "discharge")
+        wps_literal_input("variable", "discharge"),
     ]
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
@@ -223,7 +234,7 @@ def test_freqanalysis_process(client, netcdf_datasets):
         wps_literal_input("mode", "max"),
         wps_literal_input("season", "JJA"),
         wps_literal_input("dist", "gumbel_r"),
-        wps_literal_input("variable", "discharge")
+        wps_literal_input("variable", "discharge"),
     ]
     outputs = execute_process(client, identifier, inputs)
     ds = xr.open_dataset(outputs[0])
@@ -257,13 +268,15 @@ class TestFitProcess:
 def test_rain_approximation(client, pr_series, tas_series, tmp_path):
     identifier = "prlp"
 
-    pr_series(np.ones(10)).to_netcdf(tmp_path / 'pr.nc')
-    tas_series(np.arange(10) + K2C).to_netcdf(tmp_path / 'tas.nc')
+    pr_series(np.ones(10)).to_netcdf(tmp_path / "pr.nc")
+    tas_series(np.arange(10) + K2C).to_netcdf(tmp_path / "tas.nc")
 
-    inputs = [wps_input_file("pr", tmp_path / "pr.nc"),
-              wps_input_file("tas", tmp_path / "tas.nc"),
-              wps_literal_input("thresh", "5 degC"),
-              wps_literal_input("method", "binary")]
+    inputs = [
+        wps_input_file("pr", tmp_path / "pr.nc"),
+        wps_input_file("tas", tmp_path / "tas.nc"),
+        wps_literal_input("thresh", "5 degC"),
+        wps_literal_input("method", "binary"),
+    ]
 
     outputs = execute_process(client, identifier, inputs)
     with xr.open_dataset(outputs[0]) as ds:
@@ -276,15 +289,18 @@ def test_rain_approximation(client, pr_series, tas_series, tmp_path):
 def test_two_nondefault_variable_name(client, pr_series, tas_series, tmp_path):
     identifier = "prlp"
 
-    pr_series(np.ones(10)).to_dataset(name="my_pr").to_netcdf(tmp_path / 'pr.nc')
-    tas_series(np.arange(10) + K2C).to_dataset(name="my_tas").to_netcdf(tmp_path / 'tas.nc')
+    pr_series(np.ones(10)).to_dataset(name="my_pr").to_netcdf(tmp_path / "pr.nc")
+    tas_series(np.arange(10) + K2C).to_dataset(name="my_tas").to_netcdf(
+        tmp_path / "tas.nc"
+    )
 
-    inputs = [wps_input_file("pr", tmp_path / "pr.nc"),
-              wps_input_file("tas", tmp_path / "tas.nc"),
-              wps_literal_input("thresh", "5 degC"),
-              wps_literal_input("method", "binary"),
-              wps_literal_input("variable", "my_pr")
-              ]
+    inputs = [
+        wps_input_file("pr", tmp_path / "pr.nc"),
+        wps_input_file("tas", tmp_path / "tas.nc"),
+        wps_literal_input("thresh", "5 degC"),
+        wps_literal_input("method", "binary"),
+        wps_literal_input("variable", "my_pr"),
+    ]
     outputs = execute_process(client, identifier, inputs)
     with xr.open_dataset(outputs[0]) as ds:
         np.testing.assert_allclose(
@@ -301,16 +317,19 @@ def test_degree_days_exceedance_date(client, tmp_path):
     )
 
     tas.to_netcdf(tmp_path / "tas.nc")
-    inputs = [wps_input_file("tas", tmp_path / "tas.nc"),
-              wps_literal_input("thresh", "4 degC"),
-              wps_literal_input("op", ">"),
-              wps_literal_input("sum_thresh", "200 K days"),
-              wps_literal_input("output_format", "csv"),
-              wps_literal_input("csv_precision", "-1")
-              ]
+    inputs = [
+        wps_input_file("tas", tmp_path / "tas.nc"),
+        wps_literal_input("thresh", "4 degC"),
+        wps_literal_input("op", ">"),
+        wps_literal_input("sum_thresh", "200 K days"),
+        wps_literal_input("output_format", "csv"),
+        wps_literal_input("csv_precision", "-1"),
+    ]
 
     outputs = execute_process(client, identifier, inputs)
     with ZipFile(outputs[0]) as thezip:
-        with thezip.open('out.csv') as thefile:
+        with thezip.open("out.csv") as thefile:
             ds = pd.read_csv(thefile).to_xarray()
-    np.testing.assert_array_equal(ds.degree_days_exceedance_date, np.array([150, 140, 10, 10]))
+    np.testing.assert_array_equal(
+        ds.degree_days_exceedance_date, np.array([150, 140, 10, 10])
+    )

@@ -1,3 +1,4 @@
+# noqa: D100
 from pathlib import Path
 
 from pywps import LiteralInput
@@ -5,11 +6,17 @@ from pywps.app import WPSRequest
 from pywps.app.exceptions import ProcessError
 from pywps.response.execute import ExecuteResponse
 
-from .wps_base import FinchProcess
+from . import wpsio
 from .ensemble_utils import get_datasets, make_output_filename
 from .subset import finch_subset_gridpoint
-from .utils import get_datasets_config, netcdf_file_list_to_csv, single_input_or_none, write_log, zip_files
-from . import wpsio
+from .utils import (
+    get_datasets_config,
+    netcdf_file_list_to_csv,
+    single_input_or_none,
+    write_log,
+    zip_files,
+)
+from .wps_base import FinchProcess
 
 
 class SubsetGridPointDatasetProcess(FinchProcess):
@@ -76,10 +83,10 @@ class SubsetGridPointDatasetProcess(FinchProcess):
 
         # Temporary backward-compatibility adjustment.
         # Remove me when lon0 and lat0 are removed
-        lon, lat, lon0, lat0 = [
+        lon, lat, lon0, lat0 = (
             single_input_or_none(request.inputs, var)
             for var in "lon lat lon0 lat0".split()
-        ]
+        )
         if not (lon and lat or lon0 and lat0):
             raise ProcessError("Provide both lat and lon or both lon0 and lat0.")
         request.inputs.setdefault("lon", request.inputs.get("lon0"))
@@ -95,8 +102,11 @@ class SubsetGridPointDatasetProcess(FinchProcess):
         dataset_name = single_input_or_none(request.inputs, "dataset")
         dataset = get_datasets_config()[dataset_name]
         request.inputs["resource"] = get_datasets(
-            dataset, workdir=self.workdir,
-            variables=variables, scenario=scenario, models=models
+            dataset,
+            workdir=self.workdir,
+            variables=variables,
+            scenario=scenario,
+            models=models,
         )
 
         output_filename = Path(make_output_filename(self, request.inputs))
@@ -120,7 +130,7 @@ class SubsetGridPointDatasetProcess(FinchProcess):
                 output_files,
                 output_folder=Path(self.workdir),
                 filename_prefix=output_filename,
-                csv_precision=single_input_or_none(request.inputs, "csv_precision")
+                csv_precision=single_input_or_none(request.inputs, "csv_precision"),
             )
             output_files = csv_files + [metadata_folder]
 
