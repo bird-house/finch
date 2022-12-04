@@ -7,6 +7,9 @@ import sys
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 import warnings
 
+from pandas.api.types import is_numeric_dtype
+import pandas as pd
+
 from parse import parse
 from pywps import ComplexInput, FORMATS, Process
 from pywps import configuration
@@ -563,7 +566,12 @@ def ensemble_common_handler(process: Process, request, response, subset_function
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
 
-        df.dropna().to_csv(ensemble_csv, **({"float_format": f'%.{prec}f'} if prec is not None else {}))
+        if prec:
+            for v in df:
+                if v not in dims and is_numeric_dtype(df[v]):
+                    df[v] = df[v].map(lambda x: f"{x:.{prec}f}" if not pd.isna(x) else '')
+        
+        df.to_csv(ensemble_csv)
 
         metadata = format_metadata(ensemble)
         metadata_file = output_basename.parent / f"{output_basename}_metadata.txt"
