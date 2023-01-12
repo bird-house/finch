@@ -4,6 +4,8 @@ Changes
 TBD (unreleased)
 ===================
 * Fixed iter_local when depth > 0 to avoid all files to be considered twice
+* Revised documentation configuration on ReadTheDocs to leverage Anaconda (Mambaforge)
+* Minor adjustments to dependency configurations
 
 0.10.0 (2022-11-04)
 ===================
