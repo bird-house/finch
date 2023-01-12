@@ -1,0 +1,16 @@
+# label rules used by .github/workflows/label.yml
+
+dependencies:
+  - requirements.txt
+  - requirements_*.txt
+  - environment.yml
+  - environment-docs.yml
+
+docs:
+  - ".readthedocs.yml"
+  - docs/**/*
+  - AUTHORS.rst
+  - CONTRIBUTING.md
+  - ISSUE_TEMPLATE.md
+  - PULL_REQUEST_TEMPLATE.md
+  - README.rst

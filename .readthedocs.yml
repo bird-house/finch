@@ -15,12 +15,15 @@ sphinx:
 # Optionally build your docs in additional formats such as PDF and ePub
 formats: []
 
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "mambaforge-4.10"
+
+conda:
+  environment: environment-docs.yml
+
 # Optionally set the version of Python and requirements required to build your docs
 python:
   install:
     - requirements: requirements_docs.txt
-
-build:
-  os: ubuntu-20.04
-  tools:
-    python: "3.8"
