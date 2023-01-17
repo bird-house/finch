@@ -4,28 +4,27 @@ channels:
 dependencies:
   - python >=3.8
   - pip
-  - jinja2
+  - bottleneck
   - click
-  - psutil
-  - netcdf4
-  - unidecode
+  - clisops >=0.9.3
   - dask
   - distributed
-  - xarray >=0.18.2
-  - numpy
   - geopandas
+  - jinja2
+  - netcdf4
+  - numpy
   - pandas
-  - scipy
+  - parse
+  - pint <0.20  # xclim < 0.39 is broken by pint >= 0.20
+  - psutil
+  - python-slugify
+  - pywps >=4.5.1
+  - pyyaml
   - requests
+  - scipy
   - sentry-sdk
   - siphon
-  - bottleneck
-  # remember to match xclim version in requirements_docs.txt as well
-  - xclim =0.38.*
-  - pint < 0.20  # xclim < 0.39 is broken by pint >= 0.20
-  - clisops >=0.9.3
-  - pywps >=4.5.1
-  - parse
+  - unidecode
+  - xarray >=0.18.2
+  - xclim =0.38  # remember to match xclim version in requirements_docs.txt as well
   - xesmf >=0.6.2
-  - python-slugify
-  - pyyaml

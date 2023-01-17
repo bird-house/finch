@@ -1,19 +1,21 @@
-from pathlib import Path
 import shutil
 import zipfile
+from pathlib import Path
+from unittest import mock
 
 import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
+from pywps import configuration
 
 from finch.processes import ensemble_utils
 from finch.processes.utils import (
     drs_filename,
     is_opendap_url,
     netcdf_file_list_to_csv,
-    zip_files,
     valid_filename,
+    zip_files,
 )
 
 test_data = Path(__file__).parent / "data"
@@ -123,7 +125,7 @@ def test_is_opendap_url():
 def test_make_file_groups():
     folder = Path(__file__).parent / "data" / "bccaqv2_single_cell"
     files_list = list(folder.glob("*.nc"))
-    groups = ensemble_utils.make_file_groups(files_list, {'tasmin', 'tasmax', 'pr'})
+    groups = ensemble_utils.make_file_groups(files_list, {"tasmin", "tasmax", "pr"})
 
     assert len(groups) == 85
     assert all(len(g) == 3 for g in groups)

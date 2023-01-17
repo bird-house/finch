@@ -1,10 +1,12 @@
-from dataclasses import dataclass, field
-from datetime import timedelta, datetime
-from itertools import chain
+# noqa: D100
+import json
 import logging
+import zipfile
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from itertools import chain
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-import json
 from typing import (
     Callable,
     Deque,
@@ -16,35 +18,34 @@ from typing import (
     Tuple,
     Union,
 )
-import zipfile
 
 import cftime
 import netCDF4
 import numpy as np
 import pandas as pd
+import requests
+import sentry_sdk
+import xarray as xr
+import xclim
+import yaml
+from netCDF4 import num2date
 from pywps import (
+    FORMATS,
     BoundingBoxInput,
     BoundingBoxOutput,
     ComplexInput,
     ComplexOutput,
-    FORMATS,
     LiteralInput,
     LiteralOutput,
     Process,
-    configuration
+    configuration,
 )
 from pywps.configuration import get_config_value
 from pywps.inout.outputs import MetaFile, MetaLink4
-import requests
 from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
-import sentry_sdk
 from slugify import slugify
-import xarray as xr
-from netCDF4 import num2date
-import xclim
 from xclim.core.utils import InputKind
 from xclim.testing import list_input_variables
-import yaml
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -53,15 +54,23 @@ PywpsOutput = Union[LiteralOutput, ComplexOutput, BoundingBoxOutput]
 RequestInputs = Dict[str, Deque[PywpsInput]]
 
 # These are parameters that set options. They are not `compute` arguments.
-INDICATOR_OPTIONS = ['check_missing', 'missing_options', "cf_compliance", "data_validation"]
+INDICATOR_OPTIONS = [
+    "check_missing",
+    "missing_options",
+    "cf_compliance",
+    "data_validation",
+]
 
 # Some other constants
-xclim_variables = set(list_input_variables(submodules=["atmos", "land", "seaIce"]).keys())
+xclim_variables = set(
+    list_input_variables(submodules=["atmos", "land", "seaIce"]).keys()
+)
 
 
 @dataclass
 class DatasetConfiguration:
-    """
+    """Dataset Configuration class.
+
     Attributes
     ----------
     path: str
@@ -80,21 +89,22 @@ class DatasetConfiguration:
         Must include "scenario", "model" and "variable",
         the latter defines which variable are available and thus which indicator can be used.
     model_lists : dict
-        A mapping from list name to a list of model names to provide special sublists.
+        A mapping from list name to a list of model names to provide special sub-lists.
         The values can also be a tuple of (model name, realization numer),
         in which case, pattern must include a "realization" field.
     """
+
     path: str
     pattern: str
     local: bool
     allowed_values: dict
     depth: int = 0
-    suffix: str = '*nc'
+    suffix: str = "*nc"
     model_lists: dict = field(default_factory=dict)
 
 
-def get_datasets_config():
-    p = get_config_value('finch', 'datasets_config')
+def get_datasets_config():  # noqa: D103
+    p = get_config_value("finch", "datasets_config")
     if not p:  # No config given.
         return {}
 
@@ -103,25 +113,22 @@ def get_datasets_config():
 
     with open(p) as f:
         conf = yaml.safe_load(f)
-    return {
-        ds: DatasetConfiguration(**dsconf)
-        for ds, dsconf in conf.items()
-    }
+    return {ds: DatasetConfiguration(**dsconf) for ds, dsconf in conf.items()}
 
 
-def get_available_variables():
+def get_available_variables():  # noqa: D103
     conf = get_datasets_config()
-    return set(chain(*(d.allowed_values['variable'] for d in conf.values())))
+    return set(chain(*(d.allowed_values["variable"] for d in conf.values())))
 
 
-def iter_xc_variables(indicator: xclim.core.indicator.Indicator):
+def iter_xc_variables(indicator: xclim.core.indicator.Indicator):  # noqa: D103
     for n, p in indicator.parameters.items():
         if p.kind in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
             yield n
 
 
 def log_file_path(process: Process) -> Path:
-    """Returns the filepath to write the process logfile."""
+    """Return the filepath to write the process logfile."""
     return Path(process.workdir) / "log.txt"
 
 
@@ -177,14 +184,13 @@ def write_log(
 
 
 def get_attributes_from_config():
-    """Get all explicitly passed metadata attributes from the config, in section finch:metadata."""
+    """Get all explicitly passed metadata attributes from the config in section finch:metadata."""
     # Remove all "defaults", only keep explicitly-passed options
     # This works because we didn't define any defaults for this section.
     # But will do strange things if any of the defaults have the same name as a passed field
     # This is especially risky, since ALL environment variables are listed in the defaults...
-    names = (
-        set(configuration.CONFIG['finch:metadata'].keys())
-        - set(configuration.CONFIG._defaults.keys())
+    names = set(configuration.CONFIG["finch:metadata"].keys()) - set(
+        configuration.CONFIG._defaults.keys()
     )
 
     return {
@@ -194,7 +200,7 @@ def get_attributes_from_config():
 
 def compute_indices(
     process: Process, func: Callable, inputs: RequestInputs
-) -> xr.Dataset:
+) -> xr.Dataset:  # noqa: D103
     kwds = {}
     global_attributes = {}
     for name, input_queue in inputs.items():
@@ -215,7 +221,9 @@ def compute_indices(
                 kwds[name] = json.loads(input.data)
 
             elif input.supported_formats[0] in [FORMATS.NETCDF, FORMATS.DODS]:
-                ds = try_opendap(input, logging_function=lambda msg: write_log(process, msg))
+                ds = try_opendap(
+                    input, logging_function=lambda msg: write_log(process, msg)
+                )
                 global_attributes = global_attributes or ds.attrs
                 vars = list(ds.data_vars.values())
 
@@ -243,7 +251,7 @@ def compute_indices(
             "climateindex_package_id": "https://github.com/Ouranosinc/xclim",
             "product": "derived climate index",
         },
-        **user_attrs
+        **user_attrs,
     )
 
     options = {name: kwds.pop(name) for name in INDICATOR_OPTIONS if name in kwds}
@@ -269,17 +277,31 @@ def compute_indices(
 
 
 def drs_filename(ds: xr.Dataset, variable: str = None):
-    """Copied and modified from https://github.com/bird-house/eggshell
-    which doesn't have a release usable by finch.
+    """Generate filename according to the data reference syntax (DRS).
 
-    generates filename according to the data reference syntax (DRS)
-    based on the metadata in the resource.
+    Parameters
+    ----------
+    ds : xr.Dataset
+    variable : str
+        appropriate variable for filename, if not set (default), variable will be determined from the dataset variables.
+
+    Returns
+    -------
+    str
+        DRS filename
+
+    Raises
+    ------
+    KeyError
+        When the dataset doesn't have the required attributes.
+
+    Notes
+    -----
+    Copied and modified from https://github.com/bird-house/eggshell which doesn't have a release usable by finch.
+
+    Based on the metadata in the resource.
     http://cmip-pcmdi.llnl.gov/cmip5/docs/cmip5_data_reference_syntax.pdf
     https://pypi.python.org/pypi/drslib
-    :param variable: appropriate variable for filename, if not set (default), variable will
-                      be determined from the dataset variables.
-    :return str: DRS filename
-    :raises KeyError: When the dataset doesn't have the required attributes.
     """
     if len(ds.data_vars) == 1:
         variable = list(ds.data_vars)[0]
@@ -356,7 +378,7 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
 def try_opendap(
     input: ComplexInput,
     *,
-    chunks='auto',
+    chunks="auto",
     decode_times=True,
     chunk_dims=None,
     logging_function=lambda message: None,
@@ -386,9 +408,11 @@ def try_opendap(
         # Try to open the dataset
         ds = xr.open_dataset(path, chunks=chunks or None, decode_times=decode_times)
     except NotImplementedError:
-        if chunks == 'auto':
+        if chunks == "auto":
             # Some dtypes are not compatible with auto chunking (object, so unbounded strings)
-            logging_function("xarray auto-chunking failed, opening with no chunks and inferring chunks ourselves.")
+            logging_function(
+                "xarray auto-chunking failed, opening with no chunks and inferring chunks ourselves."
+            )
             chunks = None
             ds = xr.open_dataset(path, chunks=None, decode_times=decode_times)
         else:
@@ -405,7 +429,6 @@ def try_opendap(
 
 def process_threaded(function: Callable, inputs: Iterable):
     """Based on the current configuration, process a list threaded or not."""
-
     threads = int(configuration.get_config_value("finch", "subset_threads"))
     if threads > 1:
         pool = ThreadPool(processes=threads)
@@ -419,23 +442,23 @@ def process_threaded(function: Callable, inputs: Iterable):
 
 
 def chunk_dataset(ds, max_size=1000000, chunk_dims=None):
-    """Ensures the chunked size of a xarray.Dataset is below a certain size.
+    """Ensure the chunked size of a xarray.Dataset is below a certain size.
 
     Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
     If chunk_dims is given, limits the chunking to those dimensions, if they are
     found in the dataset.
     """
     from functools import reduce
-    from operator import mul
     from itertools import cycle
+    from operator import mul
 
     chunks = dict(ds.sizes)
 
     dims = set(ds.dims).intersection(chunk_dims or ds.dims)
     if not dims:
         LOGGER.warning(
-            (f"Provided dimension names for chunking ({chunk_dims}) were "
-             f"not found in dataset dims ({ds.dims}). No chunking was done.")
+            f"Provided dimension names for chunking ({chunk_dims}) were "
+            f"not found in dataset dims ({ds.dims}). No chunking was done."
         )
         return chunks
 
@@ -453,8 +476,7 @@ def chunk_dataset(ds, max_size=1000000, chunk_dims=None):
 def make_metalink_output(
     process: Process, files: List[Path], description: str = None
 ) -> MetaLink4:
-    """Make a metalink output from a list of files"""
-
+    """Make a MetaLink output from a list of files."""
     metalink = MetaLink4(
         identity=process.identifier,
         description=description,
@@ -471,8 +493,7 @@ def make_metalink_output(
 
 
 def is_opendap_url(url):
-    """
-    Check if a provided url is an OpenDAP url.
+    """Check if a provided url is an OpenDAP url.
 
     The DAP Standard specifies that a specific tag must be included in the
     Content-Description header of every request. This tag is one of:
@@ -495,12 +516,12 @@ def is_opendap_url(url):
     else:
         return False
 
-        try:
-            # For a non-DAP URL, this just hangs python.
-            dataset = netCDF4.Dataset(url)
-        except OSError:
-            return False
-        return dataset.disk_format in ("DAP2", "DAP4")
+        # try:
+        #     # For a non-DAP URL, this just hangs python.
+        #     dataset = netCDF4.Dataset(url)
+        # except OSError:
+        #     return False
+        # return dataset.disk_format in ("DAP2", "DAP4")
 
 
 def single_input_or_none(inputs, identifier) -> Optional[str]:
@@ -512,13 +533,15 @@ def single_input_or_none(inputs, identifier) -> Optional[str]:
 
 
 def netcdf_file_list_to_csv(
-    netcdf_files: Union[List[Path], List[str]], output_folder, filename_prefix,
+    netcdf_files: Union[List[Path], List[str]],
+    output_folder,
+    filename_prefix,
     csv_precision: Optional[int] = None,
 ) -> Tuple[List[str], str]:
     """Write csv files for a list of netcdf files.
 
-    Produces one csv file per calendar type, along with a metadata folder in
-    the output_folder."""
+    Produces one csv file per calendar type, along with a metadata folder in the output_folder.
+    """
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
 
@@ -591,7 +614,7 @@ def netcdf_file_list_to_csv(
 
 
 def dataset_to_dataframe(ds: xr.Dataset) -> pd.DataFrame:
-    """Convert a Dataset, while keeping the hour of the day uniform at hour=12"""
+    """Convert a Dataset while keeping the hour of the day uniform at hour=12."""
     if not np.all(ds.time.dt.hour == 12):
         attrs = ds.time.attrs
 
@@ -641,7 +664,8 @@ def zip_files(
 ):
     """Create a zipfile from a list of files or folders.
 
-    log_function is a function that receives a message and a percentage."""
+    log_function is a function that receives a message and a percentage.
+    """
     log_function = log_function or (lambda *a: None)
     with zipfile.ZipFile(
         output_filename, mode="w", compression=zipfile.ZIP_DEFLATED
@@ -676,8 +700,7 @@ def zip_files(
 def make_tasmin_tasmax_pairs(
     filenames: List[Path],
 ) -> Generator[Tuple[Path, Path], None, None]:
-    """Returns pairs of corresponding tasmin-tasmax files based on their filename"""
-
+    """Return pairs of corresponding tasmin-tasmax files based on their filename."""
     tasmin_files = [f for f in filenames if "tasmin" in f.name.lower()]
     tasmax_files = [f for f in filenames if "tasmax" in f.name.lower()]
     for tasmin in tasmin_files[:]:
@@ -694,7 +717,7 @@ def make_tasmin_tasmax_pairs(
 
 
 def fix_broken_time_index(ds: xr.Dataset):
-    """Fix for a single broken index in a specific file"""
+    """Fix for a single broken index in a specific file."""
     if "time" not in ds.dims:
         return
 
@@ -730,7 +753,7 @@ def fix_broken_time_index(ds: xr.Dataset):
 def dataset_to_netcdf(
     ds: xr.Dataset, output_path: Union[Path, str], compression_level=0
 ) -> None:
-    """Write an :class:`xarray.Dataset` dataset to disk, optionally using compression."""
+    """Write an :py:class:`xarray.Dataset` dataset to disk, optionally using compression."""
     encoding = {}
 
     if "time" in ds.dims:
@@ -755,7 +778,7 @@ def update_history(
     new_name: Optional[str] = None,
     **inputs_kws: Union[xr.DataArray, xr.Dataset],
 ):
-    """Return an history string with the timestamped message and the combination of the history of all inputs.
+    r"""Return a history string with the timestamped message and the combination of the history of all inputs.
 
     The new history entry is formatted as "[<timestamp>] <new_name>: <hist_str> - finch version : <finch version>."
 
@@ -765,7 +788,7 @@ def update_history(
       The string describing what has been done on the data.
     new_name : Optional[str]
       The name of the newly created variable or dataset to prefix hist_msg.
-    *inputs_list : Union[xr.DataArray, xr.Dataset]
+    \*inputs_list : Union[xr.DataArray, xr.Dataset]
       The datasets or variables that were used to produce the new object.
       Inputs given that way will be prefixed by their "name" attribute if available.
     **inputs_kws : Union[xr.DataArray, xr.Dataset]
@@ -793,22 +816,26 @@ def update_history(
     if len(merged_history) > 0 and not merged_history.endswith("\n"):
         merged_history += "\n"
     merged_history += (
-        f"[{datetime.now():%Y-%m-%d %H:%M:%S}] {new_name or ''}: {hist_str} - finch version: {__version__}."
+        f"[{datetime.now():%Y-%m-%d %H:%M:%S}] {new_name or ''}: "
+        f"{hist_str} - finch version: {__version__}."
     )
     return merged_history
 
 
 def valid_filename(name: Union[Path, str]) -> Union[Path, str]:
-    """
-    Removes unsupported characters from a filename.
+    """Remove unsupported characters from a filename.
 
-    Returns a string if given a string, a Path otherwise.
+    Returns
+    -------
+    str or Path
 
+    Examples
+    --------
     >>> valid_filename("summer's tasmin.nc")
     'summers_tasmin.nc'
     """
     p = Path(name)
-    s = slugify(p.stem, separator='_')
+    s = slugify(p.stem, separator="_")
     if not s:
         raise ValueError(f"Filename not valid. Got {name}.")
     out = p.parent / (s + p.suffix)

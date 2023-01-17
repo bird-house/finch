@@ -1,11 +1,11 @@
+# noqa: D100
 import logging
 
-from pywps import ComplexInput, ComplexOutput, FORMATS
+from pywps import FORMATS, ComplexInput, ComplexOutput
 
 from . import wpsio
-from .subset import finch_subset_bbox, common_subset_handler
+from .subset import common_subset_handler, finch_subset_bbox
 from .wps_base import FinchProcess
-
 
 LOGGER = logging.getLogger("PYWPS")
 
