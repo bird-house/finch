@@ -635,7 +635,7 @@ def ensemble_common_handler(
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
 
-        if prec:
+        if prec is not None:
             for v in df:
                 if v not in dims and is_numeric_dtype(df[v]):
                     df[v] = df[v].map(lambda x: f"{x:.{prec}f}" if not pd.isna(x) else '')
