@@ -23,13 +23,13 @@ import cftime
 import netCDF4
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
 import requests
 import sentry_sdk
 import xarray as xr
 import xclim
 import yaml
 from netCDF4 import num2date
+from pandas.api.types import is_numeric_dtype
 from pywps import (
     FORMATS,
     BoundingBoxInput,
@@ -605,7 +605,9 @@ def netcdf_file_list_to_csv(
         if csv_precision is not None:
             for v in concat:
                 if v not in coords and is_numeric_dtype(concat[v]):
-                    concat[v] = concat[v].map(lambda x: f"{x:.{csv_precision}f}" if not pd.isna(x) else '')
+                    concat[v] = concat[v].map(
+                        lambda x: f"{x:.{csv_precision}f}" if not pd.isna(x) else ""
+                    )
         concat.to_csv(output_csv)
         output_csv_list.append(output_csv)
 

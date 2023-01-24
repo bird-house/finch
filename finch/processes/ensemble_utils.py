@@ -8,10 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
-from pandas.api.types import is_numeric_dtype
 import pandas as pd
-
 import xarray as xr
+from pandas.api.types import is_numeric_dtype
 from parse import parse
 from pywps import FORMATS, ComplexInput, Process, configuration
 from pywps.app.exceptions import ProcessError
@@ -638,8 +637,10 @@ def ensemble_common_handler(
         if prec is not None:
             for v in df:
                 if v not in dims and is_numeric_dtype(df[v]):
-                    df[v] = df[v].map(lambda x: f"{x:.{prec}f}" if not pd.isna(x) else '')
-        
+                    df[v] = df[v].map(
+                        lambda x: f"{x:.{prec}f}" if not pd.isna(x) else ""
+                    )
+
         df.to_csv(ensemble_csv)
 
         metadata = format_metadata(ensemble)

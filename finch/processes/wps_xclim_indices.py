@@ -4,8 +4,8 @@ from collections import deque
 from pathlib import Path
 from typing import List, Optional
 
-import xarray as xr
 import pandas as pd
+import xarray as xr
 from pandas.api.types import is_numeric_dtype
 from pywps.app.exceptions import ProcessError
 from unidecode import unidecode
@@ -144,7 +144,9 @@ class XclimIndicatorBase(FinchProcess):
                 if prec is not None:
                     for v in df:
                         if v not in ds.coords and is_numeric_dtype(df[v]):
-                            df[v] = df[v].map(lambda x: f"{x:.{prec}f}" if not pd.isna(x) else '')
+                            df[v] = df[v].map(
+                                lambda x: f"{x:.{prec}f}" if not pd.isna(x) else ""
+                            )
                 df.to_csv(outcsv)
                 output_files.append(outcsv)
 
