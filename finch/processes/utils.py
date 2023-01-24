@@ -23,6 +23,7 @@ import cftime
 import netCDF4
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 import requests
 import sentry_sdk
 import xarray as xr
@@ -557,6 +558,7 @@ def netcdf_file_list_to_csv(
     concat_by_calendar = {}
     for file in netcdf_files:
         ds = xr.open_dataset(str(file), decode_times=False)
+        coords = ds.coords
         calendar = ds.time.calendar
         ds["time"] = xr.decode_cf(ds).time
 
@@ -600,8 +602,11 @@ def netcdf_file_list_to_csv(
 
         dropna_threshold = 3  # lat + lon + at least one value
         concat.dropna(thresh=dropna_threshold, inplace=True)
-
-        concat.to_csv(output_csv, **({"float_format": f'%.{csv_precision}f'} if csv_precision is not None else {}))
+        if csv_precision is not None:
+            for v in concat:
+                if v not in coords and is_numeric_dtype(concat[v]):
+                    concat[v] = concat[v].map(lambda x: f"{x:.{csv_precision}f}" if not pd.isna(x) else '')
+        concat.to_csv(output_csv)
         output_csv_list.append(output_csv)
 
     metadata_folder = output_folder / "metadata"

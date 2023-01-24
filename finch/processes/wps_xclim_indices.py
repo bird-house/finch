@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import List, Optional
 
 import xarray as xr
+import pandas as pd
+from pandas.api.types import is_numeric_dtype
 from pywps.app.exceptions import ProcessError
 from unidecode import unidecode
 
@@ -139,7 +141,11 @@ class XclimIndicatorBase(FinchProcess):
                 ds = xr.open_dataset(outfile, decode_timedelta=False)
                 prec = single_input_or_none(request.inputs, "csv_precision")
                 df = dataset_to_dataframe(ds)
-                df.to_csv(outcsv, **({"float_format": f'%.{prec}f'} if prec is not None else {}))
+                if prec is not None:
+                    for v in df:
+                        if v not in ds.coords and is_numeric_dtype(df[v]):
+                            df[v] = df[v].map(lambda x: f"{x:.{prec}f}" if not pd.isna(x) else '')
+                df.to_csv(outcsv)
                 output_files.append(outcsv)
 
                 metadata = format_metadata(ds)
