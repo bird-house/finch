@@ -218,7 +218,9 @@ ensemble_percentiles = LiteralInput(
     "Ensemble percentiles",
     abstract=(
         "Ensemble percentiles to calculate for input climate simulations. "
-        "Accepts a comma separated list of integers."
+        "Accepts a comma separated list of integers. An empty string will "
+        "disable the ensemble reduction and the output will have all members "
+        "along the 'realization' dimension, using the input filenames as coordinates."
     ),
     data_type="string",
     default="10,50,90",

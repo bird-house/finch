@@ -2,11 +2,12 @@ Changes
 *******
 
 TBD (unreleased)
-===================
+================
 * Fixed iter_local when depth > 0 to avoid all files to be considered twice
 * Revised documentation configuration on ReadTheDocs to leverage Anaconda (Mambaforge)
 * Minor adjustments to dependency configurations
 * Update to xclim 0.40.0.
+* Passing an empty string to `ensemble_percentiles` in ensemble processes will return the merged un-reduced ensemble. The different members are listed along the `realization` coordinates through raw names allowing for basic distinction between the input members.
 
 0.10.0 (2022-11-04)
 ===================
