@@ -37,7 +37,10 @@ def get_indicators(realms=["atmos"], exclude=()):
             ind.realm in realms
             and ind.identifier is not None
             and name not in exclude
-            and ind.identifier.upper() == ind._registry_id  # official indicator
+            and (
+                ind.identifier.upper() == ind._registry_id  # official indicator
+                or ind._registry_id.startswith('xclim.core.indicator')  # oups. Bug for discharge_distribution_fit in xclim 0.40
+            )
         )
 
     out = dict(filter(filter_func, xclim_registry.items()))

@@ -15,7 +15,6 @@ dependencies:
   - numpy
   - pandas
   - parse
-  - pint <0.20  # xclim < 0.39 is broken by pint >= 0.20
   - psutil
   - python-slugify
   - pywps >=4.5.1
@@ -26,5 +25,5 @@ dependencies:
   - siphon
   - unidecode
   - xarray >=0.18.2
-  - xclim =0.38  # remember to match xclim version in requirements_docs.txt as well
+  - xclim =0.40  # remember to match xclim version in requirements_docs.txt as well
   - xesmf >=0.6.2
