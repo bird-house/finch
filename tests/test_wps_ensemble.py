@@ -99,14 +99,19 @@ def test_ensemble_heatwave_frequency_grid_point_no_perc(client):
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
         "scenario": 1,
-        "realization": 2
+        "realization": 2,
     }
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
     assert sorted(ensemble_variables) == ["heat_wave_frequency"]
     for var in ensemble_variables.values():
         variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
-        assert variable_dims == {"region": 1, "time": 4, "scenario": 1, "realization": 2}
+        assert variable_dims == {
+            "region": 1,
+            "time": 4,
+            "scenario": 1,
+            "realization": 2,
+        }
 
     assert len(ds.attrs["source_datasets"].split("\n")) == 4
 
@@ -185,7 +190,12 @@ def test_ensemble_dded_grid_point_multiscenario_noperc(client):
     assert sorted(ensemble_variables) == ["degree_days_exceedance_date"]
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
-        assert variable_dims == {"region": 1, "time": 4, "scenario": 2, "realization": 2}
+        assert variable_dims == {
+            "region": 1,
+            "time": 4,
+            "scenario": 2,
+            "realization": 2,
+        }
 
 
 def test_ensemble_heatwave_frequency_bbox(client):

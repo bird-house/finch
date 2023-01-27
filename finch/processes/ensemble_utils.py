@@ -346,7 +346,9 @@ def make_file_groups(files_list: List[Path], variables: set) -> List[Dict[str, P
 def make_ensemble(
     files: List[Path], percentiles: List[int], average_dims: Optional[Tuple[str]] = None
 ) -> None:  # noqa: D103
-    ensemble = ensembles.create_ensemble(files, realizations=[file.stem for file in files])
+    ensemble = ensembles.create_ensemble(
+        files, realizations=[file.stem for file in files]
+    )
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
 
@@ -360,7 +362,9 @@ def make_ensemble(
         ensemble = ensemble.mean(dim=average_dims)
 
     if percentiles:
-        ensemble_percentiles = ensembles.ensemble_percentiles(ensemble, values=percentiles)
+        ensemble_percentiles = ensembles.ensemble_percentiles(
+            ensemble, values=percentiles
+        )
     else:
         ensemble_percentiles = ensemble
 
@@ -517,7 +521,11 @@ def ensemble_common_handler(
     if not convert_to_csv:
         del process.status_percentage_steps["convert_to_csv"]
     percentiles_string = request.inputs["ensemble_percentiles"][0].data
-    ensemble_percentiles = [int(p.strip()) for p in percentiles_string.split(",")] if percentiles_string != 'None' else []
+    ensemble_percentiles = (
+        [int(p.strip()) for p in percentiles_string.split(",")]
+        if percentiles_string != "None"
+        else []
+    )
 
     write_log(
         process,
@@ -619,10 +627,12 @@ def ensemble_common_handler(
 
     process.set_workdir(str(base_work_dir))
 
-    if 'realization' in ensembles[0].dims and len(scenarios) > 1:
+    if "realization" in ensembles[0].dims and len(scenarios) > 1:
         # For non-reducing calls with multiple scenarios, remove the scenario information from the member name.
         for scen, ds in zip(scenarios, ensembles):
-            ds['realization'] = [real.replace(scen, '') for real in ds.realization.values]
+            ds["realization"] = [
+                real.replace(scen, "") for real in ds.realization.values
+            ]
 
     ensemble = xr.concat(
         ensembles, dim=xr.DataArray(scenarios, dims=("scenario",), name="scenario")
