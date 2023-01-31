@@ -578,6 +578,9 @@ def netcdf_file_list_to_csv(
                 output_variable += f"_({units})"
 
             ds = ds.rename({variable: output_variable})
+            if csv_precision and csv_precision < 0:
+                ds = ds.round(csv_precision)
+                csv_precision = 0
             df = dataset_to_dataframe(ds)
 
             if calendar not in concat_by_calendar:

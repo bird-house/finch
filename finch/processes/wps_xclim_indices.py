@@ -140,6 +140,9 @@ class XclimIndicatorBase(FinchProcess):
                 outcsv = outfile.with_suffix(".csv")
                 ds = xr.open_dataset(outfile, decode_timedelta=False)
                 prec = single_input_or_none(request.inputs, "csv_precision")
+                if prec and prec < 0:
+                    ds = ds.round(prec)
+                    prec = 0
                 df = dataset_to_dataframe(ds)
                 if prec is not None:
                     for v in df:
