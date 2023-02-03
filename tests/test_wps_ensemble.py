@@ -194,7 +194,7 @@ def test_ensemble_heatwave_frequency_grid_point_csv(client):
     lines = csv.split("\n")
     assert lines[0].startswith("lat,lon,time,scenario")
     n_data_rows = len(lines) - 2
-    assert n_data_rows == 3  # time=3 (last month is NaN)
+    assert n_data_rows == 4  # time=4 (last month is NaN, but kept in CSV)
 
 
 def test_ensemble_heatwave_frequency_bbox_csv(client):
@@ -227,7 +227,7 @@ def test_ensemble_heatwave_frequency_bbox_csv(client):
     lines = csv.split("\n")
     assert lines[0].startswith("lat,lon,time")
     n_data_rows = len(lines) - 2
-    assert n_data_rows == 2 * 2 * 3  # lat=2, lon=2, time=3 (last month is NaN)
+    assert n_data_rows == 2 * 2 * 4  # lat=2, lon=2, time=4 (last month is NaN, but kept in CSV)
 
 
 def test_ensemble_heatwave_frequency_grid_point_dates(client):
@@ -472,8 +472,8 @@ def test_ensemble_heatwave_frequency_polygon_csv(client):
     lines = csv.split("\n")
     assert lines[0].startswith("lat,lon,time")
     n_data_rows = len(lines) - 2  # header + ending line
-    # lat-lon=66 (not NaN), time=3 (last month is NaN)
-    assert n_data_rows == 66 * 3
+    # lat: 11 lon: 11, time=4 (last month is NaN, but kept in CSV)
+    assert n_data_rows == 11 * 11 * 4
 
     # --- given ---
     inputs.append(wps_literal_input("average", "True"))
@@ -490,8 +490,8 @@ def test_ensemble_heatwave_frequency_polygon_csv(client):
     lines = csv.split("\n")
     assert lines[0].startswith("time")
     n_data_rows = len(lines) - 2  # header + ending line
-    # after spatial average, time=3 (last month is NaN)
-    assert n_data_rows == 3
+    # after spatial average, time=4 (last month is NaN, but kept in CSV)
+    assert n_data_rows == 4
 
 
 def test_ensemble_invalid_parameters(client):

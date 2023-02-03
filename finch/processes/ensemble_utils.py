@@ -8,7 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
+import pandas as pd
 import xarray as xr
+from pandas.api.types import is_numeric_dtype
 from parse import parse
 from pywps import FORMATS, ComplexInput, Process, configuration
 from pywps.app.exceptions import ProcessError
@@ -623,8 +625,9 @@ def ensemble_common_handler(
     if convert_to_csv:
         ensemble_csv = output_basename.with_suffix(".csv")
         prec = single_input_or_none(request.inputs, "csv_precision")
-        if prec:
+        if prec and prec < 0:
             ensemble = ensemble.round(prec)
+            prec = 0
         df = dataset_to_dataframe(ensemble)
         if average_dims is None:
             dims = ["lat", "lon", "time"]
@@ -634,7 +637,14 @@ def ensemble_common_handler(
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
 
-        df.dropna().to_csv(ensemble_csv)
+        if prec is not None:
+            for v in df:
+                if v not in dims and is_numeric_dtype(df[v]):
+                    df[v] = df[v].map(
+                        lambda x: f"{x:.{prec}f}" if not pd.isna(x) else ""
+                    )
+
+        df.to_csv(ensemble_csv)
 
         metadata = format_metadata(ensemble)
         metadata_file = output_basename.parent / f"{output_basename}_metadata.txt"
