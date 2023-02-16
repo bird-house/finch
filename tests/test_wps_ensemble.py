@@ -316,7 +316,9 @@ def test_ensemble_heatwave_frequency_bbox_csv(client):
     lines = csv.split("\n")
     assert lines[0].startswith("lat,lon,time")
     n_data_rows = len(lines) - 2
-    assert n_data_rows == 2 * 2 * 4  # lat=2, lon=2, time=4 (last month is NaN, but kept in CSV)
+    assert (
+        n_data_rows == 2 * 2 * 4
+    )  # lat=2, lon=2, time=4 (last month is NaN, but kept in CSV)
 
 
 def test_ensemble_heatwave_frequency_grid_point_dates(client):

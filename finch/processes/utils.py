@@ -217,7 +217,6 @@ def compute_indices(
         input = input_queue[0]
 
         if isinstance(input, ComplexInput):
-
             if input.supported_formats[0] == FORMATS.JSON:
                 kwds[name] = json.loads(input.data)
 
@@ -698,7 +697,6 @@ def zip_files(
 
         n_files = len(all_files)
         for n, filename in enumerate(all_files):
-
             percentage = int(n / n_files * 100)
             message = f"Zipping file {n + 1} of {n_files}"
             log_function(message, percentage)
