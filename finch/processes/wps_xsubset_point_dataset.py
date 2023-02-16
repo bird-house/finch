@@ -74,7 +74,6 @@ class SubsetGridPointDatasetProcess(FinchProcess):
         }
 
     def _handler(self, request: WPSRequest, response: ExecuteResponse):
-
         convert_to_csv = request.inputs["output_format"][0].data == "csv"
         if not convert_to_csv:
             del self.status_percentage_steps["convert_to_csv"]

@@ -245,7 +245,6 @@ class TestFitProcess:
     identifier = "fit"
 
     def test_simple(self, client, netcdf_datasets):
-
         inputs = [
             wps_input_file("da", netcdf_datasets["discharge"]),
             wps_literal_input("dist", "norm"),
