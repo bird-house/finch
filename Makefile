@@ -4,7 +4,8 @@ APP_NAME := finch
 
 WPS_URL = http://localhost:5000
 
-SANITIZE_FILE := https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg
+#SANITIZE_FILE := https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg
+SANITIZE_FILE := https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/upd-sanitize/notebooks/output-sanitize.cfg
 
 # end of configuration
 
