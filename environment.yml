@@ -24,6 +24,6 @@ dependencies:
   - sentry-sdk
   - siphon
   - unidecode
-  - xarray >=0.18.2
+  - xarray >=2023.01.0
   - xclim =0.40  # remember to match xclim version in requirements_docs.txt as well
-  - xesmf >=0.6.2
+  - xesmf >=0.7
