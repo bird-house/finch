@@ -60,6 +60,9 @@
   "communities": [
     {
       "identifier": "ouranos"
+    },
+    {
+      "identifier": "crim"
     }
   ],
   "upload_type": "software",
