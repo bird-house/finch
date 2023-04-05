@@ -1,0 +1,70 @@
+{
+  "creators": [
+    {
+      "name": "Bourgault, Pascal",
+      "affiliation": "Ouranos",
+      "orcid": "0000-0003-1192-0403"
+    },
+    {
+      "name": "Caron, David",
+      "affiliation": "jakarto3d"
+    },
+    {
+      "name": "Huard, David",
+      "affiliation": "Ouranos",
+      "orcid": "0000-0003-0311-5498"
+    },
+    {
+      "name": "Vu, Tuan Long",
+      "affiliation": "Ouranos"
+    },
+    {
+      "name": "Smith, Trevor James",
+      "affiliation": "Ouranos",
+      "orcid": "0000-0001-5393-8359"
+    },
+    {
+      "name": "Provencher, Mathieu",
+      "affiliation": "CRIM"
+    },
+    {
+      "name": "Perron, Louis-David",
+      "affiliation": "CRIM"
+    },
+    {
+      "name": "Logan, Travis",
+      "affiliation": "Ouranos",
+      "orcid": "0000-0002-2212-9580"
+    },
+    {
+      "name": "Ehbrecht, Carsten",
+      "affiliation": "DKRZ"
+    },
+    {
+      "name": "Jauvin, Christian",
+      "orcid": "0000-0002-2257-5636"
+    },
+    {
+      "name": "Charette-Migneault, Francis",
+      "affiliation": "CRIM",
+      "orcid": "0000-0003-4862-3349"
+    }
+  ],
+  "keywords": [
+    "climate change",
+    "climate indicators",
+    "xclim",
+    "web processing services"
+  ],
+  "license": "Apache-2.0",
+  "communities": [
+    {
+      "identifier": "ouranos"
+    },
+    {
+      "identifier": "crim"
+    }
+  ],
+  "upload_type": "software",
+  "access_right": "open"
+}
