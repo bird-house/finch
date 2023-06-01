@@ -2,7 +2,6 @@
 import logging
 from pathlib import Path
 
-import xclim as xc
 from pywps.configuration import get_config_value
 from xclim.core.indicator import registry as xclim_registry
 from xclim.core.indicator import build_indicator_module_from_yaml
