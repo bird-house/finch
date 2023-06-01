@@ -46,6 +46,7 @@ from pywps.inout.outputs import MetaFile, MetaLink4
 from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
 from slugify import slugify
 from xclim.core.utils import InputKind
+from xclim.core.indicator import build_indicator_module_from_yaml
 from xclim.testing import list_input_variables
 
 LOGGER = logging.getLogger("PYWPS")
@@ -63,10 +64,11 @@ INDICATOR_OPTIONS = [
 ]
 
 # Some other constants
-xclim_variables = set(
+xclim_variables = list(
     list_input_variables(submodules=["atmos", "land", "seaIce"]).keys()
 )
-
+xclim_variables.append('HXmax')
+xclim_variables = set(xclim_variables)
 
 @dataclass
 class DatasetConfiguration:
