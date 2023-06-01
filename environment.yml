@@ -26,5 +26,5 @@ dependencies:
   - siphon
   - unidecode
   - xarray >=0.18.2
-  - xclim =0.38  # remember to match xclim version in requirements_docs.txt as well
+  - xclim =0.43  # remember to match xclim version in requirements_docs.txt as well
   - xesmf >=0.6.2

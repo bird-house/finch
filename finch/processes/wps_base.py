@@ -154,7 +154,7 @@ def convert_xclim_inputs_to_pywps(
     # Only for generic types
     data_types = {
         InputKind.BOOL: "boolean",
-        InputKind.QUANTITY_STR: "string",
+        InputKind.QUANTIFIED: "string",
         InputKind.NUMBER: "integer",
         InputKind.NUMBER_SEQUENCE: "integer",
         InputKind.STRING: "string",

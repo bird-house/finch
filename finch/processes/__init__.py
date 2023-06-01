@@ -1,8 +1,11 @@
 # noqa: D104
 import logging
+from pathlib import Path
 
+import xclim as xc
 from pywps.configuration import get_config_value
 from xclim.core.indicator import registry as xclim_registry
+from xclim.core.indicator import build_indicator_module_from_yaml
 
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .utils import get_available_variables, get_datasets_config
@@ -59,6 +62,12 @@ def get_processes():
     indicators = get_indicators(
         realms=["atmos", "land", "seaIce"], exclude=not_implemented
     )
+    if (modfiles := get_config_value("finch", 'xclim_modules')):
+        modfolder = [f for f in Path('.').rglob('*') if f.is_dir() and f.name=='modules'][0]
+        for modfile in modfiles.split(';'):
+            mod = build_indicator_module_from_yaml(modfolder.joinpath(modfile))
+            for indname, ind in mod.iter_indicators():
+                indicators.append(ind.get_instance())
 
     ds_conf = get_datasets_config()
     if ds_conf:

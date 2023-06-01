@@ -12,4 +12,4 @@ dependencies:
   - sphinx >=4.0
   - sphinxcontrib-bibtex
   - unidecode
-  - xclim =0.38  # remember to match xclim version in requirements_docs.txt as well
+  - xclim =0.43 # remember to match xclim version in requirements_docs.txt as well
