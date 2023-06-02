@@ -22,13 +22,11 @@ from .utils import (
     single_input_or_none,
     valid_filename,
     write_log,
-    xclim_variables,
     zip_files,
 )
 from .wps_base import FinchProcess, FinchProgressBar, convert_xclim_inputs_to_pywps
 
 LOGGER = logging.getLogger("PYWPS")
-
 
 class XclimIndicatorBase(FinchProcess):
     """Dummy xclim indicator process class.
@@ -37,7 +35,7 @@ class XclimIndicatorBase(FinchProcess):
     """
 
     xci = None
-
+    allvars = []
     def __init__(self):
         """Create a WPS process from an xclim indicator class instance."""
         if self.xci is None:
@@ -47,7 +45,8 @@ class XclimIndicatorBase(FinchProcess):
 
         outputs = [wpsio.output_netcdf_zip, wpsio.output_log, wpsio.output_metalink]
 
-        inputs = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier)
+        inputs, varnames = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier)
+        self.allvars.extend(varnames)
         inputs += wpsio.xclim_common_options
         inputs += [
             wpsio.variable_any,
@@ -80,7 +79,7 @@ class XclimIndicatorBase(FinchProcess):
         # Get inputs of compute_indices, split by netCDFs and others
         nc_inputs, other_inputs = {}, {}
         for k, v in request.inputs.items():
-            if k in xclim_variables:
+            if k in self.allvars:
                 nc_inputs[k] = v
             elif k not in ["output_format", "output_name", "csv_precision"]:
                 other_inputs[k] = v
