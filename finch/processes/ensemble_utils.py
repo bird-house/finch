@@ -12,7 +12,7 @@ import pandas as pd
 import xarray as xr
 from pandas.api.types import is_numeric_dtype
 from parse import parse
-from pywps import FORMATS, ComplexInput, Process, configuration
+from pywps import FORMATS, ComplexInput, Process
 from pywps.app.exceptions import ProcessError
 from pywps.exceptions import InvalidParameterValue
 from siphon.catalog import TDSCatalog
@@ -348,7 +348,9 @@ def make_file_groups(files_list: List[Path], variables: set) -> List[Dict[str, P
 def make_ensemble(
     files: List[Path], percentiles: List[int], average_dims: Optional[Tuple[str]] = None
 ) -> None:  # noqa: D103
-    ensemble = ensembles.create_ensemble(files)
+    ensemble = ensembles.create_ensemble(
+        files, realizations=[file.stem for file in files]
+    )
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
 
@@ -361,7 +363,12 @@ def make_ensemble(
     if average_dims is not None:
         ensemble = ensemble.mean(dim=average_dims)
 
-    ensemble_percentiles = ensembles.ensemble_percentiles(ensemble, values=percentiles)
+    if percentiles:
+        ensemble_percentiles = ensembles.ensemble_percentiles(
+            ensemble, values=percentiles
+        )
+    else:
+        ensemble_percentiles = ensemble
 
     # Doy data converted previously is converted back.
     for v in ensemble_percentiles.data_vars:
@@ -374,7 +381,7 @@ def make_ensemble(
     # a best effort at working around what looks like a bug in either xclim or xarray.
     # The xarray documentation mentions: 'this method can be necessary when working
     # with many file objects on disk.'
-    ensemble_percentiles.load()
+    # ensemble_percentiles.load()
 
     return ensemble_percentiles
 
@@ -516,7 +523,11 @@ def ensemble_common_handler(
     if not convert_to_csv:
         del process.status_percentage_steps["convert_to_csv"]
     percentiles_string = request.inputs["ensemble_percentiles"][0].data
-    ensemble_percentiles = [int(p.strip()) for p in percentiles_string.split(",")]
+    ensemble_percentiles = (
+        [int(p.strip()) for p in percentiles_string.split(",")]
+        if percentiles_string != "None"
+        else []
+    )
 
     write_log(
         process,
@@ -617,6 +628,13 @@ def ensemble_common_handler(
         ensembles.append(ensemble)
 
     process.set_workdir(str(base_work_dir))
+
+    if "realization" in ensembles[0].dims and len(scenarios) > 1:
+        # For non-reducing calls with multiple scenarios, remove the scenario information from the member name.
+        for scen, ds in zip(scenarios, ensembles):
+            ds["realization"] = [
+                real.replace(scen, "") for real in ds.realization.values
+            ]
 
     ensemble = xr.concat(
         ensembles, dim=xr.DataArray(scenarios, dims=("scenario",), name="scenario")

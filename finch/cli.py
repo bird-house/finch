@@ -11,7 +11,6 @@ from urllib.parse import urlparse
 
 import click
 import psutil
-from jinja2 import Environment, PackageLoader
 from pywps import configuration
 
 from . import wsgi
@@ -19,17 +18,6 @@ from . import wsgi
 PID_FILE = os.path.abspath(os.path.join(os.path.curdir, "pywps.pid"))
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-
-template_env = Environment(loader=PackageLoader("finch", "templates"), autoescape=True)
-
-
-def write_user_config(**kwargs):  # noqa: D103
-    config_templ = template_env.get_template("pywps.cfg")
-    rendered_config = config_templ.render(**kwargs)
-    config_file = os.path.abspath(os.path.join(os.path.curdir, ".custom.cfg"))
-    with open(config_file, "w") as fp:
-        fp.write(rendered_config)
-    return config_file
 
 
 def get_host():  # noqa: D103
@@ -126,89 +114,22 @@ def stop():
     "--bind-host",
     "-b",
     metavar="IP-ADDRESS",
-    default="127.0.0.1",
     help="IP address used to bind service.",
 )
 @click.option("--daemon", "-d", is_flag=True, help="run in daemon mode.")
-@click.option(
-    "--hostname",
-    metavar="HOSTNAME",
-    default="localhost",
-    help="hostname in PyWPS configuration.",
-)
-@click.option(
-    "--port", metavar="PORT", default="5000", help="port in PyWPS configuration."
-)
-@click.option(
-    "--maxsingleinputsize",
-    default="200mb",
-    help="maxsingleinputsize in PyWPS configuration.",
-)
-@click.option(
-    "--maxprocesses",
-    metavar="INT",
-    default="10",
-    help="maxprocesses in PyWPS configuration.",
-)
-@click.option(
-    "--parallelprocesses",
-    metavar="INT",
-    default="2",
-    help="parallelprocesses in PyWPS configuration.",
-)
-@click.option(
-    "--log-level",
-    metavar="LEVEL",
-    default="INFO",
-    help="log level in PyWPS configuration.",
-)
-@click.option(
-    "--log-file",
-    metavar="PATH",
-    default="pywps.log",
-    help="log file in PyWPS configuration.",
-)
-@click.option(
-    "--database",
-    default="sqlite:///pywps-logs.sqlite",
-    help="database in PyWPS configuration",
-)
-def start(
-    config,
-    bind_host,
-    daemon,
-    hostname,
-    port,
-    maxsingleinputsize,
-    maxprocesses,
-    parallelprocesses,
-    log_level,
-    log_file,
-    database,
-):
+def start(config, bind_host, daemon):
     """Start PyWPS service.
 
     This service is by default available at http://localhost:5000/wps
+    The default configuration is from finch/default.cfg
     """
     if os.path.exists(PID_FILE):
         click.echo(f'PID file exists: "{PID_FILE}". Service still running?')
         os._exit(0)
     cfgfiles = []
-    cfgfiles.append(
-        write_user_config(
-            wps_hostname=hostname,
-            wps_port=port,
-            wps_maxsingleinputsize=maxsingleinputsize,
-            wps_maxprocesses=maxprocesses,
-            wps_parallelprocesses=parallelprocesses,
-            wps_log_level=log_level,
-            wps_log_file=log_file,
-            wps_database=database,
-        )
-    )
     if config:
         cfgfiles.append(config)
-    app = wsgi.create_app(cfgfiles)
+    app = wsgi.create_app(cfgfiles)  # Will add default.cfg to the config
     # let's start the service ...
     # See:
     # * https://github.com/geopython/pywps-flask/blob/master/demo.py

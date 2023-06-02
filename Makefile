@@ -4,11 +4,6 @@ APP_NAME := finch
 
 WPS_URL = http://localhost:5000
 
-# Used in target refresh-notebooks to make it looks like the notebooks have
-# been refreshed from the production server below instead of from the local dev
-# instance so the notebooks can also be used as tutorial notebooks.
-OUTPUT_URL = https://pavics.ouranos.ca/wpsoutputs/finch
-
 SANITIZE_FILE := https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg
 
 # end of configuration
@@ -136,7 +131,7 @@ lint:
 .PHONY: refresh-notebooks
 refresh-notebooks:
 	@echo "Refresh all notebook outputs under docs/source/notebooks"
-	@bash -c 'for nb in $(CURDIR)/docs/source/notebooks/*.ipynb; do WPS_URL="$(WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --output "$$nb" "$$nb"; sed -i "s@$(WPS_URL)/outputs/@$(OUTPUT_URL)/@g" "$$nb"; done; cd $(APP_ROOT)'
+	@bash -c 'for nb in $(CURDIR)/docs/source/notebooks/*.ipynb; do WPS_URL="$(WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --output "$$nb" "$$nb"; done; cd $(APP_ROOT)'
 
 ## Sphinx targets
 
