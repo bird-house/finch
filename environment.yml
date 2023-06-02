@@ -10,6 +10,7 @@ dependencies:
   - dask
   - distributed
   - geopandas
+  - h5netcdf
   - netcdf4
   - numpy
   - pandas
