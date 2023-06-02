@@ -63,11 +63,22 @@ INDICATOR_OPTIONS = [
     "data_validation",
 ]
 
+def get_virtual_modules():
+    modules = {}
+    if (modfiles := get_config_value("finch", 'xclim_modules')):
+        modfolder = [f for f in Path('.').rglob('*') if f.is_dir() and f.name == 'modules'][0]
+        for modfile in modfiles.split(';'):
+            mod = build_indicator_module_from_yaml(modfolder.joinpath(modfile))
+            indicators = []
+            for indname, ind in mod.iter_indicators():
+                indicators.append(ind.get_instance())
+        modules[modfile] = dict(indicators=indicators)
+    return modules
+
 # Some other constants
 xclim_variables = list(
     list_input_variables(submodules=["atmos", "land", "seaIce"]).keys()
 )
-xclim_variables.append('HXmax')
 xclim_variables = set(xclim_variables)
 
 @dataclass
