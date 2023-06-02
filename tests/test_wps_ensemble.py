@@ -70,6 +70,52 @@ def test_ensemble_heatwave_frequency_grid_point(client):
     assert len(ds.attrs["source_datasets"].split("\n")) == 4
 
 
+def test_ensemble_heatwave_frequency_grid_point_no_perc(client):
+    # --- given ---
+    identifier = "ensemble_grid_point_heat_wave_frequency"
+    inputs = [
+        wps_literal_input("lat", "46"),
+        wps_literal_input("lon", "-72.8"),
+        wps_literal_input("scenario", "rcp45"),
+        wps_literal_input("dataset", "test_subset"),
+        wps_literal_input("thresh_tasmin", "22.0 degC"),
+        wps_literal_input("thresh_tasmax", "30 degC"),
+        wps_literal_input("window", "3"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", ""),
+        wps_literal_input("output_format", "netcdf"),
+        wps_literal_input("output_name", "testens"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+    assert Path(outputs[0]).stem.startswith("testens_46_000_72_800_rcp45")
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
+    assert dims == {
+        "region": 1,
+        "time": 4,  # there are roughly 4 months in the test datasets
+        "scenario": 1,
+        "realization": 2,
+    }
+
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
+    assert sorted(ensemble_variables) == ["heat_wave_frequency"]
+    for var in ensemble_variables.values():
+        variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
+        assert variable_dims == {
+            "region": 1,
+            "time": 4,
+            "scenario": 1,
+            "realization": 2,
+        }
+
+    assert len(ds.attrs["source_datasets"].split("\n")) == 4
+
+
 def test_ensemble_dded_grid_point_multiscenario(client):
     # --- given ---
     identifier = "ensemble_grid_point_degree_days_exceedance_date"
@@ -107,6 +153,49 @@ def test_ensemble_dded_grid_point_multiscenario(client):
     for var in ensemble_variables.values():
         variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"region": 1, "time": 4, "scenario": 2}
+
+
+def test_ensemble_dded_grid_point_multiscenario_noperc(client):
+    # --- given ---
+    identifier = "ensemble_grid_point_degree_days_exceedance_date"
+    inputs = [
+        wps_literal_input("lat", "46"),
+        wps_literal_input("lon", "-72.8"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("scenario", "rcp45"),
+        wps_literal_input("dataset", "test_subset"),
+        wps_literal_input("thresh", "-5 degC"),
+        wps_literal_input("sum_thresh", "30 K days"),
+        wps_literal_input("op", ">"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", ""),
+        wps_literal_input("output_format", "netcdf"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
+    assert dims == {
+        "region": 1,
+        "time": 4,  # there are roughly 4 months in the test datasets
+        "scenario": 2,
+        "realization": 2,
+    }
+
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
+    assert sorted(ensemble_variables) == ["degree_days_exceedance_date"]
+    for var in ensemble_variables.values():
+        variable_dims = dict(zip(var.dims, var.shape))
+        assert variable_dims == {
+            "region": 1,
+            "time": 4,
+            "scenario": 2,
+            "realization": 2,
+        }
 
 
 def test_ensemble_heatwave_frequency_bbox(client):

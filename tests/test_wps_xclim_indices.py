@@ -210,10 +210,10 @@ def test_missing_options(client, netcdf_datasets):
 
 def test_stats_process(client, netcdf_datasets):
     """Test stats and the capacity to choose the variable."""
-    identifier = "stats"
+    identifier = "discharge_stats"
 
     inputs = [
-        wps_input_file("da", netcdf_datasets["pr_discharge"]),
+        wps_input_file("discharge", netcdf_datasets["pr_discharge"]),
         wps_literal_input("freq", "YS"),
         wps_literal_input("op", "max"),
         wps_literal_input("season", "JJA"),
@@ -227,7 +227,7 @@ def test_stats_process(client, netcdf_datasets):
 def test_freqanalysis_process(client, netcdf_datasets):
     identifier = "freq_analysis"
     inputs = [
-        wps_input_file("da", netcdf_datasets["discharge"]),
+        wps_input_file("discharge", netcdf_datasets["discharge"]),
         wps_literal_input("t", "2"),
         wps_literal_input("t", "50"),
         wps_literal_input("freq", "YS"),
@@ -242,11 +242,11 @@ def test_freqanalysis_process(client, netcdf_datasets):
 
 
 class TestFitProcess:
-    identifier = "fit"
+    identifier = "discharge_distribution_fit"
 
     def test_simple(self, client, netcdf_datasets):
         inputs = [
-            wps_input_file("da", netcdf_datasets["discharge"]),
+            wps_input_file("discharge", netcdf_datasets["discharge"]),
             wps_literal_input("dist", "norm"),
         ]
         outputs = execute_process(client, self.identifier, inputs)
@@ -256,7 +256,7 @@ class TestFitProcess:
     def test_nan(self, client, q_series, tmp_path):
         q_series([333, 145, 203, 109, 430, 230, np.nan]).to_netcdf(tmp_path / "q.nc")
         inputs = [
-            wps_input_file("da", tmp_path / "q.nc"),
+            wps_input_file("discharge", tmp_path / "q.nc"),
             wps_literal_input("dist", "norm"),
         ]
         outputs = execute_process(client, self.identifier, inputs)

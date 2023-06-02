@@ -1,13 +1,11 @@
 cftime
 pywps>=4.5.1
 xclim==0.43
-pint<=0.19.2  # xclim < 0.39 breaks with pint 0.20
 xarray>=0.18.2
 pandas
 xesmf>=0.6.2
 clisops>=0.9.3
 geopandas
-jinja2
 click
 psutil
 bottleneck

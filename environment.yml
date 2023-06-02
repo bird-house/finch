@@ -10,12 +10,11 @@ dependencies:
   - dask
   - distributed
   - geopandas
-  - jinja2
+  - h5netcdf
   - netcdf4
   - numpy
   - pandas
   - parse
-  - pint <0.20  # xclim < 0.39 is broken by pint >= 0.20
   - psutil
   - python-slugify
   - pywps >=4.5.1
@@ -25,6 +24,6 @@ dependencies:
   - sentry-sdk
   - siphon
   - unidecode
-  - xarray >=0.18.2
+  - xarray >=2023.01.0
   - xclim =0.43  # remember to match xclim version in requirements_docs.txt as well
-  - xesmf >=0.6.2
+  - xesmf >=0.7
