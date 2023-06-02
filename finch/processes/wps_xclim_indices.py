@@ -28,6 +28,7 @@ from .wps_base import FinchProcess, FinchProgressBar, convert_xclim_inputs_to_py
 
 LOGGER = logging.getLogger("PYWPS")
 
+
 class XclimIndicatorBase(FinchProcess):
     """Dummy xclim indicator process class.
 
@@ -36,6 +37,7 @@ class XclimIndicatorBase(FinchProcess):
 
     xci = None
     allvars = []
+
     def __init__(self):
         """Create a WPS process from an xclim indicator class instance."""
         if self.xci is None:
@@ -45,7 +47,9 @@ class XclimIndicatorBase(FinchProcess):
 
         outputs = [wpsio.output_netcdf_zip, wpsio.output_log, wpsio.output_metalink]
 
-        inputs, varnames = convert_xclim_inputs_to_pywps(self.xci.parameters, self.xci.identifier)
+        inputs, varnames = convert_xclim_inputs_to_pywps(
+            self.xci.parameters, self.xci.identifier
+        )
         self.allvars.extend(varnames)
         inputs += wpsio.xclim_common_options
         inputs += [

@@ -3,8 +3,8 @@ import logging
 from pathlib import Path
 
 from pywps.configuration import get_config_value
-from xclim.core.indicator import registry as xclim_registry
 from xclim.core.indicator import build_indicator_module_from_yaml
+from xclim.core.indicator import registry as xclim_registry
 
 from .ensemble_utils import uses_accepted_netcdf_variables
 from .utils import get_available_variables, get_datasets_config, get_virtual_modules
@@ -63,7 +63,7 @@ def get_processes():
     )
     mod_dict = get_virtual_modules()
     for mod in mod_dict.keys():
-        indicators.extend(mod_dict[mod]['indicators'])
+        indicators.extend(mod_dict[mod]["indicators"])
 
     ds_conf = get_datasets_config()
     if ds_conf:

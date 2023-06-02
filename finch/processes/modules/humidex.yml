@@ -27,4 +27,3 @@ variables:
     canonical_units: ""
     cell_methods: "time: max"
     description: Daily Maximum Humidex
-

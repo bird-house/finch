@@ -45,8 +45,8 @@ from pywps.configuration import get_config_value
 from pywps.inout.outputs import MetaFile, MetaLink4
 from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
 from slugify import slugify
-from xclim.core.utils import InputKind
 from xclim.core.indicator import build_indicator_module_from_yaml
+from xclim.core.utils import InputKind
 from xclim.testing import list_input_variables
 
 LOGGER = logging.getLogger("PYWPS")
@@ -63,11 +63,14 @@ INDICATOR_OPTIONS = [
     "data_validation",
 ]
 
+
 def get_virtual_modules():
     modules = {}
-    if (modfiles := get_config_value("finch", 'xclim_modules')):
-        modfolder = [f for f in Path('.').rglob('*') if f.is_dir() and f.name == 'modules'][0]
-        for modfile in modfiles.split(';'):
+    if modfiles := get_config_value("finch", "xclim_modules"):
+        modfolder = [
+            f for f in Path(".").rglob("*") if f.is_dir() and f.name == "modules"
+        ][0]
+        for modfile in modfiles.split(";"):
             mod = build_indicator_module_from_yaml(modfolder.joinpath(modfile))
             indicators = []
             for indname, ind in mod.iter_indicators():
@@ -75,11 +78,13 @@ def get_virtual_modules():
         modules[modfile] = dict(indicators=indicators)
     return modules
 
+
 # Some other constants
 xclim_variables = list(
     list_input_variables(submodules=["atmos", "land", "seaIce"]).keys()
 )
 xclim_variables = set(xclim_variables)
+
 
 @dataclass
 class DatasetConfiguration:
