@@ -1,6 +1,7 @@
 # noqa: D100
 import json
 import logging
+import os
 import zipfile
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -21,7 +22,6 @@ from typing import (
 
 import cftime
 import numpy as np
-import os
 import pandas as pd
 import requests
 import sentry_sdk
