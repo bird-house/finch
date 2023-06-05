@@ -327,3 +327,20 @@ def test_degree_days_exceedance_date(client, tmp_path):
     np.testing.assert_array_equal(
         ds.degree_days_exceedance_date, np.array([150, 140, 10, 10])
     )
+
+
+def test_hxmax_day_above(client, tmp_path):
+    identifier = "hxmax_days_above"
+    data =  timeseries(values=[27, 18, 35, 40, 39, 20, 29, 29.5], variable='tasmax')
+    data.attrs['units'] = ""
+    data.name = 'HXmax'
+    data.to_netcdf(tmp_path / "hxmax.nc")
+    #timeseries(values=np.arange(10) + K2C, variable='tas').to_netcdf(tmp_path / "tas.nc")
+    inputs = [
+        wps_input_file("hxmax", tmp_path / "hxmax.nc"),
+        wps_literal_input("threshold", "30"),
+    ]
+    outputs = execute_process(client, identifier, inputs)
+    with xr.open_dataset(outputs[0]) as ds:
+        np.testing.assert_array_equal(
+            ds.hxmax_days_above, 3)
