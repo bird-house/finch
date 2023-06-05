@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 from pywps.configuration import get_config_value
-from xclim.core.indicator import build_indicator_module_from_yaml
 from xclim.core.indicator import registry as xclim_registry
 
 from .ensemble_utils import uses_accepted_netcdf_variables
