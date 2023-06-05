@@ -36,7 +36,6 @@ class XclimIndicatorBase(FinchProcess):
     """
 
     xci = None
-    allvars = []
 
     def __init__(self):
         """Create a WPS process from an xclim indicator class instance."""
