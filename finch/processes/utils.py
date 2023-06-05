@@ -71,7 +71,9 @@ def get_virtual_modules():
             if os.path.isabs(modfile):
                 mod = build_indicator_module_from_yaml(Path(modfile))
             else:
-                mod = build_indicator_module_from_yaml(Path("finch").joinpath(modfile))
+                mod = build_indicator_module_from_yaml(
+                    Path(__file__).parent.parent.joinpath(modfile)
+                )
             indicators = []
             for indname, ind in mod.iter_indicators():
                 indicators.append(ind.get_instance())
