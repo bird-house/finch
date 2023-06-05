@@ -11,7 +11,9 @@ import xarray as xr
 from pywps import configuration
 from scipy.stats import norm, uniform
 from xclim.core.calendar import percentile_doy
-from xclim.testing.helpers import test_timeseries as timeseries #pr_hr_series, pr_series, q_series, tas_series
+from xclim.testing.helpers import (
+    test_timeseries as timeseries,  # pr_hr_series, pr_series, q_series, tas_series
+)
 
 import finch.processes
 import finch.wsgi
@@ -19,6 +21,7 @@ import finch.wsgi
 from .common import CFG_FILE, client_for
 
 TEMP_DIR = Path(__file__).parent / "tmp"
+
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_temp_data(request):
@@ -234,4 +237,4 @@ def hourly_dataset():  # noqa: F811
     """Ten days of precip with first hour missing."""
     a = np.arange(10 * 24.0)
     a[0] = np.nan
-    return _write_dataset("pr_hr", timeseries(values=a, variable='pr', freq='H'))
+    return _write_dataset("pr_hr", timeseries(values=a, variable="pr", freq="H"))
