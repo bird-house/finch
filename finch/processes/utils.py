@@ -65,6 +65,7 @@ INDICATOR_OPTIONS = [
 
 
 def get_virtual_modules():
+    """load virtual modules"""
     modules = {}
     if modfiles := get_config_value("finch", "xclim_modules"):
         modfolder = [
