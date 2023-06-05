@@ -345,7 +345,8 @@ def test_hxmax_day_above(client, tmp_path):
     inputs = [
         wps_input_file("HXmax", tmp_path / "hxmax.nc"),
         wps_literal_input("threshold", "30"),
+        wps_literal_input("check_missing", "skip")
     ]
     outputs = execute_process(client, identifier, inputs)
-    with xr.open_dataset(outputs[0]) as ds:
-        np.testing.assert_array_equal(ds.hxmax_days_above, 3)
+    with xr.open_dataset(outputs[0], decode_timedelta=False) as ds:
+        np.testing.assert_array_equal(ds.hxmax_days_above.values, 3)
