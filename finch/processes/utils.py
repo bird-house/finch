@@ -20,8 +20,8 @@ from typing import (
 )
 
 import cftime
-import netCDF4
 import numpy as np
+import os
 import pandas as pd
 import requests
 import sentry_sdk
@@ -47,7 +47,6 @@ from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
 from slugify import slugify
 from xclim.core.indicator import build_indicator_module_from_yaml
 from xclim.core.utils import InputKind
-from xclim.testing import list_input_variables
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -69,7 +68,10 @@ def get_virtual_modules():
     modules = {}
     if modfiles := get_config_value("finch", "xclim_modules"):
         for modfile in modfiles.split(","):
-            mod = build_indicator_module_from_yaml(Path(modfile))
+            if os.path.isabs(modfile):
+                mod = build_indicator_module_from_yaml(Path(modfile))
+            else:
+                mod = build_indicator_module_from_yaml(Path("finch").joinpath(modfile))
             indicators = []
             for indname, ind in mod.iter_indicators():
                 indicators.append(ind.get_instance())
