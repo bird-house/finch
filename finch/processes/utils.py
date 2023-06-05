@@ -1,6 +1,7 @@
 # noqa: D100
 import json
 import logging
+import os
 import zipfile
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -20,7 +21,6 @@ from typing import (
 )
 
 import cftime
-import netCDF4
 import numpy as np
 import pandas as pd
 import requests
@@ -45,8 +45,8 @@ from pywps.configuration import get_config_value
 from pywps.inout.outputs import MetaFile, MetaLink4
 from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
 from slugify import slugify
+from xclim.core.indicator import build_indicator_module_from_yaml
 from xclim.core.utils import InputKind
-from xclim.testing import list_input_variables
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -62,10 +62,23 @@ INDICATOR_OPTIONS = [
     "data_validation",
 ]
 
-# Some other constants
-xclim_variables = set(
-    list_input_variables(submodules=["atmos", "land", "seaIce"]).keys()
-)
+
+def get_virtual_modules():
+    """Load virtual modules."""
+    modules = {}
+    if modfiles := get_config_value("finch", "xclim_modules"):
+        for modfile in modfiles.split(","):
+            if os.path.isabs(modfile):
+                mod = build_indicator_module_from_yaml(Path(modfile))
+            else:
+                mod = build_indicator_module_from_yaml(
+                    Path(__file__).parent.parent.joinpath(modfile)
+                )
+            indicators = []
+            for indname, ind in mod.iter_indicators():
+                indicators.append(ind.get_instance())
+            modules[Path(modfile).name] = dict(indicators=indicators)
+    return modules
 
 
 @dataclass

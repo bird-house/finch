@@ -9,7 +9,7 @@ dependencies:
   - clisops >=0.9.3
   - dask
   - distributed
-  - geopandas
+  - geopandas!=0.13.1
   - h5netcdf
   - netcdf4
   - numpy
@@ -25,5 +25,5 @@ dependencies:
   - siphon
   - unidecode
   - xarray >=2023.01.0
-  - xclim =0.40  # remember to match xclim version in requirements_docs.txt as well
+  - xclim =0.43  # remember to match xclim version in requirements_docs.txt as well
   - xesmf >=0.7

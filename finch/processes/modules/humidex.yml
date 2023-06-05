@@ -1,0 +1,28 @@
+module: humidex
+doc:
+realm: atmos
+indicators:
+  hxmax_days_above:
+    cf_attrs:
+      title: Number of days with maximum humidex above a given threshold
+      cell_methods: 'time: sum over days'
+      long_name: The number of days with maximum humidex above {threshold}
+      units: days
+      var_name: hxmax_days_above
+    compute: count_occurrences
+    input:
+      data: HXmax
+    parameters:
+      op:
+        default: ">"
+      freq:
+        default: "YS"
+      threshold:
+        default: "30"
+        units: ""
+
+variables:
+  HXmax:
+    canonical_units: ""
+    cell_methods: "time: max"
+    description: Daily Maximum Humidex

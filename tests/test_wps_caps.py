@@ -2,6 +2,7 @@ import pywps.configuration
 
 import finch.processes.utils
 from finch.processes import get_indicators, get_processes, not_implemented
+from finch.processes.utils import get_virtual_modules
 from finch.wsgi import create_app
 
 from .common import CFG_FILE, client_for
@@ -47,6 +48,9 @@ def test_wps_caps_no_datasets(client, monkeypatch):
     indicators = get_indicators(
         realms=["atmos", "land", "seaIce"], exclude=not_implemented
     )
+    mod_dict = get_virtual_modules()
+    for mod in mod_dict.keys():
+        indicators.extend(mod_dict[mod]["indicators"])
     subset_processes_count = 4
     sdba_processes_count = 1
     others = 2

@@ -149,7 +149,7 @@ def convert_xclim_inputs_to_pywps(
     """
     # Ideally this would be based on the Parameters docstring section rather than name conventions.
     inputs = []
-
+    var_names = []
     # Mapping from xclim's InputKind to data_type
     # Only for generic types
     data_types = {
@@ -187,6 +187,7 @@ def convert_xclim_inputs_to_pywps(
             )
         elif attrs["kind"] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
             inputs.append(make_nc_input(name))
+            var_names.append(name)
         elif name in ["freq"]:
             inputs.append(
                 make_freq(name, default=attrs["default"], abstract=attrs["description"])
@@ -215,7 +216,7 @@ def convert_xclim_inputs_to_pywps(
                 f"{parent}: Argument {name} of kind {attrs['kind']} is not implemented."
             )
 
-    return inputs
+    return inputs, var_names
 
 
 def make_freq(

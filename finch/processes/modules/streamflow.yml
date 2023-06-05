@@ -1,0 +1,28 @@
+module: streamflow
+doc:
+realm: land
+indicators:
+    discharge_stats:
+        base: xclim.core.indicator.stats
+        cf_attrs:
+            long_name: Daily flow statistics
+            description: "{freq} {op} of daily flow ({indexer})."
+            units: m^3 s-1
+            var_name: "q{indexer}{op:r}"
+        input:
+            da: discharge
+    freq_analysis:
+        base: xclim.core.indicator.return_level
+        cf_attrs:
+            long_name: N-year return level discharge
+            description: "Streamflow frequency analysis for the {mode} {indexer} {window}-day flow estimated using the {dist} distribution."
+            units: m^3 s-1
+            var_name: "q{window}{mode:r}{indexer}"
+        input:
+            da: discharge
+    discharge_distribution_fit:
+        base: xclim.core.indicator.fit
+        cf_attrs:
+            var_name: params
+        input:
+            da: discharge

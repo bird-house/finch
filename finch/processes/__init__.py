@@ -1,11 +1,12 @@
 # noqa: D104
 import logging
+from pathlib import Path
 
 from pywps.configuration import get_config_value
 from xclim.core.indicator import registry as xclim_registry
 
 from .ensemble_utils import uses_accepted_netcdf_variables
-from .utils import get_available_variables, get_datasets_config
+from .utils import get_available_variables, get_datasets_config, get_virtual_modules
 from .wps_base import make_xclim_indicator_process
 from .wps_ensemble_indices_bbox import XclimEnsembleBboxBase
 from .wps_ensemble_indices_point import XclimEnsembleGridPointBase
@@ -64,6 +65,9 @@ def get_processes():
     indicators = get_indicators(
         realms=["atmos", "land", "seaIce"], exclude=not_implemented
     )
+    mod_dict = get_virtual_modules()
+    for mod in mod_dict.keys():
+        indicators.extend(mod_dict[mod]["indicators"])
 
     ds_conf = get_datasets_config()
     if ds_conf:

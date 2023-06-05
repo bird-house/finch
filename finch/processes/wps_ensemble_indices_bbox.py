@@ -28,7 +28,7 @@ class XclimEnsembleBboxBase(FinchProcess):
                 "Use the `finch.processes.wps_base.make_xclim_indicator_process` function instead."
             )
 
-        xci_inputs = convert_xclim_inputs_to_pywps(
+        xci_inputs, _ = convert_xclim_inputs_to_pywps(
             self.xci.parameters, self.xci.identifier, parse_percentiles=True
         )
         xci_inputs.extend(wpsio.xclim_common_options)
