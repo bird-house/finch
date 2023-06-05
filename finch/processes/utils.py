@@ -71,7 +71,7 @@ def get_virtual_modules():
         modfolder = [
             f for f in Path(".").rglob("*") if f.is_dir() and f.name == "modules"
         ][0]
-        for modfile in modfiles.split(";"):
+        for modfile in modfiles.split(","):
             mod = build_indicator_module_from_yaml(modfolder.joinpath(modfile))
             indicators = []
             for indname, ind in mod.iter_indicators():
