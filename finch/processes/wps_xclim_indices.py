@@ -49,7 +49,7 @@ class XclimIndicatorBase(FinchProcess):
         inputs, varnames = convert_xclim_inputs_to_pywps(
             self.xci.parameters, self.xci.identifier
         )
-        self.allvars.extend(varnames)
+        self.allvars = varnames
         inputs += wpsio.xclim_common_options
         inputs += [
             wpsio.variable_any,
