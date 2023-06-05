@@ -343,7 +343,7 @@ def test_hxmax_day_above(client, tmp_path):
     data.to_netcdf(tmp_path / "hxmax.nc")
     # timeseries(values=np.arange(10) + K2C, variable='tas').to_netcdf(tmp_path / "tas.nc")
     inputs = [
-        wps_input_file("hxmax", tmp_path / "hxmax.nc"),
+        wps_input_file("HXmax", tmp_path / "hxmax.nc"),
         wps_literal_input("threshold", "30"),
     ]
     outputs = execute_process(client, identifier, inputs)
