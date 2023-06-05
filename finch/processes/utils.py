@@ -75,7 +75,7 @@ def get_virtual_modules():
             indicators = []
             for indname, ind in mod.iter_indicators():
                 indicators.append(ind.get_instance())
-        modules[modfile] = dict(indicators=indicators)
+            modules[modfile] = dict(indicators=indicators)
     return modules
 
 
