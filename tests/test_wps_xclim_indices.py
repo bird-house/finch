@@ -12,6 +12,7 @@ from numpy.testing import assert_equal
 from pywps import configuration
 from pywps.app.exceptions import ProcessError
 from xclim.testing import open_dataset
+from xclim.testing.helpers import test_timeseries as timeseries
 
 import finch
 import finch.processes
@@ -253,8 +254,8 @@ class TestFitProcess:
         ds = xr.open_dataset(outputs[0])
         np.testing.assert_array_equal(ds.params.shape, (2, 5, 6))
 
-    def test_nan(self, client, q_series, tmp_path):
-        q_series([333, 145, 203, 109, 430, 230, np.nan]).to_netcdf(tmp_path / "q.nc")
+    def test_nan(self, client, tmp_path):
+        timeseries(values =[333, 145, 203, 109, 430, 230, np.nan], variable="q").to_netcdf(tmp_path / "q.nc")
         inputs = [
             wps_input_file("discharge", tmp_path / "q.nc"),
             wps_literal_input("dist", "norm"),
@@ -264,12 +265,10 @@ class TestFitProcess:
         np.testing.assert_array_equal(ds.params.isnull(), False)
 
 
-def test_rain_approximation(client, pr_series, tas_series, tmp_path):
+def test_rain_approximation(client, tmp_path):
     identifier = "prlp"
-
-    pr_series(np.ones(10)).to_netcdf(tmp_path / "pr.nc")
-    tas_series(np.arange(10) + K2C).to_netcdf(tmp_path / "tas.nc")
-
+    timeseries(values=np.ones(10), variable='pr').to_netcdf(tmp_path / "pr.nc")
+    timeseries(values=np.arange(10) + K2C, variable='tas').to_netcdf(tmp_path / "tas.nc")
     inputs = [
         wps_input_file("pr", tmp_path / "pr.nc"),
         wps_input_file("tas", tmp_path / "tas.nc"),
@@ -285,14 +284,10 @@ def test_rain_approximation(client, pr_series, tas_series, tmp_path):
 
 
 @pytest.mark.xfail
-def test_two_nondefault_variable_name(client, pr_series, tas_series, tmp_path):
+def test_two_nondefault_variable_name(client, tmp_path):
     identifier = "prlp"
-
-    pr_series(np.ones(10)).to_dataset(name="my_pr").to_netcdf(tmp_path / "pr.nc")
-    tas_series(np.arange(10) + K2C).to_dataset(name="my_tas").to_netcdf(
-        tmp_path / "tas.nc"
-    )
-
+    timeseries(values=np.ones(10), variable='pr').to_netcdf(tmp_path / "pr.nc")
+    timeseries(values=np.arange(10) + K2C, variable='tas').to_netcdf(tmp_path / "tas.nc")
     inputs = [
         wps_input_file("pr", tmp_path / "pr.nc"),
         wps_input_file("tas", tmp_path / "tas.nc"),
