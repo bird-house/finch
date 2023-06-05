@@ -9,7 +9,7 @@ dependencies:
   - clisops >=0.9.3
   - dask
   - distributed
-  - geopandas
+  - geopandas!=0.13.1
   - h5netcdf
   - netcdf4
   - numpy
