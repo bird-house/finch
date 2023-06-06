@@ -93,3 +93,35 @@ candcs-u6:
       - UKESM1-0-L
   model_lists:
     26models: *u6models
+
+humidex-daily:
+  local: false
+  depth: 1
+  path: https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/catalog/birdhouse/eccc/CCCS_humidex/Humidex/daily/catalog.html
+  pattern: "{variable}_MBCn_ERA5-Land_{model}_{scenario}_{realization}_{date_start}-{date_end}.nc"
+  allowed_values:
+    scenario: [ssp126, ssp245, ssp585]
+    variable: [HXmax]
+    model:
+      &hxmax_day_models
+        - MPI-ESM1-2-HR
+        - EC-Earth3
+        - ACCESS-CM2
+        - MIROC-ES2L
+        - EC-Earth3-Veg
+        - IPSL-CM6A-LR
+        - INM-CM5-0
+        - FGOALS-g3
+        - CanESM5
+        - MIROC6
+        - GISS-E2-1-G
+        - EC-Earth3-Veg-LR
+        - CNRM-ESM2-1
+        - MPI-ESM1-2-LR
+        - INM-CM4-8
+        - MRI-ESM2-0
+        - CMCC-ESM2
+        - ACCESS-ESM1-5
+        - CNRM-CM6-1
+  model_lists:
+    humidex_models: *hxmax_day_models

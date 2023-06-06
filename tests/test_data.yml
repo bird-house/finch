@@ -64,3 +64,36 @@ test_subset:
       - inmcm4
       - bcc-csm1-1
   model_lists: {}
+
+test_humidex:
+  local: True
+  depth: 1
+  path: ../tests/data/humidex_subset
+  suffix: "*.nc"
+  pattern: "{variable}_MBCn_ERA5-Land_{model}_{scenario}_{realization}_{date_start}-{date_end}_sub.nc"
+  allowed_values:
+      scenario: [ssp245, ssp585 ]
+      variable: [ HXmax ]
+      model:
+        &hxmax_day_sub
+          - MPI-ESM1-2-HR
+          - EC-Earth3
+          - ACCESS-CM2
+          - MIROC-ES2L
+          - EC-Earth3-Veg
+          - IPSL-CM6A-LR
+          - INM-CM5-0
+          - FGOALS-g3
+          - CanESM5
+          - MIROC6
+          - GISS-E2-1-G
+          - EC-Earth3-Veg-LR
+          - CNRM-ESM2-1
+          - MPI-ESM1-2-LR
+          - INM-CM4-8
+          - MRI-ESM2-0
+          - CMCC-ESM2
+          - ACCESS-ESM1-5
+          - CNRM-CM6-1
+  model_lists:
+      humidex_submods: *hxmax_day_sub
