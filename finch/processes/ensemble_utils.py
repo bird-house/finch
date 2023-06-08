@@ -332,7 +332,7 @@ def make_file_groups(files_list: List[Path], variables: set) -> List[Dict[str, P
         for variable in variables:
             if (
                 file.name.startswith(f"{variable.lower()}_")
-                or f"_{variable}_" in file.name
+                or f"_{variable.lower()}_" in file.name
             ):
                 for other_var in variables.difference({variable}):
                     other_filename = file.name.replace(variable, other_var, 1)
