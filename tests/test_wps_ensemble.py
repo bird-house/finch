@@ -28,6 +28,47 @@ poly = {
 }
 
 
+def test_ensemble_hxmax_days_above_grid_point(client):
+    # --- given ---
+    identifier = "ensemble_grid_point_hxmax_days_above"
+    inputs = [
+        wps_literal_input("lat", "45.5"),
+        wps_literal_input("lon", "-73.0"),
+        wps_literal_input("scenario", "ssp245"),
+        wps_literal_input("scenario", "ssp585"),
+        wps_literal_input("dataset", "test_humidex"),
+        wps_literal_input("threshold", "30"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
+        wps_literal_input("output_format", "netcdf"),
+        wps_literal_input("output_name", "testens"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+    assert Path(outputs[0]).stem.startswith("testens_45_500_73_000_ssp245_ssp585")
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
+    assert dims == {
+        "region": 1,
+        "time": 12,  # there are roughly 4 months in the test datasets
+        "scenario": 2,
+    }
+
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
+    assert sorted(ensemble_variables) == [
+        f"hxmax_days_above_p{p}" for p in (20, 50, 80)
+    ]
+    for var in ensemble_variables.values():
+        variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
+        assert variable_dims == {"region": 1, "time": 12, "scenario": 2}
+
+    assert len(ds.attrs["source_datasets"].split("\n")) == 19
+
+
 def test_ensemble_heatwave_frequency_grid_point(client):
     # --- given ---
     identifier = "ensemble_grid_point_heat_wave_frequency"
