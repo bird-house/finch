@@ -58,7 +58,7 @@ bccaqv2: *candcsu5
 candcs-u6:
   local: false
   depth: 1
-  path: https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/catalog/birdhouse/disk2/pcic/CanDCS-U6/CMIP6_BCCAQv2/catalog.xml
+  path: https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/catalog/birdhouse/pcic/CanDCS-U6/CMIP6_BCCAQv2/catalog.xml
   pattern: "{variable}_{frequency}_BCCAQv2+ANUSPLIN300_{model}_{scenario}_{realization}_{}_{date_start}-{date_end}.nc"
   allowed_values:
     scenario: [ ssp126, ssp245, ssp585 ]
