@@ -330,7 +330,10 @@ def make_file_groups(files_list: List[Path], variables: set) -> List[Dict[str, P
             continue
         group = {}
         for variable in variables:
-            if file.name.startswith(f"{variable}_") or f"_{variable}_" in file.name:
+            if (
+                file.name.startswith(f"{variable.lower()}_")
+                or f"_{variable.lower()}_" in file.name
+            ):
                 for other_var in variables.difference({variable}):
                     other_filename = file.name.replace(variable, other_var, 1)
                     if other_filename in filenames:
