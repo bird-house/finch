@@ -59,12 +59,11 @@ candcs-u6:
   local: false
   depth: 1
   path: https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/catalog/birdhouse/disk2/pcic/CanDCS-U6/CMIP6_BCCAQv2/catalog.xml
-  pattern: "{variable}_{frequency}_BCCAQv2+ANUSPLIN300_{model}_{scenario}_{realization}_{:l}_{date_start}-{date_end}.nc"
+  pattern: "{variable}_{frequency}_BCCAQv2+ANUSPLIN300_{model}_{scenario}_{realization}_{}_{date_start}-{date_end}.nc"
   allowed_values:
     scenario: [ ssp126, ssp245, ssp585 ]
     variable: [ tasmin, tasmax, pr]
     model:
-      &u6models
       - ACCESS-CM2
       - ACCESS-ESM1-5
       - BCC-CSM2-MR
@@ -90,9 +89,35 @@ candcs-u6:
       - NorESM2-LM
       - NorESM2-MM
       - TaiESM1
-      - UKESM1-0-L
+      - UKESM1-0-LL
   model_lists:
-    26models: *u6models
+    26models:
+        - ACCESS-CM2
+        - ACCESS-ESM1-5
+        - BCC-CSM2-MR
+        - CMCC-ESM2
+        - CNRM-CM6-1
+        - CNRM-ESM2-1
+        - CanESM5
+        - [EC-Earth3, r4i1p1f1]
+        - EC-Earth3-Veg
+        - FGOALS-g3
+        - GFDL-ESM4
+        - HadGEM3-GC31-LL
+        - INM-CM4-8
+        - INM-CM5-0
+        - IPSL-CM6A-LR
+        - [KACE-1-0-G, r2i1p1f1]
+        - KIOST-ESM
+        - MIROC-ES2L
+        - MIROC6
+        - MPI-ESM1-2-HR
+        - MPI-ESM1-2-LR
+        - MRI-ESM2-0
+        - NorESM2-LM
+        - NorESM2-MM
+        - TaiESM1
+        - UKESM1-0-LL
 
 humidex-daily:
   local: false
