@@ -2,7 +2,7 @@ Changes
 *******
 
 0.11.0 (2023-06-13)
-================
+===================
 * Added xclim yml module support
 * Added humidex days above calculation via yml module
 * Reimplmented streamflow indicators via yml module (adjust for xclim 0.41 breaking changes)
