@@ -22,7 +22,7 @@
       "project_repo_name": "finch",
       "project_readthedocs_name": "finch",
       "project_short_description": "A Web Processing Service for Climate Indicators.",
-      "version": "0.10.0",
+      "version": "0.11.0",
       "open_source_license": "Apache Software License 2.0",
       "http_port": "5000",
       "_copy_without_render": [

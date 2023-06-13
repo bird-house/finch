@@ -1,12 +1,16 @@
 Changes
 *******
 
-TBD (unreleased)
-================
+0.11.0 (2023-06-13)
+===================
+* Added xclim yml module support
+* Added humidex days above calculation via yml module
+* Reimplmented streamflow indicators via yml module (adjust for xclim 0.41 breaking changes)
+* Fixed bug for CanDSC-U6 ensemble "26models" list
 * Fixed iter_local when depth > 0 to avoid all files to be considered twice
 * Revised documentation configuration on ReadTheDocs to leverage Anaconda (Mambaforge)
 * Minor adjustments to dependency configurations
-* Update to xclim 0.40.0.
+* Update to xclim 0.43.0.
 * Passing an empty string to `ensemble_percentiles` in ensemble processes will return the merged un-reduced ensemble. The different members are listed along the `realization` coordinates through raw names allowing for basic distinction between the input members.
 * Removed configuration elements handling from `finch start`. One can still pass custom config files, but all configuration defaults are handled by `finch/default.cfg` and the WSGI function. `jinja2` is not a dependency anymore.
 
