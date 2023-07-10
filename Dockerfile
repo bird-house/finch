@@ -6,15 +6,13 @@ LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.11.1"
 
 # Switch to code directory
 WORKDIR /code
+COPY . /code
 
 # Build finch environment
 COPY environment.yml .
-RUN mamba env create -n finch -f environment.yml \
-    && mamba install -n finch gunicorn psycopg2 \
-    && mamba clean -ay
-
-# Copy WPS project
-COPY . .
+RUN mamba env create -n finch -f environment.yml
+RUN mamba install -n finch gunicorn psycopg2
+RUN mamba clean --all --yes
 
 # Add the finch conda environment to the path
 ENV PATH /opt/conda/envs/finch/bin:$PATH
