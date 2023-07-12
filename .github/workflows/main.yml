@@ -40,6 +40,10 @@ jobs:
           cache-environment: true
           activate-environment: finch
           environment-file: environment.yml
+      - name: Conda and Mamba versions
+        run: |
+          conda --version
+          echo "micromamba: $(micromamba --version)"
       - name: Install and test finch-wps
         run: |
           make develop
