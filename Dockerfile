@@ -13,11 +13,12 @@ COPY . ./
 COPY environment.yml .
 RUN mamba env create -n finch -f environment.yml
 RUN mamba install -n finch gunicorn psycopg2
-RUN pip install . --no-deps
 RUN mamba clean --all --yes
 
 # Add the finch conda environment to the path
 ENV PATH /opt/conda/envs/finch/bin:$PATH
+
+RUN pip install . --no-deps
 
 # Start WPS service on port 5000 of 0.0.0.0
 EXPOSE 5000
