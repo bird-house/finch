@@ -1,6 +1,7 @@
 # vim:set ft=dockerfile:
 FROM condaforge/mambaforge
 ARG DEBIAN_FRONTEND=noninteractive
+ENV PIP_ROOT_USER_ACTION=ignore
 LABEL org.opencontainers.image.authors="bourgault.pascal@ouranos.ca"
 LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.11.1"
 
@@ -11,8 +12,8 @@ COPY . ./
 # Build finch environment
 COPY environment.yml .
 RUN mamba env create -n finch -f environment.yml
-RUN mamba install -n gunicorn psycopg2
-RUN pip install -e . --no-deps
+RUN mamba install -n finch gunicorn psycopg2
+RUN pip install . --no-deps
 RUN mamba clean --all --yes
 
 # Add the finch conda environment to the path
