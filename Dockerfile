@@ -4,14 +4,15 @@ ARG DEBIAN_FRONTEND=noninteractive
 LABEL org.opencontainers.image.authors="bourgault.pascal@ouranos.ca"
 LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.11.1"
 
-# Switch to code directory
+# Switch to /code directory
 WORKDIR /code
-COPY . /code
+COPY . ./
 
 # Build finch environment
 COPY environment.yml .
 RUN mamba env create -n finch -f environment.yml
-RUN mamba install -n finch gunicorn psycopg2
+RUN mamba install -n gunicorn psycopg2
+RUN pip install -e . --no-deps
 RUN mamba clean --all --yes
 
 # Add the finch conda environment to the path
