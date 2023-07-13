@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup conda and environment
-        uses: conda-incubator/setup-miniconda@v2
+        uses: mamba-org/setup-micromamba@v1
         with:
           cache-downloads: true
           cache-environment: true
