@@ -10,13 +10,15 @@ WORKDIR /code
 
 # Build finch environment
 COPY environment.yml .
-RUN mamba env create -n finch -f environment.yml && mamba install -n finch gunicorn psycopg2 && mamba clean --all --yes
+RUN mamba env create -n finch -f environment.yml \
+    && mamba install -n finch gunicorn psycopg2 \
+    && mamba clean --all --yes
 
 # Add the finch conda environment to the path
 ENV PATH /opt/conda/envs/finch/bin:$PATH
 
 # Copy finch source code
-COPY . ./
+COPY . /code
 
 # Install finch
 RUN pip install . --no-deps
