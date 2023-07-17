@@ -1,7 +1,7 @@
 Changes
 *******
 
-0.12.0 (unreleased)
+0.11.2 (2023-07-17)
 ===================
 * Added a Docker-based testing suite to the GitHub Workflows.
 * Added a wider range of Python versions to test against in the GitHub Workflows.
