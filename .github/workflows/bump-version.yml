@@ -1,0 +1,62 @@
+name: Bump Patch Version
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - .*
+      - .github/**.md
+      - .github/**.yml
+      - AUTHORS.rst
+      - CHANGES.rst
+      - Dockerfile
+      - MANIFEST.in
+      - Makefile
+      - README.rst
+      - docker-compose.yml
+      - docs/**.ico
+      - docs/**.ipynb
+      - docs/**.py
+      - docs/**.rst
+      - docs/**.svg
+      - docs/**.txt
+      - docs/Makefile
+      - etc/**.cfg
+      - environment-docs.yml
+      - environment.yml
+      - finch/__version__.py
+      - setup.cfg
+      - setup.py
+
+jobs:
+  bump_patch_version:
+    name: Bumpversion Patch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Config Commit Bot
+        run: |
+          git config --local user.email "bumpversion[bot]@ouranos.ca"
+          git config --local user.name "bumpversion[bot]"
+      - name: Current Version
+        run: |
+          CURRENT_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
+          echo "current_version=${CURRENT_VERSION}"
+      - name: Bump Patch Version
+        run: |
+          pip install bump2version
+          echo "running `bump2version patch`"
+          NEW_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
+          echo "new_version=${NEW_VERSION}"
+      - name: Push Changes
+        uses: ad-m/github-push-action@master
+        with:
+          force: false
+          github_token: ${{ secrets.BUMPVERSION_TOKEN }}
+          branch: ${{ github.ref }}
