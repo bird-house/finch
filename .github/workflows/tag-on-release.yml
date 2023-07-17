@@ -30,7 +30,7 @@ jobs:
             Dockerfile:
               - 'Dockerfile'
             conf:
-              docs/source/conf.py
+              - 'docs/source/conf.py'
             version:
               - 'finch/__version__.py'
       - name: Tag on Release
