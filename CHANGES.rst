@@ -1,6 +1,15 @@
 Changes
 *******
 
+0.12.0 (unreleased)
+===================
+* Added a Docker-based testing suite to the GitHub Workflows.
+* Added a wider range of Python versions to test against in the GitHub Workflows.
+* Migrated conda-build action from mamba-org/provision-with-micromamba to mamba-org/setup-micromamba.
+* Cleaned up the Dockerfile. Docker now pip-installs finch directly from the GitHub repository.
+* Finch now explicitly supports Python3.11.
+* Pinned Python below 3.12 on conda and removed pin on pint for ReadTheDocs builds.
+
 0.11.0 (2023-06-13)
 ===================
 * Added xclim yml module support

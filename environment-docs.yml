@@ -2,12 +2,11 @@ name: finch
 channels:
   - conda-forge
 dependencies:
-  - python >=3.8
+  - python >=3.8,<3.12
   - birdy >=0.8.1
   - ipython
   - matplotlib-base
   - nbsphinx
-  - pint <0.20  # xclim < 0.39 is broken by pint >= 0.20
   - pywps >=4.5.1
   - sphinx >=4.0
   - sphinxcontrib-bibtex
