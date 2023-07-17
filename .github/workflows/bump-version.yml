@@ -6,6 +6,7 @@ on:
       - master
     paths-ignore:
       - .*
+      - .cruft.json
       - .github/**.md
       - .github/**.yml
       - AUTHORS.rst
