@@ -9,7 +9,8 @@ Changes
 * Cleaned up the Dockerfile. Docker now pip-installs finch directly from the GitHub repository.
 * Finch now explicitly supports Python3.11.
 * Pinned Python below 3.12 on conda and removed pin on pint for ReadTheDocs builds.
-* Added a GitHub Actions to automatically bump the version number and tag.
+* Added a GitHub Workflow to automatically bump the version number and another to create tags from the version bumping process.
+* Added a pre-commit hook for validating the ReadTheDocs configuration and GitHub Workflows.
 
 0.11.0 (2023-06-13)
 ===================

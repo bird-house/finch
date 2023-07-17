@@ -1,0 +1,54 @@
+name: Bump Patch Version
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .cruft.json
+      - CHANGES.rst
+      - Dockerfile
+      - docs/source/conf.py
+      - finch/__version__.py
+
+jobs:
+  bump_patch_version:
+    name: Bumpversion Patch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            cruft:
+              - '.cruft.json'
+            changes:
+              - 'CHANGES.rst'
+            Dockerfile:
+              - 'Dockerfile'
+            conf:
+              docs/source/conf.py
+            version:
+              - 'finch/__version__.py'
+      - name: Tag on Release
+        if: |
+            steps.filter.outputs.cruft &&
+            steps.filter.outputs.changes &&
+            steps.filter.outputs.Dockerfile &&
+            steps.filter.outputs.conf &&
+            steps.filter.outputs.version
+        run: |
+          git config --local user.email "bumpversion[bot]@ouranos.ca"
+          git config --local user.name "bumpversion[bot]"
+          VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
+          git tag "${VERSION}"
+      - name: Push Changes
+        uses: ad-m/github-push-action@master
+        with:
+          force: false
+          github_token: ${{ secrets.BUMPVERSION_TOKEN }}
+          branch: ${{ github.ref }}
+          tags: true
