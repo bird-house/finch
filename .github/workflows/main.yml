@@ -31,6 +31,9 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
+    strategy:
+        matrix:
+            python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Setup conda and environment
@@ -40,6 +43,8 @@ jobs:
           cache-environment: true
           activate-environment: finch
           environment-file: environment.yml
+          create-args: >-
+            python=${{ matrix.python-version }}
       - name: Conda and Mamba versions
         run: |
           conda --version
