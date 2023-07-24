@@ -44,7 +44,7 @@ jobs:
           git config --local user.email "bumpversion[bot]@ouranos.ca"
           git config --local user.name "bumpversion[bot]"
           VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
-          git tag "${VERSION}"
+          git tag "v${VERSION}"
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
