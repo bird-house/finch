@@ -1,7 +1,7 @@
 Changes
 *******
 
-0.11.2 (2023-07-17)
+0.11.2 (2023-07-26)
 ===================
 * Added a Docker-based testing suite to the GitHub Workflows.
 * Added a wider range of Python versions to test against in the GitHub Workflows.
@@ -9,7 +9,7 @@ Changes
 * Cleaned up the Dockerfile. Docker now pip-installs finch directly from the GitHub repository.
 * Finch now explicitly supports Python3.11.
 * Pinned Python below 3.12 on conda and removed pin on pint for ReadTheDocs builds.
-* Added a GitHub Workflow to automatically bump the version number and another to create tags from the version bumping process.
+* Added a GitHub Workflow to bump the version number and to create tags from the version bumping process on dispatch.
 * Added a pre-commit hook for validating the ReadTheDocs configuration and GitHub Workflows.
 
 0.11.0 (2023-06-13)

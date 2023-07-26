@@ -1,38 +1,26 @@
-name: Bump Patch Version
+name: Bump Version and Tag for Release
 
 on:
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - .*
-      - .cruft.json
-      - .github/**.md
-      - .github/**.yml
-      - AUTHORS.rst
-      - CHANGES.rst
-      - Dockerfile
-      - MANIFEST.in
-      - Makefile
-      - README.rst
-      - docker-compose.yml
-      - docs/**.ico
-      - docs/**.ipynb
-      - docs/**.py
-      - docs/**.rst
-      - docs/**.svg
-      - docs/**.txt
-      - docs/Makefile
-      - etc/**.cfg
-      - environment-docs.yml
-      - environment.yml
-      - finch/__version__.py
-      - setup.cfg
-      - setup.py
-
+  workflow_dispatch:
+    inputs:
+      bumpversion:
+        description: "Bumpversion"
+        required: true
+        default: "patch"
+        options:
+            - "patch"
+            - "minor"
+            - "major"
+      tag:
+        description: "Tag"
+        required: true
+        default: "true"
+        options:
+            - "true"
+            - "false"
 jobs:
   bump_patch_version:
-    name: Bumpversion Patch
+    name: Bumpversion
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -49,15 +37,21 @@ jobs:
         run: |
           CURRENT_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
           echo "current_version=${CURRENT_VERSION}"
-      - name: Bump Patch Version
+      - name: Bump Version
         run: |
           pip install bump2version
-          echo "running `bump2version patch`"
+          echo "running `bump2version ${{ github.event.inputs.bumpversion }}`"
           NEW_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
           echo "new_version=${NEW_VERSION}"
+      - name: Tag Release
+        if: ${{ github.event.inputs.tag == 'true' }}
+        run: |
+          VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
+          git tag "v${VERSION}"
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
           force: false
           github_token: ${{ secrets.BUMPVERSION_TOKEN }}
           branch: ${{ github.ref }}
+          tags: true
