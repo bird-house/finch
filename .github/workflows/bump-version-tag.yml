@@ -46,8 +46,8 @@ jobs:
       - name: Tag Release
         if: ${{ github.event.inputs.tag == 'true' }}
         run: |
-          VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
-          git tag "v${VERSION}"
+          TAG_NAME="v$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
+          git tag "${TAG_NAME}"
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
