@@ -1,0 +1,57 @@
+name: Bump Version and Tag for Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bumpversion:
+        description: "Bumpversion"
+        required: true
+        default: "patch"
+        options:
+            - "patch"
+            - "minor"
+            - "major"
+      tag:
+        description: "Tag"
+        required: true
+        default: "true"
+        options:
+            - "true"
+            - "false"
+jobs:
+  bump_patch_version:
+    name: Bumpversion
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Config Commit Bot
+        run: |
+          git config --local user.email "bumpversion[bot]@ouranos.ca"
+          git config --local user.name "bumpversion[bot]"
+      - name: Current Version
+        run: |
+          CURRENT_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
+          echo "current_version=${CURRENT_VERSION}"
+      - name: Bump Version
+        run: |
+          pip install bump2version
+          echo "running `bump2version ${{ github.event.inputs.bumpversion }}`"
+          NEW_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
+          echo "new_version=${NEW_VERSION}"
+      - name: Tag Release
+        if: ${{ github.event.inputs.tag == 'true' }}
+        run: |
+          VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
+          git tag "v${VERSION}"
+      - name: Push Changes
+        uses: ad-m/github-push-action@master
+        with:
+          force: false
+          github_token: ${{ secrets.BUMPVERSION_TOKEN }}
+          branch: ${{ github.ref }}
+          tags: true

@@ -9,20 +9,22 @@ Developer Guide
 
 .. WARNING:: To create new processes look at examples in Emu_.
 
+.. _Emu: https://github.com/bird-house/emu
+
 Building the docs
 -----------------
 
 First install dependencies for the documentation:
 
-.. code-block:: console
+.. code-block:: shell
 
-  $ make develop
+   $ make develop
 
 Run the Sphinx docs generator:
 
-.. code-block:: console
+.. code-block:: shell
 
-  $ make docs
+   $ make docs
 
 .. _testing:
 
@@ -33,75 +35,72 @@ Run tests using pytest_.
 
 First activate the ``finch`` Conda environment and install ``pytest``.
 
-.. code-block:: console
+.. code-block:: shell
 
    $ source activate finch
    $ pip install -r requirements_dev.txt  # if not already installed
-   OR
+   # or
    $ make develop
 
 Run quick tests (skip slow and online):
 
-.. code-block:: console
+.. code-block:: shell
 
-    $ pytest -m 'not slow and not online'"
+   $ pytest -m 'not slow and not online'"
 
 Run all tests:
 
-.. code-block:: console
+.. code-block:: shell
 
-    $ pytest
+   $ pytest
 
 Check pep8:
 
-.. code-block:: console
+.. code-block:: shell
 
-    $ flake8
+   $ flake8
+
+.. _pytest: https://docs.pytest.org/en/latest/
 
 Run tests the lazy way
 ----------------------
 
 Do the same as above using the ``Makefile``.
 
+.. code-block:: shell
+
+   $ make test
+   $ make test-all
+   $ make lint
+
+Updating the Conda environment
+------------------------------
+
+To update the `conda` specification file for building identical environments_ on a specific operating system:
+
+.. note:: You should perform this regularly within your Pull Requests on your target OS and architecture (64-bit Linux).
+
 .. code-block:: console
 
-    $ make test
-    $ make test-all
-    $ make lint
-
-Prepare a release
------------------
-
-Update the Conda specification file to build identical environments_ on a specific OS.
-
-.. note:: You should run this on your target OS, in our case Linux.
-
-.. code-block:: console
-
-  $ conda env create -f environment.yml
-  $ source activate finch
-  $ make clean
-  $ make install
-  $ conda list -n finch --explicit > spec-file.txt
+   $ conda env create -f environment.yml
+   $ source activate finch
+   $ make clean
+   $ make install
+   $ conda list -n finch --explicit > spec-file.txt
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 
+Preparing Finch releases
+------------------------
 
-Bump a new version
-------------------
+In order to prepare a new release version of Finch, perform the following steps in a new branch:
 
-Make a new version of Finch in the following steps:
-
-* Make sure everything is commit to GitHub.
-* Update ``CHANGES.rst`` with the next version.
-* Dry Run: ``bumpversion --dry-run --verbose --new-version 0.8.1 patch``
-* Do it: ``bumpversion --new-version 0.8.1 patch``
-* ... or: ``bumpversion --new-version 0.9.0 minor``
-* Push it: ``git push``
-* Push tag: ``git push --tags``
-
-See the bumpversion_ documentation for details.
-
-.. _bumpversion: https://pypi.org/project/bumpversion/
-.. _pytest: https://docs.pytest.org/en/latest/
-.. _Emu: https://github.com/bird-house/emu
+    #. Update ``CHANGES.rst`` with the release notes for the next version.
+    #. Push changes to GitHub.
+    #. Open a Pull Request with an appropriate title and description. (e.g. "Prepare release v1.2.3")
+    #. After merging changes to the main branch, click on the Actions tab and select the "Bump Version and Tag for Release" workflow.
+    #. Adjust the information as needed ("Bump version": "patch" or "minor" or "major"; "Tag": "true" or "false") the "Run Workflow" button on the main branch.
+    #. After the workflow has completed, the new version will be tagged and pushed to GitHub.
+    #. Create a new release on GitHub using the newly tagged commit with the same version number as the tag:
+        - The release title should be the same as the tag name.
+        - The release description should be the same as the release notes in ``CHANGES.rst``.
