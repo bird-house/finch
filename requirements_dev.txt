@@ -16,3 +16,4 @@ birdhouse-birdy>=0.8.1
 geojson
 matplotlib
 pre-commit
+tornado>=6.3.3 # not directly required, pinned by Snyk to avoid a vulnerability
