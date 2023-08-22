@@ -4,11 +4,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 import xarray as xr
-from _common import CFG_FILE, get_output
-from _utils import execute_process, wps_literal_input
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
+from _common import CFG_FILE, get_output
+from _utils import execute_process, wps_literal_input
 from finch.processes import SubsetBboxProcess
 
 

@@ -1,7 +1,7 @@
 import pywps.configuration
-from _common import CFG_FILE, client_for
 
 import finch.processes.utils
+from _common import CFG_FILE, client_for
 from finch.processes import get_indicators, get_processes, not_implemented
 from finch.processes.utils import get_virtual_modules
 from finch.wsgi import create_app

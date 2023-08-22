@@ -1,7 +1,7 @@
 import pytest
-from _common import client_for
 from pywps import Service
 
+from _common import client_for
 from finch.processes import get_processes
 
 

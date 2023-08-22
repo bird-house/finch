@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
-from _common import CFG_FILE, client_for
 from pywps import configuration
 from scipy.stats import norm, uniform
 from xarray import DataArray
@@ -19,6 +18,7 @@ from xclim.testing.helpers import (
 
 import finch.processes
 import finch.wsgi
+from _common import CFG_FILE, client_for
 
 TEMP_DIR = Path(__file__).parent / "tmp"
 
