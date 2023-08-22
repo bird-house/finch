@@ -3,14 +3,13 @@ from pathlib import Path
 
 import pytest
 import xarray as xr
+from _common import CFG_FILE, get_metalinks, get_output
+from _utils import execute_process, wps_literal_input
 from numpy.testing import assert_array_equal
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from finch.processes import SubsetGridPointProcess
-
-from .common import CFG_FILE, get_metalinks, get_output
-from .utils import execute_process, wps_literal_input
 
 
 def test_wps_xsubsetpoint(netcdf_datasets):

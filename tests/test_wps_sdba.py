@@ -3,14 +3,13 @@ from urllib.parse import quote_plus
 import numpy as np
 import pytest
 import xarray as xr
+from _common import CFG_FILE, get_output
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
 from xclim.core.calendar import convert_calendar
 from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
 
 from finch.processes import EmpiricalQuantileMappingProcess
-
-from .common import CFG_FILE, get_output
 
 
 @pytest.mark.parametrize("kind,name", [(ADDITIVE, "tas"), (MULTIPLICATIVE, "pr")])

@@ -2,14 +2,16 @@ import collections
 import tempfile
 from pathlib import Path
 from shutil import rmtree
-from typing import Dict
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
+from _common import CFG_FILE, client_for
 from pywps import configuration
 from scipy.stats import norm, uniform
+from xarray import DataArray
 from xclim.core.calendar import percentile_doy
 from xclim.testing.helpers import (
     test_timeseries as timeseries,  # pr_hr_series, pr_series, q_series, tas_series
@@ -17,8 +19,6 @@ from xclim.testing.helpers import (
 
 import finch.processes
 import finch.wsgi
-
-from .common import CFG_FILE, client_for
 
 TEMP_DIR = Path(__file__).parent / "tmp"
 
@@ -34,15 +34,24 @@ def setup_temp_data(request):
 
 
 def _create_test_dataset(
-    variable, cell_methods, standard_name, units, seed=None, missing=False
+    variable: str,
+    cell_methods: str,
+    standard_name: str,
+    units: str,
+    seed: Optional[int, float, np.ndarray] = None,
+    missing: bool = False,
 ):
     """Create a synthetic dataset for variable.
 
     Parameters
     ----------
-    TODO:
-    missing: bool
-      If True, add a NaN on Jan 15.
+    variable : str
+    cell_methods : str
+    standard_name : str
+    units : str
+    seed : int, float, array_like, optional
+    missing : bool
+        If True, add a NaN on Jan 15.
     """
 
     rs = np.random.RandomState(seed)
@@ -164,7 +173,7 @@ def netcdf_datasets(request) -> Dict[str, Path]:
 
 
 @pytest.fixture(scope="session")
-def netcdf_sdba_ds(request) -> Dict[str, Path]:
+def netcdf_sdba_ds(request) -> Tuple[dict[str, Path], DataArray]:
     """Return datasets useful to test sdba."""
     out = {}
     u = np.random.rand(10000)
@@ -173,7 +182,7 @@ def netcdf_sdba_ds(request) -> Dict[str, Path]:
     xd = uniform(loc=10, scale=1)
     yd = norm(loc=12, scale=1)
 
-    # Generate random numbers with u so we get exact results for comparison
+    # Generate random numbers with u, so we get exact results for comparison
     x = xd.ppf(u)
     y = yd.ppf(u)
 
@@ -198,7 +207,7 @@ def client():
     return client_for(service)
 
 
-def series(values, name, start="2000-01-01"):
+def series(values: np.ndarray, name: str, start: str = "2000-01-01"):
     coords = collections.OrderedDict()
     for dim, n in zip(("time", "lon", "lat"), values.shape):
         if dim == "time":

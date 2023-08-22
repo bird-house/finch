@@ -1,9 +1,8 @@
 import pytest
+from _common import client_for
 from pywps import Service
 
 from finch.processes import get_processes
-
-from .common import client_for
 
 
 class TestClient:

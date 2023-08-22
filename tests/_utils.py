@@ -1,7 +1,6 @@
 # noqa: D100
 from pathlib import Path
 
-import xarray as xr
 from owslib.wps import WPSExecution
 from pywps import get_ElementMakerForVersion
 from pywps.app.exceptions import ProcessError
@@ -30,7 +29,7 @@ def wps_literal_input(identifier, value):  # noqa: D103
     return WPS.Input(OWS.Identifier(identifier), WPS.Data(WPS.LiteralData(value)))
 
 
-def execute_process(client, identifier, inputs, output_names=("output",)) -> xr.Dataset:
+def execute_process(client, identifier, inputs, output_names=("output",)) -> list:
     """Execute a process using the test client, and return the 'output_netcdf' output as an xarray.Dataset."""
     request_doc = WPS.Execute(
         OWS.Identifier(identifier), WPS.DataInputs(*inputs), version="1.0.0"
