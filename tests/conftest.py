@@ -2,7 +2,7 @@ import collections
 import tempfile
 from pathlib import Path
 from shutil import rmtree
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -38,7 +38,7 @@ def _create_test_dataset(
     cell_methods: str,
     standard_name: str,
     units: str,
-    seed: Optional[int, float, np.ndarray] = None,
+    seed: Optional[Union[int, float, np.ndarray]] = None,
     missing: bool = False,
 ):
     """Create a synthetic dataset for variable.
