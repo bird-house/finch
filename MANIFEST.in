@@ -1,6 +1,20 @@
 include Makefile
 include *.txt
 include *.rst
-recursive-include finch *
+
+recursive-include finch *.py
+recursive-include finch/processes/modules *.yml
+
+recursive-include tests *.py *.cfg
+recursive-include tests/data *.nc *.json *.zip
+recursive-include docs Makefile *.rst *.py *.ipynb
+
+recursive-exclude build *
+recursive-exclude _build *
+recursive-exclude docs/source/notebooks/.ipynb_checkpoints *.ipynb
+
+exclude docs/source/finch*.rst
+exclude docs/source/modules.rst
+
 global-exclude __pycache__
 global-exclude *.py[co]

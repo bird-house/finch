@@ -5,7 +5,7 @@
 import os
 import re
 
-from setuptools import find_packages, setup
+from setuptools import find_namespace_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, "README.rst")).read()
@@ -56,9 +56,11 @@ setup(
     python_requires=REQUIRES_PYTHON,
     classifiers=classifiers,
     license="Apache Software License 2.0",
+    license_files=["LICENSE.txt"],
     keywords="wps pywps birdhouse finch",
-    packages=find_packages(),
+    packages=find_namespace_packages(".", include=["finch*"]),
     include_package_data=True,
+    package_data={"finch": ["*.yml"]},
     install_requires=requirements,
     extras_require={
         "dev": dev_reqs,  # pip install ".[dev]"
