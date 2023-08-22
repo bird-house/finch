@@ -173,7 +173,7 @@ def netcdf_datasets(request) -> Dict[str, Path]:
 
 
 @pytest.fixture(scope="session")
-def netcdf_sdba_ds(request) -> Tuple[dict[str, Path], DataArray]:
+def netcdf_sdba_ds(request) -> Tuple[Dict[str, Path], DataArray]:
     """Return datasets useful to test sdba."""
     out = {}
     u = np.random.rand(10000)
