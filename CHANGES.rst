@@ -1,6 +1,18 @@
 Changes
 *******
 
+0.11.3 (2023-08-23)
+===================
+* Updated ReadTheDocs to use the new mambaforge version (`2022.9`).
+* Addressed calls in GitHub Action usage that were emitting warnings.
+* Updated `MANIFEST.in` to include and exclude the relevant files for the source distribution.
+* Modified the `setup.py` to only include the files necessary in the wheel.
+* Updated `AUTHORS.rst` to list more contributors.
+* Removed namespace file (`__init__.py`) from tests to ensure that they aren't treated like an importable package.
+* Updated pre-commit hooks.
+* Sorted software requirements for legibility.
+* Removed Travis-CI shell script.
+
 0.11.2 (2023-07-27)
 ===================
 * Added a Docker-based testing suite to the GitHub Workflows.
