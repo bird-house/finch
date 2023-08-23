@@ -41,7 +41,7 @@ help:
 install:
 	@echo "Installing application ..."
 	@-bash -c 'pip install -e .'
-	@echo "\nStart service with \`make start'"
+	@echo "Start service with \`make start'"
 
 .PHONY: develop
 develop:

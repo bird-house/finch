@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import xarray as xr
 
-from .utils import execute_process, wps_input_file, wps_literal_input
+from _utils import execute_process, wps_input_file, wps_literal_input
 
 
 def geomet_geojson():

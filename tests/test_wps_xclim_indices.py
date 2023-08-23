@@ -9,18 +9,16 @@ import pytest
 import xarray as xr
 from lxml import etree
 from numpy.testing import assert_equal
-from pywps import configuration
 from pywps.app.exceptions import ProcessError
 from xclim.testing import open_dataset
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import finch
 import finch.processes
+from _utils import execute_process, wps_input_file, wps_literal_input
 from finch.processes import get_indicators, not_implemented
 from finch.processes.wps_base import make_xclim_indicator_process
 from finch.processes.wps_xclim_indices import XclimIndicatorBase
-
-from .utils import execute_process, wps_input_file, wps_literal_input
 
 K2C = 273.16
 
