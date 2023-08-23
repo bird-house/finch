@@ -7,10 +7,9 @@ import xarray as xr
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
+from _common import CFG_FILE, get_output
+from _utils import execute_process, wps_literal_input
 from finch.processes import SubsetBboxProcess
-
-from .common import CFG_FILE, get_output
-from .utils import execute_process, wps_literal_input
 
 
 def test_wps_subsetbbox(netcdf_datasets):

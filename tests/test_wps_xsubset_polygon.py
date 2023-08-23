@@ -1,12 +1,7 @@
 import geojson
 import xarray as xr
 
-from tests.utils import (
-    execute_process,
-    shapefile_zip,
-    wps_input_file,
-    wps_literal_input,
-)
+from _utils import execute_process, shapefile_zip, wps_input_file, wps_literal_input
 
 poly = {
     "type": "Feature",
