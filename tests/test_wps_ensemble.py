@@ -8,8 +8,8 @@ import pytest
 from pywps.app.exceptions import ProcessError
 from xarray import open_dataset
 
+from _utils import execute_process, wps_literal_input
 from finch.processes import ensemble_utils
-from tests.utils import execute_process, wps_literal_input
 
 mock_filenames = [
     "tasmax_bcc-csm1-1_rcp45_subset.nc",

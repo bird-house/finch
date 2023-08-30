@@ -8,9 +8,8 @@ from pywps.tests import assert_response_success, client_for
 from xclim.core.calendar import convert_calendar
 from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
 
+from _common import CFG_FILE, get_output
 from finch.processes import EmpiricalQuantileMappingProcess
-
-from .common import CFG_FILE, get_output
 
 
 @pytest.mark.parametrize("kind,name", [(ADDITIVE, "tas"), (MULTIPLICATIVE, "pr")])

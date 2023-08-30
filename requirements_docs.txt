@@ -1,10 +1,10 @@
+birdhouse-birdy>=0.8.1
+ipython
+matplotlib
+nbsphinx
 pywps>=4.5.1
 sphinx>=4.0
-nbsphinx
-ipython
-xclim==0.43
-matplotlib
-birdhouse-birdy>=0.8.1
-unidecode
 sphinxcontrib-bibtex
 tornado>=6.3.3 # not directly required, pinned by Snyk to avoid a vulnerability
+unidecode
+xclim==0.43
