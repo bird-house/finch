@@ -71,7 +71,7 @@ repos:
       - id: blackdoc
         additional_dependencies: [ 'black==23.3.0' ]
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.24.1
+    rev: 0.26.3
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
