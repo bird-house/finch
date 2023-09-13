@@ -182,10 +182,10 @@ def get_ensemble_inputs(novar=False):
         min_occurs=0,
         max_occurs=1000,
         allowed_values=["all"]
-        + (
+        + list(set(
             list(chain(*[d.allowed_values["model"] for d in datasets_config.values()]))
             + list(chain(*[d.model_lists.keys() for d in datasets_config.values()]))
-        ),
+        )),
     )
     if novar:
         return dataset, scenario, models
