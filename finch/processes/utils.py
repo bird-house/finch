@@ -623,6 +623,9 @@ def netcdf_file_list_to_csv(
                     concat[v] = concat[v].map(
                         lambda x: f"{x:.{csv_precision}f}" if not pd.isna(x) else ""
                     )
+        new_cols = [ll for ll in ["time", "lat", "lon"] if ll in concat.columns]
+        new_cols.extend([ll for ll in df.columns if ll not in new_cols])
+        concat = concat[new_cols]
         concat.to_csv(output_csv)
         output_csv_list.append(output_csv)
 
@@ -647,8 +650,10 @@ def dataset_to_dataframe(ds: xr.Dataset) -> pd.DataFrame:
 
         ds["time"] = [y.replace(hour=12) for y in time_values]
         ds.time.attrs = attrs
-
-    return ds.to_dataframe()
+    df = ds.to_dataframe()
+    new_cols = [ll for ll in ["time", "lat", "lon"] if ll in df.columns]
+    new_cols.extend([ll for ll in df.columns if ll not in new_cols])
+    return df[new_cols]
 
 
 def format_metadata(ds) -> str:
