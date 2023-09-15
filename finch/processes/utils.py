@@ -624,7 +624,7 @@ def netcdf_file_list_to_csv(
                         lambda x: f"{x:.{csv_precision}f}" if not pd.isna(x) else ""
                     )
         new_cols = [ll for ll in ["time", "lat", "lon"] if ll in concat.columns]
-        new_cols.extend([ll for ll in df.columns if ll not in new_cols])
+        new_cols.extend([ll for ll in concat.columns if ll not in new_cols])
         concat = concat[new_cols]
         concat.to_csv(output_csv)
         output_csv_list.append(output_csv)
