@@ -610,12 +610,21 @@ def netcdf_file_list_to_csv(
         output_csv = output_folder / f"{filename_prefix}_{calendar_type}.csv"
         concat = pd.concat(data, axis=1)
 
-        try:
-            concat = concat.reset_index().set_index("time").drop(columns="region")
-        except KeyError:
-            pass
+        if "region" in concat.reset_index().columns:
+            concat = (
+                concat.reset_index()
+                .sort_values(["region", "time"])
+                .set_index(["lat", "lon", "time"])
+                .drop(columns="region")
+            )
+        else:
+            concat = (
+                concat.reset_index()
+                .sort_values(["lat", "lon", "time"])
+                .set_index(["lat", "lon", "time"])
+            )
 
-        dropna_threshold = 3  # lat + lon + at least one value
+        dropna_threshold = 1  # at least one value
         concat.dropna(thresh=dropna_threshold, inplace=True)
         if csv_precision is not None:
             for v in concat:
@@ -623,9 +632,6 @@ def netcdf_file_list_to_csv(
                     concat[v] = concat[v].map(
                         lambda x: f"{x:.{csv_precision}f}" if not pd.isna(x) else ""
                     )
-        new_cols = [ll for ll in ["time", "lat", "lon"] if ll in concat.columns]
-        new_cols.extend([ll for ll in concat.columns if ll not in new_cols])
-        concat = concat[new_cols]
         concat.to_csv(output_csv)
         output_csv_list.append(output_csv)
 
@@ -650,10 +656,11 @@ def dataset_to_dataframe(ds: xr.Dataset) -> pd.DataFrame:
 
         ds["time"] = [y.replace(hour=12) for y in time_values]
         ds.time.attrs = attrs
-    df = ds.to_dataframe()
-    new_cols = [ll for ll in ["time", "lat", "lon"] if ll in df.columns]
-    new_cols.extend([ll for ll in df.columns if ll not in new_cols])
-    return df[new_cols]
+    df = ds.to_dataframe().reset_index()
+    new_cols = [ll for ll in ["lat", "lon", "time"] if ll in df.columns]
+    df = df.sort_values(new_cols).set_index(new_cols)
+    # new_cols.extend([ll for ll in df.columns if ll not in new_cols])
+    return df
 
 
 def format_metadata(ds) -> str:
