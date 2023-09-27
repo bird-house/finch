@@ -26,4 +26,4 @@ dependencies:
   - unidecode
   - xarray >=2023.01.0
   - xclim =0.43  # remember to match xclim version in requirements_docs.txt as well
-  - xesmf >=0.7
+  - xesmf >=0.8.2
