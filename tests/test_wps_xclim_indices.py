@@ -329,7 +329,7 @@ def test_degree_days_exceedance_date(client, tmp_path):
         with thezip.open("out.csv") as thefile:
             ds = pd.read_csv(thefile).to_xarray()
     np.testing.assert_array_equal(
-        ds.degree_days_exceedance_date, np.array([150, 140, 10, 10])
+        ds.degree_days_exceedance_date, np.array([10, 10, 140, 150])
     )
 
 
