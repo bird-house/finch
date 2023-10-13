@@ -8,3 +8,4 @@ sphinxcontrib-bibtex
 unidecode
 xclim==0.43
 pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
