@@ -77,6 +77,9 @@ docs/doctrees/
 docs/html/
 docs/build/
 docs/source/output-sanitize.cfg
+docs/finch.rst
+docs/finch.*.rst
+docs/modules.rst
 
 # External Sources
 #src/external
