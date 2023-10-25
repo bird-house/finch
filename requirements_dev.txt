@@ -15,8 +15,8 @@ jupyter_client
 # Changing dependencies above this comment will create merge conflicts when updating the cookiecutter template with cruft. Add extra requirements below this line.
 birdhouse-birdy>=0.8.1
 geojson
+jupyter-server>=2.7.2 # not directly required, pinned by Snyk to avoid a vulnerability
 matplotlib
+pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pre-commit
 tornado>=6.3.3 # not directly required, pinned by Snyk to avoid a vulnerability
-jupyter-server>=2.7.2 # not directly required, pinned by Snyk to avoid a vulnerability
-pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
