@@ -4,6 +4,7 @@ matplotlib
 nbsphinx
 pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pywps>=4.5.1
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
 sphinx>=4.0
 sphinxcontrib-bibtex
 unidecode
