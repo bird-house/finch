@@ -1,6 +1,7 @@
 # noqa: D100
 from pathlib import Path
 
+import lxml.etree
 from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
@@ -49,7 +50,7 @@ def get_output(doc):  # noqa: D103
     return output
 
 
-def get_metalinks(doc):
+def get_metalinks(doc: lxml.etree.Element):
     """Return a dictionary of metaurls found in metalink XML, keyed by their file name.
 
     Parameters
