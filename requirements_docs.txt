@@ -9,3 +9,4 @@ sphinx>=4.0
 sphinxcontrib-bibtex
 unidecode
 xclim==0.43
+werkzeug>=3.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
