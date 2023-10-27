@@ -21,3 +21,4 @@ xarray>=0.18.2
 xclim==0.43
 xesmf>=0.6.2
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
+werkzeug>=3.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
