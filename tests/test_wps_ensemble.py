@@ -111,6 +111,37 @@ def test_ensemble_heatwave_frequency_grid_point(client):
     assert len(ds.attrs["source_datasets"].split("\n")) == 4
 
 
+def test_ensemble_tx_mean_grid_point_no_perc_csv(client):
+    # --- given ---
+    identifier = "ensemble_grid_point_tx_mean"
+    inputs = [
+        wps_literal_input("lat", "46"),
+        wps_literal_input("lon", "-72.8"),
+        wps_literal_input("scenario", "rcp45"),
+        wps_literal_input("dataset", "test_subset"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", ""),
+        wps_literal_input("output_format", "csv"),
+        wps_literal_input("output_name", "testens"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 2  # metadata + data
+    data_filename = [n for n in zf.namelist() if "metadata" not in n]
+    csv = zf.read(data_filename[0]).decode()
+    lines = csv.split("\n")
+    assert lines[0].startswith("lat,lon,time,scenario")
+    assert len(lines[0].split(",")) == 6
+    assert all([line.startswith("tx_mean:") for line in lines[0].split(",")[-2:]])
+    n_data_rows = len(lines) - 2
+    assert n_data_rows == 4  # lat=1, lon=1, time=4 (last month
+
+
 def test_ensemble_heatwave_frequency_grid_point_no_perc(client):
     # --- given ---
     identifier = "ensemble_grid_point_heat_wave_frequency"
