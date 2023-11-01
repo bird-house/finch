@@ -657,8 +657,26 @@ def dataset_to_dataframe(ds: xr.Dataset) -> pd.DataFrame:
         ds["time"] = [y.replace(hour=12) for y in time_values]
         ds.time.attrs = attrs
     df = ds.to_dataframe().reset_index()
-    new_cols = [ll for ll in ["lat", "lon", "time"] if ll in df.columns]
+
+    if "realization" not in ds.dims:
+        new_cols = [ll for ll in ["lat", "lon", "time"] if ll in df.columns]
+    else:
+        new_cols = [
+            ll
+            for ll in ["lat", "lon", "time", "scenario", "region"]
+            if ll in df.columns
+        ]
+        values = [c for c in df.columns if c not in new_cols and c != "realization"]
+        df = df.pivot(
+            index=new_cols,
+            columns="realization",
+            values=values,
+        ).reset_index()
+        # pivot table columns are multi-indexes : flatten
+        df.columns = [":".join(d) if d[1] else d[0] for d in df.columns]
+
     df = df.sort_values(new_cols).set_index(new_cols)
+
     # new_cols.extend([ll for ll in df.columns if ll not in new_cols])
     return df
 
