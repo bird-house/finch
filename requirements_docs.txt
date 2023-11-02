@@ -10,3 +10,4 @@ sphinxcontrib-bibtex
 unidecode
 xclim==0.43
 werkzeug>=3.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
+tornado>=6.3.3 # not directly required, pinned by Snyk to avoid a vulnerability
