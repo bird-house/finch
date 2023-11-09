@@ -204,7 +204,16 @@ def get_ensemble_inputs(novar=False):
         default=None,
         min_occurs=0,
         allowed_values=list(
-            chain(*[d.allowed_values["variable"] for d in datasets_config.values()])
+            set(
+                list(
+                    chain(
+                        *[
+                            d.allowed_values["variable"]
+                            for d in datasets_config.values()
+                        ]
+                    )
+                )
+            )
         ),
     )
     return dataset, scenario, models, variable
