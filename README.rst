@@ -4,7 +4,7 @@ Finch
 |docs| |pypi| |ci| |license| |gitter|
 
 Finch (the bird)
-  *Finch is a bird ...*
+  *Finch is a bird that can adapt to many different climates and ecological niches*
 
 A Web Processing Service for Climate Indicators.
 
