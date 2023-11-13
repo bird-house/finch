@@ -9,6 +9,7 @@
    notebooks/index
    dev_guide
    processes
+   authors
    changes
 
 Indices and tables

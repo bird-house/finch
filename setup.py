@@ -28,20 +28,21 @@ for req in open("requirements.txt"):
 dev_reqs = [line.strip() for line in open("requirements_dev.txt")]
 
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "Operating System :: MacOS :: MacOS X",
-    "Operating System :: POSIX",
-    "Programming Language :: Python",
+    "License :: OSI Approved :: Apache Software License",
     "Natural Language :: English",
+    "Natural Language :: English",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
-    "License :: OSI Approved :: Apache Software License",
 ]
 
 setup(
@@ -56,12 +57,13 @@ setup(
     python_requires=REQUIRES_PYTHON,
     classifiers=classifiers,
     license="Apache Software License 2.0",
-    license_files=["LICENSE.txt"],
+    license_files=["LICENSE"],
     keywords="wps pywps birdhouse finch",
     packages=find_namespace_packages(".", include=["finch*"]),
     include_package_data=True,
     package_data={"finch": ["*.yml"]},
     install_requires=requirements,
+    test_suite="tests",
     extras_require={
         "dev": dev_reqs,  # pip install ".[dev]"
     },

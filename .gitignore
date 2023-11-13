@@ -77,6 +77,9 @@ docs/doctrees/
 docs/html/
 docs/build/
 docs/source/output-sanitize.cfg
+docs/finch.rst
+docs/finch.*.rst
+docs/modules.rst
 
 # External Sources
 #src/external
@@ -98,3 +101,19 @@ testdata.json
 
 # Merge conflict
 *.orig
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+
+# IDE settings
+.vscode/

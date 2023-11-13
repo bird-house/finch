@@ -2,12 +2,12 @@ birdhouse-birdy>=0.8.1
 ipython
 matplotlib
 nbsphinx
+pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pywps>=4.5.1
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
 sphinx>=4.0
 sphinxcontrib-bibtex
 unidecode
 xclim==0.43
-pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
-setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
 werkzeug>=3.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 tornado>=6.3.3 # not directly required, pinned by Snyk to avoid a vulnerability
