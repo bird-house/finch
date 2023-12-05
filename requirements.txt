@@ -1,5 +1,5 @@
 bottleneck
-cftime<=1.6.2
+cftime
 cf-xarray
 click
 clisops>=0.9.3

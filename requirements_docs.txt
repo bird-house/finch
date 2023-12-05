@@ -1,5 +1,5 @@
 birdhouse-birdy>=0.8.1
-cftime<=1.6.2
+cftime
 cf-xarray
 ipython
 matplotlib
