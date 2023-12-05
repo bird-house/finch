@@ -775,12 +775,11 @@ def fix_broken_time_index(ds: xr.Dataset):
     time_dim = ds.time.values
     times_are_encoded = "units" in ds.time.attrs
 
-    if ds.time.dt.calendar != "noleap":
-        return
-
     if times_are_encoded:
         wrong_id = np.argwhere(np.isclose(time_dim, 0))
     else:
+        if ds.time.dt.calendar != "noleap":
+            return
         wrong_id = np.argwhere(
             time_dim == cftime.DatetimeNoLeap(year=1850, month=1, day=1, hour=0)
         )
