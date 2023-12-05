@@ -1,5 +1,6 @@
 bottleneck
-cftime
+cftime<=1.6.2
+cf-xarray
 click
 clisops>=0.9.3
 dask[complete]

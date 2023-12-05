@@ -5,6 +5,8 @@ dependencies:
   - python >=3.8,<3.12
   - pip
   - bottleneck
+  - cftime <=1.6.2
+  - cf_xarray
   - click
   - clisops >=0.9.3
   - dask
