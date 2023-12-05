@@ -6,7 +6,7 @@ dask[complete]
 geopandas!=0.13.1
 netcdf4
 numpy
-pandas
+pandas>=1.5.3,<2.2.0
 parse
 psutil
 python-slugify
@@ -17,7 +17,7 @@ scipy
 sentry-sdk
 siphon
 unidecode
-xarray>=0.18.2
+xarray>=2023.01.0,<2023.11.0
 xclim==0.43
 xesmf>=0.6.2
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
