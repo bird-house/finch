@@ -775,6 +775,9 @@ def fix_broken_time_index(ds: xr.Dataset):
     time_dim = ds.time.values
     times_are_encoded = "units" in ds.time.attrs
 
+    if ds.time.dt.calendar != "noleap":
+        return
+
     if times_are_encoded:
         wrong_id = np.argwhere(np.isclose(time_dim, 0))
     else:
