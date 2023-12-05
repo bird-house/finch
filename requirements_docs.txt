@@ -1,13 +1,17 @@
 birdhouse-birdy>=0.8.1
+cftime
+cf-xarray
 ipython
 matplotlib
 nbsphinx
+pandas>=1.5.3,<2.2.0
 pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pywps>=4.5.1
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
 sphinx>=4.0
 sphinxcontrib-bibtex
-unidecode
-xclim==0.43
-werkzeug>=3.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 tornado>=6.3.3 # not directly required, pinned by Snyk to avoid a vulnerability
+unidecode
+werkzeug>=3.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
+xarray>=2023.01.0,<2023.11.0
+xclim==0.43

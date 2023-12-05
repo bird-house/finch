@@ -8,7 +8,7 @@ nbsphinx
 nbval>=0.9.6
 nbconvert
 sphinx>=1.8.5
-bump2version
+bump-my-version
 twine
 cruft
 jupyter_client

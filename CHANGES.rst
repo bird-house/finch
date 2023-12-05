@@ -1,6 +1,11 @@
 Changes
 *******
 
+0.11.4 (2023-12-05)
+===================
+* Fixed a bug that occurred when fixing a broken cftime-index with newer `cftime` versions.
+* Placed pins on xarray and pandas to prevent future errors from changes to frequency codes.
+
 0.11.3 (2023-08-23)
 ===================
 * Updated ReadTheDocs to use the new mambaforge version (`2022.9`).

@@ -39,8 +39,8 @@ jobs:
           echo "current_version=${CURRENT_VERSION}"
       - name: Bump Version
         run: |
-          pip install bump2version
-          echo "running `bump2version ${{ github.event.inputs.bumpversion }}`"
+          pip install bump-my-version
+          echo "running `bump-my-version bump ${{ github.event.inputs.bumpversion }}`"
           NEW_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
           echo "new_version=${NEW_VERSION}"
       - name: Tag Release
