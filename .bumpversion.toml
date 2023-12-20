@@ -1,0 +1,29 @@
+[tool.bumpversion]
+current_version = "0.11.3"
+commit = true
+tag = true
+tag_name = "v{new_version}"
+serialize = [
+    "{major}.{minor}.{patch}",
+    "{major}.{minor}"
+]
+
+[[tool.bumpversion.files]]
+filename = "finch/__version__.py"
+search = "__version__ = \"{current_version}\""
+replace = "__version__ = \"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = "docs/source/conf.py"
+parse = "release|version = \"{current_version}\""
+replace = "{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "Dockerfile"
+search = "Version=\"{current_version}\""
+replace = "Version=\"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = ".cruft.json"
+search = "\"version\": \"{current_version}\","
+replace = "\"version\": \"{new_version}\","

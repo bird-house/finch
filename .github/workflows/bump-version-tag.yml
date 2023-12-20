@@ -14,7 +14,7 @@ on:
       tag:
         description: "Tag"
         required: true
-        default: "true"
+        default: true
         options:
             - "true"
             - "false"
@@ -38,16 +38,19 @@ jobs:
           CURRENT_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
           echo "current_version=${CURRENT_VERSION}"
       - name: Bump Version
+        if: ${{ github.event.inputs.tag == 'false' }}
+        run: |
+          pip install bump-my-version
+          echo "running `bump-my-version bump  --no-tag ${{ github.event.inputs.bumpversion }}`"
+          NEW_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
+          echo "new_version=${NEW_VERSION}"
+      - name: Bump Version with Tagging
+        if: ${{ github.event.inputs.tag == 'true' }}
         run: |
           pip install bump-my-version
           echo "running `bump-my-version bump ${{ github.event.inputs.bumpversion }}`"
           NEW_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
           echo "new_version=${NEW_VERSION}"
-      - name: Tag Release
-        if: ${{ github.event.inputs.tag == 'true' }}
-        run: |
-          TAG_NAME="v$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
-          git tag "${TAG_NAME}"
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
