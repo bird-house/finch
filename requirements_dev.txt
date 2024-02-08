@@ -1,9 +1,11 @@
 pip>=23.1.0
+black>=24.1.1
 bump-my-version>=0.17.1
 click>=7.0
 coverage>=4.5.4
 cruft
 flake8
+isort>=5.13.2
 nbconvert
 nbsphinx
 nbval>=0.10.0
