@@ -2,7 +2,7 @@ bottleneck
 cftime
 cf-xarray
 click
-clisops>=0.12.2
+clisops>=0.11.0
 dask[complete]
 geopandas!=0.13.1
 netcdf4

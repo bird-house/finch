@@ -42,7 +42,7 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
     :alt: Documentation Status
 
 .. |pypi| image:: https://img.shields.io/pypi/v/birdhouse-finch.svg
-        :target: https://pypi.python.org/pypi/birdhouse-finch
+   :target: https://pypi.python.org/pypi/birdhouse-finch
 
 .. |ci| image:: https://github.com/bird-house/finch/actions/workflows/main.yml/badge.svg
    :target: https://github.com/bird-house/finch/actions/workflows/main.yml
