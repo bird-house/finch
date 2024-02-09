@@ -1,16 +1,32 @@
 # label rules used by .github/workflows/label.yml
 
-dependencies:
-  - requirements.txt
-  - requirements_*.txt
-  - environment.yml
-  - environment-docs.yml
+'CI':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.editorconfig'
+      - '.pre-commit-config.yaml'
+      - '.readthedocs.yml'
+      - '.yamllint.yml'
+      - '.github/workflows/*'
+      - 'docs/Makefile'
+      - 'pylintrc'
+      - 'tox.ini'
+      - 'Makefile'
 
-docs:
-  - ".readthedocs.yml"
-  - docs/**/*
-  - AUTHORS.rst
-  - CONTRIBUTING.md
-  - ISSUE_TEMPLATE.md
-  - PULL_REQUEST_TEMPLATE.md
-  - README.rst
+'dependencies':
+  - changes-files:
+    - any-glob-to-any-file:
+      - 'requirements*.txt'
+      - 'environment*.yml'
+
+'docs':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.readthedocs.yml'
+      - '.zenodo.json'
+      - 'docs/**/*'
+      - 'AUTHORS.rst'
+      - 'CONTRIBUTING.md'
+      - 'ISSUE_TEMPLATE.md'
+      - 'PULL_REQUEST_TEMPLATE.md'
+      - 'README.rst'
