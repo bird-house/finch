@@ -20,7 +20,7 @@ Contributing
 
 You can find information about contributing in our `Developer Guide`_.
 
-Please use bumpversion_ to release a new version.
+Please use bump-my-version_ to release a new version.
 
 License
 -------
@@ -35,14 +35,14 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
 .. _`Developer Guide`: https://pavics-sdi.readthedocs.io/projects/finch/en/latest/dev_guide.html
-.. _bumpversion: https://finch.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
+.. _bump-my-version: https://finch.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
 
 .. |docs| image:: https://readthedocs.org/projects/finch/badge/?version=latest
     :target: https://pavics-sdi.readthedocs.io/projects/finch/en/latest/?badge=latest
     :alt: Documentation Status
 
 .. |pypi| image:: https://img.shields.io/pypi/v/birdhouse-finch.svg
-        :target: https://pypi.python.org/pypi/birdhouse-finch
+   :target: https://pypi.python.org/pypi/birdhouse-finch
 
 .. |ci| image:: https://github.com/bird-house/finch/actions/workflows/main.yml/badge.svg
    :target: https://github.com/bird-house/finch/actions/workflows/main.yml
