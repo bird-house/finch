@@ -7,7 +7,7 @@ dask[complete]
 geopandas!=0.13.1
 netcdf4
 numpy
-pandas>=1.5.3,<2.2.0
+pandas>=1.5.3,<2.3.0
 parse
 psutil
 python-slugify
