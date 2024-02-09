@@ -8,7 +8,7 @@ dependencies:
   - cftime
   - cf_xarray
   - click
-  - clisops >=0.9.3
+  - clisops >=0.11.0
   - dask
   - distributed
   - geopandas !=0.13.1
