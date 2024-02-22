@@ -1,6 +1,10 @@
 Changes
 *******
 
+0.11.5 (unreleased)
+===================
+* Added a Makefile recipe to the repository to evaluate notebooks while ignoring the output cells.
+
 0.11.4 (2023-12-20)
 ===================
 * Fixed a bug that occurred when fixing a broken cftime-index with newer `cftime` versions.
