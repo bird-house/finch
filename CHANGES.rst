@@ -4,6 +4,8 @@ Changes
 0.11.5 (unreleased)
 ===================
 * Added a Makefile recipe to the repository to evaluate notebooks while ignoring the output cells.
+* Cleaned up documentation to facilitate easier navigation.
+* Fixed a few notebooks that were failing Jenkins build tests.
 
 0.11.4 (2023-12-20)
 ===================
