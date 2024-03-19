@@ -101,8 +101,6 @@ clean-dist: clean  ## remove git ignored files and directories
 .PHONY: clean-docs
 clean-docs: ## remove documentation artifacts
 	@echo "Removing documentation artifacts ..."
-	@-rm -f docs/finch.rst
-	@-rm -f docs/modules.rst
 	$(MAKE) -C docs clean
 
 .PHONY: lint
