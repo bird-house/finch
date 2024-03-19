@@ -5,6 +5,7 @@ include *.txt
 include *.rst
 
 recursive-include finch *.py
+include finch/default.cfg
 recursive-include finch/processes/modules *.yml
 
 recursive-include tests *.py *.cfg
