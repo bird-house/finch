@@ -12,6 +12,8 @@ recursive-include tests *.py *.cfg
 recursive-include tests/data *.nc *.json *.zip
 recursive-include docs/source *.rst *.py *.ipynb *.svg *.ico *.txt
 
+exclude .*
+exclude docs/source/references.bib
 recursive-exclude docs/build *
 recursive-exclude docs/source/notebooks/.ipynb_checkpoints *.ipynb
 
