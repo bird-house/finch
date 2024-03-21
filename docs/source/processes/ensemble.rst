@@ -4,5 +4,5 @@
    :imported-members:
    :undoc-members:
 
-   Ensemble Processes
-   ==================
+   Processes
+   ---------

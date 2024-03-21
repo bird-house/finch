@@ -5,7 +5,7 @@
    :undoc-members:
 
    Processes
-   =========
+   ---------
 
 References
 ----------
