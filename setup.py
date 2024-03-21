@@ -28,17 +28,16 @@ classifiers = [
     "Natural Language :: English",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 
 setup(
-    name="finch",
+    name="birdhouse-finch",
     version=about["__version__"],
     description="A Web Processing Service for Climate Indicators.",
     long_description=README + "\n\n" + CHANGES,
