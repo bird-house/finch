@@ -3,6 +3,4 @@
    :members:
    :imported-members:
    :undoc-members:
-
-   Processes
-   ---------
+   :show-inheritance:
