@@ -4,6 +4,7 @@
    :maxdepth: 2
 
    installation
+   deploying
    configuration
    notebooks/index
    dev_guide

@@ -110,8 +110,8 @@ clean-docs: ## remove documentation artifacts
 
 .PHONY: lint
 lint: ## check style
-	@echo "Running flake8 code style checks ..."
-	@bash -c 'flake8'
+	@echo "Running pre-commit-configured code style checks ..."
+	@bash -c 'pre-commit run --all-files'
 
 ## Test targets:
 
