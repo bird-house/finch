@@ -6,7 +6,7 @@ Deployment
 Start Finch PyWPS service
 -------------------------
 
-After successful installation you can start the service using the ``finch`` command-line.
+After successful installation, you can start the service using the ``finch`` command-line:
 
 .. code-block:: console
 
@@ -19,7 +19,7 @@ After successful installation you can start the service using the ``finch`` comm
    loading configuration
    forked process id: 42
 
-The deployed WPS service is by default available on port 5000:
+The deployed WPS service is available by default on port 5000:
 
 http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities.
 
@@ -36,6 +36,12 @@ Check the log files for errors:
 .. code-block:: console
 
    $ tail -f  pywps.log
+
+Stopping the ``finch`` daemon:
+
+.. code-block:: console
+
+   $ finch stop
 
 Changing the default port
 +++++++++++++++++++++++++
@@ -84,11 +90,11 @@ Running Finch as a Docker service is very simple:
 
    $ docker run -p 5000:5000 birdhouse/finch
 
-This will start Finch on port 5000, allow you to access Finch at http://localhost:5000.
+This will start Finch mapped to port 5000, allowing you to access Finch at http://localhost:5000.
 
-Use Ansible to deploy Finch on your System
-------------------------------------------
+Using Ansible to deploy Finch WPS
+---------------------------------
 
-Use the `Ansible playbook`_ for PyWPS to deploy Finch on your system.
+Ansible can also be used to deploy `finch` on your system. See the `Ansible playbook example`_ for more information.
 
-.. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html
+.. _Ansible playbook example: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html
