@@ -1,7 +1,7 @@
 .. _deploying:
 
-Deploying Finch
-===============
+Deployment
+==========
 
 Start Finch PyWPS service
 -------------------------
@@ -37,6 +37,8 @@ Check the log files for errors:
 
    $ tail -f  pywps.log
 
+Changing the default port
++++++++++++++++++++++++++
 
 You can overwrite the default `PyWPS`_ configuration by using command-line options.
 See the Finch help for which options are available:
@@ -55,9 +57,8 @@ Start service with different hostname and port
 
 .. _PyWPS: http://pywps.org/
 
-
-... or do it the lazy way (from sources)
-++++++++++++++++++++++++++++++++++++++++
+Starting Finch WPS the lazy way (from sources)
+++++++++++++++++++++++++++++++++++++++++++++++
 
 If `finch` is running from a clone of the GitHub source code repository, you can alternatively simply use the ``Makefile`` to start and stop the service:
 
@@ -67,6 +68,12 @@ If `finch` is running from a clone of the GitHub source code repository, you can
    $ make status
    $ tail -f pywps.log
    $ make stop
+
+If you wish to always run Finch from the Makefile, you can set the URL and port via environment variables:
+
+.. code-block:: console
+
+   $ export WPS_URL=http://localhost:9876  # to set a particular URL:port
 
 Deploying Finch from a Docker container
 ---------------------------------------
