@@ -5,6 +5,8 @@
    :undoc-members:
    :show-inheritance:
 
+   Processes for indicators
+
 References
 ----------
 

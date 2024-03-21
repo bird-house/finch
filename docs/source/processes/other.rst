@@ -4,3 +4,5 @@
    :imported-members:
    :undoc-members:
    :show-inheritance:
+
+   Processes for other indicators
