@@ -1,13 +1,16 @@
 .. include:: ../../README.rst
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Contents:
+   :maxdepth: 2
 
    installation
    configuration
    notebooks/index
    dev_guide
+
+.. toctree::
+   :maxdepth: 1
+
    processes
    authors
    changes
