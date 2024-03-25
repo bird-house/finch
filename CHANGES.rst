@@ -1,9 +1,10 @@
 Changes
 *******
 
-0.11.5 (unreleased)
+0.12.0 (2024-03-25)
 ===================
 * Renamed the installed package from `finch` to `birdhouse-finch`.
+* First release of the `birdhouse-finch` package on PyPI.
 * Added a Makefile recipe to the repository to evaluate notebooks while ignoring the output cells.
 * Cleaned up documentation to facilitate easier navigation.
 * Slightly reorganized the documentation for easier navigation.
