@@ -23,9 +23,10 @@ The deployed WPS service is available by default on port 5000:
 
 http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities.
 
-.. note:: Remember the process ID (PID) so you can stop the service with ``kill PID``.
+Once the service is running, a `pywps.pid` file is created in the current directory.
+This file contains the process ID of the running ``finch`` service.
 
-You can find which process uses a given port using the following command (here for port 5000):
+Alternatively, you can find which process uses a given port using the following command (here for port 5000):
 
 .. code-block:: console
 
