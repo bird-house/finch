@@ -1,28 +1,49 @@
-name: Bump Version and Tag for Release
+name: Conditional Bump Version
 
 on:
-  workflow_dispatch:
-    inputs:
-      bumpversion:
-        description: "Bumpversion"
-        required: true
-        default: "patch"
-        options:
-            - "patch"
-            - "minor"
-            - "major"
-      tag:
-        description: "Tag"
-        required: true
-        default: true
-        options:
-            - "true"
-            - "false"
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - .*
+      - .github/*/*.md
+      - .github/*/*.yml
+      - AUTHORS.rst
+      - CHANGES.rst
+      - Dockerfile
+      - Makefile
+      - docker-compose.yml
+      - docs/*/*.ipynb
+      - docs/*/*.py
+      - docs/*/*.rst
+      - docs/Makefile
+      - docs/_static/*
+      - environment-docs.yml
+      - finch/__version__.py
+      - requirements*.txt
+      - setup.cfg
+      - setup.py
+
+permissions:
+  contents: read
+
 jobs:
   bump_patch_version:
     name: Bumpversion
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -37,6 +58,7 @@ jobs:
         run: |
           CURRENT_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
           echo "current_version=${CURRENT_VERSION}"
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
       - name: Bump Version
         if: ${{ github.event.inputs.tag == 'false' }}
         run: |
@@ -44,17 +66,25 @@ jobs:
           echo "running `bump-my-version bump  --no-tag ${{ github.event.inputs.bumpversion }}`"
           NEW_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
           echo "new_version=${NEW_VERSION}"
-      - name: Bump Version with Tagging
-        if: ${{ github.event.inputs.tag == 'true' }}
+      - name: Install bump-my-version
         run: |
-          pip install bump-my-version
-          echo "running `bump-my-version bump ${{ github.event.inputs.bumpversion }}`"
-          NEW_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
+          python -m pip install bump-my-version>=0.18.3
+      - name: Conditional Bump
+        id: bump
+        run: |
+          if [[ ${{ env.CURRENT_VERSION }} =~ -dev(\.\d+)? ]]; then
+            echo "Development version (ends in 'dev(\.\d+)?'), bumping 'build' version"
+            bump-my-version bump build
+          else
+            echo "Version is stable, bumping 'patch' version"
+            bump-my-version bump patch
+          fi
+          NEW_VERSION="$(grep -E '__version__'  finch/__version__.py | cut -d ' ' -f3)"
           echo "new_version=${NEW_VERSION}"
+          echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
           force: false
           github_token: ${{ secrets.BUMPVERSION_TOKEN }}
           branch: ${{ github.ref }}
-          tags: true
