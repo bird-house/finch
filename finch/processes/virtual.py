@@ -1,7 +1,7 @@
-# noqa: D205, D400
+# noqa: D205,D400
 """
 Processes as a virtual submodule
---------------------------------
+================================
 When imported, this module exposes the default list of processes as virtual modules : indicators, ensemble and other.
 It forces the loading of the "default.cfg" file if no datasets were configured.
 
@@ -36,11 +36,11 @@ oth_proc = {
     if p.__class__.__name__ not in (list(ens_proc) + list(ind_proc))
 }
 
-indicators = ModuleType("indicators", "Indicators Processes\n--------------------")
+indicators = ModuleType("indicators", "Indicators Processes\n====================")
 indicators.__dict__.update(ind_proc)
 
-ensemble = ModuleType("ensemble", "Ensemble Processes\n------------------")
+ensemble = ModuleType("ensemble", "Ensemble Processes\n==================")
 ensemble.__dict__.update(ens_proc)
 
-other = ModuleType("other", "Other Processes\n---------------")
+other = ModuleType("other", "Other Processes\n===============")
 other.__dict__.update(oth_proc)

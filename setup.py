@@ -3,7 +3,6 @@
 """The setup script."""
 
 import os
-import re
 
 from setuptools import find_namespace_packages, setup
 
@@ -16,16 +15,10 @@ about = {}
 with open(os.path.join(here, "finch", "__version__.py")) as f:
     exec(f.read(), about)
 
-egg_regex = re.compile(r"#egg=(\w+)")
-requirements = []
-for req in open("requirements.txt"):
-    req = req.strip()
-    git_url_match = egg_regex.search(req)
-    if git_url_match:
-        req = git_url_match.group(1)
-    requirements.append(req)
-
+reqs = [line.strip() for line in open("requirements.txt")]
 dev_reqs = [line.strip() for line in open("requirements_dev.txt")]
+docs_reqs = [line.strip() for line in open("requirements_docs.txt")]
+prod_reqs = [line.strip() for line in open("requirements_prod.txt")]
 
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -33,20 +26,18 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: Apache Software License",
     "Natural Language :: English",
-    "Natural Language :: English",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 
 setup(
-    name="finch",
+    name="birdhouse-finch",
     version=about["__version__"],
     description="A Web Processing Service for Climate Indicators.",
     long_description=README + "\n\n" + CHANGES,
@@ -62,10 +53,13 @@ setup(
     packages=find_namespace_packages(".", include=["finch*"]),
     include_package_data=True,
     package_data={"finch": ["*.yml"]},
-    install_requires=requirements,
+    install_requires=reqs,
     test_suite="tests",
     extras_require={
         "dev": dev_reqs,  # pip install ".[dev]"
+        "docs": docs_reqs,  # pip install ".[docs]"
+        "prod": prod_reqs,  # pip install ".[prod]"
     },
     entry_points={"console_scripts": ["finch=finch.cli:cli"]},
+    zip_safe=False,
 )

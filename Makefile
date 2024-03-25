@@ -106,14 +106,12 @@ clean-dist: clean  ## remove git ignored files and directories
 .PHONY: clean-docs
 clean-docs: ## remove documentation artifacts
 	@echo "Removing documentation artifacts ..."
-	@-rm -f docs/finch.rst
-	@-rm -f docs/modules.rst
 	$(MAKE) -C docs clean
 
 .PHONY: lint
 lint: ## check style
-	@echo "Running flake8 code style checks ..."
-	@bash -c 'flake8'
+	@echo "Running pre-commit-configured code style checks ..."
+	@bash -c 'pre-commit run --all-files'
 
 ## Test targets:
 

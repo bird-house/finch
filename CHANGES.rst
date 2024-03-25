@@ -3,7 +3,15 @@ Changes
 
 0.11.5 (unreleased)
 ===================
+* Renamed the installed package from `finch` to `birdhouse-finch`.
 * Added a Makefile recipe to the repository to evaluate notebooks while ignoring the output cells.
+* Cleaned up documentation to facilitate easier navigation.
+* Slightly reorganized the documentation for easier navigation.
+* Fast-forwarded the cookiecutter.
+* Fixed the ``Manifest.in`` to add all necessary files to wheel.
+* Removed references to files that have never existed (`apidoc`).
+* Cleaned up the setup code.
+* Added more files to be ignored in the `.gitignore` and in the `Manifest.in`.
 
 0.11.4 (2023-12-20)
 ===================

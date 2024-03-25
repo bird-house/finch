@@ -7,7 +7,7 @@ Developer Guide
     :local:
     :depth: 1
 
-.. WARNING:: To create new processes look at examples in Emu_.
+.. warning:: To create new processes look at examples in Emu_.
 
 .. _Emu: https://github.com/bird-house/emu
 
@@ -54,11 +54,11 @@ Run all tests:
 
    $ pytest
 
-Check pep8:
+Check code formatting compliance:
 
 .. code-block:: shell
 
-   $ flake8
+   $ pre-commit run --all-files
 
 .. _pytest: https://docs.pytest.org/en/latest/
 

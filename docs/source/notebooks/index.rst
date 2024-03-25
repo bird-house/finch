@@ -10,4 +10,3 @@ If you're unfamiliar with notebooks, note that typing `TAB` after an object will
 
    finch-usage
    dap_subset
-   subset

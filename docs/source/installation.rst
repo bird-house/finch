@@ -7,15 +7,30 @@ Installation
     :local:
     :depth: 1
 
-Install from Conda
-------------------
+Install from PyPI
+-----------------
 
-.. warning::
+.. note::
 
-   TODO: Prepare Conda package.
+   As of Winter 2024, `finch` is available as a PyPI-based package for testing and evaluation purposes. For a production server, we recommend deploying Finch as a Docker service.
 
-Install from GitHub
+To install the latest release from PyPI:
+
+.. code-block:: console
+
+   $ python -m pip install birdhouse-finch
+
+Install from Docker
 -------------------
+
+The easiest way to deploy Finch is to use the Docker image. The Docker image is available on Docker Hub as `birdhouse/finch`.
+
+.. code-block:: console
+
+   $ docker pull birdhouse/finch:latest
+
+Development Installation (GitHub)
+---------------------------------
 
 Check out code from the Finch GitHub repo and start the installation:
 
@@ -35,9 +50,9 @@ Install Finch app:
 
 .. code-block:: console
 
-  $ pip install -e .
-  OR
-  make install
+   $ python -m pip install -e .
+   OR
+   $ make install
 
 For development you can use this command:
 
@@ -47,67 +62,9 @@ For development you can use this command:
   OR
   $ make develop
 
-Start Finch PyWPS service
--------------------------
+Install from Conda
+------------------
 
-After successful installation you can start the service using the ``finch`` command-line.
+.. note::
 
-.. code-block:: console
-
-   $ finch --help # show help
-   $ finch start  # start service with default configuration
-
-   OR
-
-   $ finch start --daemon # start service as daemon
-   loading configuration
-   forked process id: 42
-
-The deployed WPS service is by default available on:
-
-http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities.
-
-.. NOTE:: Remember the process ID (PID) so you can stop the service with ``kill PID``.
-
-You can find which process uses a given port using the following command (here for port 5000):
-
-.. code-block:: console
-
-   $ netstat -nlp | grep :5000
-
-
-Check the log files for errors:
-
-.. code-block:: console
-
-   $ tail -f  pywps.log
-
-... or do it the lazy way
-+++++++++++++++++++++++++
-
-You can also use the ``Makefile`` to start and stop the service:
-
-.. code-block:: console
-
-  $ make start
-  $ make status
-  $ tail -f pywps.log
-  $ make stop
-
-
-Run Finch as Docker container
------------------------------
-
-You can also run Finch as a Docker container.
-
-.. warning::
-
-  TODO: Describe Docker container support.
-
-Use Ansible to deploy Finch on your System
-------------------------------------------
-
-Use the `Ansible playbook`_ for PyWPS to deploy Finch on your system.
-
-
-.. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html
+   `finch` is not yet available on conda-forge. But we are working on making this package available soon!
