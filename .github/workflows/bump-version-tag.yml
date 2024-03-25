@@ -18,7 +18,6 @@ on:
       - docs/*/*.rst
       - docs/Makefile
       - docs/_static/*
-      - environment.yml
       - environment-docs.yml
       - finch/__version__.py
       - requirements*.txt
