@@ -5,6 +5,7 @@ Changes
 ===================
 * Renamed the installed package from `finch` to `birdhouse-finch`.
 * First release of the `birdhouse-finch` package on PyPI.
+* Versioning now adheres to SemVer v2.0.0.
 * Added a Makefile recipe to the repository to evaluate notebooks while ignoring the output cells.
 * Cleaned up documentation to facilitate easier navigation.
 * Slightly reorganized the documentation for easier navigation.
