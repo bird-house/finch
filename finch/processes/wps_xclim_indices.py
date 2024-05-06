@@ -119,7 +119,7 @@ class XclimIndicatorBase(FinchProcess):
             end_percentage = int((n + 1) / n_files * 100)
             write_log(
                 self,
-                f"Processing file {n+1} of {n_files}",
+                f"Processing file {n + 1} of {n_files}",
                 subtask_percentage=start_percentage,
             )
 
