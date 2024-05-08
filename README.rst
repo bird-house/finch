@@ -59,6 +59,3 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. |gitter| image:: https://badges.gitter.im/bird-house/birdhouse.svg
     :target: https://gitter.im/bird-house/birdhouse?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
     :alt: Join the chat at https://gitter.im/bird-house/birdhouse
-
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbird-house%2Ffinch.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbird-house%2Ffinch?ref=badge_large)
