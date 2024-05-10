@@ -1,7 +1,7 @@
 Finch
 =====
 
-|docs| |pypi| |ci| |license| |gitter|
+|docs| |pypi| |ci| |license| |fossa| |gitter|
 
 Finch (the bird)
   *Finch is a bird that can adapt to many different climates and ecological niches*
@@ -48,7 +48,7 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
     :target: https://github.com/bird-house/finch/actions/workflows/main.yml
     :alt: GitHub CI
 
-.. |fossa| image:: (https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbird-house%2Ffinch.svg?type=shield
+.. |fossa| image:: https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbird-house%2Ffinch.svg?type=shield
     :target: https://app.fossa.com/projects/git%2Bgithub.com%2Fbird-house%2Ffinch?ref=badge_shield
     :alt: FOSSA License Scan
 
