@@ -6,9 +6,9 @@ from typing import List, Optional
 
 import pandas as pd
 import xarray as xr
+from anyascii import anyascii
 from pandas.api.types import is_numeric_dtype
 from pywps.app.exceptions import ProcessError
-from anyascii import anyascii
 
 from . import wpsio
 from .utils import (
