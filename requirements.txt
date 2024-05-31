@@ -1,3 +1,4 @@
+anyascii
 bottleneck
 cftime
 cf-xarray
@@ -17,7 +18,6 @@ requests
 scipy
 sentry-sdk
 siphon
-unidecode
 xarray>=2023.01.0,<2023.11.0
 xclim==0.43
 xesmf>=0.6.2
