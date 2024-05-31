@@ -1,6 +1,10 @@
 Changes
 *******
 
+0.12.1 (unreleased)
+===================
+* Replaced `unidecode` with `anyascii` due to a licensing issue.
+
 0.12.0 (2024-03-25)
 ===================
 * Renamed the installed package from `finch` to `birdhouse-finch`.
@@ -45,6 +49,7 @@ Changes
 
 0.11.1 (2023-06-19)
 ===================
+
 * Update to xclim 0.43.0.
 * Added xclim yml module support:
     - Added humidex days above calculation via yml module.
