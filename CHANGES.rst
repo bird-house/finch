@@ -49,7 +49,6 @@ Changes
 
 0.11.1 (2023-06-19)
 ===================
-
 * Update to xclim 0.43.0.
 * Added xclim yml module support:
     - Added humidex days above calculation via yml module.
