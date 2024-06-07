@@ -1,6 +1,10 @@
 Changes
 *******
 
+0.12.1 (unreleased)
+===================
+* Replaced `unidecode` with `anyascii` due to a licensing issue.
+
 0.12.0 (2024-03-25)
 ===================
 * Renamed the installed package from `finch` to `birdhouse-finch`.

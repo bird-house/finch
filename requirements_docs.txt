@@ -1,3 +1,4 @@
+anyascii
 birdhouse-birdy>=0.8.1
 cftime
 cf-xarray
@@ -11,7 +12,6 @@ setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerabil
 sphinx>=4.0
 sphinxcontrib-bibtex
 tornado>=6.4.1 # not directly required, pinned by Snyk to avoid a vulnerability
-unidecode
 werkzeug>=3.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 xarray>=2023.01.0,<2023.11.0
 xclim==0.43

@@ -1,7 +1,7 @@
 # noqa: D100
 import logging
 
-from unidecode import unidecode
+from anyascii import anyascii
 
 from finch.processes.subset import finch_subset_bbox
 
@@ -62,8 +62,8 @@ class XclimEnsembleBboxBase(FinchProcess):
             self._handler,
             identifier=identifier,
             version="0.1",
-            title=unidecode(self.xci.title),
-            abstract=unidecode(self.xci.abstract),
+            title=anyascii(self.xci.title),
+            abstract=anyascii(self.xci.abstract),
             inputs=inputs,
             outputs=outputs,
             status_supported=True,

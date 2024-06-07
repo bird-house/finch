@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python >=3.8,<3.12
+  - anyascii
   - birdy >=0.8.1
   - ipython
   - matplotlib-base
@@ -11,6 +12,5 @@ dependencies:
   - pywps >=4.5.1
   - sphinx >=4.0
   - sphinxcontrib-bibtex
-  - unidecode
   - xarray >=2023.01.0,<2023.11.0
   - xclim =0.43 # remember to match xclim version in requirements_docs.txt as well
