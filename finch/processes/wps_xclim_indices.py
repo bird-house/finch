@@ -6,9 +6,9 @@ from typing import List, Optional
 
 import pandas as pd
 import xarray as xr
+from anyascii import anyascii
 from pandas.api.types import is_numeric_dtype
 from pywps.app.exceptions import ProcessError
-from unidecode import unidecode
 
 from . import wpsio
 from .utils import (
@@ -62,8 +62,8 @@ class XclimIndicatorBase(FinchProcess):
             self._handler,
             identifier=self.xci.identifier,
             version="0.1",
-            title=unidecode(self.xci.title),
-            abstract=unidecode(self.xci.abstract),
+            title=anyascii(self.xci.title),
+            abstract=anyascii(self.xci.abstract),
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
