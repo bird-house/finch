@@ -30,3 +30,4 @@ pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pre-commit>=3.3.0
 tornado>=6.4.1 # not directly required, pinned by Snyk to avoid a vulnerability
 fonttools>=4.43.0 # not directly required, pinned by Snyk to avoid a vulnerability
+urllib3>=2.2.2 # not directly required, pinned by Snyk to avoid a vulnerability
