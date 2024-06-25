@@ -130,6 +130,12 @@ class GeoseriesToNetcdfProcess(FinchProcess):
         # Set index and convert to xr
         ds = gdf.set_index(index_dim).to_xarray()
 
+        # FIXME: This is a workaround for changes to behaviour in pandas v2.0.0
+        # Convert datetime64[xyz] coordinates to np.datetime64[ns]
+        # Needed to correct the LOCAL_DATE encoding
+        if ds[index_dim].dtype.kind == "M":
+            ds[index_dim] = ds[index_dim].astype(np.datetime64)
+
         # Reshape geometries
         ds = cfgeo.reshape_unique_geometries(ds)
 
