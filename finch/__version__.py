@@ -5,4 +5,4 @@
 
 __author__ = """David Huard"""
 __email__ = "huard.david@ouranos.ca"
-__version__ = "0.12.1-dev.4"
+__version__ = "0.12.1"
