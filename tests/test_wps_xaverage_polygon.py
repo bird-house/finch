@@ -13,7 +13,7 @@ def test_wps_averagepoly(client, netcdf_datasets):
         "id": "apolygon",
         "geometry": {
             "type": "Polygon",
-            "coordinates": [[[0.5, 0], [2.5, 0], [2.5, 2.5], [0.5, 2.5]]],
+            "coordinates": [[[0.5, 0], [2.5, 0], [2.5, 2.5], [0.5, 2.5], [0.5, 0]]],
         },
     }
     inputs = [

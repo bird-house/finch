@@ -7,7 +7,7 @@ poly = {
     "type": "Feature",
     "geometry": {
         "type": "Polygon",
-        "coordinates": [[[0.5, 0], [2.5, 0], [2.5, 2.5], [0.5, 2.5]]],
+        "coordinates": [[[0.5, 0], [2.5, 0], [2.5, 2.5], [0.5, 2.5], [0.5, 0]]],
     },
 }
 

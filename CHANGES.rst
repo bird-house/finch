@@ -1,9 +1,11 @@
 Changes
 *******
 
-0.12.1 (unreleased)
+0.12.1 (2024-06-25)
 ===================
 * Replaced `unidecode` with `anyascii` due to a licensing issue.
+* Synchronized some dependencies across build systems.
+* Added a workaround in ``wps_geoseries_to_netcdf`` to handle a `pandas` v2.0 behaviour change.
 
 0.12.0 (2024-03-25)
 ===================
