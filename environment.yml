@@ -3,7 +3,8 @@ channels:
   - conda-forge
 dependencies:
   - python >=3.8,<3.12
-  - pip
+  - pip >=24.0
+  - anyascii
   - bottleneck
   - cftime
   - cf_xarray
@@ -14,7 +15,7 @@ dependencies:
   - geopandas !=0.13.1
   - h5netcdf
   - netcdf4 <=1.6.5
-  - numpy
+  - numpy >=1.22.2
   - pandas >=1.5.3,<2.2.0
   - parse
   - psutil
@@ -25,7 +26,6 @@ dependencies:
   - scipy
   - sentry-sdk
   - siphon
-  - anyascii
   - xarray >=2023.01.0,<2023.11.0
   - xclim =0.43  # remember to match xclim version in requirements_docs.txt as well
   - xesmf >=0.8.2
