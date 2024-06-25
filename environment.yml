@@ -7,13 +7,13 @@ dependencies:
   - bottleneck
   - cftime
   - cf_xarray
-  - click
+  - click >=8.0.0
   - clisops >=0.11.0
   - dask
   - distributed
   - geopandas !=0.13.1
   - h5netcdf
-  - netcdf4
+  - netcdf4 <=1.6.5
   - numpy
   - pandas >=1.5.3,<2.2.0
   - parse

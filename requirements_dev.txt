@@ -1,9 +1,9 @@
 pip>=23.1.0
 black>=24.3.0
-bump-my-version>=0.18.3
-click>=7.0
+bump-my-version>=0.23.0
+click>=8.0.0
 coverage>=4.5.4
-cruft
+cruft>=2.15.0
 flake8>=7.0.0
 isort>=5.13.2
 nbconvert

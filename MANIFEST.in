@@ -1,13 +1,15 @@
 include LICENSE
 include Makefile
-include docs/Makefile
+include setup.cfg
 include *.txt
 include *.rst
+include *.yml
 
-recursive-include finch *.py
 include finch/default.cfg
+recursive-include finch *.py
 recursive-include finch/processes/modules *.yml
 
+include docs/Makefile
 recursive-include tests *.py *.cfg
 recursive-include tests/data *.nc *.json *.zip
 recursive-include docs/source *.rst *.py *.ipynb *.svg *.ico *.txt
