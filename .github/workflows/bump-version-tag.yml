@@ -10,6 +10,8 @@ on:
       - .github/*/*.yml
       - AUTHORS.rst
       - CHANGES.rst
+      - CI/*.in
+      - CI/*.txt
       - Dockerfile
       - Makefile
       - docker-compose.yml
@@ -18,6 +20,7 @@ on:
       - docs/*/*.rst
       - docs/Makefile
       - docs/_static/*
+      - environment.yml
       - environment-docs.yml
       - finch/__version__.py
       - requirements*.txt
@@ -41,36 +44,41 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
-      - uses: actions/checkout@v4
+      - name: Generate App Token
+        id: token_generator
+        uses: actions/create-github-app-token@31c86eb3b33c9b601a1f60f98dcbfd1d70f379b4 # v1.10.3
         with:
-          persist-credentials: false
-      - uses: actions/setup-python@v5
+          app-id: ${{ secrets.OURANOS_HELPER_BOT_ID }}
+          private-key: ${{ secrets.OURANOS_HELPER_BOT_KEY }}
+      - name: Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          token: ${{ steps.token_generator.outputs.token }}
+      - name: Set up Python3
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: "3.x"
-      - name: Config Commit Bot
-        run: |
-          git config --local user.email "bumpversion[bot]@ouranos.ca"
-          git config --local user.name "bumpversion[bot]"
+      - name: Import GPG Key
+        uses: crazy-max/ghaction-import-gpg@01dd5d3ca463c7f10f7f4f7b4f177225ac661ee4 # v6.1.0
+        with:
+          gpg_private_key: ${{ secrets.OURANOS_HELPER_BOT_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.OURANOS_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          trust_level: 5
       - name: Current Version
         run: |
           CURRENT_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
           echo "current_version=${CURRENT_VERSION}"
           echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
-      - name: Bump Version
-        if: ${{ github.event.inputs.tag == 'false' }}
+      - name: Install CI libraries
         run: |
-          pip install bump-my-version
-          echo "running `bump-my-version bump  --no-tag ${{ github.event.inputs.bumpversion }}`"
-          NEW_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
-          echo "new_version=${NEW_VERSION}"
-      - name: Install bump-my-version
-        run: |
-          python -m pip install bump-my-version>=0.18.3
+          python -m pip install -r CI/requirements_ci.txt
       - name: Conditional Bump
-        id: bump
         run: |
           if [[ ${{ env.CURRENT_VERSION }} =~ -dev(\.\d+)? ]]; then
             echo "Development version (ends in 'dev(\.\d+)?'), bumping 'build' version"
@@ -79,12 +87,11 @@ jobs:
             echo "Version is stable, bumping 'patch' version"
             bump-my-version bump patch
           fi
-          NEW_VERSION="$(grep -E '__version__'  finch/__version__.py | cut -d ' ' -f3)"
+          NEW_VERSION="$(grep -E '__version__' finch/__version__.py | cut -d ' ' -f3)"
           echo "new_version=${NEW_VERSION}"
           echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
       - name: Push Changes
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@d91a481090679876dfc4178fef17f286781251df # v0.8.0
         with:
           force: false
-          github_token: ${{ secrets.BUMPVERSION_TOKEN }}
           branch: ${{ github.ref }}
