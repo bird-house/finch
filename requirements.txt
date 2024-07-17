@@ -1,7 +1,7 @@
 anyascii
 bottleneck
 cftime
-cf-xarray
+cf-xarray>=0.6.1,<0.9.4
 click>=8.0.0
 clisops>=0.11.0
 dask[complete]
