@@ -19,6 +19,10 @@ jobs:
     name: Code linting
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
+        with:
+          egress-policy: audit
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Set up Python${{ matrix.python-version }}
@@ -43,6 +47,10 @@ jobs:
         matrix:
             python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
+        with:
+          egress-policy: audit
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
