@@ -21,6 +21,6 @@ siphon
 xarray>=2023.01.0,<2023.11.0
 xclim==0.43
 xesmf>=0.6.2
-setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
+setuptools>=70.0.0 # not directly required, pinned by Snyk to avoid a vulnerability
 werkzeug>=3.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 urllib3>=2.2.2 # not directly required, pinned by Snyk to avoid a vulnerability
