@@ -22,7 +22,7 @@ dependencies:
   - python-slugify
   - pywps >=4.5.1
   - pyyaml
-  - requests
+  - requests>=2.32.2
   - scipy
   - sentry-sdk
   - siphon

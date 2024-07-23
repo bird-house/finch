@@ -14,7 +14,7 @@ psutil
 python-slugify
 pywps>=4.5.1
 pyyaml
-requests
+requests>=2.32.2  # CVE-2024-35195
 scipy
 sentry-sdk
 siphon
