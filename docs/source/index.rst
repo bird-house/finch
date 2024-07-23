@@ -14,7 +14,7 @@
 
    processes
    authors
-   changes
+   changelog
 
 Indices and tables
 ==================

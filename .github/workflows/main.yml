@@ -11,21 +11,30 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Code linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Harden Runner
+        uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
         with:
-          python-version: "3.8"
-      - name: Install flake8
+          egress-policy: audit
+      - name: Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Set up Python${{ matrix.python-version }}
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
+        with:
+          python-version: "3.x"
+      - name: Install CI libraries
         run: |
-          python -m pip install flake8
+          python -m pip install --require-hashes -r CI/requirements_ci.txt
       - name: Run linting suite
         run: |
-          flake8
+          python -m flake8
 
   conda:
     name: Build ⚙️ and test 🧪
@@ -38,19 +47,22 @@ jobs:
         matrix:
             python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup conda and environment
-        uses: mamba-org/setup-micromamba@v1
+      - name: Harden Runner
+        uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
+        with:
+          egress-policy: audit
+      - name: Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
+        uses: mamba-org/setup-micromamba@f8b8a1e23a26f60a44c853292711bacfd3eac822 # v1.9.0
         with:
           cache-downloads: true
           cache-environment: true
           environment-file: environment.yml
           create-args: >-
-            conda
             python=${{ matrix.python-version }}
-      - name: Conda and Mamba versions
+      - name: Mamba version
         run: |
-          conda --version
           echo "micromamba: $(micromamba --version)"
       - name: Install finch-wps
         run: |
