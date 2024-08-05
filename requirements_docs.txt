@@ -1,7 +1,7 @@
 anyascii
 birdhouse-birdy>=0.8.1
 cftime
-cf-xarray>=0.6.1,<0.9.3
+cf-xarray>=0.6.1,<0.9.5
 ipython
 matplotlib
 nbsphinx
