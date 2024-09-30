@@ -9,7 +9,7 @@ on:
       - .github/*/*.md
       - .github/*/*.yml
       - AUTHORS.rst
-      - CHANGES.rst
+      - CHANGELOG.rst
       - CI/*.in
       - CI/*.txt
       - Dockerfile

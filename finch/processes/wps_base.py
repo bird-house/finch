@@ -2,7 +2,6 @@
 import io
 import logging
 from inspect import _empty as empty_default  # noqa
-from typing import Dict, List
 
 import xclim
 from dask.diagnostics import ProgressBar
@@ -50,7 +49,7 @@ class FinchProcess(Process):
         self.response = None
         # A dict containing a step description and the percentage at the strat of this step
         # Each process should overwrite this, and thie values are used in `processes.utils.write_log`
-        self.status_percentage_steps: Dict[str, int] = {}
+        self.status_percentage_steps: dict[str, int] = {}
 
     def _handler_wrapper(self, request, response):
         self.sentry_configure_scope(request)
@@ -140,8 +139,8 @@ def make_xclim_indicator_process(
 
 
 def convert_xclim_inputs_to_pywps(
-    params: Dict, parent=None, parse_percentiles: bool = False
-) -> List[PywpsInput]:
+    params: dict, parent=None, parse_percentiles: bool = False
+) -> list[PywpsInput]:
     r"""Convert xclim indicators properties to pywps inputs.
 
     If parse_percentiles is True, percentile variables (\*_per) are dropped and replaced by

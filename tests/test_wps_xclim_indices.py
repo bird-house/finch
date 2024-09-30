@@ -309,7 +309,7 @@ def test_two_nondefault_variable_name(client, tmp_path):
 def test_degree_days_exceedance_date(client, tmp_path):
     identifier = "degree_days_exceedance_date"
 
-    tas = open_dataset("FWI/GFWED_sample_2017.nc").tas
+    tas = open_dataset("FWI/GFWED_sample_2017.nc", branch="v2023.12.14").tas
     tas.attrs.update(
         cell_methods="time: mean within days", standard_name="air_temperature"
     )

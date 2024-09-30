@@ -1,5 +1,5 @@
-pip>=24.0
-black>=24.4.2
+pip>=24.2.0
+black>=24.8.0
 bump-my-version>=0.23.0
 click>=8.0.0
 coverage>=4.5.4
@@ -23,7 +23,7 @@ ipython
 jupyter_client
 jupyter-server>=2.14.1 # not directly required, pinned by Snyk to avoid a vulnerability
 lxml
-matplotlib
+matplotlib>=3.5.0
 owslib
 pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pre-commit>=3.3.0
