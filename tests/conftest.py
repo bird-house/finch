@@ -2,7 +2,7 @@ import collections
 import tempfile
 from pathlib import Path
 from shutil import rmtree
-from typing import Dict, Optional, Tuple, Union
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
