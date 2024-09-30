@@ -8,7 +8,7 @@ from setuptools import find_namespace_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, "README.rst")).read()
-CHANGES = open(os.path.join(here, "CHANGES.rst")).read()
+CHANGES = open(os.path.join(here, "CHANGELOG.rst")).read()
 REQUIRES_PYTHON = ">=3.9"
 
 about = {}
