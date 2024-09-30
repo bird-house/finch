@@ -15,7 +15,7 @@ RUN mamba env create -n finch -f environment.yml \
     && mamba clean --all --yes
 
 # Add the finch conda environment to the path
-ENV PATH /opt/conda/envs/finch/bin:$PATH
+ENV PATH=/opt/conda/envs/finch/bin:$PATH
 
 # Copy finch source code
 COPY . /code
