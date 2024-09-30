@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import urllib.request
 import zipfile
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass, field
@@ -10,11 +11,11 @@ from itertools import chain
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import Callable, Deque, Optional, Union
+from urllib.error import URLError
 
 import cftime
 import numpy as np
 import pandas as pd
-import requests
 import sentry_sdk
 import xarray as xr
 import xclim
@@ -34,7 +35,6 @@ from pywps import (
 )
 from pywps.configuration import get_config_value
 from pywps.inout.outputs import MetaFile, MetaLink4
-from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
 from slugify import slugify
 from xclim.core.indicator import build_indicator_module_from_yaml
 from xclim.core.utils import InputKind
@@ -508,24 +508,18 @@ def is_opendap_url(url):
     Even then, some OpenDAP servers seem to not include the specified header...
     So we need to let the netCDF4 library actually open the file.
     """
+    req = urllib.request.Request(url, method="HEAD")
+
     try:
-        content_description = requests.head(url, timeout=5).headers.get(
-            "Content-Description"
-        )
-    except (ConnectionError, MissingSchema, InvalidSchema):
+        with urllib.request.urlopen(req, timeout=5) as response:
+            content_description = response.headers.get("Content-Description")
+    except URLError:
         return False
 
     if content_description:
         return content_description.lower().startswith("dods")
     else:
         return False
-
-        # try:
-        #     # For a non-DAP URL, this just hangs python.
-        #     dataset = netCDF4.Dataset(url)
-        # except OSError:
-        #     return False
-        # return dataset.disk_format in ("DAP2", "DAP4")
 
 
 def single_input_or_none(inputs, identifier) -> Optional[str]:

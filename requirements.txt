@@ -12,8 +12,7 @@ parse
 psutil
 python-slugify
 pywps>=4.5.1
-pyyaml
-requests>=2.32.2  # CVE-2024-35195
+pyyaml>=6.0.1
 scipy>=1.9.0
 sentry-sdk
 siphon
