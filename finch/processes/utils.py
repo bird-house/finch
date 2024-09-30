@@ -3,22 +3,13 @@ import json
 import logging
 import os
 import zipfile
+from collections.abc import Generator, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import chain
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import (
-    Callable,
-    Deque,
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Callable, Deque, Optional, Union
 
 import cftime
 import numpy as np
@@ -52,7 +43,7 @@ LOGGER = logging.getLogger("PYWPS")
 
 PywpsInput = Union[LiteralInput, ComplexInput, BoundingBoxInput]
 PywpsOutput = Union[LiteralOutput, ComplexOutput, BoundingBoxOutput]
-RequestInputs = Dict[str, Deque[PywpsInput]]
+RequestInputs = dict[str, Deque[PywpsInput]]
 
 # These are parameters that set options. They are not `compute` arguments.
 INDICATOR_OPTIONS = [
@@ -487,7 +478,7 @@ def chunk_dataset(ds, max_size=1000000, chunk_dims=None):
 
 
 def make_metalink_output(
-    process: Process, files: List[Path], description: str = None
+    process: Process, files: list[Path], description: str = None
 ) -> MetaLink4:
     """Make a MetaLink output from a list of files."""
     metalink = MetaLink4(
@@ -546,11 +537,11 @@ def single_input_or_none(inputs, identifier) -> Optional[str]:
 
 
 def netcdf_file_list_to_csv(
-    netcdf_files: Union[List[Path], List[str]],
+    netcdf_files: Union[list[Path], list[str]],
     output_folder,
     filename_prefix,
     csv_precision: Optional[int] = None,
-) -> Tuple[List[str], str]:
+) -> tuple[list[str], str]:
     """Write csv files for a list of netcdf files.
 
     Produces one csv file per calendar type, along with a metadata folder in the output_folder.
@@ -749,8 +740,8 @@ def zip_files(
 
 
 def make_tasmin_tasmax_pairs(
-    filenames: List[Path],
-) -> Generator[Tuple[Path, Path], None, None]:
+    filenames: list[Path],
+) -> Generator[tuple[Path, Path], None, None]:
     """Return pairs of corresponding tasmin-tasmax files based on their filename."""
     tasmin_files = [f for f in filenames if "tasmin" in f.name.lower()]
     tasmax_files = [f for f in filenames if "tasmax" in f.name.lower()]

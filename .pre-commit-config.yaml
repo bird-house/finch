@@ -20,7 +20,7 @@ repos:
       - id: debug-statements
       - id: pretty-format-json
         args: [ '--autofix', '--no-ensure-ascii', '--no-sort-keys' ]
-        exclude: ".geojson"
+        exclude: ".geojson|.ipynb"
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.35.1
     hooks:

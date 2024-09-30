@@ -2,7 +2,6 @@
 import logging
 from pathlib import Path
 from threading import Lock
-from typing import List
 from urllib.parse import urlparse
 
 import geopandas as gpd
@@ -45,8 +44,8 @@ def make_subset_file_name(resource, kind="sub"):
 
 
 def finch_subset_gridpoint(
-    process: Process, netcdf_inputs: List[ComplexInput], request_inputs: RequestInputs
-) -> List[Path]:
+    process: Process, netcdf_inputs: list[ComplexInput], request_inputs: RequestInputs
+) -> list[Path]:
     """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
     The expected names of the inputs are as followed (taken from `wpsio.py`):
@@ -126,8 +125,8 @@ def finch_subset_gridpoint(
 
 
 def finch_subset_bbox(
-    process: Process, netcdf_inputs: List[ComplexInput], request_inputs: RequestInputs
-) -> List[Path]:
+    process: Process, netcdf_inputs: list[ComplexInput], request_inputs: RequestInputs
+) -> list[Path]:
     """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
@@ -228,9 +227,9 @@ def extract_shp(path):
 
 def finch_average_shape(
     process: Process,
-    netcdf_inputs: List[ComplexInput],
+    netcdf_inputs: list[ComplexInput],
     request_inputs: RequestInputs,
-) -> List[Path]:
+) -> list[Path]:
     """Parse wps `request_inputs` based on their name and average `netcdf_inputs`.
 
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
@@ -292,9 +291,9 @@ def finch_average_shape(
 
 def finch_subset_shape(
     process: Process,
-    netcdf_inputs: List[ComplexInput],
+    netcdf_inputs: list[ComplexInput],
     request_inputs: RequestInputs,
-) -> List[Path]:
+) -> list[Path]:
     """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):

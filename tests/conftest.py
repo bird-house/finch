@@ -139,7 +139,7 @@ variable_descriptions = {
 
 
 @pytest.fixture(scope="session")
-def netcdf_datasets(request) -> Dict[str, Path]:
+def netcdf_datasets(request) -> dict[str, Path]:
     """Returns a Dict mapping a variable name to a corresponding netcdf path"""
     datasets = dict()
     for variable_name, description in variable_descriptions.items():
@@ -173,7 +173,7 @@ def netcdf_datasets(request) -> Dict[str, Path]:
 
 
 @pytest.fixture(scope="session")
-def netcdf_sdba_ds(request) -> Tuple[Dict[str, Path], DataArray]:
+def netcdf_sdba_ds(request) -> tuple[dict[str, Path], DataArray]:
     """Return datasets useful to test sdba."""
     out = {}
     u = np.random.rand(10000)
