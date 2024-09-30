@@ -9,7 +9,7 @@ from setuptools import find_namespace_packages, setup
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, "README.rst")).read()
 CHANGES = open(os.path.join(here, "CHANGES.rst")).read()
-REQUIRES_PYTHON = ">=3.8"
+REQUIRES_PYTHON = ">=3.9"
 
 about = {}
 with open(os.path.join(here, "finch", "__version__.py")) as f:
@@ -28,11 +28,11 @@ classifiers = [
     "Natural Language :: English",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 

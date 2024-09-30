@@ -3,19 +3,18 @@ channels:
   - conda-forge
 dependencies:
   - python >=3.8,<3.12
-  - pip >=24.0
-  - anyascii
-  - bottleneck
+  - pip >=24.2.0
+  - anyascii >=0.3.0
   - cftime
   - cf_xarray >=0.6.1,<0.9.3
   - click >=8.0.0
   - clisops >=0.11.0
-  - dask
+  - dask >=2023.5.1
   - distributed
   - geopandas !=0.13.1
   - h5netcdf
   - netcdf4 <=1.6.5
-  - numpy >=1.22.2
+  - numpy >=1.23.0
   - pandas >=1.5.3,<2.2.0
   - parse
   - psutil
@@ -23,7 +22,7 @@ dependencies:
   - pywps >=4.5.1
   - pyyaml
   - requests>=2.32.2
-  - scipy
+  - scipy >=1.9.0
   - sentry-sdk
   - siphon
   - xarray >=2023.01.0,<2023.11.0
