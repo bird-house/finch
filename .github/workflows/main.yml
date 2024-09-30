@@ -61,15 +61,13 @@ jobs:
           environment-file: environment.yml
           create-args: >-
             python=${{ matrix.python-version }}
-      - name: Mamba version
-        run: |
-          echo "micromamba: $(micromamba --version)"
+          # FIXME: https://github.com/mamba-org/setup-micromamba/issues/225
+          micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
       - name: Install finch-wps
         run: |
           make develop
       - name: Check versions
         run: |
-          conda list
           python -m pip check || true
       - name: Run tests
         run: |
