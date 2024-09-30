@@ -2,7 +2,7 @@ name: finch
 channels:
   - conda-forge
 dependencies:
-  - python >=3.9,<3.13
+  - python >=3.9,<3.12
   - pip >=24.2.0
   - anyascii >=0.3.0
   - cftime
