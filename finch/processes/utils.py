@@ -19,9 +19,10 @@ import pandas as pd
 import sentry_sdk
 import xarray as xr
 import xclim
+import xclim.core.options as xclim_options
 import yaml
 from netCDF4 import num2date
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_numeric_dtype  # noqa
 from pywps import (
     FORMATS,
     BoundingBoxInput,
@@ -36,6 +37,7 @@ from pywps import (
 from pywps.configuration import get_config_value
 from pywps.inout.outputs import MetaFile, MetaLink4
 from slugify import slugify
+from xclim.core import formatting
 from xclim.core.indicator import build_indicator_module_from_yaml
 from xclim.core.utils import InputKind
 
@@ -259,7 +261,7 @@ def compute_indices(
     )
 
     options = {name: kwds.pop(name) for name in INDICATOR_OPTIONS if name in kwds}
-    with xclim.core.options.set_options(**options):
+    with xclim_options.set_options(**options):
         out = func(**kwds)
 
     output_dataset = xr.Dataset(
@@ -272,7 +274,8 @@ def compute_indices(
             "YS": "yr",
             "MS": "mon",
             "QS-DEC": "seasonal",
-            "AS-JUL": "seasonal",
+            "YS-JAN": "seasonal",
+            "YS-JUL": "seasonal",
         }
         output_dataset.attrs["frequency"] = conversions.get(kwds["freq"], "day")
 
@@ -535,7 +538,7 @@ def netcdf_file_list_to_csv(
     output_folder,
     filename_prefix,
     csv_precision: Optional[int] = None,
-) -> tuple[list[str], str]:
+) -> tuple[list[Path], str]:
     """Write csv files for a list of netcdf files.
 
     Produces one csv file per calendar type, along with a metadata folder in the output_folder.
@@ -844,7 +847,7 @@ def update_history(
     """
     from finch import __version__  # pylint: disable=cyclic-import
 
-    merged_history = xclim.core.formatting.merge_attributes(
+    merged_history = formatting.merge_attributes(
         "history",
         *inputs_list,
         new_line="\n",
