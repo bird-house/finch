@@ -2,8 +2,8 @@ name: finch
 channels:
   - conda-forge
 dependencies:
-  - python >=3.8,<3.12
-  - anyascii >=0.3.2
+  - python >=3.9,<3.13
+  - anyascii >=0.3.0
   - birdy >=0.8.1
   - ipython >=8.0.0
   - matplotlib-base >=3.5.0

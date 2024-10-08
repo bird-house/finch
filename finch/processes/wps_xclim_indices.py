@@ -7,7 +7,7 @@ from typing import Optional
 import pandas as pd
 import xarray as xr
 from anyascii import anyascii
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_numeric_dtype  # noqa
 from pywps.app.exceptions import ProcessError
 
 from . import wpsio
