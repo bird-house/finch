@@ -2,7 +2,9 @@
 import io
 import logging
 from inspect import _empty as empty_default  # noqa
+from typing import Any, Union
 
+import pywps.exceptions
 import xclim
 from dask.diagnostics import ProgressBar
 from pywps import FORMATS, ComplexInput, LiteralInput, Process
@@ -10,8 +12,6 @@ from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 from sentry_sdk import configure_scope
 from xclim.core.utils import InputKind
-
-from .utils import PywpsInput
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -140,7 +140,7 @@ def make_xclim_indicator_process(
 
 def convert_xclim_inputs_to_pywps(
     params: dict, parent=None, parse_percentiles: bool = False
-) -> list[PywpsInput]:
+) -> tuple[list[Union[LiteralInput, ComplexInput]], list[Any]]:
     r"""Convert xclim indicators properties to pywps inputs.
 
     If parse_percentiles is True, percentile variables (\*_per) are dropped and replaced by
@@ -184,53 +184,55 @@ def convert_xclim_inputs_to_pywps(
                     default=default_percentiles[parent][name],
                 )
             )
-        elif attrs["kind"] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
+        elif attrs.kind in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
             inputs.append(make_nc_input(name))
             var_names.append(name)
         elif name in ["freq"]:
             inputs.append(
-                make_freq(name, default=attrs["default"], abstract=attrs["description"])
+                make_freq(name, default=attrs.default, abstract=attrs.description)
             )
         elif name in ["indexer"]:
             inputs.append(make_month())
             inputs.append(make_season())
-        elif attrs["kind"] in data_types:
-            choices = list(attrs["choices"]) if "choices" in attrs else None
-            default = attrs["default"] if attrs["default"] != empty_default else None
+        elif attrs.kind in data_types:
+            choices = list(attrs.choices) if "choices" in attrs else None
+            default = attrs.default if attrs.default != empty_default else None
             inputs.append(
                 LiteralInput(
                     name,
                     title=name.capitalize().replace("_", " "),
-                    abstract=attrs["description"],
-                    data_type=data_types[attrs["kind"]],
+                    abstract=attrs.description,
+                    data_type=data_types[attrs.kind],
                     min_occurs=0,
-                    max_occurs=1 if attrs["kind"] != InputKind.NUMBER_SEQUENCE else 99,
+                    max_occurs=1 if attrs.kind != InputKind.NUMBER_SEQUENCE else 99,
                     default=default,
                     allowed_values=choices,
                 )
             )
-        elif attrs["kind"] < 50:
+        elif attrs.kind < 50:
             # raise NotImplementedError(f"{parent}: {name}")
-            LOGGER.warning(
-                f"{parent}: Argument {name} of kind {attrs['kind']} is not implemented."
-            )
+            msg = f"{parent}: Argument {name} of kind {attrs.kind} is not implemented."
+            LOGGER.warning(msg)
 
     return inputs, var_names
 
 
 def make_freq(
-    name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "AS-JUL")
+    name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "YS-JAN", "YS-JUL")
 ):  # noqa: D103
-    return LiteralInput(
-        name,
-        "Frequency",
-        abstract=abstract,
-        data_type="string",
-        min_occurs=0,
-        max_occurs=1,
-        default=default,
-        allowed_values=allowed,
-    )
+    try:
+        return LiteralInput(
+            name,
+            "Frequency",
+            abstract=abstract,
+            data_type="string",
+            min_occurs=0,
+            max_occurs=1,
+            default=default,
+            allowed_values=allowed,
+        )
+    except pywps.exceptions.InvalidParameterValue:
+        print(name, default, abstract, allowed)
 
 
 def make_nc_input(name):  # noqa: D103

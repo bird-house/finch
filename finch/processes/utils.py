@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import urllib.request
 import zipfile
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass, field
@@ -10,17 +11,18 @@ from itertools import chain
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import Callable, Deque, Optional, Union
+from urllib.error import URLError
 
 import cftime
 import numpy as np
 import pandas as pd
-import requests
 import sentry_sdk
 import xarray as xr
 import xclim
+import xclim.core.options as xclim_options
 import yaml
 from netCDF4 import num2date
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_numeric_dtype  # noqa
 from pywps import (
     FORMATS,
     BoundingBoxInput,
@@ -34,8 +36,8 @@ from pywps import (
 )
 from pywps.configuration import get_config_value
 from pywps.inout.outputs import MetaFile, MetaLink4
-from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
 from slugify import slugify
+from xclim.core import formatting
 from xclim.core.indicator import build_indicator_module_from_yaml
 from xclim.core.utils import InputKind
 
@@ -259,7 +261,7 @@ def compute_indices(
     )
 
     options = {name: kwds.pop(name) for name in INDICATOR_OPTIONS if name in kwds}
-    with xclim.core.options.set_options(**options):
+    with xclim_options.set_options(**options):
         out = func(**kwds)
 
     output_dataset = xr.Dataset(
@@ -272,7 +274,8 @@ def compute_indices(
             "YS": "yr",
             "MS": "mon",
             "QS-DEC": "seasonal",
-            "AS-JUL": "seasonal",
+            "YS-JAN": "seasonal",
+            "YS-JUL": "seasonal",
         }
         output_dataset.attrs["frequency"] = conversions.get(kwds["freq"], "day")
 
@@ -508,24 +511,18 @@ def is_opendap_url(url):
     Even then, some OpenDAP servers seem to not include the specified header...
     So we need to let the netCDF4 library actually open the file.
     """
+    req = urllib.request.Request(url, method="HEAD")
+
     try:
-        content_description = requests.head(url, timeout=5).headers.get(
-            "Content-Description"
-        )
-    except (ConnectionError, MissingSchema, InvalidSchema):
+        with urllib.request.urlopen(req, timeout=5) as response:
+            content_description = response.headers.get("Content-Description")
+    except URLError:
         return False
 
     if content_description:
         return content_description.lower().startswith("dods")
     else:
         return False
-
-        # try:
-        #     # For a non-DAP URL, this just hangs python.
-        #     dataset = netCDF4.Dataset(url)
-        # except OSError:
-        #     return False
-        # return dataset.disk_format in ("DAP2", "DAP4")
 
 
 def single_input_or_none(inputs, identifier) -> Optional[str]:
@@ -541,7 +538,7 @@ def netcdf_file_list_to_csv(
     output_folder,
     filename_prefix,
     csv_precision: Optional[int] = None,
-) -> tuple[list[str], str]:
+) -> tuple[list[Path], str]:
     """Write csv files for a list of netcdf files.
 
     Produces one csv file per calendar type, along with a metadata folder in the output_folder.
@@ -850,7 +847,7 @@ def update_history(
     """
     from finch import __version__  # pylint: disable=cyclic-import
 
-    merged_history = xclim.core.formatting.merge_attributes(
+    merged_history = formatting.merge_attributes(
         "history",
         *inputs_list,
         new_line="\n",
