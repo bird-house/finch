@@ -1,6 +1,6 @@
 anyascii>=0.3.0
 cftime
-cf-xarray>=0.6.1,<0.9.3
+cf-xarray>=0.6.1,<0.10.1
 click>=8.0.0
 clisops>=0.11.0
 dask[complete]>=2023.5.1
