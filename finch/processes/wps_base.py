@@ -170,7 +170,7 @@ def convert_xclim_inputs_to_pywps(
         if (
             parse_percentiles
             and name.endswith("_per")
-            and attrs["kind"] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]
+            and attrs.kind in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]
         ):
             var_name = name.split("_")[0]
             inputs.append(
@@ -197,6 +197,10 @@ def convert_xclim_inputs_to_pywps(
         elif attrs.kind in data_types:
             choices = list(attrs.choices) if "choices" in attrs else None
             default = attrs.default if attrs.default != empty_default else None
+            # FIXME : Error in xclim 0.52 and 0.53 for frost_free_spell_max_length
+            if default is not None and choices is not None and default not in choices:
+                LOGGER.error('Indicator %s has incorrect choices for parameter %s : default %s not in %s', parent, name, default, choices)
+                choices = [default]
             inputs.append(
                 LiteralInput(
                     name,
