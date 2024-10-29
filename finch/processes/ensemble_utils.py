@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 import pandas as pd
+import geopandas as gpd
 import xarray as xr
 from pandas.api.types import is_numeric_dtype
 from parse import parse
@@ -21,6 +22,8 @@ from xclim import ensembles
 from xclim.core.calendar import days_since_to_doy, doy_to_days_since, percentile_doy
 from xclim.core.indicator import Indicator
 from xclim.indicators.atmos import tg
+from xscen.aggregate import spatial_mean
+from . import wpsio
 
 from .subset import finch_subset_bbox, finch_subset_gridpoint, finch_subset_shape
 from .utils import (
@@ -350,7 +353,7 @@ def make_file_groups(files_list: list[Path], variables: set) -> list[dict[str, P
 
 
 def make_ensemble(
-    files: list[Path], percentiles: list[int], average_dims: Optional[tuple[str]] = None
+    files: list[Path], percentiles: list[int], spatavg: Optional[bool] = False, region: Optional[dict] = None
 ) -> None:  # noqa: D103
     ensemble = ensembles.create_ensemble(
         files, realizations=[file.stem for file in files]
@@ -364,8 +367,13 @@ def make_ensemble(
         if ensemble[v].attrs.get("is_dayofyear", 0) == 1:
             ensemble[v] = doy_to_days_since(ensemble[v])
 
-    if average_dims is not None:
-        ensemble = ensemble.mean(dim=average_dims)
+    if spatavg:
+        #ensemble = ensemble.mean(dim=average_dims)
+        if "shape" in region:
+            method="xesmf"
+        else:
+            method = "coslat"
+        ensemble = spatial_mean(ds=ensemble, method=method, region=region)
 
     if percentiles:
         ensemble_percentiles = ensembles.ensemble_percentiles(
@@ -540,13 +548,22 @@ def ensemble_common_handler(
     )
 
     if single_input_or_none(request.inputs, "average"):
+        spatavg = True
         if subset_function == finch_subset_gridpoint:
             average_dims = ("region",)
+            region = None
+
         else:
-            average_dims = ("lat", "lon")
+            shp = gpd.read_file(Path(request.inputs[wpsio.shape.identifier][0].file)).to_crs("EPSG:4326")
+            shp['geometry']= shp.make_valid()
+            region = dict(name='region', method="shape", shape=shp)
+            #average_dims = ("lat", "lon")
     else:
-        average_dims = None
-    write_log(process, f"Will average over {average_dims}")
+        #average_dims = None
+        region = None
+        spatavg = False
+
+    write_log(process, f"Will average over {region}")
 
     base_work_dir = Path(process.workdir)
     ensembles = []
@@ -625,7 +642,7 @@ def ensemble_common_handler(
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
 
-        ensemble = make_ensemble(indices_files, ensemble_percentiles, average_dims)
+        ensemble = make_ensemble(files=indices_files, percentiles=ensemble_percentiles, spatavg=spatavg, region=region)
         ensemble.attrs["source_datasets"] = "\n".join(
             [dsinp.url for dsinp in netcdf_inputs]
         )
