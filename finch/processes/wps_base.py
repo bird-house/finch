@@ -184,7 +184,7 @@ def convert_xclim_inputs_to_pywps(
                     default=default_percentiles[parent][name],
                 )
             )
-        elif attrs.kind in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
+        elif attrs["kind"] in [InputKind.VARIABLE, InputKind.OPTIONAL_VARIABLE]:
             inputs.append(make_nc_input(name))
             var_names.append(name)
         elif name in ["freq"]:
@@ -194,7 +194,7 @@ def convert_xclim_inputs_to_pywps(
         elif name in ["indexer"]:
             inputs.append(make_month())
             inputs.append(make_season())
-        elif attrs.kind in data_types:
+        elif attrs["kind"] in data_types:
             choices = list(attrs["choices"]) if "choices" in attrs else None
             default = attrs["default"] if attrs["default"] != empty_default else None
             inputs.append(
@@ -209,7 +209,7 @@ def convert_xclim_inputs_to_pywps(
                     allowed_values=choices,
                 )
             )
-        elif attrs.kind < 50:
+        elif attrs["kind"] < 50:
             # raise NotImplementedError(f"{parent}: {name}")
             LOGGER.warning(
                 f"{parent}: Argument {name} of kind {attrs['kind']} is not implemented."
