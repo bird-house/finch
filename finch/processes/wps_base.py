@@ -199,7 +199,13 @@ def convert_xclim_inputs_to_pywps(
             default = attrs.default if attrs.default != empty_default else None
             # FIXME : Error in xclim 0.52 and 0.53 for frost_free_spell_max_length
             if default is not None and choices is not None and default not in choices:
-                LOGGER.error('Indicator %s has incorrect choices for parameter %s : default %s not in %s', parent, name, default, choices)
+                LOGGER.error(
+                    "Indicator %s has incorrect choices for parameter %s : default %s not in %s",
+                    parent,
+                    name,
+                    default,
+                    choices,
+                )
                 choices = [default]
             inputs.append(
                 LiteralInput(
