@@ -5,7 +5,7 @@ click>=8.0.0
 clisops>=0.11.0
 dask[complete]>=2023.5.1
 geopandas!=0.13.1
-netcdf4<=1.6.5
+netcdf4<=1.7.2
 numpy>=1.23.0
 pandas>=2.2.0
 parse
