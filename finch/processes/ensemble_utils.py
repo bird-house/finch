@@ -376,10 +376,11 @@ def make_ensemble(
         #ensemble = ensemble.mean(dim=average_dims)
         if region is None:
             method = "cos-lat"
-            ensemble = spatial_mean(ds=ensemble, method=method, region=None, spatial_subset=False)
+            spsub = False
         else:
             method = "xesmf"
-            ensemble = spatial_mean(ds=ensemble, method=method, region=region, kwargs={"skipna": True})
+            spsub = True
+        ensemble = spatial_mean(ds=ensemble, method=method, spatial_subset=spsub, region=region, kwargs={"skipna": True})
 
     if percentiles:
         ensemble_percentiles = ensembles.ensemble_percentiles(
