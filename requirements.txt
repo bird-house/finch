@@ -20,3 +20,4 @@ siphon
 xarray>=2023.11.0
 xclim==0.52.2 # remember to match xclim version in environment.yml as well
 xesmf>=0.6.2
+xscen==0.11.0
