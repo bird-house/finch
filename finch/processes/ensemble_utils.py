@@ -8,6 +8,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Union
+from datetime import datetime
 
 import pandas as pd
 import geopandas as gpd
@@ -361,6 +362,10 @@ def make_ensemble(
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
 
+    if len(ensemble.lon) == 1 and len(ensemble.lat)==1 and spatavg:
+        ensemble.attrs['history'] = f"{ensemble.attrs['history']}:[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] spatial average flag is set to True but will be skipped as dataset contains a single point"
+        spatavg  = False
+
     # If data is in day of year, percentiles won't make sense.
     # Convert to "days since" (base will be the time coordinate)
     for v in ensemble.data_vars:
@@ -369,11 +374,12 @@ def make_ensemble(
 
     if spatavg:
         #ensemble = ensemble.mean(dim=average_dims)
-        if "shape" in region:
-            method="xesmf"
+        if region is None:
+            method = "cos-lat"
+            ensemble = spatial_mean(ds=ensemble, method=method, region=None, spatial_subset=False)
         else:
-            method = "coslat"
-        ensemble = spatial_mean(ds=ensemble, method=method, region=region)
+            method = "xesmf"
+            ensemble = spatial_mean(ds=ensemble, method=method, region=region, kwargs={"skipna": True})
 
     if percentiles:
         ensemble_percentiles = ensembles.ensemble_percentiles(
@@ -550,7 +556,7 @@ def ensemble_common_handler(
     if single_input_or_none(request.inputs, "average"):
         spatavg = True
         if subset_function == finch_subset_gridpoint:
-            average_dims = ("region",)
+            #average_dims = ("region",)
             region = None
 
         else:
@@ -668,7 +674,7 @@ def ensemble_common_handler(
             ensemble = ensemble.round(prec)
             prec = 0
         df = dataset_to_dataframe(ensemble)
-        if average_dims is None:
+        if spatavg is None:
             dims = ["lat", "lon", "time"]
         else:
             dims = ["time"]
