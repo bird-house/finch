@@ -376,11 +376,9 @@ def make_ensemble(
         #ensemble = ensemble.mean(dim=average_dims)
         if region is None:
             method = "cos-lat"
-            spsub = False
         else:
             method = "xesmf"
-            spsub = True
-        ensemble = spatial_mean(ds=ensemble, method=method, spatial_subset=spsub, region=region, kwargs={"skipna": True})
+        ensemble = spatial_mean(ds=ensemble, method=method, spatial_subset=False, region=region, kwargs={"skipna": True})
 
     if percentiles:
         ensemble_percentiles = ensembles.ensemble_percentiles(
@@ -557,14 +555,11 @@ def ensemble_common_handler(
     if single_input_or_none(request.inputs, "average"):
         spatavg = True
         if subset_function == finch_subset_gridpoint:
-            #average_dims = ("region",)
             region = None
-
         else:
             shp = gpd.read_file(Path(request.inputs[wpsio.shape.identifier][0].file)).to_crs("EPSG:4326")
             shp['geometry']= shp.make_valid()
             region = dict(name='region', method="shape", shape=shp)
-            #average_dims = ("lat", "lon")
     else:
         #average_dims = None
         region = None
