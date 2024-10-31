@@ -173,6 +173,42 @@ def test_ensemble_spatial_avg_poly(client):
             assert variable_dims[d] == v
 
 
+def test_ensemble_spatial_avg_poly_noperc(client):
+    # --- given ---
+    identifier = "ensemble_polygon_tg_mean"
+    inputs = [
+        wps_literal_input("shape", geojson.dumps(poly)),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("scenario", "rcp45"),
+        wps_literal_input("dataset", "test_subset"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", ""),
+        wps_literal_input("output_format", "netcdf"),
+        wps_literal_input("output_name", "testens"),
+        wps_literal_input("average", "True"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
+    exp_dims = {
+        "realization": 2,
+        "time": 4,  # there are roughly 4 months in the test datasets
+        "scenario": 2,
+    }
+    assert dims == exp_dims
+
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
+    assert sorted(ensemble_variables) == [f"tg_mean"]
+    for var in ensemble_variables.values():
+        variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
+        for d, v in exp_dims.items():
+            assert variable_dims[d] == v
 
 
 def test_ensemble_heatwave_frequency_grid_point(client):
