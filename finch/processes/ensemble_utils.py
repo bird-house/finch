@@ -6,12 +6,12 @@ from collections import deque
 from collections.abc import Iterable
 from copy import deepcopy
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
-from datetime import datetime
 
-import pandas as pd
 import geopandas as gpd
+import pandas as pd
 import xarray as xr
 from pandas.api.types import is_numeric_dtype
 from parse import parse
@@ -24,8 +24,8 @@ from xclim.core.calendar import days_since_to_doy, doy_to_days_since, percentile
 from xclim.core.indicator import Indicator
 from xclim.indicators.atmos import tg
 from xscen.aggregate import spatial_mean
-from . import wpsio
 
+from . import wpsio
 from .subset import finch_subset_bbox, finch_subset_gridpoint, finch_subset_shape
 from .utils import (
     DatasetConfiguration,
@@ -354,7 +354,10 @@ def make_file_groups(files_list: list[Path], variables: set) -> list[dict[str, P
 
 
 def make_ensemble(
-    files: list[Path], percentiles: list[int], spatavg: Optional[bool] = False, region: Optional[dict] = None
+    files: list[Path],
+    percentiles: list[int],
+    spatavg: Optional[bool] = False,
+    region: Optional[dict] = None,
 ) -> None:  # noqa: D103
     ensemble = ensembles.create_ensemble(
         files, realizations=[file.stem for file in files]
@@ -363,9 +366,7 @@ def make_ensemble(
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
 
     if len(ensemble.lon) == 1 and len(ensemble.lat)==1 and spatavg:
-        ensemble.attrs['history'] = (f"{ensemble.attrs['history']}:[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] "
-                                     f"spatial average flag is set to True but will be skipped as dataset contains a "
-                                     f"single point")
+        ensemble.attrs['history'] = f"{ensemble.attrs['history']}:[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] spatial average flag is set to True but will be skipped as dataset contains a single point"
         spatavg  = False
 
     # If data is in day of year, percentiles won't make sense.
@@ -375,13 +376,18 @@ def make_ensemble(
             ensemble[v] = doy_to_days_since(ensemble[v])
 
     if spatavg:
-        #ensemble = ensemble.mean(dim=average_dims)
+        # ensemble = ensemble.mean(dim=average_dims)
         if region is None:
             method = "cos-lat"
         else:
             method = "xesmf"
-        ensemble = spatial_mean(ds=ensemble, method=method, spatial_subset=False,
-                                region=region, kwargs={"skipna": True})
+        ensemble = spatial_mean(
+            ds=ensemble,
+            method=method,
+            spatial_subset=False,
+            region=region,
+            kwargs={"skipna": True},
+        )
 
     if percentiles:
         ensemble_percentiles = ensembles.ensemble_percentiles(
@@ -560,11 +566,13 @@ def ensemble_common_handler(
         if subset_function == finch_subset_gridpoint:
             region = None
         else:
-            shp = gpd.read_file(Path(request.inputs[wpsio.shape.identifier][0].file)).to_crs("EPSG:4326")
-            shp['geometry']= shp.make_valid()
-            region = dict(name='region', method="shape", shape=shp)
+            shp = gpd.read_file(
+                Path(request.inputs[wpsio.shape.identifier][0].file)
+            ).to_crs("EPSG:4326")
+            shp["geometry"] = shp.make_valid()
+            region = dict(name="region", method="shape", shape=shp)
     else:
-        #average_dims = None
+        # average_dims = None
         region = None
         spatavg = False
 
@@ -647,7 +655,12 @@ def ensemble_common_handler(
         warnings.filterwarnings("default", category=FutureWarning)
         warnings.filterwarnings("default", category=UserWarning)
 
-        ensemble = make_ensemble(files=indices_files, percentiles=ensemble_percentiles, spatavg=spatavg, region=region)
+        ensemble = make_ensemble(
+            files=indices_files,
+            percentiles=ensemble_percentiles,
+            spatavg=spatavg,
+            region=region,
+        )
         ensemble.attrs["source_datasets"] = "\n".join(
             [dsinp.url for dsinp in netcdf_inputs]
         )
