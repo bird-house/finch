@@ -366,7 +366,9 @@ def make_ensemble(
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
 
     if len(ensemble.lon) == 1 and len(ensemble.lat)==1 and spatavg:
-        ensemble.attrs['history'] = f"{ensemble.attrs['history']}:[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] spatial average flag is set to True but will be skipped as dataset contains a single point"
+        ensemble.attrs['history'] = (f"{ensemble.attrs['history']}:[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
+                                     f"spatial average flag is set to True but will be skipped as dataset contains a "
+                                     f"single point")
         spatavg  = False
 
     # If data is in day of year, percentiles won't make sense.
