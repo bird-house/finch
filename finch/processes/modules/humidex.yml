@@ -19,10 +19,10 @@ indicators:
         default: "YS"
       threshold:
         default: "30"
-        units: ""
+        units: "1"
 
 variables:
   HXmax:
-    canonical_units: ""
+    canonical_units: "1"
     cell_methods: "time: max"
     description: Daily Maximum Humidex
