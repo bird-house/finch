@@ -271,7 +271,7 @@ def test_ensemble_tx_mean_grid_point_no_perc_csv(client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,time,scenario")
+    assert lines[0].startswith("time,lat,lon,scenario")
     assert len(lines[0].split(",")) == 6
     assert all([line.startswith("tx_mean:") for line in lines[0].split(",")[-2:]])
     n_data_rows = len(lines) - 2
@@ -489,7 +489,7 @@ def test_ensemble_heatwave_frequency_grid_point_csv(client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,time,scenario")
+    assert lines[0].startswith("time,lat,lon,scenario")
     n_data_rows = len(lines) - 2
     assert n_data_rows == 4  # time=4 (last month is NaN, but kept in CSV)
 
@@ -522,7 +522,7 @@ def test_ensemble_heatwave_frequency_bbox_csv(client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,time")
+    assert lines[0].startswith("time,lat,lon")
     n_data_rows = len(lines) - 2
     assert (
         n_data_rows == 2 * 2 * 4
@@ -774,7 +774,7 @@ def test_ensemble_heatwave_frequency_polygon_csv(client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,time")
+    assert lines[0].startswith("time,lat,lon")
     n_data_rows = len(lines) - 2  # header + ending line
     # lat: 11 lon: 11, time=4 (last month is NaN, but kept in CSV)
     assert n_data_rows == 11 * 11 * 4

@@ -365,10 +365,10 @@ def make_ensemble(
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
 
-    if len(ensemble.lon) == 1 and len(ensemble.lat)==1 and spatavg:
-        ensemble.attrs['history'] = (f"{ensemble.attrs['history']}:[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
+    if ensemble.lon.size == 1 and ensemble.lat.size == 1 and spatavg:
+        ensemble.attrs['history'] = (f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
                                      f"spatial average flag is set to True but will be skipped as dataset contains a "
-                                     f"single point")
+                                     f"single point\n{ensemble.attrs.get('history', '')}")
         spatavg  = False
 
     # If data is in day of year, percentiles won't make sense.
@@ -567,6 +567,13 @@ def ensemble_common_handler(
         spatavg = True
         if subset_function == finch_subset_gridpoint:
             region = None
+        elif subset_function == finch_subset_bbox:
+            lon0 = single_input_or_none(request.inputs, wpsio.lon0.identifier)
+            lat0 = single_input_or_none(request.inputs, wpsio.lat0.identifier)
+            lon1 = single_input_or_none(request.inputs, wpsio.lon1.identifier)
+            lat1 = single_input_or_none(request.inputs, wpsio.lat1.identifier)
+            bbox = dict(lat_bnds=[lat0, lat1], lon_bnds=[lon0, lon1])
+            region = dict(name="region", method="bbox", **bbox)
         else:
             shp = gpd.read_file(
                 Path(request.inputs[wpsio.shape.identifier][0].file)
