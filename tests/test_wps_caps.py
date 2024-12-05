@@ -52,7 +52,7 @@ def test_wps_caps_no_datasets(client, monkeypatch):
         indicators.extend(mod_dict[mod]["indicators"])
     subset_processes_count = 4
     sdba_processes_count = 1
-    others = 2
+    others = 1
     assert len(
         indicators
     ) + others + subset_processes_count + sdba_processes_count == len(names)

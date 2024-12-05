@@ -10,7 +10,7 @@ def geomet_geojson():
     return (Path(__file__).parent / "data" / "geomet.geojson").as_posix()
 
 
-@pytest.skip('Broken in cf-xarray')
+@pytest.mark.skip('Broken in cf-xarray')
 def test_wps_geoseries_to_netcdf(client):
     identifier = "geoseries_to_netcdf"
     inputs = [
@@ -25,7 +25,7 @@ def test_wps_geoseries_to_netcdf(client):
         print(ds.attrs)
 
 
-@pytest.skip('Broken in cf-xarray')
+@pytest.mark.skip('Broken in cf-xarray')
 def test_wps_geoseries_to_netcdf_feat_squeeze(client):
     identifier = "geoseries_to_netcdf"
     inputs = [
