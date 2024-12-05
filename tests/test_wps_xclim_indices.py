@@ -259,7 +259,7 @@ class TestFitProcess:
         inputs = [
             wps_input_file("discharge", tmp_path / "q.nc"),
             wps_literal_input("dist", "norm"),
-            wps_literal_input("check_missing", "skip")
+            wps_literal_input("check_missing", "skip"),
         ]
         outputs = execute_process(client, self.identifier, inputs)
         ds = xr.open_dataset(outputs[0])
