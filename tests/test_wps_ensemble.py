@@ -198,7 +198,7 @@ def test_ensemble_spatial_avg_poly_noperc(client):
     assert dims == exp_dims
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
-    assert sorted(ensemble_variables) == [f"tg_mean"]
+    assert sorted(ensemble_variables) == ["tg_mean"]
     for var in ensemble_variables.values():
         variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
         for d, v in exp_dims.items():

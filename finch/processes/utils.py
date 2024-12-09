@@ -513,7 +513,7 @@ def is_opendap_url(url):
     So we need to let the netCDF4 library actually open the file.
     """
     parts = urlparse(url)
-    meta_url = urlunparse([parts[0], parts[1], parts[2] + '.dds', None, None, None])
+    meta_url = urlunparse([parts[0], parts[1], parts[2] + ".dds", None, None, None])
     req = urllib.request.Request(meta_url, method="HEAD")
 
     try:
