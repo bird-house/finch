@@ -12,6 +12,7 @@ from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import Callable, Deque, Optional, Union
 from urllib.error import URLError
+from urllib.parse import urlparse, urlunparse
 
 import cftime
 import numpy as np
@@ -511,7 +512,9 @@ def is_opendap_url(url):
     Even then, some OpenDAP servers seem to not include the specified header...
     So we need to let the netCDF4 library actually open the file.
     """
-    req = urllib.request.Request(url, method="HEAD")
+    parts = urlparse(url)
+    meta_url = urlunparse([parts[0], parts[1], parts[2] + '.dds', None, None, None])
+    req = urllib.request.Request(meta_url, method="HEAD")
 
     try:
         with urllib.request.urlopen(req, timeout=5) as response:

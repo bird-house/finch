@@ -1,5 +1,4 @@
 import collections
-import tempfile
 from pathlib import Path
 from shutil import rmtree
 from typing import Optional, Union
@@ -19,18 +18,6 @@ from xclim.testing.helpers import (
 import finch.processes
 import finch.wsgi
 from _common import CFG_FILE, client_for
-
-TEMP_DIR = Path(__file__).parent / "tmp"
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_temp_data(request):
-    TEMP_DIR.mkdir(exist_ok=True)
-
-    def _cleanup_temp():
-        rmtree(TEMP_DIR, ignore_errors=True)
-
-    request.addfinalizer(_cleanup_temp)
 
 
 def _create_test_dataset(
@@ -91,16 +78,16 @@ def _create_test_dataset(
     return obj
 
 
-def _create_and_write_dataset(variable, **kwds) -> Path:
+def _create_and_write_dataset(variable, folder, **kwds) -> Path:
     """Write a DataSet to disk and return its path"""
     ds = _create_test_dataset(variable, **kwds)
-    return _write_dataset(variable, ds)
+    return _write_dataset(variable, ds, folder)
 
 
-def _write_dataset(variable, ds) -> Path:
-    _, filename = tempfile.mkstemp(f"finch_test_data_{variable}.nc", dir=TEMP_DIR)
+def _write_dataset(variable, ds, folder) -> Path:
+    filename = folder / f"finch_test_data_{variable}.nc"
     ds.to_netcdf(filename)
-    return Path(filename)
+    return filename
 
 
 variable_descriptions = {
@@ -139,16 +126,17 @@ variable_descriptions = {
 
 
 @pytest.fixture(scope="session")
-def netcdf_datasets(request) -> dict[str, Path]:
+def netcdf_datasets(request, tmp_path_factory) -> dict[str, Path]:
     """Returns a Dict mapping a variable name to a corresponding netcdf path"""
     datasets = dict()
+    tmpdir = tmp_path_factory.mktemp('nc_datasets')
     for variable_name, description in variable_descriptions.items():
-        filename = _create_and_write_dataset(variable_name, **description, seed=1)
+        filename = _create_and_write_dataset(variable_name, folder=tmpdir, **description, seed=1)
         datasets[variable_name] = filename
 
         # With missing values
         filename = _create_and_write_dataset(
-            variable_name, **description, seed=1, missing=True
+            variable_name, folder=tmpdir, **description, seed=1, missing=True
         )
         datasets[variable_name + "_missing"] = filename
 
@@ -156,24 +144,24 @@ def netcdf_datasets(request) -> dict[str, Path]:
     tas = xr.open_dataset(datasets["tas"]).tas
 
     tn10 = percentile_doy(tasmin, per=0.1).to_dataset(name="tn10")
-    datasets["tn10"] = _write_dataset("tn10", tn10)
+    datasets["tn10"] = _write_dataset("tn10", tn10, tmpdir)
     t10 = percentile_doy(tas, per=0.1).to_dataset(name="t10")
-    datasets["t10"] = _write_dataset("t10", t10)
+    datasets["t10"] = _write_dataset("t10", t10, tmpdir)
     t90 = percentile_doy(tas, per=0.9).to_dataset(name="t90")
-    datasets["t90"] = _write_dataset("t90", t90)
+    datasets["t90"] = _write_dataset("t90", t90, tmpdir)
 
     # Create file with two variables
     keys = ["pr", "discharge"]
     ds = xr.merge(
         [_create_test_dataset(k, **variable_descriptions[k], seed=1) for k in keys]
     )
-    datasets["pr_discharge"] = _write_dataset("pr_discharge", ds)
+    datasets["pr_discharge"] = _write_dataset("pr_discharge", ds, tmpdir)
 
     return datasets
 
 
 @pytest.fixture(scope="session")
-def netcdf_sdba_ds(request) -> tuple[dict[str, Path], DataArray]:
+def netcdf_sdba_ds(request, tmp_path_factory) -> tuple[dict[str, Path], DataArray]:
     """Return datasets useful to test sdba."""
     out = {}
     u = np.random.rand(10000)
@@ -187,22 +175,23 @@ def netcdf_sdba_ds(request) -> tuple[dict[str, Path], DataArray]:
     y = yd.ppf(u)
 
     # Test train
-    out["qdm_tas_hist"] = _write_dataset("qdm_tas_hist", series(x, "tas"))
-    out["qdm_tas_ref"] = _write_dataset("qdm_tas_ref", series(y, "tas"))
-    out["qdm_pr_hist"] = _write_dataset("qdm_pr_hist", series(x, "pr"))
-    out["qdm_pr_ref"] = _write_dataset("qdm_pr_ref", series(y, "pr"))
+    tmpdir = tmp_path_factory.mktemp('nc_sdba_datasets')
+    out["qdm_tas_hist"] = _write_dataset("qdm_tas_hist", series(x, "tas"), tmpdir)
+    out["qdm_tas_ref"] = _write_dataset("qdm_tas_ref", series(y, "tas"), tmpdir)
+    out["qdm_pr_hist"] = _write_dataset("qdm_pr_hist", series(x, "pr"), tmpdir)
+    out["qdm_pr_ref"] = _write_dataset("qdm_pr_ref", series(y, "pr"), tmpdir)
 
     return out, series(u, "u")
 
 
 @pytest.fixture(scope="module")
-def client():
+def client(tmp_path_factory):
     service = finch.wsgi.create_app(cfgfiles=CFG_FILE)
 
     # overwrite output path from defaults.cfg
-    outputpath = tempfile.gettempdir()
+    outputpath = tmp_path_factory.mktemp('wps_outputs')
     configuration.CONFIG.set("server", "outputurl", f"file://{outputpath}")
-    configuration.CONFIG.set("server", "outputpath", outputpath)
+    configuration.CONFIG.set("server", "outputpath", str(outputpath))
 
     return client_for(service)
 
@@ -242,8 +231,8 @@ def series(values: np.ndarray, name: str, start: str = "2000-01-01"):
 
 
 @pytest.fixture
-def hourly_dataset():  # noqa: F811
+def hourly_dataset(tmp_path_factory):  # noqa: F811
     """Ten days of precip with first hour missing."""
     a = np.arange(10 * 24.0)
     a[0] = np.nan
-    return _write_dataset("pr_hr", timeseries(values=a, variable="pr", freq="H"))
+    return _write_dataset("pr_hr", timeseries(values=a, variable="pr", freq="H"), tmp_path_factory.mktemp('hourly_ds'))
