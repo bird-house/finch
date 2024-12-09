@@ -25,7 +25,7 @@ def _create_test_dataset(
     cell_methods: str,
     standard_name: str,
     units: str,
-    seed: Optional[Union[int, float, np.ndarray]] = None,
+    seed: int | float | np.ndarray | None = None,
     missing: bool = False,
 ):
     """Create a synthetic dataset for variable.

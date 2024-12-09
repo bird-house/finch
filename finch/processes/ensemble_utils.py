@@ -75,9 +75,9 @@ class Dataset:  # noqa: D101
     model: str
     scenario: str
     frequency: str = "day"
-    realization: Optional[str] = None
-    date_start: Optional[str] = None
-    date_end: Optional[str] = None
+    realization: str | None = None
+    date_start: str | None = None
+    date_end: str | None = None
 
     @classmethod
     def from_filename(cls, filename, pattern):  # noqa: D102
@@ -90,10 +90,10 @@ class Dataset:  # noqa: D101
 def file_is_required(
     filename: str,
     pattern: str,
-    model_lists: Optional[dict[str, list[str]]] = None,
+    model_lists: dict[str, list[str]] | None = None,
     variables: list[str] = None,
     scenario: str = None,
-    models: list[Union[str, tuple[str, int]]] = None,
+    models: list[str | tuple[str, int]] = None,
 ):
     """Parse metadata and filter datasets."""
     file = Dataset.from_filename(filename, pattern)
@@ -181,9 +181,9 @@ def _make_resource_input(url: str, workdir: str, local: bool):
 def get_datasets(
     dsconf: DatasetConfiguration,
     workdir: str,
-    variables: Optional[list[str]] = None,
-    scenario: Optional[str] = None,
-    models: Optional[list[str]] = None,
+    variables: list[str] | None = None,
+    scenario: str | None = None,
+    models: list[str] | None = None,
 ) -> list[PywpsInput]:
     """Parse a directory to find files and filters the list to return only the needed ones, as resource inputs.
 
@@ -219,7 +219,7 @@ def get_datasets(
     return inputs
 
 
-def _formatted_coordinate(value) -> Optional[str]:
+def _formatted_coordinate(value) -> str | None:
     """Return the first float value.
 
     The value can be a comma separated list of floats or a single float.
@@ -356,8 +356,8 @@ def make_file_groups(files_list: list[Path], variables: set) -> list[dict[str, P
 def make_ensemble(
     files: list[Path],
     percentiles: list[int],
-    spatavg: Optional[bool] = False,
-    region: Optional[dict] = None,
+    spatavg: bool | None = False,
+    region: dict | None = None,
 ) -> None:  # noqa: D103
     ensemble = ensembles.create_ensemble(
         files, realizations=[file.stem for file in files]
