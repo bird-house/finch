@@ -140,7 +140,7 @@ def make_xclim_indicator_process(
 
 def convert_xclim_inputs_to_pywps(
     params: dict, parent=None, parse_percentiles: bool = False
-) -> tuple[list[Union[LiteralInput, ComplexInput]], list[Any]]:
+) -> tuple[list[LiteralInput | ComplexInput], list[Any]]:
     r"""Convert xclim indicators properties to pywps inputs.
 
     If parse_percentiles is True, percentile variables (\*_per) are dropped and replaced by

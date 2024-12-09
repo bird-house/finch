@@ -20,9 +20,7 @@ from xclim.core.options import (
 from .utils import PywpsInput, PywpsOutput, get_datasets_config
 
 
-def copy_io(
-    io: Union[PywpsInput, PywpsOutput], **kwargs
-) -> Union[PywpsInput, PywpsOutput]:
+def copy_io(io: PywpsInput | PywpsOutput, **kwargs) -> PywpsInput | PywpsOutput:
     """Create a new input or output with modified parameters.
 
     Use this if you want one of the inputs in this file, but want to modify it.

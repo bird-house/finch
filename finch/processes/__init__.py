@@ -143,7 +143,7 @@ def get_processes():
         SubsetPolygonProcess(),
         AveragePolygonProcess(),
         HourlyToDailyProcess(),
-        GeoseriesToNetcdfProcess(),
+        # GeoseriesToNetcdfProcess(),
     ]
 
     return processes
