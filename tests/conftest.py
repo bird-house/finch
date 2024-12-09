@@ -129,9 +129,11 @@ variable_descriptions = {
 def netcdf_datasets(request, tmp_path_factory) -> dict[str, Path]:
     """Returns a Dict mapping a variable name to a corresponding netcdf path"""
     datasets = dict()
-    tmpdir = tmp_path_factory.mktemp('nc_datasets')
+    tmpdir = tmp_path_factory.mktemp("nc_datasets")
     for variable_name, description in variable_descriptions.items():
-        filename = _create_and_write_dataset(variable_name, folder=tmpdir, **description, seed=1)
+        filename = _create_and_write_dataset(
+            variable_name, folder=tmpdir, **description, seed=1
+        )
         datasets[variable_name] = filename
 
         # With missing values
@@ -175,7 +177,7 @@ def netcdf_sdba_ds(request, tmp_path_factory) -> tuple[dict[str, Path], DataArra
     y = yd.ppf(u)
 
     # Test train
-    tmpdir = tmp_path_factory.mktemp('nc_sdba_datasets')
+    tmpdir = tmp_path_factory.mktemp("nc_sdba_datasets")
     out["qdm_tas_hist"] = _write_dataset("qdm_tas_hist", series(x, "tas"), tmpdir)
     out["qdm_tas_ref"] = _write_dataset("qdm_tas_ref", series(y, "tas"), tmpdir)
     out["qdm_pr_hist"] = _write_dataset("qdm_pr_hist", series(x, "pr"), tmpdir)
@@ -189,7 +191,7 @@ def client(tmp_path_factory):
     service = finch.wsgi.create_app(cfgfiles=CFG_FILE)
 
     # overwrite output path from defaults.cfg
-    outputpath = tmp_path_factory.mktemp('wps_outputs')
+    outputpath = tmp_path_factory.mktemp("wps_outputs")
     configuration.CONFIG.set("server", "outputurl", f"file://{outputpath}")
     configuration.CONFIG.set("server", "outputpath", str(outputpath))
 
@@ -235,4 +237,8 @@ def hourly_dataset(tmp_path_factory):  # noqa: F811
     """Ten days of precip with first hour missing."""
     a = np.arange(10 * 24.0)
     a[0] = np.nan
-    return _write_dataset("pr_hr", timeseries(values=a, variable="pr", freq="H"), tmp_path_factory.mktemp('hourly_ds'))
+    return _write_dataset(
+        "pr_hr",
+        timeseries(values=a, variable="pr", freq="H"),
+        tmp_path_factory.mktemp("hourly_ds"),
+    )
