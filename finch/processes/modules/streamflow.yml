@@ -3,7 +3,7 @@ doc:
 realm: land
 indicators:
     discharge_stats:
-        base: xclim.core.indicator.stats
+        base: stats
         cf_attrs:
             long_name: Daily flow statistics
             description: "{freq} {op} of daily flow ({indexer})."
@@ -12,7 +12,7 @@ indicators:
         input:
             da: discharge
     freq_analysis:
-        base: xclim.core.indicator.return_level
+        base: return_level
         cf_attrs:
             long_name: N-year return level discharge
             description: "Streamflow frequency analysis for the {mode} {indexer} {window}-day flow estimated using the {dist} distribution."
@@ -21,7 +21,7 @@ indicators:
         input:
             da: discharge
     discharge_distribution_fit:
-        base: xclim.core.indicator.fit
+        base: fit
         cf_attrs:
             var_name: params
         input:

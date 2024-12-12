@@ -4,14 +4,15 @@ import logging
 import os
 import urllib.request
 import zipfile
-from collections.abc import Generator, Iterable
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import chain
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import Callable, Deque, Optional, Union
+from typing import Deque, Optional, Union
 from urllib.error import URLError
+from urllib.parse import urlparse, urlunparse
 
 import cftime
 import numpy as np
@@ -511,7 +512,9 @@ def is_opendap_url(url):
     Even then, some OpenDAP servers seem to not include the specified header...
     So we need to let the netCDF4 library actually open the file.
     """
-    req = urllib.request.Request(url, method="HEAD")
+    parts = urlparse(url)
+    meta_url = urlunparse([parts[0], parts[1], parts[2] + ".dds", None, None, None])
+    req = urllib.request.Request(meta_url, method="HEAD")
 
     try:
         with urllib.request.urlopen(req, timeout=5) as response:
@@ -525,7 +528,7 @@ def is_opendap_url(url):
         return False
 
 
-def single_input_or_none(inputs, identifier) -> Optional[str]:
+def single_input_or_none(inputs, identifier) -> str | None:
     """Return first input item."""
     try:
         return inputs[identifier][0].data
@@ -534,10 +537,10 @@ def single_input_or_none(inputs, identifier) -> Optional[str]:
 
 
 def netcdf_file_list_to_csv(
-    netcdf_files: Union[list[Path], list[str]],
+    netcdf_files: list[Path] | list[str],
     output_folder,
     filename_prefix,
-    csv_precision: Optional[int] = None,
+    csv_precision: int | None = None,
 ) -> tuple[list[Path], str]:
     """Write csv files for a list of netcdf files.
 
@@ -792,7 +795,7 @@ def fix_broken_time_index(ds: xr.Dataset):
 
 
 def dataset_to_netcdf(
-    ds: xr.Dataset, output_path: Union[Path, str], compression_level=0
+    ds: xr.Dataset, output_path: Path | str, compression_level=0
 ) -> None:
     """Write an :py:class:`xarray.Dataset` dataset to disk, optionally using compression."""
     encoding = {}
@@ -815,9 +818,9 @@ def dataset_to_netcdf(
 
 def update_history(
     hist_str: str,
-    *inputs_list: Union[xr.DataArray, xr.Dataset],
-    new_name: Optional[str] = None,
-    **inputs_kws: Union[xr.DataArray, xr.Dataset],
+    *inputs_list: xr.DataArray | xr.Dataset,
+    new_name: str | None = None,
+    **inputs_kws: xr.DataArray | xr.Dataset,
 ):
     r"""Return a history string with the timestamped message and the combination of the history of all inputs.
 
@@ -863,7 +866,7 @@ def update_history(
     return merged_history
 
 
-def valid_filename(name: Union[Path, str]) -> Union[Path, str]:
+def valid_filename(name: Path | str) -> Path | str:
     """Remove unsupported characters from a filename.
 
     Returns
