@@ -10,6 +10,9 @@ v0.13.0 (unreleased)
 * Permissions have been set for all workflows.
 * Pinned `cf-xarray`` below v0.9.3.
 * Reformatted and renamed `CHANGES.rst` to `CHANGELOG.rst`.
+* Dropped support for Python 3.8. The supported versions are now Python 3.9, 3.10, and 3.11.
+* `black` has been updated to v2024.8.0, and coding conventions have been updated to Python3.9+.
+* Several dependencies now are pinned to baseline versions, including `anyascii`, `dask`, `ipython`, `matplotlib`, `nbsphinx` `numpy`, and `sphinxcontrib-bibtex`.
 
 v0.12.1 (2024-06-25)
 --------------------
@@ -106,7 +109,7 @@ v0.9.1 (2022-07-07)
 * Avoid using a broken version of ``libarchive`` in the Docker image.
 
 v0.9.0 (2022-07-06)
-------------------
+-------------------
 
 * Fix use of ``output_name``, add ``output_format`` to xclim indicators.
 * Change all outputs to use ``output`` as the main output field name (instead of ``output_netcdf``).

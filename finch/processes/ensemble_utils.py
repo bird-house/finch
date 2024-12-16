@@ -3,10 +3,11 @@ import logging
 import sys
 import warnings
 from collections import deque
+from collections.abc import Iterable
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import pandas as pd
 import xarray as xr
@@ -85,10 +86,10 @@ class Dataset:  # noqa: D101
 def file_is_required(
     filename: str,
     pattern: str,
-    model_lists: Optional[Dict[str, List[str]]] = None,
-    variables: List[str] = None,
+    model_lists: Optional[dict[str, list[str]]] = None,
+    variables: list[str] = None,
     scenario: str = None,
-    models: List[Union[str, Tuple[str, int]]] = None,
+    models: list[Union[str, tuple[str, int]]] = None,
 ):
     """Parse metadata and filter datasets."""
     file = Dataset.from_filename(filename, pattern)
@@ -176,10 +177,10 @@ def _make_resource_input(url: str, workdir: str, local: bool):
 def get_datasets(
     dsconf: DatasetConfiguration,
     workdir: str,
-    variables: Optional[List[str]] = None,
+    variables: Optional[list[str]] = None,
     scenario: Optional[str] = None,
-    models: Optional[List[str]] = None,
-) -> List[PywpsInput]:
+    models: Optional[list[str]] = None,
+) -> list[PywpsInput]:
     """Parse a directory to find files and filters the list to return only the needed ones, as resource inputs.
 
     Parameters
@@ -229,7 +230,7 @@ def _formatted_coordinate(value) -> Optional[str]:
 
 
 def make_output_filename(
-    process: Process, inputs: List[PywpsInput], scenario=None, dataset=None
+    process: Process, inputs: list[PywpsInput], scenario=None, dataset=None
 ):
     """Return a filename for the process's output, depending on its inputs.
 
@@ -290,8 +291,8 @@ def uses_accepted_netcdf_variables(
 
 
 def make_indicator_inputs(
-    indicator: Indicator, wps_inputs: RequestInputs, files_list: List[Path]
-) -> List[RequestInputs]:
+    indicator: Indicator, wps_inputs: RequestInputs, files_list: list[Path]
+) -> list[RequestInputs]:
     """From a list of files, make a list of inputs used to call the given xclim indicator."""
     required_netcdf_args = set(iter_xc_variables(indicator))
 
@@ -317,7 +318,7 @@ def make_indicator_inputs(
     return input_list
 
 
-def make_file_groups(files_list: List[Path], variables: set) -> List[Dict[str, Path]]:
+def make_file_groups(files_list: list[Path], variables: set) -> list[dict[str, Path]]:
     """Group files by filenames, changing only the netcdf variable name.
 
     The list of variable names to search must be given.
@@ -349,7 +350,7 @@ def make_file_groups(files_list: List[Path], variables: set) -> List[Dict[str, P
 
 
 def make_ensemble(
-    files: List[Path], percentiles: List[int], average_dims: Optional[Tuple[str]] = None
+    files: list[Path], percentiles: list[int], average_dims: Optional[tuple[str]] = None
 ) -> None:  # noqa: D103
     ensemble = ensembles.create_ensemble(
         files, realizations=[file.stem for file in files]
@@ -390,12 +391,12 @@ def make_ensemble(
 
 
 def compute_intermediate_variables(
-    files_list: List[Path],
+    files_list: list[Path],
     variables: set,
     required_variable_names: Iterable[str],
     workdir: Path,
     request_inputs,
-) -> List[Path]:
+) -> list[Path]:
     """Compute netcdf datasets from a list of required variable names and existing files."""
     output_files_list = []
     file_groups = make_file_groups(files_list, variables)
