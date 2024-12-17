@@ -12,5 +12,5 @@ dependencies:
   - pywps >=4.5.1
   - sphinx >=7.0.0
   - sphinxcontrib-bibtex >=2.6.0
-  - xarray >=2023.01.0,<2023.11.0
+  - xarray >=2023.11.0
   - xclim ==0.52.2 # remember to match xclim version in requirements_docs.txt as well
