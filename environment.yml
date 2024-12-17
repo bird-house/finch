@@ -22,6 +22,7 @@ dependencies:
   - pyyaml >=6.0.1
   - scipy >=1.9.0
   - sentry-sdk
+  - setuptools >=71.0.0
   - siphon
   - xarray >=2023.11.0
   - xclim =0.52.2  # remember to match xclim version in requirements_docs.txt as well
