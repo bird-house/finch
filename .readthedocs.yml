@@ -13,12 +13,12 @@ sphinx:
   fail_on_warning: false
 
 # Optionally build your docs in additional formats such as PDF and ePub
-formats: []
+formats: [ ]
 
 build:
-  os: ubuntu-22.04
+  os: ubuntu-lts-latest
   tools:
-    python: "mambaforge-22.9"
+    python: "mambaforge-latest"
 
 conda:
   environment: environment-docs.yml
