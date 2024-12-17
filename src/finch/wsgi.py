@@ -1,5 +1,7 @@
-# noqa: D100
+"""Web Service Gateway Interface for PyWPS processes."""
+
 import os
+from pathlib import Path
 
 import sentry_sdk
 from pywps.app.Service import Service
@@ -11,7 +13,8 @@ if os.environ.get("SENTRY_DSN"):
 
 
 def create_app(cfgfiles=None):  # noqa: D103
-    config_files = [os.path.join(os.path.dirname(__file__), "default.cfg")]
+    """Create PyWPS application."""
+    config_files = [Path(__file__).parent.joinpath("default.cfg")]
     if isinstance(cfgfiles, str):
         cfgfiles = [cfgfiles]
     if cfgfiles:

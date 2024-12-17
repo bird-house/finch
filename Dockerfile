@@ -5,22 +5,20 @@ ENV PIP_ROOT_USER_ACTION=ignore
 LABEL org.opencontainers.image.authors="https://github.com/bird-house/finch"
 LABEL Description="Finch WPS" Vendor="Birdhouse" Version="0.12.1"
 
-# Switch to /code directory
+# Set the working directory to /code
 WORKDIR /code
 
-# Build finch environment
+# Create conda environment
 COPY environment.yml .
-RUN mamba env create -n finch -f environment.yml \
-    && mamba install -n finch gunicorn psycopg2 \
-    && mamba clean --all --yes
+RUN conda env create -n finch -f environment.yml && conda install -n finch gunicorn && conda clean --all --yes
 
-# Add the finch conda environment to the path
+# Add the project conda environment to the path
 ENV PATH=/opt/conda/envs/finch/bin:$PATH
 
-# Copy finch source code
+# Copy WPS project
 COPY . /code
 
-# Install finch
+# Install WPS project
 RUN pip install . --no-deps
 
 # Start WPS service on port 5000 of 0.0.0.0
