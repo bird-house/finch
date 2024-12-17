@@ -10,6 +10,7 @@ dependencies:
   - nbsphinx >=0.9.5
   - pandas >=2.2.0
   - pywps >=4.5.1
+  - setuptools >=71.0.0
   - sphinx >=7.0.0
   - sphinxcontrib-bibtex >=2.6.0
   - xarray >=2023.11.0

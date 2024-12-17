@@ -9,7 +9,7 @@ from setuptools import find_namespace_packages, setup
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, "README.rst")).read()
 CHANGES = open(os.path.join(here, "CHANGELOG.rst")).read()
-REQUIRES_PYTHON = ">=3.9"
+REQUIRES_PYTHON = ">=3.10"
 
 about = {}
 with open(os.path.join(here, "finch", "__version__.py")) as f:
