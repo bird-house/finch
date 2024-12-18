@@ -71,6 +71,140 @@ def test_ensemble_hxmax_days_above_grid_point(client):
     assert len(ds.attrs["source_datasets"].split("\n")) == 19
 
 
+def test_ensemble_spatial_avg_grid_point(client):
+    # --- given ---
+    identifier = "ensemble_grid_point_tg_mean"
+    inputs = [
+        wps_literal_input("lat", "45.5, 46"),
+        wps_literal_input("lon", "-73.0, -73.3"),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("scenario", "rcp45"),
+        wps_literal_input("dataset", "test_subset"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
+        wps_literal_input("output_format", "netcdf"),
+        wps_literal_input("output_name", "testens"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+    # assert Path(outputs[0]).stem.startswith("testens_45_500_73_000_ssp245_ssp585")
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
+    assert dims == {
+        "region": 2,
+        "time": 4,  # there are roughly 4 months in the test datasets
+        "scenario": 2,
+    }
+
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
+    assert sorted(ensemble_variables) == [f"tg_mean_p{p}" for p in (20, 50, 80)]
+    for var in ensemble_variables.values():
+        variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
+        for d, v in {"region": 2, "time": 4, "scenario": 2}.items():
+            assert variable_dims[d] == v
+
+    # --- given ---
+    inputs.append(wps_literal_input("average", "True"))
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
+    assert dims == {
+        "time": 4,  # there are roughly 4 months in the test datasets
+        "scenario": 2,
+    }
+
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
+    assert sorted(ensemble_variables) == [f"tg_mean_p{p}" for p in (20, 50, 80)]
+    for var in ensemble_variables.values():
+        variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
+        for d, v in {"time": 4, "scenario": 2}.items():
+            assert variable_dims[d] == v
+
+
+def test_ensemble_spatial_avg_poly(client):
+    # --- given ---
+    identifier = "ensemble_polygon_tg_mean"
+    inputs = [
+        wps_literal_input("shape", geojson.dumps(poly)),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("scenario", "rcp45"),
+        wps_literal_input("dataset", "test_subset"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", "20, 50, 80"),
+        wps_literal_input("output_format", "netcdf"),
+        wps_literal_input("output_name", "testens"),
+        wps_literal_input("average", "True"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
+    assert dims == {
+        "time": 4,  # there are roughly 4 months in the test datasets
+        "scenario": 2,
+    }
+
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
+    assert sorted(ensemble_variables) == [f"tg_mean_p{p}" for p in (20, 50, 80)]
+    for var in ensemble_variables.values():
+        variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
+        for d, v in {"time": 4, "scenario": 2}.items():
+            assert variable_dims[d] == v
+
+
+def test_ensemble_spatial_avg_poly_noperc(client):
+    # --- given ---
+    identifier = "ensemble_polygon_tg_mean"
+    inputs = [
+        wps_literal_input("shape", geojson.dumps(poly)),
+        wps_literal_input("scenario", "rcp26"),
+        wps_literal_input("scenario", "rcp45"),
+        wps_literal_input("dataset", "test_subset"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", ""),
+        wps_literal_input("output_format", "netcdf"),
+        wps_literal_input("output_name", "testens"),
+        wps_literal_input("average", "True"),
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+
+    ds = open_dataset(outputs[0])
+    dims = dict(ds.dims)
+    exp_dims = {
+        "realization": 2,
+        "time": 4,  # there are roughly 4 months in the test datasets
+        "scenario": 2,
+    }
+    assert dims == exp_dims
+
+    ensemble_variables = {k: v for k, v in ds.data_vars.items()}
+    assert sorted(ensemble_variables) == ["tg_mean"]
+    for var in ensemble_variables.values():
+        variable_dims = {d: s for d, s in zip(var.dims, var.shape)}
+        for d, v in exp_dims.items():
+            assert variable_dims[d] == v
+
+
 def test_ensemble_heatwave_frequency_grid_point(client):
     # --- given ---
     identifier = "ensemble_grid_point_heat_wave_frequency"
@@ -137,7 +271,7 @@ def test_ensemble_tx_mean_grid_point_no_perc_csv(client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,time,scenario")
+    assert lines[0].startswith("time,lat,lon,scenario")
     assert len(lines[0].split(",")) == 6
     assert all([line.startswith("tx_mean:") for line in lines[0].split(",")[-2:]])
     n_data_rows = len(lines) - 2
@@ -355,7 +489,7 @@ def test_ensemble_heatwave_frequency_grid_point_csv(client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,time,scenario")
+    assert lines[0].startswith("time,lat,lon,scenario")
     n_data_rows = len(lines) - 2
     assert n_data_rows == 4  # time=4 (last month is NaN, but kept in CSV)
 
@@ -388,7 +522,7 @@ def test_ensemble_heatwave_frequency_bbox_csv(client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,time")
+    assert lines[0].startswith("time,lat,lon")
     n_data_rows = len(lines) - 2
     assert (
         n_data_rows == 2 * 2 * 4
@@ -551,6 +685,11 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(client):
         variable_dims = dict(zip(var.dims, var.shape))
         assert variable_dims == {"region": 1, "time": 1, "scenario": 1}
 
+    inputs.append(wps_literal_input("average", "True"))
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+
 
 def test_ensemble_heatwave_frequency_polygon(client):
     # --- given ---
@@ -635,7 +774,7 @@ def test_ensemble_heatwave_frequency_polygon_csv(client):
     data_filename = [n for n in zf.namelist() if "metadata" not in n]
     csv = zf.read(data_filename[0]).decode()
     lines = csv.split("\n")
-    assert lines[0].startswith("lat,lon,time")
+    assert lines[0].startswith("time,lat,lon")
     n_data_rows = len(lines) - 2  # header + ending line
     # lat: 11 lon: 11, time=4 (last month is NaN, but kept in CSV)
     assert n_data_rows == 11 * 11 * 4

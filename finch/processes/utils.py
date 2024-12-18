@@ -2,25 +2,28 @@
 import json
 import logging
 import os
+import urllib.request
 import zipfile
-from collections.abc import Generator, Iterable
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import chain
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import Callable, Deque, Optional, Union
+from typing import Deque, Optional, Union
+from urllib.error import URLError
+from urllib.parse import urlparse, urlunparse
 
 import cftime
 import numpy as np
 import pandas as pd
-import requests
 import sentry_sdk
 import xarray as xr
 import xclim
+import xclim.core.options as xclim_options
 import yaml
 from netCDF4 import num2date
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_numeric_dtype  # noqa
 from pywps import (
     FORMATS,
     BoundingBoxInput,
@@ -34,8 +37,8 @@ from pywps import (
 )
 from pywps.configuration import get_config_value
 from pywps.inout.outputs import MetaFile, MetaLink4
-from requests.exceptions import ConnectionError, InvalidSchema, MissingSchema
 from slugify import slugify
+from xclim.core import formatting
 from xclim.core.indicator import build_indicator_module_from_yaml
 from xclim.core.utils import InputKind
 
@@ -259,7 +262,7 @@ def compute_indices(
     )
 
     options = {name: kwds.pop(name) for name in INDICATOR_OPTIONS if name in kwds}
-    with xclim.core.options.set_options(**options):
+    with xclim_options.set_options(**options):
         out = func(**kwds)
 
     output_dataset = xr.Dataset(
@@ -272,7 +275,8 @@ def compute_indices(
             "YS": "yr",
             "MS": "mon",
             "QS-DEC": "seasonal",
-            "AS-JUL": "seasonal",
+            "YS-JAN": "seasonal",
+            "YS-JUL": "seasonal",
         }
         output_dataset.attrs["frequency"] = conversions.get(kwds["freq"], "day")
 
@@ -508,11 +512,14 @@ def is_opendap_url(url):
     Even then, some OpenDAP servers seem to not include the specified header...
     So we need to let the netCDF4 library actually open the file.
     """
+    parts = urlparse(url)
+    meta_url = urlunparse([parts[0], parts[1], parts[2] + ".dds", None, None, None])
+    req = urllib.request.Request(meta_url, method="HEAD")
+
     try:
-        content_description = requests.head(url, timeout=5).headers.get(
-            "Content-Description"
-        )
-    except (ConnectionError, MissingSchema, InvalidSchema):
+        with urllib.request.urlopen(req, timeout=5) as response:
+            content_description = response.headers.get("Content-Description")
+    except URLError:
         return False
 
     if content_description:
@@ -520,15 +527,8 @@ def is_opendap_url(url):
     else:
         return False
 
-        # try:
-        #     # For a non-DAP URL, this just hangs python.
-        #     dataset = netCDF4.Dataset(url)
-        # except OSError:
-        #     return False
-        # return dataset.disk_format in ("DAP2", "DAP4")
 
-
-def single_input_or_none(inputs, identifier) -> Optional[str]:
+def single_input_or_none(inputs, identifier) -> str | None:
     """Return first input item."""
     try:
         return inputs[identifier][0].data
@@ -537,11 +537,11 @@ def single_input_or_none(inputs, identifier) -> Optional[str]:
 
 
 def netcdf_file_list_to_csv(
-    netcdf_files: Union[list[Path], list[str]],
+    netcdf_files: list[Path] | list[str],
     output_folder,
     filename_prefix,
-    csv_precision: Optional[int] = None,
-) -> tuple[list[str], str]:
+    csv_precision: int | None = None,
+) -> tuple[list[Path], str]:
     """Write csv files for a list of netcdf files.
 
     Produces one csv file per calendar type, along with a metadata folder in the output_folder.
@@ -795,7 +795,7 @@ def fix_broken_time_index(ds: xr.Dataset):
 
 
 def dataset_to_netcdf(
-    ds: xr.Dataset, output_path: Union[Path, str], compression_level=0
+    ds: xr.Dataset, output_path: Path | str, compression_level=0
 ) -> None:
     """Write an :py:class:`xarray.Dataset` dataset to disk, optionally using compression."""
     encoding = {}
@@ -818,9 +818,9 @@ def dataset_to_netcdf(
 
 def update_history(
     hist_str: str,
-    *inputs_list: Union[xr.DataArray, xr.Dataset],
-    new_name: Optional[str] = None,
-    **inputs_kws: Union[xr.DataArray, xr.Dataset],
+    *inputs_list: xr.DataArray | xr.Dataset,
+    new_name: str | None = None,
+    **inputs_kws: xr.DataArray | xr.Dataset,
 ):
     r"""Return a history string with the timestamped message and the combination of the history of all inputs.
 
@@ -850,7 +850,7 @@ def update_history(
     """
     from finch import __version__  # pylint: disable=cyclic-import
 
-    merged_history = xclim.core.formatting.merge_attributes(
+    merged_history = formatting.merge_attributes(
         "history",
         *inputs_list,
         new_line="\n",
@@ -866,7 +866,7 @@ def update_history(
     return merged_history
 
 
-def valid_filename(name: Union[Path, str]) -> Union[Path, str]:
+def valid_filename(name: Path | str) -> Path | str:
     """Remove unsupported characters from a filename.
 
     Returns

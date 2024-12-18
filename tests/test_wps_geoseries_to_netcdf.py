@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 import xarray as xr
 
 from _utils import execute_process, wps_input_file, wps_literal_input
@@ -10,6 +11,7 @@ def geomet_geojson():
     return (Path(__file__).parent / "data" / "geomet.geojson").as_posix()
 
 
+@pytest.mark.skip("Broken in cf-xarray")
 def test_wps_geoseries_to_netcdf(client):
     identifier = "geoseries_to_netcdf"
     inputs = [
@@ -24,6 +26,7 @@ def test_wps_geoseries_to_netcdf(client):
         print(ds.attrs)
 
 
+@pytest.mark.skip("Broken in cf-xarray")
 def test_wps_geoseries_to_netcdf_feat_squeeze(client):
     identifier = "geoseries_to_netcdf"
     inputs = [

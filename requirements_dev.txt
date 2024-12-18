@@ -21,11 +21,7 @@ birdhouse-birdy>=0.8.1
 geojson
 ipython
 jupyter_client
-jupyter-server>=2.14.1 # not directly required, pinned by Snyk to avoid a vulnerability
 lxml
 matplotlib>=3.5.0
 owslib
-pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 pre-commit>=3.3.0
-tornado>=6.4.1 # not directly required, pinned by Snyk to avoid a vulnerability
-fonttools>=4.43.0 # not directly required, pinned by Snyk to avoid a vulnerability

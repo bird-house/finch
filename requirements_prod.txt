@@ -1,3 +1,2 @@
-gunicorn
-psycopg2-binary
-zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
+gunicorn>=23.0.0
+psycopg2-binary>=2.9.9

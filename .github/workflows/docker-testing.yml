@@ -27,6 +27,7 @@ jobs:
           allowed-endpoints: >
             auth.docker.io:443
             conda.anaconda.org:443
+            files.pythonhosted.org:443
             github.com:443
             production.cloudflare.docker.com:443
             pypi.org:443

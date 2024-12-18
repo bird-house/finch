@@ -10,9 +10,10 @@ v0.13.0 (unreleased)
 * Permissions have been set for all workflows.
 * Pinned `cf-xarray`` below v0.9.3.
 * Reformatted and renamed `CHANGES.rst` to `CHANGELOG.rst`.
-* Dropped support for Python 3.8. The supported versions are now Python 3.9, 3.10, and 3.11.
+* Dropped support for Python 3.8 and 3.9. The supported versions are now Python 3.10, 3.11 and 3.12.
 * `black` has been updated to v2024.8.0, and coding conventions have been updated to Python3.9+.
 * Several dependencies now are pinned to baseline versions, including `anyascii`, `dask`, `ipython`, `matplotlib`, `nbsphinx` `numpy`, and `sphinxcontrib-bibtex`.
+* Added `xscen` dependency. Now used in spatial averaging of ensemble processes.
 
 v0.12.1 (2024-06-25)
 --------------------

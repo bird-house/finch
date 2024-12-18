@@ -7,7 +7,7 @@ from typing import Optional
 import pandas as pd
 import xarray as xr
 from anyascii import anyascii
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_numeric_dtype  # noqa
 from pywps.app.exceptions import ProcessError
 
 from . import wpsio
@@ -180,7 +180,7 @@ class XclimIndicatorBase(FinchProcess):
 
 
 def _make_unique_drs_filename(
-    ds: xr.Dataset, existing_names: list[str], output_name: Optional[str] = None
+    ds: xr.Dataset, existing_names: list[str], output_name: str | None = None
 ):
     """Generate a drs filename: avoid overwriting files by adding a dash and a number to the filename."""
     if output_name is not None:

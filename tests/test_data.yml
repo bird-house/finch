@@ -5,8 +5,8 @@ test_single_cell:
   suffix: "*.nc"
   pattern: "{variable}_{frequency}_BCCAQv2+ANUSPLIN300_{model}_{scenario}_{realization}_{date_start}-{date_end}.nc"
   allowed_values:
-    scenario: [rcp26, rcp45, rcp85]
-    variable: [tasmin, tasmax, pr]
+    scenario: [ rcp26, rcp45, rcp85 ]
+    variable: [ tasmin, tasmax, pr ]
     model:
       &u5models
       - BNU-ESM
@@ -37,19 +37,19 @@ test_single_cell:
     # The absence of realization specification implies r1 is taken.
     24models: *u5models
     pcic12:
-    # taken from: https://www.pacificclimate.org/data/statistically-downscaled-climate-scenarios
-      - [ ACCESS1-0 , r1i1p1 ]
-      - [ CCSM4 , r2i1p1 ]
-      - [ CNRM-CM5 , r1i1p1 ]
-      - [ CSIRO-Mk3-6-0 , r1i1p1 ]
-      - [ CanESM2 , r1i1p1 ]
-      - [ GFDL-ESM2G , r1i1p1 ]
-      - [ HadGEM2-CC , r1i1p1 ]
-      - [ HadGEM2-ES , r1i1p1 ]
-      - [ MIROC5 , r3i1p1 ]
-      - [ MPI-ESM-LR , r3i1p1 ]
-      - [ MRI-CGCM3 , r1i1p1 ]
-      - [ inmcm4 , r1i1p1 ]
+      # taken from: https://www.pacificclimate.org/data/statistically-downscaled-climate-scenarios
+      - [ ACCESS1-0, r1i1p1 ]
+      - [ CCSM4, r2i1p1 ]
+      - [ CNRM-CM5, r1i1p1 ]
+      - [ CSIRO-Mk3-6-0, r1i1p1 ]
+      - [ CanESM2, r1i1p1 ]
+      - [ GFDL-ESM2G, r1i1p1 ]
+      - [ HadGEM2-CC, r1i1p1 ]
+      - [ HadGEM2-ES, r1i1p1 ]
+      - [ MIROC5, r3i1p1 ]
+      - [ MPI-ESM-LR, r3i1p1 ]
+      - [ MRI-CGCM3, r1i1p1 ]
+      - [ inmcm4, r1i1p1 ]
 
 test_subset:
   local: true
@@ -58,8 +58,8 @@ test_subset:
   suffix: "*.nc"
   pattern: "{variable}_{model}_{scenario}_subset.nc"
   allowed_values:
-    scenario: [rcp26, rcp45]
-    variable: [tasmin, tasmax]
+    scenario: [ rcp26, rcp45 ]
+    variable: [ tasmin, tasmax ]
     model:
       - inmcm4
       - bcc-csm1-1
@@ -72,28 +72,28 @@ test_humidex:
   suffix: "*.nc"
   pattern: "{variable}_MBCn_ERA5-Land_{model}_{scenario}_{realization}_{date_start}-{date_end}_sub.nc"
   allowed_values:
-      scenario: [ssp245, ssp585 ]
-      variable: [ HXmax ]
-      model:
-        &hxmax_day_sub
-          - MPI-ESM1-2-HR
-          - EC-Earth3
-          - ACCESS-CM2
-          - MIROC-ES2L
-          - EC-Earth3-Veg
-          - IPSL-CM6A-LR
-          - INM-CM5-0
-          - FGOALS-g3
-          - CanESM5
-          - MIROC6
-          - GISS-E2-1-G
-          - EC-Earth3-Veg-LR
-          - CNRM-ESM2-1
-          - MPI-ESM1-2-LR
-          - INM-CM4-8
-          - MRI-ESM2-0
-          - CMCC-ESM2
-          - ACCESS-ESM1-5
-          - CNRM-CM6-1
+    scenario: [ ssp245, ssp585 ]
+    variable: [ HXmax ]
+    model:
+      &hxmax_day_sub
+      - MPI-ESM1-2-HR
+      - EC-Earth3
+      - ACCESS-CM2
+      - MIROC-ES2L
+      - EC-Earth3-Veg
+      - IPSL-CM6A-LR
+      - INM-CM5-0
+      - FGOALS-g3
+      - CanESM5
+      - MIROC6
+      - GISS-E2-1-G
+      - EC-Earth3-Veg-LR
+      - CNRM-ESM2-1
+      - MPI-ESM1-2-LR
+      - INM-CM4-8
+      - MRI-ESM2-0
+      - CMCC-ESM2
+      - ACCESS-ESM1-5
+      - CNRM-CM6-1
   model_lists:
-      humidex_submods: *hxmax_day_sub
+    humidex_submods: *hxmax_day_sub

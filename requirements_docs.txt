@@ -1,20 +1,15 @@
 anyascii>=0.3.0
 birdhouse-birdy>=0.8.1
-cftime
-cf-xarray>=0.6.1,<0.10.1
+cf-xarray>=0.9.3
+cftime>=1.4.1
 ipython>=8.0.0
 matplotlib>=3.5.0
 nbsphinx>=0.9.5
-pandas>=1.5.3,<2.2.0
-pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
+numpy>=1.23.0
+pandas>=2.2.0
 pywps>=4.5.1
-setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
+setuptools>=71.0.0
 sphinx>=7.0.0
 sphinxcontrib-bibtex>=2.6.0
-tornado>=6.4.1 # not directly required, pinned by Snyk to avoid a vulnerability
-werkzeug>=3.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
-xarray>=2023.01.0,<2023.11.0
-xclim==0.43
-numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
-fonttools>=4.43.0 # not directly required, pinned by Snyk to avoid a vulnerability
-requests>=2.32.0 # not directly required, pinned by Snyk to avoid a vulnerability
+xarray>=2023.11.0
+xclim==0.52.2

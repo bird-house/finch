@@ -39,7 +39,7 @@ def test_indicators_processes_discovery(indicator):
     # Remove args not supported by finch: we remove special kinds,
     # 50 is "kwargs". 70 is Dataset ('ds') and 99 is "unknown". All normal types are 0-9.
     parameters = {
-        k for k, v in indicator.parameters.items() if v["kind"] < 50 or k == "indexer"
+        k for k, v in indicator.parameters.items() if v.kind < 50 or k == "indexer"
     }
     parameters.add("check_missing")
     parameters.add("missing_options")
@@ -259,6 +259,7 @@ class TestFitProcess:
         inputs = [
             wps_input_file("discharge", tmp_path / "q.nc"),
             wps_literal_input("dist", "norm"),
+            wps_literal_input("check_missing", "skip"),
         ]
         outputs = execute_process(client, self.identifier, inputs)
         ds = xr.open_dataset(outputs[0])

@@ -1,6 +1,5 @@
 # noqa: D104
 import logging
-from pathlib import Path
 
 from pywps.configuration import get_config_value
 from xclim.core.indicator import registry as xclim_registry
@@ -52,11 +51,20 @@ def get_indicators(realms=["atmos"], exclude=()):
 
 not_implemented = [
     "DC",
+    "E_SAT",
     "FWI",
+    "HURS",
+    "HURS_FROMDEWPOINT",
+    "HUSS",
+    "HUSS_FROMDEWPOINT",
     "RH",
     "RH_FROMDEWPOINT",
-    "E_SAT",
-    "HUSS",
+    "SPI",
+    "SPEI",
+    "WIND_POWER_POTENTIAL",
+    "WIND_PROFILE",
+    "WIND_SPEED_FROM_VECTOR",
+    "WIND_VECTOR_FROM_SPEED",
 ]
 
 
@@ -135,7 +143,7 @@ def get_processes():
         SubsetPolygonProcess(),
         AveragePolygonProcess(),
         HourlyToDailyProcess(),
-        GeoseriesToNetcdfProcess(),
+        # GeoseriesToNetcdfProcess(),
     ]
 
     return processes
