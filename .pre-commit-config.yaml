@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.17.0
+    rev: v3.19.1
     hooks:
       - id: pyupgrade
         args: [ '--py310-plus' ]
@@ -43,7 +43,7 @@ repos:
       - id: isort
         args: [ '--settings-file=setup.cfg' ]
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.7
+    rev: 1.9.1
     hooks:
       - id: nbqa-black
         args: [ '--target-version=py310' ]
@@ -55,7 +55,7 @@ repos:
         args: [ '--settings-file=setup.cfg' ]
         additional_dependencies: [ 'isort==5.13.2' ]
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.7.1
+    rev: 0.8.1
     hooks:
       - id: nbstripout
         files: ".ipynb"
@@ -72,7 +72,7 @@ repos:
         additional_dependencies: [ 'black==24.10.0' ]
       - id: blackdoc-autoupdate-black
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.3
+    rev: 0.30.0
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
