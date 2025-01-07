@@ -12,13 +12,13 @@ bracex==2.4 \
     --hash=sha256:a27eaf1df42cf561fed58b7a8f3fdf129d1ea16a81e1fadd1d17989bc6384beb \
     --hash=sha256:efdc71eff95eaff5e0f8cfebe7d01adf2c8637c8c92edaf63ef348c241a82418
     # via wcmatch
-bump-my-version==0.28.1 \
-    --hash=sha256:df7fdb02a1b43c122a6714df6d1fe4efc7a1220b5638ca5a0eb3018813c1b222 \
-    --hash=sha256:e608def5191baf505b6cde88bd679a0a95fc4cfeace4247adb60ac0f8a7e57ee
+bump-my-version==0.29.0 \
+    --hash=sha256:6566ab25bd3eeeec109f4ac7e4464227a3ac1fd57f847d259a24800423cd9037 \
+    --hash=sha256:e4149ed63b4772f5868b3fcabb8fa5e1191b8abae6d35effd0be980d4b0f55e3
     # via -r CI/requirements_ci.in
-click==8.1.7 \
-    --hash=sha256:ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28 \
-    --hash=sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de
+click==8.1.8 \
+    --hash=sha256:63c132bbbed01578a06712a2d1f497bb62d9c1c0d329b7903a866228027263b2 \
+    --hash=sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a
     # via
     #   bump-my-version
     #   rich-click
