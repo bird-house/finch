@@ -1,7 +1,7 @@
 test_single_cell:
   local: true
   depth: 0
-  path: ../tests/data/bccaqv2_single_cell/
+  path: ../../tests/data/bccaqv2_single_cell/
   suffix: "*.nc"
   pattern: "{variable}_{frequency}_BCCAQv2+ANUSPLIN300_{model}_{scenario}_{realization}_{date_start}-{date_end}.nc"
   allowed_values:
@@ -54,7 +54,7 @@ test_single_cell:
 test_subset:
   local: true
   depth: 0
-  path: ../tests/data/bccaqv2_subset_sample/
+  path: ../../tests/data/bccaqv2_subset_sample/
   suffix: "*.nc"
   pattern: "{variable}_{model}_{scenario}_subset.nc"
   allowed_values:
@@ -68,7 +68,7 @@ test_subset:
 test_humidex:
   local: True
   depth: 1
-  path: ../tests/data/humidex_subset
+  path: ../../tests/data/humidex_subset
   suffix: "*.nc"
   pattern: "{variable}_MBCn_ERA5-Land_{model}_{scenario}_{realization}_{date_start}-{date_end}_sub.nc"
   allowed_values:

@@ -8,7 +8,6 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union
 
 import geopandas as gpd
 import pandas as pd

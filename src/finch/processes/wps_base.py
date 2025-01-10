@@ -93,7 +93,7 @@ class FinchProgressBar(ProgressBar):
         self.end = end_percentage
         self._logging_function = logging_function
 
-    def _draw_bar(self, frac, elapsed):
+    def _draw_bar(self, frac, _elapsed):
         real_frac = (self.start + frac * (self.end - self.start)) / 100
         bar = "#" * int(self._width * real_frac)
         percent = int(100 * real_frac)
@@ -128,14 +128,14 @@ def make_xclim_indicator_process(
     )
 
     process = process_class()
-    process.translations = {  # type: ignore
+    process.translations = {
         locale: xclim.core.locales.get_local_attrs(
             xci.identifier.upper(), locale, append_locale_name=False
         )
         for locale in xclim.core.locales.list_locales()
     }
 
-    return process  # type: ignore
+    return process
 
 
 def convert_xclim_inputs_to_pywps(

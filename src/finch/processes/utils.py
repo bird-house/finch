@@ -4,13 +4,14 @@ import logging
 import os
 import urllib.request
 import zipfile
+from collections import deque
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import chain
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import Deque, Optional, Union
+from typing import Union
 from urllib.error import URLError
 from urllib.parse import urlparse, urlunparse
 
@@ -46,7 +47,7 @@ LOGGER = logging.getLogger("PYWPS")
 
 PywpsInput = Union[LiteralInput, ComplexInput, BoundingBoxInput]
 PywpsOutput = Union[LiteralOutput, ComplexOutput, BoundingBoxOutput]
-RequestInputs = dict[str, Deque[PywpsInput]]
+RequestInputs = dict[str, deque[PywpsInput]]
 
 # These are parameters that set options. They are not `compute` arguments.
 INDICATOR_OPTIONS = [
@@ -285,13 +286,15 @@ def compute_indices(
 
 
 def drs_filename(ds: xr.Dataset, variable: str = None):
-    """Generate filename according to the data reference syntax (DRS).
+    """
+    Generate filename according to the data reference syntax (DRS).
 
     Parameters
     ----------
     ds : xr.Dataset
+
     variable : str
-        appropriate variable for filename, if not set (default), variable will be determined from the dataset variables.
+        Appropriate variable for filename, if not set (default), variable will be determined from the dataset variables.
 
     Returns
     -------
@@ -414,7 +417,9 @@ def try_opendap(
 
     try:
         # Try to open the dataset
-        ds = xr.open_dataset(path, chunks=chunks or None, decode_times=decode_times)
+        ds = xr.open_dataset(
+            path, chunks=chunks or None, decode_times=decode_times, engine="netcdf4"
+        )
     except NotImplementedError:
         if chunks == "auto":
             # Some dtypes are not compatible with auto chunking (object, so unbounded strings)
@@ -504,8 +509,7 @@ def is_opendap_url(url):
     """Check if a provided url is an OpenDAP url.
 
     The DAP Standard specifies that a specific tag must be included in the
-    Content-Description header of every request. This tag is one of:
-        "dods-dds" | "dods-das" | "dods-data" | "dods-error"
+    Content-Description header of every request. This tag is one of: {"dods-dds", "dods-das", "dods-data", "dods-error"}
 
     So we can check if the header starts with `dods`.
 

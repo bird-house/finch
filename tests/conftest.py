@@ -1,7 +1,5 @@
 import collections
 from pathlib import Path
-from shutil import rmtree
-from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -33,14 +31,15 @@ def _create_test_dataset(
     Parameters
     ----------
     variable : str
+
     cell_methods : str
     standard_name : str
     units : str
     seed : int, float, array_like, optional
+
     missing : bool
         If True, add a NaN on Jan 15.
     """
-
     rs = np.random.RandomState(seed)
     _vars = {variable: ["time", "lon", "lat"]}
     _dims = {"time": 365, "lon": 5, "lat": 6}
