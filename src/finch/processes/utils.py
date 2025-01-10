@@ -710,9 +710,7 @@ def format_metadata(ds) -> str:
     return out
 
 
-def zip_files(
-    output_filename, files: Iterable, log_function: Callable[[str, int]] | None = None
-):
+def zip_files(output_filename, files: Iterable, log_function: Callable | None = None):
     """
     Create a zipfile from a list of files or folders.
 
