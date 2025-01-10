@@ -90,9 +90,9 @@ def file_is_required(
     filename: str,
     pattern: str,
     model_lists: dict[str, list[str]] | None = None,
-    variables: list[str] = None,
-    scenario: str = None,
-    models: list[str | tuple[str, int]] = None,
+    variables: list[str] | None = None,
+    scenario: str | None = None,
+    models: list[str | tuple[str, int]] | None = None,
 ):
     """Parse metadata and filter datasets."""
     file = Dataset.from_filename(filename, pattern)
@@ -227,7 +227,7 @@ def _formatted_coordinate(value) -> str | None:
         return
     try:
         value = value.split(",")[0]
-    except AttributeError:
+    except AttributeError:  # noqa: S110
         pass
     return f"{float(value):.3f}"
 
@@ -352,12 +352,12 @@ def make_file_groups(files_list: list[Path], variables: set) -> list[dict[str, P
     return groups
 
 
-def make_ensemble(
+def make_ensemble(  # noqa: D103
     files: list[Path],
     percentiles: list[int],
     spatavg: bool | None = False,
     region: dict | None = None,
-) -> None:  # noqa: D103
+) -> None:
     ensemble = ensembles.create_ensemble(
         files, realizations=[file.stem for file in files]
     )
@@ -497,14 +497,15 @@ def get_input_lists(needed: set, available: set):
     return raw, compute, extra
 
 
-def ensemble_common_handler(
+def ensemble_common_handler(  # noqa: C901,D103
     process: Process, request, response, subset_function
-):  # noqa: D103
-    assert subset_function in [
+):
+    if subset_function not in [
         finch_subset_bbox,
         finch_subset_gridpoint,
         finch_subset_shape,
-    ]
+    ]:
+        raise ValueError("Invalid subset function")
 
     xci_inputs = process.xci_inputs_identifiers
     request_inputs_not_datasets = {

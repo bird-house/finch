@@ -3,7 +3,6 @@
 import json
 from copy import deepcopy
 from itertools import chain
-from typing import Union
 
 from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
 from pywps.configuration import get_config_value

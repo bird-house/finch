@@ -9,12 +9,12 @@ class TestClient:
     URL = "http://dummy_url.org"
 
     @classmethod
-    def setup_class(self):
+    def setup_class(cls):
         client = client_for(Service(processes=get_processes()))
-        self.cap = client.get(
+        cls.cap = client.get(
             service="wps", request="getcapabilities", version="1.0.0"
         ).data
-        self.desc = client.get(
+        cls.desc = client.get(
             service="wps", request="DescribeProcess", identifier="all", version="1.0.0"
         ).data
 

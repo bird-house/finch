@@ -2,7 +2,7 @@
 import io
 import logging
 from inspect import _empty as empty_default  # noqa
-from typing import Any, Union
+from typing import Any
 
 import pywps.exceptions
 import xclim
@@ -105,18 +105,19 @@ class FinchProgressBar(ProgressBar):
 def make_xclim_indicator_process(
     xci, class_name_suffix: str, base_class
 ) -> FinchProcess:
-    """Create a WPS Process subclass from an xclim `Indicator` class instance.
+    """
+    Create a WPS Process subclass from an xclim `Indicator` class instance.
 
     Adds translations for title and abstract properties of the process and its inputs and outputs.
 
     Parameters
     ----------
     xci : Indicator
-      Indicator instance.
+        Indicator instance.
     class_name_suffix : str
-      Suffix appended to the indicator identifier to create the Process subclass name.
+        Suffix appended to the indicator identifier to create the Process subclass name.
     base_class : cls
-      Class that will be subclassed to create indicator Process.
+        Class that will be subclassed to create indicator Process.
     """
     # Sanitize name
     name = xci.identifier.replace("{", "_").replace("}", "_").replace("__", "_")
@@ -141,7 +142,8 @@ def make_xclim_indicator_process(
 def convert_xclim_inputs_to_pywps(
     params: dict, parent=None, parse_percentiles: bool = False
 ) -> tuple[list[LiteralInput | ComplexInput], list[Any]]:
-    r"""Convert xclim indicators properties to pywps inputs.
+    r"""
+    Convert xclim indicators properties to pywps inputs.
 
     If parse_percentiles is True, percentile variables (\*_per) are dropped and replaced by
     a "percentile" input (a float) with a default taken from constants.
@@ -227,9 +229,9 @@ def convert_xclim_inputs_to_pywps(
     return inputs, var_names
 
 
-def make_freq(
+def make_freq(  # noqa: D103
     name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "YS-JAN", "YS-JUL")
-):  # noqa: D103
+):
     try:
         return LiteralInput(
             name,

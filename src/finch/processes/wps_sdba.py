@@ -161,7 +161,7 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
 
         variable = request.inputs.pop(wpsio.variable_any.identifier, None)
 
-        for key, input in request.inputs.items():
+        for key in request.inputs.keys():
             if key in resources:
                 ds = try_opendap(request.inputs[key][0])
                 name = variable or list(ds.data_vars)[0]

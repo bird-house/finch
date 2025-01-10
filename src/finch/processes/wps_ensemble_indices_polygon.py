@@ -43,9 +43,9 @@ class XclimEnsemblePolygonBase(FinchProcess):
         ]
 
         # all other inputs that are not the xarray data (window, threshold, etc.)
-        for i in xci_inputs:
-            if i.identifier not in list(iter_xc_variables(self.xci)):
-                inputs.append(i)
+        inputs.extend(
+            [i for i in xci_inputs if i.identifier not in self.xci_inputs_identifiers]
+        )
 
         inputs.extend(
             [wpsio.output_prefix, wpsio.output_format_netcdf_csv, wpsio.csv_precision]

@@ -87,7 +87,8 @@ def test_thredds():
 
     assert_response_success(resp)
     out = get_output(resp.xml)
-    links = get_metalinks(lxml.etree.fromstring(out["ref"].encode()))
+    # FIXME: This is generally unsafe as an approach as the data is untrusted.
+    links = get_metalinks(lxml.etree.fromstring(out["ref"].encode()))  # noqa: S320
     assert len(links) == 2
 
 
