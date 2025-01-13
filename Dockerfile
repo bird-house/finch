@@ -18,6 +18,9 @@ ENV PATH=/opt/conda/envs/finch/bin:$PATH
 # Copy WPS project
 COPY . /code
 
+# What is going on here???
+RUN ls -l /code
+
 # Install WPS project
 RUN pip install . --no-deps
 
