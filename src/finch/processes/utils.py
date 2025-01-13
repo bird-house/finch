@@ -1,7 +1,6 @@
 # noqa: D100
 import json
 import logging
-import os
 import urllib.request
 import zipfile
 from collections import deque
