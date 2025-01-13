@@ -46,7 +46,11 @@ class XclimEnsembleGridPointBase(FinchProcess):
 
         # all other inputs that are not the xarray data (window, threshold, etc.)
         inputs.extend(
-            [i for i in xci_inputs if i.identifier not in self.xci_inputs_identifiers]
+            [
+                i
+                for i in xci_inputs
+                if i.identifier not in list(iter_xc_variables(self.xci))
+            ]
         )
 
         inputs.extend(
