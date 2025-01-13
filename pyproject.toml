@@ -16,7 +16,7 @@ requires-python = ">=3.10.0"
 keywords = ["wps", "pywps", "birdhouse", "finch"]
 license = {file = "LICENSE"}
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: Apache Software License",
@@ -110,6 +110,14 @@ finch = "finch.cli:cli"
 
 [tool]
 
+[tool.black]
+target-version = [
+  "py39",
+  "py310",
+  "py311",
+  "py312"
+]
+
 [tool.bumpversion]
 current_version = "0.12.1"
 commit = true
@@ -178,7 +186,9 @@ include = [
   "docs/source/conf.py",
   "docs/source/**/*.ipynb",
   "docs/source/**/*.rst",
-  "src/finch",
+  "src/finch/**/*.cfg",
+  "src/finch/**/*.py",
+  "src/finch/**/*.yml",
   "tests/*.py",
   "tests/data/**/*.geojson",
   "tests/data/**/*.nc",
@@ -197,7 +207,7 @@ exclude = [
   ".yamllint.yaml",
   "Dockerfile",
   "docker-compose.yml",
-  "docs/_*",
+  "docs/build",
   "docs/source/apidoc/modules.rst",
   "docs/source/apidoc/finch*.rst",
   "docs/source/notebooks/.ipynb_checkpoints",
