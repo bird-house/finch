@@ -14,4 +14,4 @@ dependencies:
   - sphinx >=7.0.0
   - sphinxcontrib-bibtex >=2.6.0
   - xarray >=2023.11.0
-  - xclim ==0.52.2 # remember to match xclim version in requirements_docs.txt as well
+  - xclim =0.52.2 # remember to match xclim version in requirements_docs.txt as well

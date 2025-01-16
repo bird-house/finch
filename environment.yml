@@ -30,3 +30,4 @@ dependencies:
   - xclim =0.52.2  # remember to match xclim version in requirements_docs.txt as well
   - xesmf >=0.8.2,!=0.8.8
   - xscen
+  - werkzeug >=3.0.6

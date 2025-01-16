@@ -55,7 +55,7 @@ dependencies = [
   "xclim ==0.52.2", # remember to match xclim version in environment.yml as well
   "xesmf >=0.6.2,!=0.8.8",
   "xscen",
-  "werkzeug>=4.0.0"
+  "werkzeug>=3.0.6"
 ]
 
 [project.optional-dependencies]
@@ -112,7 +112,6 @@ finch = "finch.cli:cli"
 
 [tool.black]
 target-version = [
-  "py39",
   "py310",
   "py311",
   "py312"
