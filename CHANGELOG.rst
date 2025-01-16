@@ -6,14 +6,19 @@ v0.13.0 (unreleased)
 --------------------
 
 * Added support for Birdhouse Helper Bot (for bumping versions).
-* CI Actions and Python dependencies are now pinned to hashes.
-* Permissions have been set for all workflows.
-* Pinned `cf-xarray`` below v0.9.3.
+* CI Actions and Python dependencies are now pinned to commit hashes.
+* Permissions have been set and restricted as needed for all workflows.
+* Pinned `cf-xarray` below v0.9.3.
 * Reformatted and renamed `CHANGES.rst` to `CHANGELOG.rst`.
 * Dropped support for Python 3.8 and 3.9. The supported versions are now Python 3.10, 3.11 and 3.12.
-* `black` has been updated to v2024.8.0, and coding conventions have been updated to Python3.9+.
+* `black` has been updated to v2024.10.0, and coding conventions have been updated to Python3.10+.
 * Several dependencies now are pinned to baseline versions, including `anyascii`, `dask`, `ipython`, `matplotlib`, `nbsphinx` `numpy`, and `sphinxcontrib-bibtex`.
 * Added `xscen` dependency. Now used in spatial averaging of ensemble processes.
+* Updated the build system to use `flit` v3.9.0 (PEP 517 and PEP 621). Several configuration files have been migrated to `pyproject.toml` and `.flake8`.
+* `finch` now uses a src-based layout for the package. The `finch` package is now located in the `src` directory.
+* The pre-commit configuration has been updated to use `pre-commit` v3.5.0. Several hooks have been added, including `pygrep-hooks` (security fixes), `ruff` (code formatting), and `vulture` (dead code).
+* Documentation examples now build without warnings. ReadTheDocs is now configured to `fail_on_warning`.
+* `xclim` has been updated to v0.52.2.
 
 v0.12.1 (2024-06-25)
 --------------------
