@@ -136,7 +136,8 @@ def test_wps_daily_temperature_range_multiple(client, netcdf_datasets):
     assert mock_progress.call_args_list[4][1]["start_percentage"] == 80
     assert mock_progress.call_args_list[4][1]["end_percentage"] == 100
 
-    et = etree.fromstring(outputs[1].data[0].encode())
+    # FIXME: This is generally unsafe as an approach as the data is untrusted.
+    et = etree.fromstring(outputs[1].data[0].encode())  # noqa: S320
     urls = [e[2].text for e in et if e.tag.endswith("file")]
 
     assert len(urls) == 5, "Containing 10 files"

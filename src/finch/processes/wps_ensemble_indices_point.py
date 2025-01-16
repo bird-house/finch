@@ -3,17 +3,18 @@ import logging
 
 from anyascii import anyascii
 
+from finch.processes.subset import finch_subset_gridpoint
+
 from . import wpsio
 from .ensemble_utils import ensemble_common_handler
-from .subset import finch_subset_shape
 from .utils import iter_xc_variables
 from .wps_base import FinchProcess, convert_xclim_inputs_to_pywps
 
 LOGGER = logging.getLogger("PYWPS")
 
 
-class XclimEnsemblePolygonBase(FinchProcess):
-    """Ensemble with polygon subset base class.
+class XclimEnsembleGridPointBase(FinchProcess):
+    """Ensemble with grid point subset base class.
 
     Set xci to the xclim indicator in order to have a working class.
     """
@@ -34,7 +35,8 @@ class XclimEnsemblePolygonBase(FinchProcess):
         self.xci_inputs_identifiers = [i.identifier for i in xci_inputs]
 
         inputs = [
-            wpsio.shape,
+            wpsio.lat,
+            wpsio.lon,
             wpsio.start_date,
             wpsio.end_date,
             wpsio.ensemble_percentiles,
@@ -43,9 +45,13 @@ class XclimEnsemblePolygonBase(FinchProcess):
         ]
 
         # all other inputs that are not the xarray data (window, threshold, etc.)
-        for i in xci_inputs:
-            if i.identifier not in list(iter_xc_variables(self.xci)):
-                inputs.append(i)
+        inputs.extend(
+            [
+                i
+                for i in xci_inputs
+                if i.identifier not in list(iter_xc_variables(self.xci))
+            ]
+        )
 
         inputs.extend(
             [wpsio.output_prefix, wpsio.output_format_netcdf_csv, wpsio.csv_precision]
@@ -53,7 +59,7 @@ class XclimEnsemblePolygonBase(FinchProcess):
 
         outputs = [wpsio.output_netcdf_zip, wpsio.output_log]
 
-        identifier = f"ensemble_polygon_{self.xci.identifier}"
+        identifier = f"ensemble_grid_point_{self.xci.identifier}"
         super().__init__(
             self._handler,
             identifier=identifier,
@@ -75,4 +81,4 @@ class XclimEnsemblePolygonBase(FinchProcess):
         }
 
     def _handler(self, request, response):
-        return ensemble_common_handler(self, request, response, finch_subset_shape)
+        return ensemble_common_handler(self, request, response, finch_subset_gridpoint)

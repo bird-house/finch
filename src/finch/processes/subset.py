@@ -109,7 +109,8 @@ def finch_subset_gridpoint(
             subsetted = subsetted.expand_dims("region")
 
         if not all(subsetted.dims.values()):
-            LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
+            msg = f"Subset is empty for dataset: {resource.url}"
+            LOGGER.warning(msg)
             return
 
         p = make_subset_file_name(resource)
@@ -185,7 +186,8 @@ def finch_subset_bbox(
             subsetted = False
 
         if subsetted is False or not all(subsetted.dims.values()):
-            LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
+            msg = f"Subset is empty for dataset: {resource.url}"
+            LOGGER.warning(msg)
             return
 
         p = make_subset_file_name(resource)
@@ -229,7 +231,7 @@ def finch_average_shape(
     process: Process,
     netcdf_inputs: list[ComplexInput],
     request_inputs: RequestInputs,
-) -> list[Path]:
+) -> list[Path] | None:
     """Parse wps `request_inputs` based on their name and average `netcdf_inputs`.
 
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
@@ -276,7 +278,8 @@ def finch_average_shape(
         averaged = average_shape(dataset, shape)
 
         if not all(averaged.dims.values()):
-            LOGGER.warning(f"Average is empty for dataset: {resource.url}")
+            msg = f"Average is empty for dataset: {resource.url}"
+            LOGGER.warning(msg)
             return
 
         p = make_subset_file_name(resource, kind="avg")
@@ -341,7 +344,8 @@ def finch_subset_shape(
         )
 
         if not all(subsetted.dims.values()):
-            LOGGER.warning(f"Subset is empty for dataset: {resource.url}")
+            msg = f"Subset is empty for dataset: {resource.url}"
+            LOGGER.warning(msg)
             return
 
         p = make_subset_file_name(resource)
@@ -356,15 +360,16 @@ def finch_subset_shape(
     return output_files
 
 
-def common_subset_handler(
+def common_subset_handler(  # noqa: D103
     process: Process, request, response, subset_function
-):  # noqa: D103
-    assert subset_function in [
+):
+    if subset_function not in [
         finch_subset_bbox,
         finch_subset_gridpoint,
         finch_subset_shape,
         finch_average_shape,
-    ]
+    ]:
+        raise NotImplementedError("Subset function not implemented")
 
     write_log(process, "Processing started", process_step="start")
 

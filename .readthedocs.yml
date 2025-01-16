@@ -10,15 +10,15 @@ sphinx:
   configuration: docs/source/conf.py
   # fail_on_warning might generate hard to fix error, in this case it can be
   # disabled but this also means those errors will fail silently, choose wisely.
-  fail_on_warning: false
+  fail_on_warning: true
 
 # Optionally build your docs in additional formats such as PDF and ePub
 formats: [ ]
 
 build:
-  os: ubuntu-lts-latest
+  os: ubuntu-24.04
   tools:
-    python: "mambaforge-latest"
+    python: "mambaforge-23.11"
 
 conda:
   environment: environment-docs.yml
@@ -26,8 +26,7 @@ conda:
 # Optionally set the version of Python and requirements required to build your docs
 python:
   install:
-    - requirements: requirements_docs.txt
-#    - method: pip
-#      path: .
-#      extra_requirements:
-#        - dev
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs

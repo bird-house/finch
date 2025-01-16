@@ -1,10 +1,13 @@
 .dockerignore
 Dockerfile
+docker-compose.yml
 
-.git
+.git/
+.github/
+CI/
 docs/
+etc/
 tests/
-src/
 finch.egg-info/
 **/tmp/*.*
 
@@ -14,6 +17,7 @@ finch.egg-info/
 # Unit test / Coverage reports
 .cache
 .pytest_cache
+conftest.py
 
 # PyCharm
 *.idea

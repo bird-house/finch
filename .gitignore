@@ -174,3 +174,6 @@ celerybeat-schedule
 
 # Django stuff:
 local_settings.py
+
+# Dask worker cache
+dask-worker-space/

@@ -2,7 +2,6 @@
 import logging
 from collections import deque
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 import xarray as xr

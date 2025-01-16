@@ -200,7 +200,7 @@ def _maybe_cast(dataframe):
                 try:
                     dataframe[col] = dataframe[col].astype(dtype)
                     break
-                except ValueError:
+                except ValueError:  # noqa: S110
                     pass
     return dataframe
 

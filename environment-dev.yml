@@ -1,0 +1,31 @@
+name: finch
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python >=3.10,<3.13
+  - pywps >=4.6
+  - jinja2 >=3.1.4
+  - click >=8.1.7
+  - psutil >=6.0.0
+  # Development
+  - birdy >=0.8.1
+  - black >=24.10.0
+  - bump-my-version >=0.26.0
+  - coverage >=7.5.0
+  - cruft >=2.15.0
+  - flit >=3.9.0,<4.0
+  - geojson
+  - lxml
+  - nbsphinx >=0.9.5
+  - nbval >=0.10.0
+  - owslib
+  - pip >=24.2.0
+  - pre-commit >=3.5.0
+  - pytest >=8.0.0
+  - pytest-cov >=5.0.0
+  - pytest-flake8
+  - pytest-notebook
+  - ruff >=0.5.7
+  - tox >=4.18.0
+  - watchdog >=4.0.0

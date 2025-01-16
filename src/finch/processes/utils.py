@@ -1,16 +1,16 @@
 # noqa: D100
 import json
 import logging
-import os
 import urllib.request
 import zipfile
+from collections import deque
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import chain
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import Deque, Optional, Union
+from typing import Any
 from urllib.error import URLError
 from urllib.parse import urlparse, urlunparse
 
@@ -44,9 +44,9 @@ from xclim.core.utils import InputKind
 
 LOGGER = logging.getLogger("PYWPS")
 
-PywpsInput = Union[LiteralInput, ComplexInput, BoundingBoxInput]
-PywpsOutput = Union[LiteralOutput, ComplexOutput, BoundingBoxOutput]
-RequestInputs = dict[str, Deque[PywpsInput]]
+PywpsInput = LiteralInput | ComplexInput | BoundingBoxInput
+PywpsOutput = LiteralOutput | ComplexOutput | BoundingBoxOutput
+RequestInputs = dict[str, deque[PywpsInput]]
 
 # These are parameters that set options. They are not `compute` arguments.
 INDICATOR_OPTIONS = [
@@ -62,7 +62,7 @@ def get_virtual_modules():
     modules = {}
     if modfiles := get_config_value("finch", "xclim_modules"):
         for modfile in modfiles.split(","):
-            if os.path.isabs(modfile):
+            if Path(modfile).is_absolute():
                 mod = build_indicator_module_from_yaml(Path(modfile))
             else:
                 mod = build_indicator_module_from_yaml(
@@ -119,7 +119,7 @@ def get_datasets_config():  # noqa: D103
     if not Path(p).is_absolute():
         p = Path(__file__).parent.parent / p
 
-    with open(p) as f:
+    with Path(p).open() as f:
         conf = yaml.safe_load(f)
     return {ds: DatasetConfiguration(**dsconf) for ds, dsconf in conf.items()}
 
@@ -145,8 +145,8 @@ def write_log(
     message: str,
     level=logging.INFO,
     *,
-    process_step: str = None,
-    subtask_percentage: int = None,
+    process_step: str | None = None,
+    subtask_percentage: int | None = None,
 ):
     """Log the process status.
 
@@ -187,7 +187,7 @@ def write_log(
         log_file_path(process).open("a", encoding="utf8").write(message + "\n")
         try:
             process.response.update_status(message, status_percentage=status_percentage)
-        except AttributeError:
+        except AttributeError:  # noqa: S110
             pass
 
 
@@ -206,9 +206,9 @@ def get_attributes_from_config():
     }
 
 
-def compute_indices(
+def compute_indices(  # noqa: D103
     process: Process, func: Callable, inputs: RequestInputs
-) -> xr.Dataset:  # noqa: D103
+) -> xr.Dataset:
     kwds = {}
     global_attributes = {}
     for name, input_queue in inputs.items():
@@ -284,14 +284,16 @@ def compute_indices(
     return output_dataset
 
 
-def drs_filename(ds: xr.Dataset, variable: str = None):
-    """Generate filename according to the data reference syntax (DRS).
+def drs_filename(ds: xr.Dataset, variable: str | None = None):
+    """
+    Generate filename according to the data reference syntax (DRS).
 
     Parameters
     ----------
     ds : xr.Dataset
-    variable : str
-        appropriate variable for filename, if not set (default), variable will be determined from the dataset variables.
+        An xarray Dataset.
+    variable : str, optional
+        Appropriate variable for filename, if not set (default), variable will be determined from the dataset variables.
 
     Returns
     -------
@@ -308,7 +310,7 @@ def drs_filename(ds: xr.Dataset, variable: str = None):
     Copied and modified from https://github.com/bird-house/eggshell which doesn't have a release usable by finch.
 
     Based on the metadata in the resource.
-    http://cmip-pcmdi.llnl.gov/cmip5/docs/cmip5_data_reference_syntax.pdf
+    http://cmip-pcmdi.llnl.gov/cmip5/docs/cmip5_data_reference_syntax.pdf  # Dead link
     https://pypi.python.org/pypi/drslib
     """
     if len(ds.data_vars) == 1:
@@ -414,7 +416,9 @@ def try_opendap(
 
     try:
         # Try to open the dataset
-        ds = xr.open_dataset(path, chunks=chunks or None, decode_times=decode_times)
+        ds = xr.open_dataset(
+            path, chunks=chunks or None, decode_times=decode_times, engine="netcdf4"
+        )
     except NotImplementedError:
         if chunks == "auto":
             # Some dtypes are not compatible with auto chunking (object, so unbounded strings)
@@ -464,10 +468,11 @@ def chunk_dataset(ds, max_size=1000000, chunk_dims=None):
 
     dims = set(ds.dims).intersection(chunk_dims or ds.dims)
     if not dims:
-        LOGGER.warning(
+        msg = (
             f"Provided dimension names for chunking ({chunk_dims}) were "
             f"not found in dataset dims ({ds.dims}). No chunking was done."
         )
+        LOGGER.warning(msg)
         return chunks
 
     def chunk_size():
@@ -482,7 +487,7 @@ def chunk_dataset(ds, max_size=1000000, chunk_dims=None):
 
 
 def make_metalink_output(
-    process: Process, files: list[Path], description: str = None
+    process: Process, files: list[Path], description: str | None = None
 ) -> MetaLink4:
     """Make a MetaLink output from a list of files."""
     metalink = MetaLink4(
@@ -504,8 +509,7 @@ def is_opendap_url(url):
     """Check if a provided url is an OpenDAP url.
 
     The DAP Standard specifies that a specific tag must be included in the
-    Content-Description header of every request. This tag is one of:
-        "dods-dds" | "dods-das" | "dods-data" | "dods-error"
+    Content-Description header of every request. This tag is one of: {"dods-dds", "dods-das", "dods-data", "dods-error"}
 
     So we can check if the header starts with `dods`.
 
@@ -514,10 +518,13 @@ def is_opendap_url(url):
     """
     parts = urlparse(url)
     meta_url = urlunparse([parts[0], parts[1], parts[2] + ".dds", None, None, None])
-    req = urllib.request.Request(meta_url, method="HEAD")
+
+    # TODO: Audit URL for permitted schemes
+    req = urllib.request.Request(meta_url, method="HEAD")  # noqa: S310
 
     try:
-        with urllib.request.urlopen(req, timeout=5) as response:
+        # TODO: Audit URL for permitted schemes
+        with urllib.request.urlopen(req, timeout=5) as response:  # noqa: S310
             content_description = response.headers.get("Content-Description")
     except URLError:
         return False
@@ -528,7 +535,7 @@ def is_opendap_url(url):
         return False
 
 
-def single_input_or_none(inputs, identifier) -> str | None:
+def single_input_or_none(inputs, identifier) -> Any | None:
     """Return first input item."""
     try:
         return inputs[identifier][0].data
@@ -553,7 +560,7 @@ def netcdf_file_list_to_csv(
         for key in args:
             try:
                 return ds.attrs[key]
-            except KeyError:
+            except KeyError:  # noqa: PERF203,S112
                 continue
         raise KeyError(f"Couldn't find any attribute in [{', '.join(args)}]")
 
@@ -702,10 +709,9 @@ def format_metadata(ds) -> str:
     return out
 
 
-def zip_files(
-    output_filename, files: Iterable, log_function: Callable[[str, int], None] = None
-):
-    """Create a zipfile from a list of files or folders.
+def zip_files(output_filename, files: Iterable, log_function: Callable | None = None):
+    """
+    Create a zipfile from a list of files or folders.
 
     log_function is a function that receives a message and a percentage.
     """

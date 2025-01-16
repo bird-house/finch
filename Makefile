@@ -172,10 +172,9 @@ refresh-notebooks: ## refreshing all notebook outputs under docs/source/notebook
 .PHONY: dist
 dist: clean ## build source and wheel package
 	@echo "Building source and wheel package ..."
-	@-python setup.py sdist
-	@-python setup.py bdist_wheel
+	@python -m build --sdist
 	@-bash -c 'ls -l dist/'
 
 release: dist ## upload source and wheel packages
 	@echo "Uploading source and wheel packages ..."
-	@bash -c 'twine upload dist/*'
+	@python -m flit publish dist/*

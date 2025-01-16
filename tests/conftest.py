@@ -1,7 +1,5 @@
 import collections
 from pathlib import Path
-from shutil import rmtree
-from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -11,9 +9,7 @@ from pywps import configuration
 from scipy.stats import norm, uniform
 from xarray import DataArray
 from xclim.core.calendar import percentile_doy
-from xclim.testing.helpers import (
-    test_timeseries as timeseries,  # pr_hr_series, pr_series, q_series, tas_series
-)
+from xclim.testing.helpers import test_timeseries as timeseries
 
 import finch.processes
 import finch.wsgi
@@ -33,14 +29,18 @@ def _create_test_dataset(
     Parameters
     ----------
     variable : str
+        Variable name.
     cell_methods : str
+        Cell methods.
     standard_name : str
+        Standard name.
     units : str
+        Units.
     seed : int, float, array_like, optional
+        Seed for the random number generator
     missing : bool
         If True, add a NaN on Jan 15.
     """
-
     rs = np.random.RandomState(seed)
     _vars = {variable: ["time", "lon", "lat"]}
     _dims = {"time": 365, "lon": 5, "lat": 6}

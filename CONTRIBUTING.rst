@@ -49,8 +49,7 @@ If you are proposing a feature:
 
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
+* Remember that this is a volunteer-driven project, and that contributions are welcome :)
 
 Get Started!
 ------------
@@ -77,9 +76,10 @@ Ready to contribute? Here's how to set up `finch` for local development.
 5. When you're done making changes, check that your changes pass flake8 and the
    tests, including testing other Python versions with tox::
 
-    $ flake8 finch tests
-    $ python setup.py test or pytest
-    $ tox
+    $ make lint
+    $ make test
+    Or
+    $ make test-all
 
    To get flake8 and tox, just pip install them into your virtualenv.
 
@@ -98,7 +98,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in README.rst.
-3. The pull request should work for Python 3.8, 3.9, 3.10 and 3.11. Check https://github.com/bird-house/finch/actions and make sure that the tests pass for all supported Python versions.
+3. The pull request should work for all supported Python versions. Check https://github.com/bird-house/finch/actions and make sure that the tests pass for all supported Python versions.
 
 Tips
 ----
@@ -114,6 +114,14 @@ A reminder for the maintainers on how to deploy.
 Make sure all your changes are committed (including an entry in HISTORY.rst).
 Then run::
 
-    $ bump2version patch # possible: major / minor / patch
+    $ bump-my-version bump patch # possible: major / minor / patch
     $ git push
     $ git push --tags
+
+Code of Conduct
+---------------
+
+Please note that this project is released with a `Contributor Code of Conduct`_.
+By participating in this project you agree to abide by its terms.
+
+.. _`Contributor Code of Conduct`: CODE_OF_CONDUCT.rst
