@@ -42,14 +42,13 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.imgconverter",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx.ext.todo",
-    "pywps.ext_autodoc",
-    "sphinx.ext.autosectionlabel",
-    "sphinx.ext.imgconverter",
+    "sphinx.ext.viewcode",
     "nbsphinx",
+    "pywps.ext_autodoc",
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinxcontrib.bibtex",
 ]
@@ -119,6 +118,11 @@ if not bibfile.is_file():
 if bibfile.is_file():
     bibtex_bibfiles = ["references.bib"]
     bibtex_reference_style = "author_year"
+
+# Intersphinx (needed for some cross-references used in the xclim docstrings)
+intersphinx_mapping = {
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+}
 
 # Monkeypatch constant because the following are mock imports.
 # Only works if numpy is actually installed and at the same time being mocked.
