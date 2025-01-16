@@ -6,7 +6,7 @@ Deployment
 Start Finch PyWPS service
 -------------------------
 
-After successful installation, you can start the service using the ``finch`` command-line:
+After successful installation, you can start the service using the `$ finch` command in your console:
 
 .. code-block:: console
 
@@ -24,7 +24,7 @@ The deployed WPS service is available by default on port 5000:
 http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities.
 
 Once the service is running, a `pywps.pid` file is created in the current directory.
-This file contains the process ID of the running ``finch`` service.
+This file contains the process ID of the running `finch` service.
 
 Alternatively, you can find which process uses a given port using the following command (here for port 5000):
 
@@ -38,7 +38,7 @@ Check the log files for errors:
 
    $ tail -f  pywps.log
 
-Stopping the ``finch`` daemon:
+Stopping the `finch` daemon:
 
 .. code-block:: console
 
@@ -48,7 +48,7 @@ Changing the default port
 +++++++++++++++++++++++++
 
 You can overwrite the default `PyWPS`_ configuration by using command-line options.
-See the Finch help for which options are available:
+See the `finch` help for which options are available:
 
 .. code-block:: console
 
@@ -56,7 +56,7 @@ See the Finch help for which options are available:
     --hostname HOSTNAME        hostname in PyWPS configuration.
     --port PORT                port in PyWPS configuration.
 
-Start service with different hostname and port
+Start service with different hostname and port:
 
 .. code-block:: console
 
@@ -76,22 +76,22 @@ If `finch` is running from a clone of the GitHub source code repository, you can
    $ tail -f pywps.log
    $ make stop
 
-If you wish to always run Finch from the Makefile, you can set the URL and port via environment variables:
+If you wish to always run `finch` from the `Makefile`, you can set the URL and port via environment variables:
 
 .. code-block:: console
 
    $ export WPS_URL=http://localhost:9876  # to set a particular URL:port
 
-Deploying Finch from a Docker container
----------------------------------------
+Deploying Finch WPS from a Docker container
+-------------------------------------------
 
-Running Finch as a Docker service is very simple:
+Running `finch` as a Docker service is very simple:
 
 .. code-block:: console
 
    $ docker run -p 5000:5000 birdhouse/finch
 
-This will start Finch mapped to port 5000, allowing you to access Finch at http://localhost:5000.
+This will start `finch` mapped to port 5000, allowing you to access `finch` at http://localhost:5000.
 
 Using Ansible to deploy Finch WPS
 ---------------------------------

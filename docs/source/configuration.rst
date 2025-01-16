@@ -42,12 +42,16 @@ finch
 :datasets_config: Path to the YAML files defining the available ensemble datasets (see below). The path can be given relative to the "finch/finch/" folder, where `default.cfg` lives.
 :default_dataset: Default dataset to use. Should be a top-level key of the yaml.
 :subset_threads: Number of threads to use when performing the subsetting.
-:xclim_modules: Comma separated list of virtual xclim modules to include when creating finch indicator processes. Paths can be absolute or relative to the `finch` directory. Note - In order to include potential custom `compute` functions or french translations, paths should exclude the .yml file extension (more info on  `xclim virtual modules <https://xclim.readthedocs.io/en/stable/notebooks/extendxclim.html#Virtual-modules>`_)
+:xclim_modules: Comma separated list of virtual `xclim` modules to include when creating finch indicator processes. Paths can be absolute or relative to the `src/finch` directory.
+
+.. note::
+
+    In order to include potential custom `compute` functions or french translations, paths should exclude the .yml file extension (more info on `xclim virtual modules <https://xclim.readthedocs.io/en/stable/notebooks/extendxclim.html#Virtual-modules>`_)
 
 finch:metadata
 ^^^^^^^^^^^^^^
 
-All fields here are added as string attributes of computed indices, in addition to xclim's attributes.
+All fields here are added as string attributes of computed indices, in addition to `xclim`'s attributes.
 Finch always adds the following attributes:
 
 :climateindex_package_id: ``https://github.com/Ouranosinc/xclim``

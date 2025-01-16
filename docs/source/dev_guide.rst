@@ -7,7 +7,7 @@ Developer Guide
     :local:
     :depth: 1
 
-.. warning:: To create new processes look at examples in Emu_.
+.. warning:: To create new processes, refer to the examples found in Emu_.
 
 .. _Emu: https://github.com/bird-house/emu
 
@@ -38,7 +38,7 @@ First activate the ``finch`` Conda environment and install ``pytest``.
 .. code-block:: shell
 
    $ source activate finch
-   $ pip install -r requirements_dev.txt  # if not already installed
+   $ pip install -e ".[dev]"  # if not already installed
    # or
    $ make develop
 
@@ -93,14 +93,18 @@ To update the `conda` specification file for building identical environments_ on
 Preparing Finch releases
 ------------------------
 
-In order to prepare a new release version of Finch, perform the following steps in a new branch:
+In order to prepare a new release version of finch, perform the following steps in a new branch:
 
-    #. Update ``CHANGES.rst`` with the release notes for the next version.
-    #. Push changes to GitHub.
-    #. Open a Pull Request with an appropriate title and description. (e.g. "Prepare release v1.2.3")
-    #. After merging changes to the main branch, click on the Actions tab and select the "Bump Version and Tag for Release" workflow.
-    #. Adjust the information as needed ("Bump version": "patch" or "minor" or "major"; "Tag": "true" or "false") the "Run Workflow" button on the main branch.
-    #. After the workflow has completed, the new version will be tagged and pushed to GitHub.
-    #. Create a new release on GitHub using the newly tagged commit with the same version number as the tag:
-        - The release title should be the same as the tag name.
-        - The release description should be the same as the release notes in ``CHANGES.rst``.
+#. Update ``CHANGES.rst`` with the release notes for the next version.
+#. Run `$ bump-my-version bump { patch | minor | major }` to update the version numbers.
+#. Run `$ bump-my-version bump release` to create a new release commit.
+#. Push your changes to GitHub.
+#. Open a Pull Request with an appropriate title and description (e.g. "Prepare release v1.2.3").
+#. Wait for the CI workflows to complete.
+#. Merge the Pull Request into the ``main`` branch.
+#. Tag the commit with the new version number:
+    - Run `$ git tag -a v1.2.3 -m "Release v1.2.3"`.
+    - Push the tag to GitHub with `$ git push origin v1.2.3`.
+#. Create a new release on GitHub using the newly tagged commit with the same version number as the tag:
+    - The release title should be the same as the tag name.
+    - The release description should be the same as the release notes in ``CHANGES.rst``.

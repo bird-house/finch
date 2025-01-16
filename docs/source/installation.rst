@@ -46,7 +46,7 @@ Create Conda environment named `finch`:
    $ conda env create -f environment.yml
    $ source activate finch
 
-Install Finch app:
+Install `finch` app:
 
 .. code-block:: console
 
