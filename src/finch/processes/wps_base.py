@@ -44,11 +44,13 @@ class FinchProcess(Process):
 
         # Must be assigned to the instance so that
         # it's also copied over when the process is deepcopied
-        self.wrapped_handler = self.handler
+        self.wrapped_handler = (
+            self.handler  # pylint: disable=access-member-before-definition
+        )
         self.handler = self._handler_wrapper
         self.response = None
         # A dict containing a step description and the percentage at the strat of this step
-        # Each process should overwrite this, and thie values are used in `processes.utils.write_log`
+        # Each process should overwrite this, and the values are used in `processes.utils.write_log`
         self.status_percentage_steps: dict[str, int] = {}
 
     def _handler_wrapper(self, request, response):

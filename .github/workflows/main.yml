@@ -32,9 +32,17 @@ jobs:
       - name: Install CI libraries
         run: |
           python -m pip install --require-hashes -r CI/requirements_ci.txt
+      - name: Run pylint
+        run: |
+          python -m pylint --rcfile=.pylintrc.toml --disable=import-error --exit-zero src/finch
       - name: Run linting suite
         run: |
-          python -m flake8
+          python -m ruff check src/finch
+          python -m black --check src/finch/**/*.py
+          python -m flake8 --config=.flake8 src/finch
+          python -m isort --check-only --settings-file=pyproject.toml src/finch
+          python -m vulture src/finch tests
+          python -m yamllint --config-file=.yamllint.yaml .
 
   conda:
     name: Build ⚙️ and test 🧪
@@ -61,8 +69,6 @@ jobs:
           environment-file: environment.yml
           create-args: >-
             python=${{ matrix.python-version }}
-          # FIXME: https://github.com/mamba-org/setup-micromamba/issues/225
-          micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
       - name: Install finch-wps
         run: |
           make develop
