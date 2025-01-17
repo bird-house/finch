@@ -19,6 +19,10 @@ v0.13.0 (unreleased)
 * The pre-commit configuration has been updated to use `pre-commit` v3.5.0. Several hooks have been added, including `pygrep-hooks` (security fixes), `ruff` (code formatting), and `vulture` (dead code).
 * Documentation examples now build without warnings. ReadTheDocs is now configured to `fail_on_warning`.
 * `xclim` has been updated to v0.52.2.
+* Modernized the documentation to reflect recent changes.
+* Added `pylint` to the linting checks and `pre-commit` steps.
+* Added deployment workflows for PyPI and TestPyPI.
+* Synchronized more dependencies.
 
 v0.12.1 (2024-06-25)
 --------------------
