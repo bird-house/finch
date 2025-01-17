@@ -20,12 +20,11 @@ on:
       - docs/*/*.rst
       - docs/Makefile
       - docs/_static/*
-      - environment.yml
+      - environment-dev.yml
       - environment-docs.yml
-      - finch/__version__.py
-      - requirements*.txt
-      - setup.cfg
-      - setup.py
+      - environment.yml
+      - pyproject.toml
+      - src/finch/__version__.py
 
 permissions:
   contents: read
