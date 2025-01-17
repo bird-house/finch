@@ -4,14 +4,15 @@
   - changed-files:
     - any-glob-to-any-file:
       - '.editorconfig'
+      - '.flake8'
+      - '.github/workflows/*'
       - '.pre-commit-config.yaml'
+      - '.pylintrc.toml'
       - '.readthedocs.yml'
       - '.yamllint.yml'
-      - '.github/workflows/*'
-      - 'docs/Makefile'
-      - 'pylintrc'
-      - 'tox.ini'
       - 'Makefile'
+      - 'docs/Makefile'
+      - 'tox.ini'
 
 'dependencies':
   - changes-files:
@@ -26,6 +27,7 @@
       - '.zenodo.json'
       - 'docs/**/*'
       - 'AUTHORS.rst'
+      - 'CHANGELOG.rst'
       - 'CONTRIBUTING.md'
       - 'ISSUE_TEMPLATE.md'
       - 'PULL_REQUEST_TEMPLATE.md'

@@ -110,8 +110,13 @@ clean-docs: ## remove documentation artifacts
 
 .PHONY: lint
 lint: ## check style
-	@echo "Running pre-commit-configured code style checks ..."
-	@bash -c 'pre-commit run --all-files'
+	@echo "Running code style checks ..."
+	@bash -c 'python -m ruff check src/finch'
+	@bash -c 'python -m black --check src/finch/**/*.py'
+	@bash -c 'python -m flake8 --config=.flake8 src/finch'
+	@bash -c 'python -m isort --check-only --settings-file=pyproject.toml src/finch'
+	@bash -c 'python -m vulture src/finch tests'
+	@bash -c 'python -m yamllint --config-file=.yamllint.yaml .'
 
 ## Test targets:
 
