@@ -138,7 +138,7 @@ search = "__version__ = \"{current_version}\""
 replace = "__version__ = \"{new_version}\""
 
 [[tool.bumpversion.files]]
-filenam = "Dockerfile"
+filename = "Dockerfile"
 search = "Version=\"{current_version}\""
 replace = "Version=\"{new_version}\""
 
