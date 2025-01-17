@@ -3,7 +3,7 @@ requires = ["flit_core >=3.9,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "finch"
+name = "birdhouse-finch"
 authors = [
   {name = "David Huard", email = "huard.david@ouranos.ca"},
   {name = "Pascal Bourgault", email = "bourgault.pascal@ouranos.ca"},
