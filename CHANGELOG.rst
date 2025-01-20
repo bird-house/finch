@@ -2,7 +2,7 @@
 Changelog
 =========
 
-v0.13.0 (unreleased)
+v0.13.0 (2025-01-20)
 --------------------
 
 * Added support for Birdhouse Helper Bot (for bumping versions).
