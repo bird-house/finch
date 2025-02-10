@@ -212,9 +212,9 @@ platformdirs==4.3.6 \
     # via
     #   pylint
     #   virtualenv
-pre-commit==4.0.1 \
-    --hash=sha256:80905ac375958c0444c65e9cebebd948b3cdb518f335a091a670a89d652139d2 \
-    --hash=sha256:efde913840816312445dc98787724647c65473daefe420785f885e8ed9a06878
+pre-commit==4.1.0 \
+    --hash=sha256:ae3f018575a588e30dfddfab9a05448bfbd6b73d78709617b5a2b853549716d4 \
+    --hash=sha256:d29e7cb346295bcc1cc75fc3e92e343495e3ea0196c9ec6ba53f49f10ab6ae7b
     # via -r CI/requirements_ci.in
 prompt-toolkit==3.0.36 \
     --hash=sha256:3e163f254bef5a03b146397d7c1963bd3e2812f0964bb9a24e6ec761fd28db63 \
