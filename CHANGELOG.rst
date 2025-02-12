@@ -2,6 +2,11 @@
 Changelog
 =========
 
+v0.13.1 (2025-02-13)
+--------------------
+
+* Allowed for the use of four (4) emissions scenarios in the `ensemble_percentiles` process.
+
 v0.13.0 (2025-01-20)
 --------------------
 
