@@ -1,4 +1,4 @@
-bump-my-version==0.32.0
+bump-my-version==0.32.1
 flit==3.10.1
 pip==25.0.1
 pre-commit==4.1.0
