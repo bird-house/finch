@@ -94,7 +94,7 @@ docs = [
   "jupyter_client",
   "matplotlib>=3.5.0",
   "nbsphinx>=0.9.5",
-  "sphinx>=7.0.0,<8.2.0", # Pinned until nbsphinx supports Sphinx 8.2
+  "sphinx>=7.0.0,<8.3.0", # Pinned until nbsphinx supports Sphinx 8.2
   "sphinxcontrib-bibtex>=2.6.0"
 ]
 prod = [
