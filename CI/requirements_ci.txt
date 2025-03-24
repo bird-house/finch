@@ -20,9 +20,9 @@ bracex==2.4 \
     --hash=sha256:a27eaf1df42cf561fed58b7a8f3fdf129d1ea16a81e1fadd1d17989bc6384beb \
     --hash=sha256:efdc71eff95eaff5e0f8cfebe7d01adf2c8637c8c92edaf63ef348c241a82418
     # via wcmatch
-bump-my-version==0.32.2 \
-    --hash=sha256:fb93c5a70a2368354bcac4457d22f282dc66a7bd241241f5a4e3d49002dece36 \
-    --hash=sha256:fc1c686af66c39c44d2f19c4d29597fcc2f938bc19046b8df26bfa44c93f11c0
+bump-my-version==1.0.2 \
+    --hash=sha256:2f156877d2cdcda69afcb257ae4564c26e70f2fd5e5b15f2c7f26ab9e91502da \
+    --hash=sha256:61d350b8c71968dd4520fc6b9df8b982c7df254cd30858b8645eff0f4eaf380b
     # via -r CI/requirements_ci.in
 certifi==2024.12.14 \
     --hash=sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56 \
@@ -151,9 +151,9 @@ filelock==3.16.1 \
     --hash=sha256:2082e5703d51fbf98ea75855d9d5527e33d8ff23099bec374a134febee6946b0 \
     --hash=sha256:c249fbfcd5db47e5e2d6d62198e565475ee65e4831e2561c8e313fa7eb961435
     # via virtualenv
-flit==3.10.1 \
-    --hash=sha256:9c6258ae76d218ce60f9e39a43ca42006a3abcc5c44ea6bb2a1daa13857a8f1a \
-    --hash=sha256:d79c19c2caae73cc486d3d827af6a11c1a84b9efdfab8d9683b714ec8d1dc1f1
+flit==3.11.0 \
+    --hash=sha256:58d0a07f684c315700c9c54a661a1130995798c3e495db0db53ce6e7d0121825 \
+    --hash=sha256:e4316b02fe6392e65dc489f78b561e635fd1c74652a52b95a8ce5939d688717e
     # via -r CI/requirements_ci.in
 flit-core==3.11.0 \
     --hash=sha256:6ceeee3219e9d2ea282041f3e027c441597b450b33007cb81168e887b6113a8f \
