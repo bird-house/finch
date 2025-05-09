@@ -356,6 +356,7 @@ def make_ensemble(  # noqa: D103
     files: list[Path],
     percentiles: list[int],
     spatavg: bool | None = False,
+    tmpavg: bool | None = False,
     region: dict | None = None,
 ) -> None:
     ensemble = ensembles.create_ensemble(
@@ -378,6 +379,8 @@ def make_ensemble(  # noqa: D103
         if ensemble[v].attrs.get("is_dayofyear", 0) == 1:
             ensemble[v] = doy_to_days_since(ensemble[v])
 
+    if tmpavg:
+        ensemble
     if spatavg:
         # ensemble = ensemble.mean(dim=average_dims)
         if region is None:
@@ -587,6 +590,11 @@ def ensemble_common_handler(  # noqa: C901,D103
         region = None
         spatavg = False
 
+    if single_input_or_none(request.inputs, "temporal_average"):
+        tmpavg= True
+    else:
+        tmpavg = False
+
     write_log(process, f"Will average over {region}")
 
     base_work_dir = Path(process.workdir)
@@ -670,6 +678,7 @@ def ensemble_common_handler(  # noqa: C901,D103
             files=indices_files,
             percentiles=ensemble_percentiles,
             spatavg=spatavg,
+            tmpavg=tmpavg,
             region=region,
         )
         ensemble.attrs["source_datasets"] = "\n".join(

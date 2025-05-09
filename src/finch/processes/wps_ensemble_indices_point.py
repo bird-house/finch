@@ -41,6 +41,7 @@ class XclimEnsembleGridPointBase(FinchProcess):
             wpsio.end_date,
             wpsio.ensemble_percentiles,
             wpsio.average,
+            wpsio.temporal_average,
             *wpsio.get_ensemble_inputs(novar=True),
         ]
 
