@@ -97,3 +97,18 @@ test_humidex:
       - CNRM-CM6-1
   model_lists:
     humidex_submods: *hxmax_day_sub
+
+test_temp_avg:
+  local: true
+  depth: 0
+  path: ../../tests/data/ensemble_temporal_avg/
+  suffix: "*.nc"
+  pattern: "{variable}_day_MBCn+PCIC-Blend_{model}_historical+{scenario}_r1i1p1f1_gn.nc"
+  allowed_values:
+    scenario: [ ssp245, ssp370 ]
+    variable: [ tasmin ]
+    model:
+      - ACCESS-CM2
+      - ACCESS-ESM1-5
+      - BCC-CSM2-MR
+  model_lists: {}
