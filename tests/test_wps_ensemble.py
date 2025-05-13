@@ -130,6 +130,7 @@ def test_ensemble_spatial_avg_grid_point(client):
         for d, v in {"time": 4, "scenario": 2}.items():
             assert variable_dims[d] == v
 
+
 def test_ensemble_temporal_avg_bbox(client):
     # --- given ---
     identifier = "ensemble_bbox_tn_mean"
@@ -145,7 +146,7 @@ def test_ensemble_temporal_avg_bbox(client):
         wps_literal_input("ensemble_percentiles", ""),
         wps_literal_input("output_format", "netcdf"),
         wps_literal_input("output_name", "testens"),
-        #wps_literal_input("average", "True"),
+        # wps_literal_input("average", "True"),
         wps_literal_input("temporal_average", "True"),
     ]
 
@@ -157,30 +158,45 @@ def test_ensemble_temporal_avg_bbox(client):
 
     ds = open_dataset(outputs[0])
     dims = dict(ds.dims)
-    assert dims == {
-        "time": 36,
-        "scenario": 2,
-        "realization": 3,
-        "lat": 12,
-        "lon": 12
-    }
+    assert dims == {"time": 36, "scenario": 2, "realization": 3, "lat": 12, "lon": 12}
 
-    ensemble_variables = ["tn_mean", "tn_mean_delta_1971_2000", "tn_mean_delta_1981_2010", "tn_mean_delta_1991_2020"]
+    ensemble_variables = [
+        "tn_mean",
+        "tn_mean_delta_1971_2000",
+        "tn_mean_delta_1981_2010",
+        "tn_mean_delta_1991_2020",
+    ]
     assert sorted(ensemble_variables) == sorted([v for v in ds.data_vars])
     test_vals = dict()
-    test_vals['ssp245'] = {'tn_mean': np.array([273.98428, 273.98315, 274.00925], dtype="float32"),
-        'tn_mean_delta_1971_2000': np.array([0.20800494, 0.4312828, 0.3815376], dtype="float32"),
-        'tn_mean_delta_1981_2010': np.array([0.08352391, 0.0919781, 0.03475031], dtype="float32"),
-        'tn_mean_delta_1991_2020': np.array([-0.29152888, -0.52326095, -0.41628787], dtype="float32")}
-    test_vals['ssp370'] = {'tn_mean': np.array([274.01407, 273.97318, 274.01627], dtype="float32"),
-        'tn_mean_delta_1971_2000': np.array([0.23532315, 0.4178526 , 0.3895025 ], dtype="float32"),
-        'tn_mean_delta_1981_2010': np.array([0.11405201, 0.08232197, 0.04127601], dtype="float32"),
-        'tn_mean_delta_1991_2020': np.array([-0.34937513, -0.50017464, -0.4307785 ], dtype="float32")}
+    test_vals["ssp245"] = {
+        "tn_mean": np.array([273.98428, 273.98315, 274.00925], dtype="float32"),
+        "tn_mean_delta_1971_2000": np.array(
+            [0.20800494, 0.4312828, 0.3815376], dtype="float32"
+        ),
+        "tn_mean_delta_1981_2010": np.array(
+            [0.08352391, 0.0919781, 0.03475031], dtype="float32"
+        ),
+        "tn_mean_delta_1991_2020": np.array(
+            [-0.29152888, -0.52326095, -0.41628787], dtype="float32"
+        ),
+    }
+    test_vals["ssp370"] = {
+        "tn_mean": np.array([274.01407, 273.97318, 274.01627], dtype="float32"),
+        "tn_mean_delta_1971_2000": np.array(
+            [0.23532315, 0.4178526, 0.3895025], dtype="float32"
+        ),
+        "tn_mean_delta_1981_2010": np.array(
+            [0.11405201, 0.08232197, 0.04127601], dtype="float32"
+        ),
+        "tn_mean_delta_1991_2020": np.array(
+            [-0.34937513, -0.50017464, -0.4307785], dtype="float32"
+        ),
+    }
     #
     for scen in test_vals.keys():
         for vv in ds.data_vars:
-            test = ds[vv].sel(scenario=scen).squeeze()#
-            test = test.mean(dim=[d for d in test.dims if d != 'realization']).values
+            test = ds[vv].sel(scenario=scen).squeeze()  #
+            test = test.mean(dim=[d for d in test.dims if d != "realization"]).values
             np.testing.assert_array_equal(test.sort(), test_vals[scen][vv].sort())
 
 
