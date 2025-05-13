@@ -356,7 +356,7 @@ def make_ensemble(  # noqa: D103
     files: list[Path],
     percentiles: list[int],
     spatavg: bool | None = False,
-    tmpavg: bool | None = False,
+    tmpavg: bool  = False,
     region: dict | None = None,
 ) -> None:
     ensemble = ensembles.create_ensemble(
