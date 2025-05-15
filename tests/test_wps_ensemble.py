@@ -130,6 +130,35 @@ def test_ensemble_spatial_avg_grid_point(client):
         for d, v in {"time": 4, "scenario": 2}.items():
             assert variable_dims[d] == v
 
+
+def test_ensemble_temporal_avg_fail(client):
+
+    with pytest.raises(ProcessError, match="NoApplicableCode: Process error: Finch failed with input dataset has insufficient number of years to apply temporal averaging"):
+        # --- given ---
+        identifier = "ensemble_bbox_tn_mean"
+        inputs = [
+            wps_literal_input("lat0", "45.0"),
+            wps_literal_input("lat1", "46.2"),
+            wps_literal_input("lon0", "-75.0"),
+            wps_literal_input("lon1", "-74.0"),
+            wps_literal_input("start_date", "1970"),
+            wps_literal_input("end_date", "1996"),
+            wps_literal_input("scenario", "ssp370"),
+            wps_literal_input("scenario", "ssp245"),
+            wps_literal_input("dataset", "test_temp_avg"),
+            wps_literal_input("freq", "MS"),
+            wps_literal_input("ensemble_percentiles", ""),
+            wps_literal_input("output_format", "netcdf"),
+            wps_literal_input("output_name", "testens"),
+            wps_literal_input("temporal_average", "True"),
+            wps_literal_input("output_format", "csv")
+        ]
+
+        # --- when ---
+        outputs = execute_process(client, identifier, inputs)
+        print(outputs)
+
+
 def test_ensemble_temporal_avg_bbox_csv(client):
     # --- given ---
     identifier = "ensemble_bbox_tn_mean"
@@ -145,18 +174,22 @@ def test_ensemble_temporal_avg_bbox_csv(client):
         wps_literal_input("ensemble_percentiles", ""),
         wps_literal_input("output_format", "netcdf"),
         wps_literal_input("output_name", "testens"),
-        #wps_literal_input("average", "True"),
         wps_literal_input("temporal_average", "True"),
         wps_literal_input("output_format", "csv")
     ]
 
     # --- when ---
     outputs = execute_process(client, identifier, inputs)
-    print(outputs)
 
     # --- then ---
     assert len(outputs) == 1
-
+    zf = zipfile.ZipFile(outputs[0])
+    assert len(zf.namelist()) == 2  # metadata + data
+    data_filename = [n for n in zf.namelist() if "metadata" not in n]
+    csv = zf.read(data_filename[0]).decode()
+    lines = csv.split("\n")
+    assert lines[0].startswith("time,horizon,lat,lon,scenario")
+    assert all([line.startswith("tn_mean") for line in lines[0].split(",")[5:]])
 
 def test_ensemble_temporal_avg_bbox(client):
     # --- given ---
@@ -173,7 +206,6 @@ def test_ensemble_temporal_avg_bbox(client):
         wps_literal_input("ensemble_percentiles", ""),
         wps_literal_input("output_format", "netcdf"),
         wps_literal_input("output_name", "testens"),
-        #wps_literal_input("average", "True"),
         wps_literal_input("temporal_average", "True"),
     ]
 
