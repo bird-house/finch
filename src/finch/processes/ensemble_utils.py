@@ -396,7 +396,7 @@ def make_ensemble(  # noqa: D103
         for hori in ["1971-2000", "1981-2010", "1991-2020"]:
             if hori in ensemble.horizon:
 
-                dslist.append(compute_deltas(
+                dslist.extend(compute_deltas(
                                 ds=ensemble, reference_horizon=hori
                             ))
 
@@ -732,6 +732,8 @@ def ensemble_common_handler(  # noqa: C901,D103
             dims = ["lat", "lon", "time"]
         else:
             dims = ["time"]
+        if tmpavg:
+            dims.extend('horizon')
         df = df.reset_index().set_index(dims)
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
