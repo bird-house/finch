@@ -22,7 +22,7 @@ from xclim import ensembles
 from xclim.core.calendar import days_since_to_doy, doy_to_days_since, percentile_doy
 from xclim.core.indicator import Indicator
 from xclim.indicators.atmos import tg
-from xscen.aggregate import spatial_mean, climatological_op, compute_deltas
+from xscen.aggregate import climatological_op, compute_deltas, spatial_mean
 
 from . import wpsio
 from .subset import finch_subset_bbox, finch_subset_gridpoint, finch_subset_shape
@@ -380,7 +380,7 @@ def make_ensemble(  # noqa: D103
             ensemble[v] = doy_to_days_since(ensemble[v])
 
     if tmpavg:
-        yr_mask = ensemble.time.dt.year %10 == 1
+        yr_mask = ensemble.time.dt.year % 10 == 1
         first_yr = ensemble.time.isel(time=yr_mask).isel(time=0).dt.year.values
         last_yr = ensemble.time.dt.year.max().values
         try:
@@ -391,21 +391,19 @@ def make_ensemble(  # noqa: D103
             LOGGER.error(err)
             raise
         clim_op_kwargs = {
-            "op": 'mean',
+            "op": "mean",
             "window": 30,
             "stride": 10,
             "min_periods": 20,
             "periods": [int(first_yr), int(last_yr)],
-            "rename_variables": False
+            "rename_variables": False,
         }
         ensemble = climatological_op(ds=ensemble, **clim_op_kwargs)
         dslist = [ensemble]
         for hori in ["1971-2000", "1981-2010", "1991-2020"]:
             if hori in ensemble.horizon:
 
-                dslist.extend([compute_deltas(
-                                ds=ensemble, reference_horizon=hori
-                            )])
+                dslist.extend([compute_deltas(ds=ensemble, reference_horizon=hori)])
 
         if len(dslist) > 1:
             ensemble = xr.merge(dslist)
@@ -620,7 +618,7 @@ def ensemble_common_handler(  # noqa: C901,D103
         spatavg = False
 
     if single_input_or_none(request.inputs, "temporal_average"):
-        tmpavg= True
+        tmpavg = True
     else:
         tmpavg = False
 
@@ -741,7 +739,7 @@ def ensemble_common_handler(  # noqa: C901,D103
             dims = ["time"]
         if tmpavg:
             print(df.columns)
-            dims.append('horizon')
+            dims.append("horizon")
         df = df.reset_index().set_index(dims)
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
