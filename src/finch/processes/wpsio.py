@@ -161,7 +161,7 @@ def get_ensemble_inputs(novar=False):
         data_type="string",
         default=None,
         min_occurs=0,
-        max_occurs=3,
+        max_occurs=4,
         allowed_values=list(
             set(
                 chain(*[d.allowed_values["scenario"] for d in datasets_config.values()])

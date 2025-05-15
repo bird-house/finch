@@ -1,7 +1,6 @@
 name: finch
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python >=3.10,<3.13
   - pywps >=4.6

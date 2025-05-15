@@ -37,7 +37,7 @@ dependencies = [
   "cftime >=1.4.1",
   "click >=8.1.7",
   "clisops >=0.11.0",
-  "dask[complete] >=2023.5.1",
+  "dask[complete] >=2023.5.1,<2025.4.0",
   "geopandas >=1.0",
   "jinja2 >=3.1.4",
   "netcdf4 <=1.7.2",
@@ -51,7 +51,7 @@ dependencies = [
   "scipy >=1.9.0",
   "sentry-sdk",
   "siphon",
-  "xarray >=2023.11.0",
+  "xarray >=2023.11.0,<2025.4.0",
   "xclim ==0.52.2", # remember to match xclim version in environment.yml as well
   "xesmf >=0.6.2,!=0.8.8",
   "xscen",
@@ -94,7 +94,7 @@ docs = [
   "jupyter_client",
   "matplotlib>=3.5.0",
   "nbsphinx>=0.9.5",
-  "sphinx>=7.0.0",
+  "sphinx>=7.0.0,<8.2.0", # Pinned until nbsphinx supports Sphinx 8.2
   "sphinxcontrib-bibtex>=2.6.0"
 ]
 prod = [
@@ -120,7 +120,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.13.0"
+current_version = "0.13.2-dev.0"
 commit = true
 commit_args = "--no-verify"
 tag = false

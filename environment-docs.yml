@@ -11,7 +11,7 @@ dependencies:
   - pandas >=2.2.0
   - pywps >=4.5.1
   - setuptools >=71.0.0
-  - sphinx >=7.0.0
+  - sphinx >=7.0.0,<8.2.0 # Pinned until nbsphinx supports Sphinx 8.2
   - sphinxcontrib-bibtex >=2.6.0
-  - xarray >=2023.11.0
+  - xarray >=2023.11.0,<2025.3.0
   - xclim =0.52.2 # remember to match xclim version in requirements_docs.txt as well
