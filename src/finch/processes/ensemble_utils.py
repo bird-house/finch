@@ -383,6 +383,13 @@ def make_ensemble(  # noqa: D103
         yr_mask = ensemble.time.dt.year %10 == 1
         first_yr = ensemble.time.isel(time=yr_mask).isel(time=0).dt.year.values
         last_yr = ensemble.time.dt.year.max().values
+        try:
+            if len(range(int(first_yr), int(last_yr) + 1)) < 30:
+                msg = "input dataset has insufficient number of years to apply temporal averaging"
+                raise ValueError(msg)
+        except ValueError as err:
+            LOGGER.error(err)
+            raise
         clim_op_kwargs = {
             "op": 'mean',
             "window": 30,
@@ -396,9 +403,9 @@ def make_ensemble(  # noqa: D103
         for hori in ["1971-2000", "1981-2010", "1991-2020"]:
             if hori in ensemble.horizon:
 
-                dslist.extend(compute_deltas(
+                dslist.extend([compute_deltas(
                                 ds=ensemble, reference_horizon=hori
-                            ))
+                            )])
 
         if len(dslist) > 1:
             ensemble = xr.merge(dslist)
@@ -733,7 +740,8 @@ def ensemble_common_handler(  # noqa: C901,D103
         else:
             dims = ["time"]
         if tmpavg:
-            dims.extend('horizon')
+            print(df.columns)
+            dims.append('horizon')
         df = df.reset_index().set_index(dims)
         if "region" in df.columns:
             df.drop(columns="region", inplace=True)
