@@ -130,6 +130,34 @@ def test_ensemble_spatial_avg_grid_point(client):
         for d, v in {"time": 4, "scenario": 2}.items():
             assert variable_dims[d] == v
 
+def test_ensemble_temporal_avg_bbox_csv(client):
+    # --- given ---
+    identifier = "ensemble_bbox_tn_mean"
+    inputs = [
+        wps_literal_input("lat0", "45.0"),
+        wps_literal_input("lat1", "46.2"),
+        wps_literal_input("lon0", "-75.0"),
+        wps_literal_input("lon1", "-74.0"),
+        wps_literal_input("scenario", "ssp370"),
+        wps_literal_input("scenario", "ssp245"),
+        wps_literal_input("dataset", "test_temp_avg"),
+        wps_literal_input("freq", "MS"),
+        wps_literal_input("ensemble_percentiles", ""),
+        wps_literal_input("output_format", "netcdf"),
+        wps_literal_input("output_name", "testens"),
+        #wps_literal_input("average", "True"),
+        wps_literal_input("temporal_average", "True"),
+        wps_literal_input("output_format", "csv")
+    ]
+
+    # --- when ---
+    outputs = execute_process(client, identifier, inputs)
+    print(outputs)
+
+    # --- then ---
+    assert len(outputs) == 1
+
+
 def test_ensemble_temporal_avg_bbox(client):
     # --- given ---
     identifier = "ensemble_bbox_tn_mean"
