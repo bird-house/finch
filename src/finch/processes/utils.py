@@ -657,11 +657,11 @@ def dataset_to_dataframe(ds: xr.Dataset) -> pd.DataFrame:
     df = ds.to_dataframe().reset_index()
 
     if "realization" not in ds.dims:
-        new_cols = [ll for ll in ["lat", "lon", "time"] if ll in df.columns]
+        new_cols = [ll for ll in ["lat", "lon", "time", "horizon"] if ll in df.columns]
     else:
         new_cols = [
             ll
-            for ll in ["lat", "lon", "time", "scenario", "region"]
+            for ll in ["lat", "lon", "time", "horizon", "scenario", "region"]
             if ll in df.columns
         ]
         values = [c for c in df.columns if c not in new_cols and c != "realization"]
