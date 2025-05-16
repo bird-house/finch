@@ -121,7 +121,9 @@ average = LiteralInput(
 temporal_average = LiteralInput(
     "temporal_average",
     "Perform temporal average.",
-    abstract="Whether to create 30 year averages. Output will be a time series of 30-year averages, starting from the first year ending in '1' within the selected date range. Each period spans 30 years and advances in 10-year steps (e.g., 1951–1980, 1961–1990, ..).",
+    abstract="Whether to create 30 year averages. Output will be a time series of 30-year averages, starting from the \
+    first year ending in '1' within the selected date range. Each period spans 30 years and advances in 10-year steps \
+    (e.g., 1951–1980, 1961–1990, ..).",
     data_type="boolean",
     default=False,
     min_occurs=0,
