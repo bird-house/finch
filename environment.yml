@@ -8,13 +8,14 @@ dependencies:
   - cftime >=1.4.1
   - cf_xarray >=0.9.3
   - click >=8.0.0
-  - clisops >=0.11.0
+  - clisops >=0.16.2
   - dask >=2023.5.1,<2025.3.0
   - distributed
   - geopandas >=1.0
   - jinja2 >=3.1.4
   - netcdf4 <=1.7.2
-  - numpy >=1.23.0
+  - numcodecs <0.16.0
+  - numpy >=1.25.0
   - pandas >=2.2.0
   - parse
   - psutil
