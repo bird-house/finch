@@ -42,7 +42,7 @@ dependencies = [
   "jinja2 >=3.1.4",
   "netcdf4 <=1.7.2",
   "numcodecs <0.16.0",
-  "numpy >=1.23.0",
+  "numpy >=1.25.0",
   "pandas >=2.2.0",
   "parse",
   "psutil >=6.0.0",
@@ -55,7 +55,7 @@ dependencies = [
   "xarray >=2023.11.0,<2025.4.0",
   "xclim ==0.52.2", # remember to match xclim version in environment.yml as well
   "xesmf >=0.6.2,!=0.8.8",
-  "xscen",
+  "xscen ==0.10.0", # remember to match xscen version in environment.yml as well
   "werkzeug>=3.0.6"
 ]
 

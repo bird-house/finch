@@ -30,4 +30,4 @@ dependencies:
   - xarray >=2023.11.0,<2025.03.0
   - xclim =0.52.2  # remember to match xclim version in requirements_docs.txt as well
   - xesmf >=0.8.2,!=0.8.8
-  - xscen
+  - xscen =0.10.0  # remember to match xscen version in environment.yml as well
