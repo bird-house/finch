@@ -1,9 +1,12 @@
 =========
 Changelog
 =========
+
 v0.14.0 (unreleased)
 --------------------
-* Allow calculations of 30 year averages on ensemble processes
+
+* Allow calculations of 30-year averages on ensemble processes
+* Synchronized dependencies for `xclim` and `xscen`, placed pins on `numcodecs` to prevent issues with `zarr` and `dask`.
 
 v0.13.1 (2025-02-13)
 --------------------
