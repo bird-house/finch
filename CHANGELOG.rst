@@ -2,7 +2,7 @@
 Changelog
 =========
 
-v0.14.0 (unreleased)
+v0.13.2 (2025-06-05)
 --------------------
 
 * Allow calculations of 30-year averages on ensemble processes
