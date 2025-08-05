@@ -10,16 +10,28 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-      - id: trailing-whitespace
       - id: end-of-file-fixer
         exclude: ".ipynb"
+      - id: fix-byte-order-marker
+      - id: check-merge-conflict
       - id: check-json
+      - id: check-toml
       - id: check-yaml
         args: [ '--allow-multiple-documents' ]
       - id: debug-statements
+      - id: mixed-line-ending
+      - id: name-tests-test
+        args: [ '--pytest-test-first' ]
+      - id: no-commit-to-branch
+        args: [ '--branch', 'main' ]
       - id: pretty-format-json
         args: [ '--autofix', '--no-ensure-ascii', '--no-sort-keys' ]
         exclude: ".geojson|.ipynb"
+      - id: trailing-whitespace
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.24.2
+    hooks:
+      - id: toml-sort-fix
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.37.1
     hooks:
