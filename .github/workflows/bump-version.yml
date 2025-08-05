@@ -3,7 +3,7 @@ name: Conditional Bump Version
 on:
   push:
     branches:
-      - master
+      - main
     paths-ignore:
       - .*
       - .github/*/*.md
