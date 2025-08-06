@@ -10,16 +10,29 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-        exclude: ".ipynb"
+      - id: check-merge-conflict
       - id: check-json
+      - id: check-toml
       - id: check-yaml
         args: [ '--allow-multiple-documents' ]
       - id: debug-statements
+      - id: end-of-file-fixer
+        exclude: ".ipynb"
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: name-tests-test
+        args: [ '--pytest-test-first' ]
+        exclude: "_utils.py|_common.py"
+      - id: no-commit-to-branch
+        args: [ '--branch', 'main' ]
       - id: pretty-format-json
         args: [ '--autofix', '--no-ensure-ascii', '--no-sort-keys' ]
         exclude: ".geojson|.ipynb"
+      - id: trailing-whitespace
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.24.2
+    hooks:
+      - id: toml-sort-fix
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.37.1
     hooks:
@@ -42,7 +55,7 @@ repos:
       - id: black
         args: [ '--target-version=py310' ]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.2
+    rev: v0.12.7
     hooks:
       - id: ruff
         args: [ '--fix', '--show-fixes' ]
@@ -73,10 +86,10 @@ repos:
         additional_dependencies: [ 'black==25.1.0' ]
       - id: nbqa-pyupgrade
         args: [ '--py310-plus' ]
-        additional_dependencies: [ 'pyupgrade==3.19.1' ]
+        additional_dependencies: [ 'pyupgrade==3.20.0' ]
       - id: nbqa-isort
         args: [ '--settings-file=pyproject.toml' ]
-        additional_dependencies: [ 'isort==6.0.0' ]
+        additional_dependencies: [ 'isort==6.0.1' ]
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
     hooks:

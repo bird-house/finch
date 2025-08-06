@@ -6,10 +6,10 @@ build-backend = "flit_core.buildapi"
 name = "birdhouse-finch"
 authors = [
   {name = "David Huard", email = "huard.david@ouranos.ca"},
-  {name = "Pascal Bourgault", email = "bourgault.pascal@ouranos.ca"},
+  {name = "Pascal Bourgault", email = "bourgault.pascal@ouranos.ca"}
 ]
 maintainers = [
-  {name = "Trevor James Smith", email = "smith.trevorj@ouranos.ca"},
+  {name = "Trevor James Smith", email = "smith.trevorj@ouranos.ca"}
 ]
 readme = {file = "README.rst", content-type = "text/x-rst"}
 requires-python = ">=3.10.0"
@@ -85,7 +85,7 @@ dev = [
   "pytest-notebook",
   "ruff >=0.5.7",
   "vulture >=2.14",
-  "watchdog >=4.0.0",
+  "watchdog >=4.0.0"
 ]
 docs = [
   "birdhouse-birdy>=0.8.1",
