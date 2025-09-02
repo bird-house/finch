@@ -25,6 +25,7 @@ RUN pip install . --no-deps
 EXPOSE 5000
 
 # Specify a non-root user to run the application
+RUN groupadd -r nonroot && useradd -r -g nonroot nonroot && chown -R nonroot:nonroot /code
 USER nonroot
 
 CMD ["gunicorn", "--bind=0.0.0.0:5000", "-t 60", "finch.wsgi:application"]
