@@ -45,8 +45,7 @@ jobs:
           load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          platforms: linux/amd64
-          provenance: mode=max
+          platforms: linux/amd64,linux/arm64
           sbom: false
           push: false
       - name: Run Docker image
