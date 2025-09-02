@@ -23,4 +23,8 @@ RUN pip install . --no-deps
 
 # Start WPS service on port 5000 of 0.0.0.0
 EXPOSE 5000
+
+# Specify a non-root user to run the application
+USER nonroot
+
 CMD ["gunicorn", "--bind=0.0.0.0:5000", "-t 60", "finch.wsgi:application"]
