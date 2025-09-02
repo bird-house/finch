@@ -23,4 +23,10 @@ RUN pip install . --no-deps
 
 # Start WPS service on port 5000 of 0.0.0.0
 EXPOSE 5000
+
+# Specify a non-root user to run the application
+RUN useradd --create-home --shell /bin/bash --uid 1000 nonroot && mkdir -p /tmp/matplotlib && chown -R nonroot:nonroot /code /home/nonroot /tmp/matplotlib /opt/conda/envs/finch
+USER nonroot
+ENV MPLCONFIGDIR=/tmp/matplotlib
+
 CMD ["gunicorn", "--bind=0.0.0.0:5000", "-t 60", "finch.wsgi:application"]
