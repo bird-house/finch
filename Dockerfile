@@ -25,7 +25,7 @@ RUN pip install . --no-deps
 EXPOSE 5000
 
 # Specify a non-root user to run the application
-RUN useradd --create-home --shell /bin/bash --uid 1000 nonroot && mkdir -p /tmp/matplotlib && chown -R nonroot:nonroot /code /home/nonroot /tmp/matplotlib
+RUN useradd --create-home --shell /bin/bash --uid 1000 nonroot && mkdir -p /tmp/matplotlib && chown -R nonroot:nonroot /code /home/nonroot /tmp/matplotlib /opt/conda/envs/finch
 USER nonroot
 ENV MPLCONFIGDIR=/tmp/matplotlib
 
