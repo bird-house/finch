@@ -25,7 +25,8 @@ RUN pip install . --no-deps
 EXPOSE 5000
 
 # Specify a non-root user to run the application
-RUN groupadd -r nonroot && useradd -r -g nonroot nonroot && chown -R nonroot:nonroot /code
+RUN useradd --create-home --shell /bin/bash --uid 1000 nonroot && mkdir -p /tmp/matplotlib && chown -R nonroot:nonroot /code /home/nonroot /tmp/matplotlib
 USER nonroot
+ENV MPLCONFIGDIR=/tmp/matplotlib
 
 CMD ["gunicorn", "--bind=0.0.0.0:5000", "-t 60", "finch.wsgi:application"]
