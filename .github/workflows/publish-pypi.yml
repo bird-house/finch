@@ -16,6 +16,9 @@ jobs:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.13" ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
@@ -32,10 +35,10 @@ jobs:
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
-      - name: Set up Python3
+      - name: Set up Python${{ matrix.python-version }}
         uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
-          python-version: "3.x"
+          python-version: ${{ matrix.python-version }}
       - name: Install CI libraries
         run: |
           python -m pip install --require-hashes -r CI/requirements_ci.txt
