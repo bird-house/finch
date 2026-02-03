@@ -9,7 +9,7 @@ dependencies:
   - ipython >=8.5.0
   - matplotlib-base >=3.5.0
   - nbsphinx >=0.9.8
-  - pandas >=2.2.0
+  - pandas >=2.2.0,<3.0
   - pywps >=4.5.1
   - setuptools >=78.1.1
   - sphinx >=8.2.0 # Pinned until nbsphinx supports Sphinx 8.2

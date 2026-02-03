@@ -4,7 +4,7 @@ channels:
   - nodefaults
 dependencies:
   - python >=3.10,<3.13
-  - pip >=24.2.0
+  - pip >=25.3.0
   - anyascii >=0.3.0
   - cftime >=1.4.1
   - cf_xarray >=0.9.3
@@ -17,7 +17,7 @@ dependencies:
   - netcdf4 <=1.7.2
   - numcodecs <0.16.0
   - numpy >=1.25.0
-  - pandas >=2.2.0
+  - pandas >=2.2.0,<3.0
   - parse >=1.20
   - psutil >=6.0.0
   - python-slugify >=8.0
