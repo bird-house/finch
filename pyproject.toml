@@ -62,13 +62,13 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "birdhouse-birdy>=0.8.1",
-  "black >=24.10.0",
-  "bump-my-version >=0.29.0",
+  "black >=26.1.0",
+  "bump-my-version >=1.2.6",
   "coverage >=7.5.0",
   "cruft >=2.15.0",
   "flake8 >=7.3.0",
   "flake8-rst-docstrings >=0.4.0",
-  "flit >=3.9.0,<4.0",
+  "flit >=3.11.0,<4.0",
   "geojson",
   "lxml",
   "matplotlib >=3.5.0",
@@ -88,6 +88,7 @@ dev = [
   "watchdog >=4.0.0"
 ]
 docs = [
+  "alabaster >=1.0.0",
   "birdhouse-birdy>=0.8.1",
   "cf-xarray>=0.9.3",
   "cftime>=1.4.1",
@@ -235,6 +236,30 @@ warn_no_return = true
 module = "tests.*"
 allow_untyped_defs = true
 disable_error_code = "attr-defined"
+
+[tool.numpydoc_validation]
+checks = [
+  "all", # report on all checks, except the below
+  "ES01", # "No extended summary found"
+  "EX01", # "No examples section found"
+  "GL06", # "Found unknown section \"{section}\""
+  "SA01", # "See Also section not found",
+  "SS01" # "No summary found"
+]
+# remember to use single quotes for regex in TOML
+exclude = [
+  # don't report on objects that match any of these regex
+  '\.undocumented_method$',
+  '\.__repr__$',
+  # any object starting with an underscore is a private object
+  '\._\w+'
+]
+override_SS05 = [
+  # override SS05 to allow docstrings starting with these words
+  '^Access ',
+  '^Assess ',
+  '^Process '
+]
 
 [tool.pytest.ini_options]
 addopts = [
