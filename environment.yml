@@ -32,3 +32,5 @@ dependencies:
   - xclim =0.52.2  # remember to match xclim version in requirements_docs.txt as well
   - xesmf >=0.8.2,!=0.8.8
   - xscen =0.10.0  # remember to match xscen version in environment.yml as well
+  # Temporary fixes
+  - fastprogress <1.1  # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm is updated in xscen.

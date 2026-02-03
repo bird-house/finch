@@ -56,7 +56,9 @@ dependencies = [
   "xclim ==0.52.2", # remember to match xclim version in environment.yml as well
   "xesmf >=0.6.2,!=0.8.8",
   "xscen ==0.10.0", # remember to match xscen version in environment.yml as well
-  "werkzeug>=3.0.6"
+  "werkzeug>=3.0.6",
+  # Temporary fixes
+  "fastprogress <1.1" # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm is updated in xscen.
 ]
 
 [project.optional-dependencies]
