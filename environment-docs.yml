@@ -3,16 +3,16 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - python >=3.10,<3.13
+  - python >=3.11,<3.13
   - anyascii >=0.3.0
   - birdy >=0.8.1
   - ipython >=8.5.0
   - matplotlib-base >=3.5.0
-  - nbsphinx >=0.9.5
+  - nbsphinx >=0.9.8
   - pandas >=2.2.0
   - pywps >=4.5.1
   - setuptools >=78.1.1
-  - sphinx >=7.0.0,<8.2.0 # Pinned until nbsphinx supports Sphinx 8.2
+  - sphinx >=8.2.0 # Pinned until nbsphinx supports Sphinx 8.2
   - sphinxcontrib-bibtex >=2.6.0
   - xarray >=2023.11.0,<2025.3.0
   - xclim =0.52.2 # remember to match xclim version in requirements_docs.txt as well
