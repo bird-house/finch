@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/bird-house/cookiecutter-birdhouse",
-  "commit": "3c19de7502133f316297e18bc38e988cc7d0b27e",
+  "commit": "922010402e88056af494b5d5f20faf9aad97a023",
   "skip": [
     "finch/processes/wps_say_hello.py",
     "tests/test_wps_hello.py",
@@ -22,7 +22,7 @@
       "project_repo_name": "finch",
       "project_readthedocs_name": "finch",
       "project_short_description": "A Web Processing Service for Climate Indicators.",
-      "version": "0.13.3-dev.0",
+      "version": "0.13.3-dev.2",
       "open_source_license": "Apache Software License 2.0",
       "http_port": "5000",
       "use_pytest": "y",
@@ -32,7 +32,8 @@
         "{{cookiecutter.project_slug}}/templates/*.cfg"
       ],
       "__gh_slug": "bird-house/finch",
-      "_template": "https://github.com/bird-house/cookiecutter-birdhouse"
+      "_template": "https://github.com/bird-house/cookiecutter-birdhouse",
+      "_commit": "922010402e88056af494b5d5f20faf9aad97a023"
     }
   },
   "checkout": null
