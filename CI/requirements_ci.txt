@@ -23,7 +23,7 @@ bracex==2.4 \
 bump-my-version==1.2.6 \
     --hash=sha256:1f2f0daa5d699904e9739be8efb51c4c945461bad83cd4da4c89d324d9a18343 \
     --hash=sha256:a2f567c10574a374b81a9bd6d2bd3cb2ca74befe5c24c3021123773635431659
-    # via -r CI/requirements_ci.in
+    # via -r requirements_ci.in
 certifi==2024.12.14 \
     --hash=sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56 \
     --hash=sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db
@@ -158,7 +158,7 @@ filelock==3.20.1 \
 flit==3.11.0 \
     --hash=sha256:58d0a07f684c315700c9c54a661a1130995798c3e495db0db53ce6e7d0121825 \
     --hash=sha256:e4316b02fe6392e65dc489f78b561e635fd1c74652a52b95a8ce5939d688717e
-    # via -r CI/requirements_ci.in
+    # via -r requirements_ci.in
 flit-core==3.11.0 \
     --hash=sha256:6ceeee3219e9d2ea282041f3e027c441597b450b33007cb81168e887b6113a8f \
     --hash=sha256:fe464c086f630f106c0fc5001ee377980f45938f03f8f0d03da08a4841748541
@@ -215,7 +215,7 @@ platformdirs==4.3.6 \
 pre-commit==4.2.0 \
     --hash=sha256:601283b9757afd87d40c4c4a9b2b5de9637a8ea02eaff7adc2d0fb4e04841146 \
     --hash=sha256:a009ca7205f1eb497d10b845e52c838a98b6cdd2102a6c8e4540e94ee75c58bd
-    # via -r CI/requirements_ci.in
+    # via -r requirements_ci.in
 prompt-toolkit==3.0.36 \
     --hash=sha256:3e163f254bef5a03b146397d7c1963bd3e2812f0964bb9a24e6ec761fd28db63 \
     --hash=sha256:aa64ad242a462c5ff0363a7b9cfe696c20d55d9fc60c11fd8e632d064804d305
@@ -224,7 +224,7 @@ pydantic==2.12.5 \
     --hash=sha256:4d351024c75c0f085a9febbb665ce8c0c6ec5d30e903bdb6394b7ede26aebb49 \
     --hash=sha256:e561593fccf61e8a20fc46dfc2dfe075b8be7d0188df33f221ad1f0139180f9d
     # via
-    #   -r CI/requirements_ci.in
+    #   -r requirements_ci.in
     #   bump-my-version
     #   pydantic-settings
 pydantic-core==2.41.5 \
@@ -361,7 +361,7 @@ pygments==2.18.0 \
 pylint==3.3.6 \
     --hash=sha256:8b7c2d3e86ae3f94fb27703d521dd0b9b6b378775991f504d7c3a6275aa0a6a6 \
     --hash=sha256:b634a041aac33706d56a0d217e6587228c66427e20ec21a019bc4cdee48c040a
-    # via -r CI/requirements_ci.in
+    # via -r requirements_ci.in
 python-dotenv==1.0.1 \
     --hash=sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca \
     --hash=sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a
@@ -497,6 +497,7 @@ typing-extensions==4.15.0 \
     #   pydantic-core
     #   rich-click
     #   typing-inspection
+    #   virtualenv
 typing-inspection==0.4.2 \
     --hash=sha256:4ed1cacbdc298c220f1bd249ed5287caa16f34d44ef4e9c3d0cbad5b521545e7 \
     --hash=sha256:ba561c48a67c5958007083d386c3295464928b01faa735ab8547c5692e87f464
@@ -505,9 +506,9 @@ urllib3==2.6.3 \
     --hash=sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed \
     --hash=sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4
     # via requests
-virtualenv==20.29.1 \
-    --hash=sha256:4e4cb403c0b0da39e13b46b1b2476e505cb0046b25f242bee80f62bf990b2779 \
-    --hash=sha256:b8b8970138d32fb606192cb97f6cd4bb644fa486be9308fb9b63f81091b5dc35
+virtualenv==20.36.1 \
+    --hash=sha256:575a8d6b124ef88f6f51d56d656132389f961062a9177016a50e4f507bbcc19f \
+    --hash=sha256:8befb5c81842c641f8ee658481e42641c68b5eab3521d8e092d18320902466ba
     # via pre-commit
 wcmatch==8.5.2 \
     --hash=sha256:17d3ad3758f9d0b5b4dedc770b65420d4dac62e680229c287bf24c9db856a478 \
