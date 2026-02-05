@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.9,<4"]
+requires = ["flit_core >=3.11.0,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -43,32 +43,34 @@ dependencies = [
   "netcdf4 <=1.7.2",
   "numcodecs <0.16.0",
   "numpy >=1.25.0",
-  "pandas >=2.2.0",
-  "parse",
+  "pandas >=2.2.0,<3.0",
+  "parse >=1.20",
   "psutil >=6.0.0",
-  "python-slugify",
+  "python-slugify >=8.0",
   "pywps >=4.6.0",
   "pyyaml >=6.0.1",
   "scipy >=1.9.0",
   "sentry-sdk",
-  "siphon",
+  "siphon >=0.10.0",
   "xarray >=2023.11.0,<2025.4.0",
   "xclim ==0.52.2", # remember to match xclim version in environment.yml as well
   "xesmf >=0.6.2,!=0.8.8",
   "xscen ==0.10.0", # remember to match xscen version in environment.yml as well
-  "werkzeug>=3.0.6"
+  "werkzeug>=3.0.6",
+  # Temporary fixes
+  "fastprogress <1.1" # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm is updated in xscen.
 ]
 
 [project.optional-dependencies]
 dev = [
   "birdhouse-birdy>=0.8.1",
-  "black >=24.10.0",
-  "bump-my-version >=0.29.0",
+  "black >=26.1.0",
+  "bump-my-version >=1.2.6",
   "coverage >=7.5.0",
   "cruft >=2.15.0",
-  "flake8 >=7.1.0",
-  "flake8-rst-docstrings >=0.3.0",
-  "flit >=3.9.0,<4.0",
+  "flake8 >=7.3.0",
+  "flake8-rst-docstrings >=0.4.0",
+  "flit >=3.11.0,<4.0",
   "geojson",
   "lxml",
   "matplotlib >=3.5.0",
@@ -76,26 +78,27 @@ dev = [
   "nbsphinx>=0.9.5",
   "nbval >=0.10.0",
   "owslib",
-  "pip >=24.2.0",
+  "pip >=25.3",
   "pre-commit >=3.5.0",
   "pylint >=3.3.3",
   "pytest >=8.0.0",
   "pytest-cov >=5.0.0",
   "pytest-flake8",
   "pytest-notebook",
-  "ruff >=0.5.7",
+  "ruff >=0.14.0",
   "vulture >=2.14",
   "watchdog >=4.0.0"
 ]
 docs = [
+  "alabaster >=1.0.0",
   "birdhouse-birdy>=0.8.1",
   "cf-xarray>=0.9.3",
   "cftime>=1.4.1",
   "ipython>=8.0.0",
   "jupyter_client",
   "matplotlib>=3.5.0",
-  "nbsphinx>=0.9.5",
-  "sphinx>=7.0.0,<8.2.0", # Pinned until nbsphinx supports Sphinx 8.2
+  "nbsphinx>=0.9.8",
+  "sphinx>=8.2.0",
   "sphinxcontrib-bibtex>=2.6.0"
 ]
 prod = [
@@ -235,6 +238,30 @@ warn_no_return = true
 module = "tests.*"
 allow_untyped_defs = true
 disable_error_code = "attr-defined"
+
+[tool.numpydoc_validation]
+checks = [
+  "all", # report on all checks, except the below
+  "ES01", # "No extended summary found"
+  "EX01", # "No examples section found"
+  "GL06", # "Found unknown section \"{section}\""
+  "SA01", # "See Also section not found",
+  "SS01" # "No summary found"
+]
+# remember to use single quotes for regex in TOML
+exclude = [
+  # don't report on objects that match any of these regex
+  '\.undocumented_method$',
+  '\.__repr__$',
+  # any object starting with an underscore is a private object
+  '\._\w+'
+]
+override_SS05 = [
+  # override SS05 to allow docstrings starting with these words
+  '^Access ',
+  '^Assess ',
+  '^Process '
+]
 
 [tool.pytest.ini_options]
 addopts = [

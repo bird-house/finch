@@ -4,7 +4,7 @@ channels:
   - nodefaults
 dependencies:
   - python >=3.10,<3.13
-  - pip >=24.2.0
+  - pip >=25.3.0
   - anyascii >=0.3.0
   - cftime >=1.4.1
   - cf_xarray >=0.9.3
@@ -17,18 +17,20 @@ dependencies:
   - netcdf4 <=1.7.2
   - numcodecs <0.16.0
   - numpy >=1.25.0
-  - pandas >=2.2.0
-  - parse
-  - psutil
-  - python-slugify
+  - pandas >=2.2.0,<3.0
+  - parse >=1.20
+  - psutil >=6.0.0
+  - python-slugify >=8.0
   - pywps >=4.6
   - pyyaml >=6.0.1
   - scipy >=1.9.0
   - sentry-sdk
   - setuptools >=78.1.1
-  - siphon
+  - siphon >=0.10.0
   - werkzeug >=3.0.6
   - xarray >=2023.11.0,<2025.03.0
   - xclim =0.52.2  # remember to match xclim version in requirements_docs.txt as well
   - xesmf >=0.8.2,!=0.8.8
   - xscen =0.10.0  # remember to match xscen version in environment.yml as well
+  # Temporary fixes
+  - fastprogress <1.1  # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm is updated in xscen.
