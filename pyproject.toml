@@ -54,9 +54,9 @@ dependencies = [
   "sentry-sdk",
   "siphon",
   "xarray >=2023.11.0",
-  "xclim >=0.61,<0.62", # remember to match xclim version in environment.yml and environment-docs.yml as well
+  "xclim >=0.61,<0.62", # remember to match xclim version in environment.yml as well
   "xesmf >=0.8.2,!=0.8.8",
-  "xsdna ==0.6.1", # remember to match xsdba version in environment.yml as well
+  "xsdba ==0.6.1", # remember to match xsdba version in environment.yml as well
   "xscen ==0.15.0", # remember to match xscen version in environment.yml as well
   "werkzeug>=3.0.6",
   # Temporary fixes
@@ -80,7 +80,7 @@ dev = [
   "nbsphinx>=0.9.5",
   "nbval >=0.10.0",
   "owslib",
-  "pip >=25.3",
+  "pip >=26.1",
   "pre-commit >=3.5.0",
   "pylint >=3.3.3",
   "pytest >=8.0.0",

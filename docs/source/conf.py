@@ -53,53 +53,6 @@ extensions = [
     "sphinxcontrib.bibtex",
 ]
 
-# To avoid having to install these and burst memory limit on ReadTheDocs.
-# List of all tested working mock imports from all birds so new birds can
-# inherit without having to test which work which do not.
-if os.environ.get("READTHEDOCS") == "True":
-    autodoc_mock_imports = [
-        "affine",
-        "bottleneck",
-        "cairo",
-        "cartopy",
-        "cftime",
-        "cf_xarray",
-        "clisops",
-        "dask",
-        "fiona",
-        "gdal",
-        "geopandas",
-        "geos",
-        "geotiff",
-        "hdf4",
-        "hdf5",
-        "matplotlib",
-        "netCDF4",
-        "numba",
-        "numpy",
-        "ocgis",
-        "osgeo",
-        "pandas",
-        "parse",
-        "proj",
-        "pyproj",
-        "rasterio",
-        "rasterstats",
-        "scikit-learn",
-        "scipy",
-        "sentry_sdk",
-        "shapely",
-        "siphon",
-        "sklearn",
-        "slugify",
-        "spotpy",
-        "statsmodels",
-        "unidecode",
-        "xarray",
-        "xsdba",
-        "xscen",
-        "zlib",
-    ]
 
 # Bibliography stuff, for correct xclim docstring formatting
 # We need to download the reference file from xclim for the correct version.
@@ -126,12 +79,7 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
 }
 
-# Monkeypatch constant because the following are mock imports.
-# Only works if numpy is actually installed and at the same time being mocked.
-# import numpy
-# numpy.pi = 3.1416
-
-# We are using mock imports in readthedocs, so probably safer to not run the notebooks
+# Probably safer to not run the notebooks
 nbsphinx_execute = "never"
 
 # Add any paths that contain templates here, relative to this directory.
