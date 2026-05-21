@@ -185,7 +185,7 @@ def test_heat_wave_index_thresh_parameter(client, netcdf_datasets):
         wps_literal_input("thresh", "30 degC"),
     ]
     outputs = execute_process(client, identifier, inputs)
-    ds = xr.open_dataset(outputs[0])
+    ds = xr.open_dataset(outputs[0], decode_timedelta=False)
 
 
 def test_missing_options(client, netcdf_datasets):

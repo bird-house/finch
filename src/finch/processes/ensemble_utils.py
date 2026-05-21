@@ -364,7 +364,7 @@ def make_ensemble(  # noqa: D103
     region: dict | None = None,
 ) -> None:
     ensemble = ensembles.create_ensemble(
-        files, realizations=[file.stem for file in files]
+        files, realizations=[file.stem for file in files], decode_timedelta=False
     )
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
@@ -410,7 +410,7 @@ def make_ensemble(  # noqa: D103
                 dslist.extend([compute_deltas(ds=ensemble, reference_horizon=hori)])
 
         if len(dslist) > 1:
-            ensemble = xr.merge(dslist)
+            ensemble = xr.merge(dslist, compat="override")
 
     if spatavg:
         # ensemble = ensemble.mean(dim=average_dims)
@@ -727,7 +727,9 @@ def ensemble_common_handler(  # noqa: C901,D103
             ]
 
     ensemble = xr.concat(
-        ensembles, dim=xr.DataArray(scenarios, dims=("scenario",), name="scenario")
+        ensembles,
+        dim=xr.DataArray(scenarios, dims=("scenario",), name="scenario"),
+        join="outer",
     )
 
     if convert_to_csv:

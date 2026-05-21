@@ -52,8 +52,8 @@ def test_ensemble_hxmax_days_above_grid_point(client):
     # --- then ---
     assert len(outputs) == 1
     assert Path(outputs[0]).stem.startswith("testens_45_500_73_000_ssp245_ssp585")
-    ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    ds = open_dataset(outputs[0], decode_timedelta=False)
+    dims = dict(ds.sizes)
     assert dims == {
         "region": 1,
         "time": 12,  # there are roughly 4 months in the test datasets
@@ -93,7 +93,7 @@ def test_ensemble_spatial_avg_grid_point(client):
     assert len(outputs) == 1
     # assert Path(outputs[0]).stem.startswith("testens_45_500_73_000_ssp245_ssp585")
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {
         "region": 2,
         "time": 4,  # there are roughly 4 months in the test datasets
@@ -117,7 +117,7 @@ def test_ensemble_spatial_avg_grid_point(client):
     assert len(outputs) == 1
 
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {
         "time": 4,  # there are roughly 4 months in the test datasets
         "scenario": 2,
@@ -220,7 +220,7 @@ def test_ensemble_temporal_avg_bbox(client):
     assert len(outputs) == 1
 
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {"time": 36, "scenario": 2, "realization": 3, "lat": 12, "lon": 12}
 
     ensemble_variables = [
@@ -285,7 +285,7 @@ def test_ensemble_spatial_avg_poly(client):
     assert len(outputs) == 1
 
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {
         "time": 4,  # there are roughly 4 months in the test datasets
         "scenario": 2,
@@ -321,7 +321,7 @@ def test_ensemble_spatial_avg_poly_noperc(client):
     assert len(outputs) == 1
 
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     exp_dims = {
         "realization": 2,
         "time": 4,  # there are roughly 4 months in the test datasets
@@ -361,7 +361,7 @@ def test_ensemble_heatwave_frequency_grid_point(client):
     assert len(outputs) == 1
     assert Path(outputs[0]).stem.startswith("testens_46_000_72_800_rcp45")
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
@@ -434,7 +434,7 @@ def test_ensemble_heatwave_frequency_grid_point_no_perc(client):
     assert len(outputs) == 1
     assert Path(outputs[0]).stem.startswith("testens_46_000_72_800_rcp45")
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
@@ -479,7 +479,7 @@ def test_ensemble_dded_grid_point_multiscenario(client):
     # --- then ---
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
@@ -518,7 +518,7 @@ def test_ensemble_dded_grid_point_multiscenario_noperc(client):
     # --- then ---
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {
         "region": 1,
         "time": 4,  # there are roughly 4 months in the test datasets
@@ -562,7 +562,7 @@ def test_ensemble_heatwave_frequency_bbox(client):
     # --- then ---
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {
         "lat": 2,
         "lon": 2,
@@ -583,7 +583,7 @@ def test_ensemble_heatwave_frequency_bbox(client):
 
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {"time": 4, "scenario": 1}  # Spatial average has been taken.
 
     ensemble_variables = {k: v for k, v in ds.data_vars.items()}
@@ -681,7 +681,7 @@ def test_ensemble_heatwave_frequency_grid_point_dates(client):
     # --- then ---
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {"region": 1, "time": 3, "scenario": 1}
 
     ensemble_variables = dict(ds.data_vars)
@@ -777,8 +777,8 @@ def test_ensemble_compute_intermediate_cold_spell_duration_index_grid_point(clie
 
     # --- then ---
     assert len(outputs) == 1
-    ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    ds = open_dataset(outputs[0], decode_timedelta=False)
+    dims = dict(ds.sizes)
     assert dims == {"region": 1, "time": 1, "scenario": 1}
 
     ensemble_variables = dict(ds.data_vars)
@@ -806,7 +806,7 @@ def test_ensemble_compute_intermediate_growing_degree_days_grid_point(client):
     # --- then ---
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {"region": 1, "time": 1, "scenario": 1}
 
     ensemble_variables = dict(ds.data_vars)
@@ -844,7 +844,7 @@ def test_ensemble_heatwave_frequency_polygon(client):
     # --- then ---
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {
         "lat": 11,
         "lon": 11,
@@ -869,7 +869,7 @@ def test_ensemble_heatwave_frequency_polygon(client):
     # --- then ---
     assert len(outputs) == 1
     ds = open_dataset(outputs[0])
-    dims = dict(ds.dims)
+    dims = dict(ds.sizes)
     assert dims == {"time": 4, "scenario": 1}
 
     ensemble_variables = dict(ds.data_vars)

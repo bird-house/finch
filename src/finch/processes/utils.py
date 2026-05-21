@@ -61,17 +61,19 @@ def get_virtual_modules():
     """Load virtual modules."""
     modules = {}
     if modfiles := get_config_value("finch", "xclim_modules"):
-        for modfile in modfiles.split(","):
-            if Path(modfile).is_absolute():
-                mod = build_indicator_module_from_yaml(Path(modfile))
-            else:
-                mod = build_indicator_module_from_yaml(
-                    Path(__file__).parent.parent.joinpath(modfile)
-                )
+        for modfile in map(Path, modfiles.split(",")):
+            mod = getattr(xclim.indicators, modfile.stem, None)
+            if mod is None:
+                if modfile.is_absolute():
+                    mod = build_indicator_module_from_yaml(modfile)
+                else:
+                    mod = build_indicator_module_from_yaml(
+                        Path(__file__).parent.parent / modfile
+                    )
             indicators = []
             for indname, ind in mod.iter_indicators():
                 indicators.append(ind.get_instance())
-            modules[Path(modfile).name] = dict(indicators=indicators)
+            modules[modfile.stem] = dict(indicators=indicators)
     return modules
 
 
