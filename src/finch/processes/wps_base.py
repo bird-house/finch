@@ -162,7 +162,7 @@ def convert_xclim_inputs_to_pywps(
         InputKind.NUMBER_SEQUENCE: "integer",
         InputKind.STRING: "string",
         InputKind.DAY_OF_YEAR: "string",
-        InputKind.DATE: "datetime",
+        InputKind.DATE: "dateTime",
     }
 
     if parse_percentiles and parent is None:
@@ -232,7 +232,10 @@ def convert_xclim_inputs_to_pywps(
 
 
 def make_freq(  # noqa: D103
-    name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "YS-JAN", "YS-JUL")
+    name,
+    default="YS",
+    abstract="",
+    allowed=("YS", "MS", "QS-DEC", "YS-JAN", "YS-JUL", "YS-OCT"),
 ):
     try:
         return LiteralInput(
@@ -245,12 +248,14 @@ def make_freq(  # noqa: D103
             default=default,
             allowed_values=allowed,
         )
-    except pywps.exceptions.InvalidParameterValue:
-        print(name, default, abstract, allowed)
+    except pywps.exceptions.InvalidParameterValue as err:
+        raise NotImplementedError(
+            f"Finch can't parse frequency argument: {name=}, {default=}, {abstract=}, {allowed=}"
+        ) from err
 
 
 def make_nc_input(name):  # noqa: D103
-    desc = xclim.core.utils.VARIABLES.get(name, {}).get("description", "")
+    desc = xclim.core.VARIABLES.get(name, {}).get("description", "")
     return ComplexInput(
         name,
         "Resource",

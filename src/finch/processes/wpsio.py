@@ -256,7 +256,7 @@ check_missing = LiteralInput(
     abstract="Method used to determine which aggregations should be considered missing.",
     data_type="string",
     default=OPTIONS[CHECK_MISSING],
-    allowed_values=list(MISSING_METHODS.keys()),
+    allowed_values=list(MISSING_METHODS.keys()) + ["skip"],
     min_occurs=0,
 )
 

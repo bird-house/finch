@@ -262,12 +262,10 @@ def compute_indices(  # noqa: D103
     )
 
     options = {name: kwds.pop(name) for name in INDICATOR_OPTIONS if name in kwds}
-    with xclim_options.set_options(**options):
-        out = func(**kwds)
+    with xclim_options.set_options(as_dataset=True, **options):
+        output_dataset = func(**kwds)
 
-    output_dataset = xr.Dataset(
-        data_vars=None, coords=out.coords, attrs=global_attributes
-    )
+    output_dataset.attrs.update(global_attributes)
 
     # fix frequency of computed output (xclim should handle this)
     if output_dataset.attrs.get("frequency") == "day" and "freq" in kwds:
@@ -280,7 +278,6 @@ def compute_indices(  # noqa: D103
         }
         output_dataset.attrs["frequency"] = conversions.get(kwds["freq"], "day")
 
-    output_dataset[out.name] = out
     return output_dataset
 
 

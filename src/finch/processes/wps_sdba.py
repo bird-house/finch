@@ -3,17 +3,16 @@
 Statistical downscaling and bias adjustment
 ===========================================
 
-Expose xclim.sdba algorithms as WPS.
+Expose xsdba algorithms as WPS.
 
 For the moment, both train-adjust operations are bundled into a single process.
 """
 import logging
 from pathlib import Path
 
-import xclim
+import xsdba
 from pywps import FORMATS, ComplexInput, ComplexOutput, LiteralInput
-from xclim.core.calendar import convert_calendar
-from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
+from xsdba.utils import ADDITIVE, MULTIPLICATIVE
 
 from . import wpsio
 from .utils import (
@@ -167,7 +166,7 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
                 name = variable or list(ds.data_vars)[0]
 
                 # Force calendar to noleap and rechunk
-                res[key] = convert_calendar(ds[name], "noleap").chunk({"time": -1})
+                res[key] = ds[name].convert_calendar("noleap").chunk({"time": -1})
 
             elif key in group_args:
                 group[key] = single_input_or_none(request.inputs, key)
@@ -180,10 +179,10 @@ class EmpiricalQuantileMappingProcess(FinchProcess):
 
         _log("Successfully read inputs from request.", 1)
 
-        group = xclim.sdba.Grouper(**group)
+        group = xsdba.Grouper(**group)
         _log("Grouper object created.", 2)
 
-        bc = xclim.sdba.EmpiricalQuantileMapping.train(
+        bc = xsdba.EmpiricalQuantileMapping.train(
             res["ref"], res["hist"], **train, group=group
         )
 

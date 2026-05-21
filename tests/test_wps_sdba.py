@@ -5,8 +5,7 @@ import pytest
 import xarray as xr
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
-from xclim.core.calendar import convert_calendar
-from xclim.sdba.utils import ADDITIVE, MULTIPLICATIVE
+from xsdba.utils import ADDITIVE, MULTIPLICATIVE
 
 from _common import CFG_FILE, get_output
 from finch.processes import EmpiricalQuantileMappingProcess
@@ -38,9 +37,9 @@ def test_wps_empirical_quantile_mapping(netcdf_sdba_ds, kind, name):
     out = get_output(resp.xml)
     p = xr.open_dataset(out["output"][7:])[name]
 
-    uc = convert_calendar(u, "noleap")
+    uc = u.convert_calendar("noleap")
     middle = ((uc > 1e-2) * (uc < 0.99)).data
 
     ref = xr.open_dataset(sdba_ds[f"qdm_{name}_ref"])[name]
-    refc = convert_calendar(ref, "noleap")
+    refc = ref.convert_calendar("noleap")
     np.testing.assert_allclose(p[middle], refc[middle], rtol=0.03)

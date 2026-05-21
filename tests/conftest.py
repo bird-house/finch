@@ -239,6 +239,6 @@ def hourly_dataset(tmp_path_factory):  # noqa: F811
     a[0] = np.nan
     return _write_dataset(
         "pr_hr",
-        timeseries(values=a, variable="pr", freq="H"),
+        timeseries(values=a, variable="pr", freq="h"),
         tmp_path_factory.mktemp("hourly_ds"),
     )

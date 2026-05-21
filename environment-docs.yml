@@ -2,7 +2,7 @@ name: finch
 channels:
   - conda-forge
 dependencies:
-  - python >=3.10,<3.13
+  - python >=3.10,<3.14
   - anyascii >=0.3.0
   - birdy >=0.8.1
   - ipython >=8.5.0
@@ -11,7 +11,7 @@ dependencies:
   - pandas >=2.2.0
   - pywps >=4.5.1
   - setuptools >=71.0.0
-  - sphinx >=7.0.0,<8.2.0 # Pinned until nbsphinx supports Sphinx 8.2
+  - sphinx >=7.0.0
   - sphinxcontrib-bibtex >=2.6.0
-  - xarray >=2023.11.0,<2025.3.0
-  - xclim =0.52.2 # remember to match xclim version in requirements_docs.txt as well
+  - xarray >=2023.11.0
+  - xclim =0.61.0 # remember to match xclim version in requirements_docs.txt as well

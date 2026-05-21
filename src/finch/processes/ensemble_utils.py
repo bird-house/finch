@@ -21,7 +21,7 @@ from siphon.catalog import TDSCatalog
 from xclim import ensembles
 from xclim.core.calendar import days_since_to_doy, doy_to_days_since, percentile_doy
 from xclim.core.indicator import Indicator
-from xclim.indicators.atmos import tg
+from xclim.indicators.convert import mean_temperature_from_max_and_min
 from xscen.aggregate import climatological_op, compute_deltas, spatial_mean
 
 from . import wpsio
@@ -52,7 +52,11 @@ def _percentile_doy(var: xr.DataArray, perc: int) -> xr.DataArray:
 
 
 variable_computations = {
-    "tas": {"inputs": ["tasmin", "tasmax"], "args": [], "function": tg},
+    "tas": {
+        "inputs": ["tasmin", "tasmax"],
+        "args": [],
+        "function": mean_temperature_from_max_and_min,
+    },
     "tasmax_per": {
         "inputs": ["tasmax"],
         "args": ["perc_tasmax"],
