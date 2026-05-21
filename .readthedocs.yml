@@ -16,7 +16,7 @@ sphinx:
 formats: [ ]
 
 build:
-  os: ubuntu-24.04
+  os: "ubuntu-24.04"
   tools:
     python: "mambaforge-23.11"
 

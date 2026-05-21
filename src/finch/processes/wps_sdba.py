@@ -7,6 +7,7 @@ Expose xsdba algorithms as WPS.
 
 For the moment, both train-adjust operations are bundled into a single process.
 """
+
 import logging
 from pathlib import Path
 

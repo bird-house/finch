@@ -12,8 +12,20 @@ if os.environ.get("SENTRY_DSN"):
     sentry_sdk.init(os.environ["SENTRY_DSN"])
 
 
-def create_app(cfgfiles=None):  # noqa: D103
-    """Create PyWPS application."""
+def create_app(cfgfiles: list[str] | None = None) -> Service:
+    """
+    Create PyWPS application.
+
+    Parameters
+    ----------
+    cfgfiles : list of str, optional
+        Configuration files to use.
+
+    Returns
+    -------
+    pywps.app.Service.Service
+        PyWPS application.
+    """
     config_files = [Path(__file__).parent.joinpath("default.cfg")]
     if isinstance(cfgfiles, str):
         cfgfiles = [cfgfiles]

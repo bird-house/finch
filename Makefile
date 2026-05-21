@@ -45,17 +45,14 @@ install: ## install finch application
 	@-bash -c 'pip install -e .'
 	@echo "\nStart service with \`make start\` and stop with \`make stop\`."
 
-.PHONY: develop
 develop: ## install finch application with development libraries
 	@echo "Installing development requirements for tests and docs ..."
 	@-bash -c 'pip install -e ".[dev]"'
 
-.PHONY: start
 start: ## start finch service as daemon (background process)
 	@echo "Starting application ..."
 	@-bash -c "$(APP_NAME) start -d"
 
-.PHONY: stop
 stop: ## stop finch service
 	@echo "Stopping application ..."
 	@-bash -c "$(APP_NAME) stop"
@@ -126,17 +123,17 @@ test: ## run tests quickly with the default Python
 	@bash -c 'pytest -v -m "not slow and not online" tests/'
 
 .PHONY: test-all
-test-all:
+test-all: ## run all tests with the default Python
 	@echo "Running all tests (including slow and online tests) ..."
 	@bash -c 'pytest -v tests/'
 
 .PHONY: test-notebooks
-test-notebooks: notebook-sanitizer  ## run notebook-based tests
+test-notebooks: notebook-sanitizer ## run notebook-based tests
 	@echo "Running notebook-based tests"
 	@bash -c "env WPS_URL=$(WPS_URL) pytest --nbval --rootdir tests/ --verbose $(CURDIR)/docs/source/notebooks/ --nbval-sanitize-with $(CURDIR)/docs/source/output-sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
 
 .PHONY: test-notebooks-lax
-test-notebooks-lax: notebook-sanitizer  ## run tests on notebooks but don't be so strict about outputs
+test-notebooks-lax: notebook-sanitizer ## run tests on notebooks but don't be so strict about outputs
 	@echo "Running notebook-based tests"
 	@bash -c "env WPS_URL=$(WPS_URL) pytest --nbval-lax --rootdir tests/ --verbose $(CURDIR)/docs/source/notebooks/ --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
 
