@@ -2,8 +2,8 @@ name: finch
 channels:
   - conda-forge
 dependencies:
-  - python >=3.10,<3.14
-  - pip >=24.2.0
+  - python >=3.11,<3.14
+  - pip >=26.1.0
   - anyascii >=0.3.0
   - cftime >=1.4.1
   - cf_xarray >=0.9.3
@@ -28,6 +28,7 @@ dependencies:
   - siphon
   - werkzeug >=3.0.6
   - xarray >=2023.11.0
-  - xclim =0.61.0  # remember to match xclim version in requirements_docs.txt as well
+  - xclim >=0.61,<0.62 # remember to match xclim version in environment-docs.yml and pyproject.toml as well
   - xesmf >=0.8.2,!=0.8.8
-  - xscen =0.15.0  # remember to match xscen version in environment.yml as well
+  - xsdba =0.6.1   # remember to match xsdba version in pyproject.toml as well
+  - xscen =0.15.0  # remember to match xscen version in pyproject.toml as well

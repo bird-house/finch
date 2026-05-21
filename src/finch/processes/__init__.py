@@ -1,7 +1,6 @@
 # noqa: D104
 import logging
 
-import xarray as xr
 from pywps.configuration import get_config_value
 from xclim.core.indicator import registry as xclim_registry
 

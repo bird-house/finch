@@ -96,6 +96,8 @@ if os.environ.get("READTHEDOCS") == "True":
         "statsmodels",
         "unidecode",
         "xarray",
+        "xsdba",
+        "xscen",
         "zlib",
     ]
 
