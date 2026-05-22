@@ -120,9 +120,10 @@ finch = "finch.cli:cli"
 
 [tool.black]
 target-version = [
-  "py310",
   "py311",
-  "py312"
+  "py312",
+  "py313",
+  "py314"
 ]
 
 [tool.bumpversion]
@@ -226,7 +227,7 @@ exclude = [
 append_only = true
 known_first_party = "finch,_common,_utils"
 profile = "black"
-py_version = 310
+py_version = 311
 
 [tool.mypy]
 files = "."

@@ -39,12 +39,12 @@ Check out code from the Finch GitHub repo and start the installation:
    $ git clone https://github.com/bird-house/finch.git
    $ cd finch
 
-Create Conda environment named `finch`:
+Create Conda environment named `finch`, this includes the development and documentation dependencies :
 
 .. code-block:: console
 
    $ conda env create -f environment.yml
-   $ source activate finch
+   $ conda activate finch
 
 Install `finch` app:
 
@@ -54,17 +54,10 @@ Install `finch` app:
    OR
    $ make install
 
-For development you can use this command:
-
-.. code-block:: console
-
-  $ pip install -e .[dev]
-  OR
-  $ make develop
 
 Install from Conda
 ------------------
 
 .. note::
 
-   `finch` is not yet available on conda-forge. But we are working on making this package available soon!
+   `finch` is not yet available on conda-forge. We are not working on making this package available soon.
