@@ -3,7 +3,7 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - python >=3.11,<3.14
+  - python >=3.11,<3.15
   - pip >=26.1.0
   - anyascii >=0.3.0
   - cftime >=1.4.1
