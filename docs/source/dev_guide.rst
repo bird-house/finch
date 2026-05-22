@@ -14,11 +14,12 @@ Developer Guide
 Building the docs
 -----------------
 
-First install dependencies for the documentation:
+First install an environment with conda/mamba and finch within it.
 
 .. code-block:: shell
 
-   $ make develop
+   $ mamba env create -f environment.yml
+   $ pip install -e .
 
 Run the Sphinx docs generator:
 
@@ -33,14 +34,12 @@ Running tests
 
 Run tests using pytest_.
 
-First activate the ``finch`` Conda environment and install ``pytest``.
+First install an environment with conda/mamba and finch within it.
 
 .. code-block:: shell
 
-   $ source activate finch
-   $ pip install -e ".[dev]"  # if not already installed
-   # or
-   $ make develop
+   $ mamba env create -f environment.yml
+   $ pip install -e .
 
 Run quick tests (skip slow and online):
 
@@ -83,9 +82,9 @@ To update the `conda` specification file for building identical environments_ on
 .. code-block:: console
 
    $ conda env create -f environment.yml
-   $ source activate finch
+   $ conda activate finch
    $ make clean
-   $ make install
+   $ pip install -e .
    $ conda list -n finch --explicit > spec-file.txt
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments

@@ -38,17 +38,6 @@ help: ## print this help message. (Default)
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 ## Build targets:
-
-.PHONY: install
-install: ## install finch application
-	@echo "Installing application ..."
-	@-bash -c 'pip install -e .'
-	@echo "\nStart service with \`make start\` and stop with \`make stop\`."
-
-develop: ## install finch application with development libraries
-	@echo "Installing development requirements for tests and docs ..."
-	@-bash -c 'pip install -e ".[dev]"'
-
 start: ## start finch service as daemon (background process)
 	@echo "Starting application ..."
 	@-bash -c "$(APP_NAME) start -d"
