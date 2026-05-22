@@ -65,7 +65,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "attrs>25.4.0", # added to help pip, not a direct dep
   "birdhouse-birdy>=0.8.1",
   "black >=26.1.0",
   "bump-my-version >=1.2.6",
