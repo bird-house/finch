@@ -19,6 +19,7 @@ First install an environment with conda/mamba and finch within it.
 .. code-block:: shell
 
    $ mamba env create -f environment.yml
+   $ mamba activate finch
    $ pip install -e .
 
 Run the Sphinx docs generator:
@@ -39,6 +40,7 @@ First install an environment with conda/mamba and finch within it.
 .. code-block:: shell
 
    $ mamba env create -f environment.yml
+   $ mamba activate finch
    $ pip install -e .
 
 Run quick tests (skip slow and online):
@@ -81,11 +83,11 @@ To update the `conda` specification file for building identical environments_ on
 
 .. code-block:: console
 
-   $ conda env create -f environment.yml
-   $ conda activate finch
+   $ mamba env create -f environment.yml
+   $ mamba activate finch
    $ make clean
    $ pip install -e .
-   $ conda list -n finch --explicit > spec-file.txt
+   $ mamba list -n finch --explicit > spec-file.txt
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 

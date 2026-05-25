@@ -96,11 +96,11 @@ docs = [
   "birdhouse-birdy>=0.8.1",
   "cf-xarray>=0.9.3",
   "cftime>=1.4.1",
-  "ipython>=8.0.0",
+  "ipython>=8.5.0",
   "jupyter_client",
   "matplotlib>=3.5.0",
   "nbsphinx>=0.9.8",
-  "sphinx>=8.2.0",
+  "sphinx>=9.0.0",
   "sphinxcontrib-bibtex>=2.6.0"
 ]
 prod = [

@@ -62,5 +62,5 @@ dependencies:
   # Docs
   - ipython >=8.5.0
   - matplotlib-base >=3.5.0
-  - sphinx >=7.0.0
+  - sphinx >=9.0.0
   - sphinxcontrib-bibtex >=2.6.0
