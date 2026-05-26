@@ -74,11 +74,11 @@ jobs:
             python=${{ matrix.python-version }}
       - name: Install finch-wps
         run: |
-          pip install --no-deps -e .
+          python -m pip install --no-deps --editable .
       - name: Check versions
         run: |
+          micromamba list
           python -m pip check
-          python -m pip list
       - name: Run tests
         run: |
           make start

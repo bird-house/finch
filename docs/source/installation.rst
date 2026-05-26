@@ -39,7 +39,7 @@ Check out code from the Finch GitHub repo and start the installation:
    $ git clone https://github.com/bird-house/finch.git
    $ cd finch
 
-Create Conda environment named `finch`, this includes the development and documentation dependencies :
+Create Conda environment named `finch` (including the development and documentation dependencies):
 
 .. code-block:: console
 
