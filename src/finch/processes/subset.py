@@ -108,7 +108,7 @@ def finch_subset_gridpoint(
         else:
             subsetted = subsetted.expand_dims("region")
 
-        if not all(subsetted.dims.values()):
+        if not all(subsetted.sizes.values()):
             msg = f"Subset is empty for dataset: {resource.url}"
             LOGGER.warning(msg)
             return
@@ -185,7 +185,7 @@ def finch_subset_bbox(
         except ValueError:
             subsetted = False
 
-        if subsetted is False or not all(subsetted.dims.values()):
+        if subsetted is False or not all(subsetted.sizes.values()):
             msg = f"Subset is empty for dataset: {resource.url}"
             LOGGER.warning(msg)
             return
@@ -251,6 +251,7 @@ def finch_average_shape(
     shape = gpd.read_file(shp)
     if tolerance > 0:
         shape["geometry"] = shape.simplify(tolerance)
+    shape["geometry"] = shape.geometry.segmentize(1)
 
     n_files = len(netcdf_inputs)
     count = 0
@@ -277,7 +278,7 @@ def finch_average_shape(
             dataset = subset_time(dataset, start_date=start_date, end_date=end_date)
         averaged = average_shape(dataset, shape)
 
-        if not all(averaged.dims.values()):
+        if not all(averaged.sizes.values()):
             msg = f"Average is empty for dataset: {resource.url}"
             LOGGER.warning(msg)
             return
@@ -343,7 +344,7 @@ def finch_subset_shape(
             end_date=end_date,
         )
 
-        if not all(subsetted.dims.values()):
+        if not all(subsetted.sizes.values()):
             msg = f"Subset is empty for dataset: {resource.url}"
             LOGGER.warning(msg)
             return

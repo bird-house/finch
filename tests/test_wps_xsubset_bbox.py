@@ -68,7 +68,7 @@ def test_wps_subsetbbox_dataset(client, outfmt):
         with zf.open(data_filenames[0]) as f:
             ds = xr.open_dataset(f)
 
-            dims = dict(ds.dims)
+            dims = dict(ds.sizes)
             assert dims == {
                 "lon": 6,
                 "lat": 6,

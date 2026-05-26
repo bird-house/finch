@@ -250,13 +250,15 @@ ensemble_percentiles = LiteralInput(
     min_occurs=0,
 )
 
+_missing_methods = list(MISSING_METHODS.keys())
+_missing_methods.append("skip")
 check_missing = LiteralInput(
     "check_missing",
     "Missing value handling method",
     abstract="Method used to determine which aggregations should be considered missing.",
     data_type="string",
     default=OPTIONS[CHECK_MISSING],
-    allowed_values=list(MISSING_METHODS.keys()),
+    allowed_values=_missing_methods,
     min_occurs=0,
 )
 

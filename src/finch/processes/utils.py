@@ -61,17 +61,19 @@ def get_virtual_modules():
     """Load virtual modules."""
     modules = {}
     if modfiles := get_config_value("finch", "xclim_modules"):
-        for modfile in modfiles.split(","):
-            if Path(modfile).is_absolute():
-                mod = build_indicator_module_from_yaml(Path(modfile))
-            else:
-                mod = build_indicator_module_from_yaml(
-                    Path(__file__).parent.parent.joinpath(modfile)
-                )
+        for modfile in map(Path, modfiles.split(",")):
+            mod = getattr(xclim.indicators, modfile.stem, None)
+            if mod is None:
+                if modfile.is_absolute():
+                    mod = build_indicator_module_from_yaml(modfile)
+                else:
+                    mod = build_indicator_module_from_yaml(
+                        Path(__file__).parent.parent / modfile
+                    )
             indicators = []
             for indname, ind in mod.iter_indicators():
                 indicators.append(ind.get_instance())
-            modules[Path(modfile).name] = dict(indicators=indicators)
+            modules[modfile.stem] = dict(indicators=indicators)
     return modules
 
 
@@ -262,12 +264,10 @@ def compute_indices(  # noqa: D103
     )
 
     options = {name: kwds.pop(name) for name in INDICATOR_OPTIONS if name in kwds}
-    with xclim_options.set_options(**options):
-        out = func(**kwds)
+    with xclim_options.set_options(as_dataset=True, **options):
+        output_dataset = func(**kwds)
 
-    output_dataset = xr.Dataset(
-        data_vars=None, coords=out.coords, attrs=global_attributes
-    )
+    output_dataset.attrs.update(global_attributes)
 
     # fix frequency of computed output (xclim should handle this)
     if output_dataset.attrs.get("frequency") == "day" and "freq" in kwds:
@@ -280,7 +280,6 @@ def compute_indices(  # noqa: D103
         }
         output_dataset.attrs["frequency"] = conversions.get(kwds["freq"], "day")
 
-    output_dataset[out.name] = out
     return output_dataset
 
 

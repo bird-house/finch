@@ -21,7 +21,7 @@ from siphon.catalog import TDSCatalog
 from xclim import ensembles
 from xclim.core.calendar import days_since_to_doy, doy_to_days_since, percentile_doy
 from xclim.core.indicator import Indicator
-from xclim.indicators.atmos import tg
+from xclim.indicators.convert import mean_temperature_from_max_and_min
 from xscen.aggregate import climatological_op, compute_deltas, spatial_mean
 
 from . import wpsio
@@ -52,7 +52,11 @@ def _percentile_doy(var: xr.DataArray, perc: int) -> xr.DataArray:
 
 
 variable_computations = {
-    "tas": {"inputs": ["tasmin", "tasmax"], "args": [], "function": tg},
+    "tas": {
+        "inputs": ["tasmin", "tasmax"],
+        "args": [],
+        "function": mean_temperature_from_max_and_min,
+    },
     "tasmax_per": {
         "inputs": ["tasmax"],
         "args": ["perc_tasmax"],
@@ -360,7 +364,7 @@ def make_ensemble(  # noqa: D103
     region: dict | None = None,
 ) -> None:
     ensemble = ensembles.create_ensemble(
-        files, realizations=[file.stem for file in files]
+        files, realizations=[file.stem for file in files], decode_timedelta=False
     )
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
@@ -406,7 +410,7 @@ def make_ensemble(  # noqa: D103
                 dslist.extend([compute_deltas(ds=ensemble, reference_horizon=hori)])
 
         if len(dslist) > 1:
-            ensemble = xr.merge(dslist)
+            ensemble = xr.merge(dslist, compat="override")
 
     if spatavg:
         # ensemble = ensemble.mean(dim=average_dims)
@@ -723,7 +727,9 @@ def ensemble_common_handler(  # noqa: C901,D103
             ]
 
     ensemble = xr.concat(
-        ensembles, dim=xr.DataArray(scenarios, dims=("scenario",), name="scenario")
+        ensembles,
+        dim=xr.DataArray(scenarios, dims=("scenario",), name="scenario"),
+        join="outer",
     )
 
     if convert_to_csv:

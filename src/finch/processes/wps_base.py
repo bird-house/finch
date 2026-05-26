@@ -10,7 +10,7 @@ from dask.diagnostics import ProgressBar
 from pywps import FORMATS, ComplexInput, LiteralInput, Process
 from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
-from sentry_sdk import configure_scope
+from sentry_sdk import get_current_scope
 from xclim.core.utils import InputKind
 
 LOGGER = logging.getLogger("PYWPS")
@@ -70,15 +70,15 @@ class FinchProcess(Process):
 
         When sentry is not initialized, this won't add any overhead.
         """
-        with configure_scope() as scope:
-            scope.set_extra("identifier", self.identifier)
-            scope.set_extra("request_uuid", str(self.uuid))
-            if request.http_request:
-                # if the request has been put in the `stored_requests` table by pywps
-                # the original request.http_request is not available anymore
-                scope.set_extra("host", request.http_request.host)
-                scope.set_extra("remote_addr", request.http_request.remote_addr)
-                scope.set_extra("xml_request", request.http_request.data)
+        scope = get_current_scope()
+        scope.set_extra("identifier", self.identifier)
+        scope.set_extra("request_uuid", str(self.uuid))
+        if request.http_request:
+            # if the request has been put in the `stored_requests` table by pywps
+            # the original request.http_request is not available anymore
+            scope.set_extra("host", request.http_request.host)
+            scope.set_extra("remote_addr", request.http_request.remote_addr)
+            scope.set_extra("xml_request", request.http_request.data)
 
 
 class FinchProgressBar(ProgressBar):
@@ -133,7 +133,13 @@ def make_xclim_indicator_process(
     process = process_class()
     process.translations = {
         locale: xclim.core.locales.get_local_attrs(
-            xci.identifier.upper(), locale, append_locale_name=False
+            (
+                xci.identifier.upper()
+                if xci._registry_id.startswith("xclim")
+                else xci._registry_id
+            ),
+            locale,
+            append_locale_name=False,
         )
         for locale in xclim.core.locales.list_locales()
     }
@@ -162,7 +168,7 @@ def convert_xclim_inputs_to_pywps(
         InputKind.NUMBER_SEQUENCE: "integer",
         InputKind.STRING: "string",
         InputKind.DAY_OF_YEAR: "string",
-        InputKind.DATE: "datetime",
+        InputKind.DATE: "dateTime",
     }
 
     if parse_percentiles and parent is None:
@@ -232,7 +238,10 @@ def convert_xclim_inputs_to_pywps(
 
 
 def make_freq(  # noqa: D103
-    name, default="YS", abstract="", allowed=("YS", "MS", "QS-DEC", "YS-JAN", "YS-JUL")
+    name,
+    default="YS",
+    abstract="",
+    allowed=("YS", "MS", "QS-DEC", "YS-JAN", "YS-JUL", "YS-OCT"),
 ):
     try:
         return LiteralInput(
@@ -245,12 +254,14 @@ def make_freq(  # noqa: D103
             default=default,
             allowed_values=allowed,
         )
-    except pywps.exceptions.InvalidParameterValue:
-        print(name, default, abstract, allowed)
+    except pywps.exceptions.InvalidParameterValue as err:
+        raise NotImplementedError(
+            f"Finch can't parse frequency argument: {name=}, {default=}, {abstract=}, {allowed=}"
+        ) from err
 
 
 def make_nc_input(name):  # noqa: D103
-    desc = xclim.core.utils.VARIABLES.get(name, {}).get("description", "")
+    desc = xclim.core.VARIABLES.get(name, {}).get("description", "")
     return ComplexInput(
         name,
         "Resource",
