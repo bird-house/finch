@@ -301,7 +301,3 @@ def start(
     else:
         # no daemon
         _run(app, bind_host=bind_host)
-
-
-if __name__ == "__main__":
-    cli()

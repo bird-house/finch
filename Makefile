@@ -42,13 +42,13 @@ help: ## print this help message. (Default)
 .PHONY: install
 install: ## install finch application
 	@echo "Installing application ..."
-	@-bash -c 'pip install -e .'
+	@-bash -c 'python -m pip install --editable .'
 	@echo "\nStart service with \`make start\` and stop with \`make stop\`."
 
 develop: ## install finch application with development libraries
 	@echo "Installing development requirements for tests and docs ..."
 	@-bash -c 'test "${CONDA_PREFIX:-''} == $(dirname $(dirname $(which python)))" && echo "You are installing deps with pip inside a conda environment, this could lead to broken conda environments."'
-	@-bash -c 'pip install -e ".[dev]"'
+	@-bash -c 'python -m pip install --editable ".[dev]"'
 
 start: ## start finch service as daemon (background process)
 	@echo "Starting application ..."
