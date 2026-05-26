@@ -60,4 +60,4 @@ Install from Conda
 
 .. note::
 
-   `finch` is not yet available on conda-forge. We are not working on making this package available soon.
+   There are no plans to make `finch` available on conda-forge.
