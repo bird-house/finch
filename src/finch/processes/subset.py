@@ -129,7 +129,8 @@ def finch_subset_gridpoint(
 def finch_subset_bbox(
     process: Process, netcdf_inputs: list[ComplexInput], request_inputs: RequestInputs
 ) -> list[Path]:
-    """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
+    """
+    Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
      - lat0: Latitude coordinate
@@ -204,7 +205,8 @@ def finch_subset_bbox(
 
 
 def extract_shp(path):
-    """Return a geopandas-compatible path to the shapefile stored in a zip archive.
+    """
+    Return a geopandas-compatible path to the shapefile stored in a zip archive.
 
     If multiple shapefiles are included, return only the first one found.
 

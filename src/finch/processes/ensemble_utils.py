@@ -226,7 +226,8 @@ def get_datasets(
 
 
 def _formatted_coordinate(value) -> str | None:
-    """Return the first float value.
+    """
+    Return the first float value.
 
     The value can be a comma separated list of floats or a single float.
     """
@@ -242,7 +243,8 @@ def _formatted_coordinate(value) -> str | None:
 def make_output_filename(
     process: Process, inputs: list[PywpsInput], scenario=None, dataset=None
 ):
-    """Return a filename for the process's output, depending on its inputs.
+    """
+    Return a filename for the process's output, depending on its inputs.
 
     The scenario part of the filename can be overriden.
     """
@@ -286,7 +288,8 @@ def make_output_filename(
 def uses_accepted_netcdf_variables(
     indicator: Indicator, available_variables: set
 ) -> bool:
-    """Determine if indicator uses accepted NetCDF variables.
+    """
+    Determine if indicator uses accepted NetCDF variables.
 
     Returns
     -------
@@ -329,7 +332,8 @@ def make_indicator_inputs(
 
 
 def make_file_groups(files_list: list[Path], variables: set) -> list[dict[str, Path]]:
-    """Group files by filenames, changing only the netcdf variable name.
+    """
+    Group files by filenames, changing only the netcdf variable name.
 
     The list of variable names to search must be given.
     """
