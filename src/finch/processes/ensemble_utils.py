@@ -136,7 +136,8 @@ def file_is_required(
 
 
 def iter_remote(cat: TDSCatalog, depth: int = -1):
-    """Create generator listing all datasets recursively in a TDSCatalog.
+    """
+    Create generator listing all datasets recursively in a TDSCatalog.
 
     The search is limited to a certain depth if `depth` >= 0.
     """
@@ -149,7 +150,8 @@ def iter_remote(cat: TDSCatalog, depth: int = -1):
 
 
 def iter_local(root: Path, depth: int = -1, pattern: str = "*.nc"):
-    """Create generator listing all datasets recursively in a local directory.
+    """
+    Create generator listing all datasets recursively in a local directory.
 
     The search is limited to a certain depth if `depth` >= 0.
     The path can be given relative to the root finch code repo.
@@ -188,19 +190,20 @@ def get_datasets(
     scenario: str | None = None,
     models: list[str] | None = None,
 ) -> list[PywpsInput]:
-    """Parse a directory to find files and filters the list to return only the needed ones, as resource inputs.
+    """
+    Parse a directory to find files and filters the list to return only the needed ones, as resource inputs.
 
     Parameters
     ----------
     dsconf : DatasetConfiguration
         The dataclass defining a specific ensemble dataset.
-    workdir: str
+    workdir : str
         The working directory where files will be downloaded if needed.
-    variables: list of strings
+    variables : list of strings
         A list of the needed variables
-    scenario: str
+    scenario : str
         The name of the scenario (experiment), rcps or ssps.
-    models: list of strings
+    models : list of strings
         A list of the requested models (or name of a models sublist)
     """
     if dsconf.local:

@@ -102,6 +102,11 @@ repos:
       - id: blackdoc
         additional_dependencies: [ 'black==26.3.1' ]
       - id: blackdoc-autoupdate-black
+  - repo: https://github.com/numpy/numpydoc
+    rev: v1.10.0
+    hooks:
+      - id: numpydoc-validation
+        exclude: ^docs/|^tests/|.*\/_.*\.py$
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.37.1
     hooks:

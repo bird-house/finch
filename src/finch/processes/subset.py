@@ -25,7 +25,7 @@ from .utils import (
 LOGGER = logging.getLogger("PYWPS")
 
 
-def make_subset_file_name(resource, kind="sub"):
+def make_subset_file_name(resource, kind: str = "sub"):
     """Create output file name."""
     if resource.prop == "file":
         p = Path(resource.file)
@@ -46,7 +46,8 @@ def make_subset_file_name(resource, kind="sub"):
 def finch_subset_gridpoint(
     process: Process, netcdf_inputs: list[ComplexInput], request_inputs: RequestInputs
 ) -> list[Path]:
-    """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
+    """
+    Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
     The expected names of the inputs are as followed (taken from `wpsio.py`):
      - lat: Latitude coordinate, can be a comma separated list of floats
@@ -210,12 +211,12 @@ def extract_shp(path):
     Parameters
     ----------
     path : Path
-      Path to zip archive holding shapefile.
+        Path to zip archive holding shapefile.
 
     Returns
     -------
     str
-      zip:///<path to zip file>!<relative path to shapefile>
+        zip:///<path to zip file>!<relative path to shapefile>
     """
     from zipfile import ZipFile
 
@@ -232,7 +233,8 @@ def finch_average_shape(
     netcdf_inputs: list[ComplexInput],
     request_inputs: RequestInputs,
 ) -> list[Path] | None:
-    """Parse wps `request_inputs` based on their name and average `netcdf_inputs`.
+    """
+    Parse wps `request_inputs` based on their name and average `netcdf_inputs`.
 
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
      - shape: Polygon contour to average the data over.
@@ -298,7 +300,8 @@ def finch_subset_shape(
     netcdf_inputs: list[ComplexInput],
     request_inputs: RequestInputs,
 ) -> list[Path]:
-    """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
+    """
+    Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
      - shape: Polygon contour to subset the data with.

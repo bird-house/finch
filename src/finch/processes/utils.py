@@ -83,12 +83,12 @@ class DatasetConfiguration:
 
     Attributes
     ----------
-    path: str
+    path : str
         The path (or url) to the root directory where to search for the data.
-    pattern: str
+    pattern : str
         The pattern of the filenames. Must include at least : "variable", "scenario" and "model".
         Patterns must be understandable by :py:func:`parse.parse`.
-    local: bool
+    local : bool
         Whether the path points to a local directory or a remote THREDDS catalog.
     depth : int
         The depth to which search for files below the directory. < 0 will search recursively.
@@ -145,7 +145,7 @@ def log_file_path(process: Process) -> Path:
 def write_log(
     process: Process,
     message: str,
-    level=logging.INFO,
+    level: int = logging.INFO,
     *,
     process_step: str | None = None,
     subtask_percentage: int | None = None,
@@ -193,7 +193,7 @@ def write_log(
             pass
 
 
-def get_attributes_from_config():
+def get_attributes_from_config() -> dict[str, str | bool]:
     """Get all explicitly passed metadata attributes from the config in section finch:metadata."""
     # Remove all "defaults", only keep explicitly-passed options
     # This works because we didn't define any defaults for this section.
@@ -387,7 +387,7 @@ def drs_filename(ds: xr.Dataset, variable: str | None = None):
 def try_opendap(
     input: ComplexInput,
     *,
-    chunks="auto",
+    chunks: str | None = "auto",
     decode_times=True,
     chunk_dims=None,
     logging_function=lambda message: None,
@@ -872,11 +872,18 @@ def update_history(
 
 
 def valid_filename(name: Path | str) -> Path | str:
-    """Remove unsupported characters from a filename.
+    """
+    Remove unsupported characters from a filename.
+
+    Parameters
+    ----------
+    name : str or Path
+        Filename.
 
     Returns
     -------
     str or Path
+        Sanitized filename.
 
     Examples
     --------
