@@ -12,7 +12,7 @@ if os.environ.get("SENTRY_DSN"):
     sentry_sdk.init(os.environ["SENTRY_DSN"])
 
 
-def create_app(cfgfiles: list[str] | None = None) -> Service:
+def create_app(cfgfiles: list[str] | str | None = None) -> Service:
     """
     Create PyWPS application.
 
@@ -26,11 +26,11 @@ def create_app(cfgfiles: list[str] | None = None) -> Service:
     pywps.app.Service.Service
         PyWPS application.
     """
-    config_files = [Path(__file__).parent.joinpath("default.cfg")]
+    config_files: list[str | Path] = [Path(__file__).parent.joinpath("default.cfg")]
     if isinstance(cfgfiles, str):
         cfgfiles = [cfgfiles]
     if cfgfiles:
-        config_files += cfgfiles
+        config_files.extend(cfgfiles)
     if "PYWPS_CFG" in os.environ:
         config_files.append(os.environ["PYWPS_CFG"])
     service = Service(cfgfiles=config_files)
