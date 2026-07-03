@@ -1,6 +1,9 @@
 # Configuration
 APP_ROOT := $(abspath $(lastword $(MAKEFILE_LIST))/..)
 APP_NAME := finch
+# auto-updated by bump version
+APP_VERSION ?= 0.13.3-dev.3
+APP_REPO ?= birdhouse
 
 WPS_URL = http://localhost:5000
 
@@ -181,3 +184,10 @@ dist: clean ## build source and wheel package
 release: dist ## upload source and wheel packages
 	@echo "Uploading source and wheel packages ..."
 	@python -m flit publish dist/*
+
+## Docker targets:
+
+.PHONY: docker-build
+docker-build: ## build docker image
+	@echo "Building docker image ..."
+	@docker build -t "$(APP_REPO)/$(APP_NAME):$(APP_VERSION)" .
