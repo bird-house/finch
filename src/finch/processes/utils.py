@@ -389,7 +389,7 @@ def drs_filename(ds: xr.Dataset, variable: str | None = None):
 def try_opendap(
     input: ComplexInput,
     *,
-    chunks: str | None = "auto",
+    chunks: Any = "auto",
     decode_times=True,
     chunk_dims=None,
     logging_function=lambda message: None,
