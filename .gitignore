@@ -65,6 +65,7 @@ coverage.xml
 coverage
 htmlcov
 nosetests.xml
+test*.*
 
 # buildout
 bin

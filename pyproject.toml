@@ -84,7 +84,6 @@ dev = [
   "pylint >=3.3.3",
   "pytest >=8.0.0",
   "pytest-cov >=5.0.0",
-  "pytest-flake8",
   "ruff >=0.14.0",
   "vulture >=2.14",
   "watchdog >=4.0.0"
@@ -273,7 +272,8 @@ override_SS05 = [
 addopts = [
   "--color=yes",
   "--strict-markers",
-  "--tb=native"
+  "--tb=native",
+  "-p no:flake8"  # avoid auto-detect, run flake8 separately to avoid incompatibility with pytest>=9 and pytest-flake8
 ]
 python_files = ["test_*.py"]
 markers = [
