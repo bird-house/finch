@@ -75,6 +75,9 @@ jobs:
       - name: Install finch-wps
         run: |
           make install
+      - name: Install dev dependencies for tests
+        run: |
+          make develop
       - name: Check versions
         run: |
           python -m pip check
