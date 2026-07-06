@@ -245,6 +245,7 @@ checks = [
   "ES01", # "No extended summary found"
   "EX01", # "No examples section found"
   "GL06", # "Found unknown section \"{section}\""
+  "GL08", # "The object does not have a docstring"
   "SA01", # "See Also section not found",
   "SS01" # "No summary found"
 ]
