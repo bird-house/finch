@@ -273,7 +273,6 @@ addopts = [
   "--color=yes",
   "--strict-markers",
   "--tb=native",
-  "-p no:flake8"  # avoid auto-detect, run flake8 separately to avoid incompatibility with pytest>=9 and pytest-flake8
 ]
 python_files = ["test_*.py"]
 markers = [
