@@ -13,7 +13,7 @@ WORKDIR /code
 
 # Create conda environment (root-owned is fine, nonroot just needs read access)
 COPY environment.yml .
-RUN mamba env create -n finch -f environment.yml && mamba install -n finch gunicorn && mamba clean --all --yes
+RUN mamba env create -n finch -f environment.yml && mamba clean --all --yes
 
 # Add the project conda environment to the path
 ENV PATH=/opt/conda/envs/finch/bin:$PATH
