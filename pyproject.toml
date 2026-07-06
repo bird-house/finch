@@ -272,7 +272,7 @@ override_SS05 = [
 addopts = [
   "--color=yes",
   "--strict-markers",
-  "--tb=native",
+  "--tb=native"
 ]
 python_files = ["test_*.py"]
 markers = [
