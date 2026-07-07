@@ -18,6 +18,7 @@ dependencies:
   - distributed
   - fiona >=0.10
   - geopandas >=1.0
+  - gunicorn>=23.0.0
   - jinja2 >=3.1.4
   - netcdf4
   - numpy >=1.25.0
@@ -39,5 +40,4 @@ dependencies:
   # Temporary fixes
   - fastprogress <1.1  # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm is updated in xscen.
   - pip:
-    - gunicorn>=23.0.0
     - pywps >=4.6  # workaround to avoid installing its dev/doc dependencies embedded in its own environment.yml
