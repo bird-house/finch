@@ -18,7 +18,7 @@ def create_app(cfgfiles: list[str] | str | None = None) -> Service:
 
     Parameters
     ----------
-    cfgfiles : list of str, optional
+    cfgfiles : str or list of str, optional
         Configuration files to use.
 
     Returns

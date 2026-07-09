@@ -9,7 +9,7 @@ dependencies:
   - cftime >=1.4.1
   - cf_xarray >=0.9.3
   - click >=8.1.7
-  - clisops >=0.16.2
+  - clisops >=0.16.2,!=0.18.0
   - dask >=2023.5.1
   - distributed
   - geopandas >=1.0
