@@ -2,6 +2,13 @@
 Changelog
 =========
 
+v0.14.0 (unreleased)
+--------------------
+
+* Base image for `Dockerfile` changed from `condaforge/mambaforge` to `condaforge/miniforge3`.
+* Removed `pytest-flake8` from development dependencies (incompatible with `pytest` v9.x).
+* Added `numpydoc-validation` to linters; Reformatted several function and class docstrings.
+
 v0.13.2 (2025-06-05)
 --------------------
 
