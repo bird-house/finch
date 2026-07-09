@@ -66,7 +66,8 @@ class FinchProcess(Process):
             raise ProcessError(f"Finch failed with {err!s}")
 
     def sentry_configure_scope(self, request):
-        """Add additional data to sentry error messages.
+        """
+        Add additional data to sentry error messages.
 
         When sentry is not initialized, this won't add any overhead.
         """

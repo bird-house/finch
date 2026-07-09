@@ -79,16 +79,17 @@ def get_virtual_modules():
 
 @dataclass
 class DatasetConfiguration:
-    """Dataset Configuration class.
+    """
+    Dataset Configuration class.
 
     Attributes
     ----------
-    path: str
+    path : str
         The path (or url) to the root directory where to search for the data.
-    pattern: str
+    pattern : str
         The pattern of the filenames. Must include at least : "variable", "scenario" and "model".
         Patterns must be understandable by :py:func:`parse.parse`.
-    local: bool
+    local : bool
         Whether the path points to a local directory or a remote THREDDS catalog.
     depth : int
         The depth to which search for files below the directory. < 0 will search recursively.
@@ -145,12 +146,13 @@ def log_file_path(process: Process) -> Path:
 def write_log(
     process: Process,
     message: str,
-    level=logging.INFO,
+    level: int = logging.INFO,
     *,
     process_step: str | None = None,
     subtask_percentage: int | None = None,
 ):
-    """Log the process status.
+    """
+    Log the process status.
 
      - With the logging module
      - To a log file stored in the process working directory
@@ -193,7 +195,7 @@ def write_log(
             pass
 
 
-def get_attributes_from_config():
+def get_attributes_from_config() -> dict[str, str | bool]:
     """Get all explicitly passed metadata attributes from the config in section finch:metadata."""
     # Remove all "defaults", only keep explicitly-passed options
     # This works because we didn't define any defaults for this section.
@@ -387,12 +389,13 @@ def drs_filename(ds: xr.Dataset, variable: str | None = None):
 def try_opendap(
     input: ComplexInput,
     *,
-    chunks="auto",
+    chunks: Any = "auto",
     decode_times=True,
     chunk_dims=None,
     logging_function=lambda message: None,
 ) -> xr.Dataset:
-    """Try to open the file as an OPeNDAP url and chunk it.
+    """
+    Try to open the file as an OPeNDAP url and chunk it.
 
     By default, chunks are to be determined by xarray/dask.
     If `chunks=None` or `chunks_dims` is given, finch rechunks the dataset according to
@@ -453,7 +456,8 @@ def process_threaded(function: Callable, inputs: Iterable):
 
 
 def chunk_dataset(ds, max_size=1000000, chunk_dims=None):
-    """Ensure the chunked size of a xarray.Dataset is below a certain size.
+    """
+    Ensure the chunked size of a xarray.Dataset is below a certain size.
 
     Cycle through the dimensions, divide the chunk size by 2 until criteria is met.
     If chunk_dims is given, limits the chunking to those dimensions, if they are
@@ -505,7 +509,8 @@ def make_metalink_output(
 
 
 def is_opendap_url(url):
-    """Check if a provided url is an OpenDAP url.
+    """
+    Check if a provided url is an OpenDAP url.
 
     The DAP Standard specifies that a specific tag must be included in the
     Content-Description header of every request. This tag is one of: {"dods-dds", "dods-das", "dods-data", "dods-error"}
@@ -544,11 +549,12 @@ def single_input_or_none(inputs, identifier) -> Any | None:
 
 def netcdf_file_list_to_csv(
     netcdf_files: list[Path] | list[str],
-    output_folder,
-    filename_prefix,
+    output_folder: str | Path,
+    filename_prefix: str,
     csv_precision: int | None = None,
 ) -> tuple[list[Path], str]:
-    """Write csv files for a list of netcdf files.
+    """
+    Write csv files for a list of netcdf files.
 
     Produces one csv file per calendar type, along with a metadata folder in the output_folder.
     """
@@ -827,7 +833,8 @@ def update_history(
     new_name: str | None = None,
     **inputs_kws: xr.DataArray | xr.Dataset,
 ):
-    r"""Return a history string with the timestamped message and the combination of the history of all inputs.
+    r"""
+    Return a history string with the timestamped message and the combination of the history of all inputs.
 
     The new history entry is formatted as "[<timestamp>] <new_name>: <hist_str> - finch version : <finch version>."
 
@@ -872,11 +879,18 @@ def update_history(
 
 
 def valid_filename(name: Path | str) -> Path | str:
-    """Remove unsupported characters from a filename.
+    """
+    Remove unsupported characters from a filename.
+
+    Parameters
+    ----------
+    name : str or Path
+        Filename.
 
     Returns
     -------
     str or Path
+        Sanitized filename.
 
     Examples
     --------
