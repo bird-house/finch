@@ -545,7 +545,7 @@ def ensemble_common_handler(  # noqa: C901,D103
     request_inputs_not_datasets = {
         k: v
         for k, v in request.inputs.items()
-        if k in xci_inputs and not k.startswith("perc")
+        if k in xci_inputs and not k.startswith("perc") and not k.startswith("min_members")
     }
 
     dataset_name = single_input_or_none(request.inputs, "dataset")
