@@ -1,6 +1,9 @@
 =========
 Changelog
 =========
+v0.14.0 (unreleased)
+---------------------
+* Exposed a new input parameter `min_members` for ensemble processes, allowing users to specify the minimum number of ensemble members required for calculations. This allows users to ensure that results are only produced when a sufficient number of members are available, enhancing the reliability of the output.
 
 v0.13.2 (2025-06-05)
 --------------------
