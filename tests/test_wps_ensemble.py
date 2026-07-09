@@ -29,6 +29,7 @@ poly = {
     },
 }
 
+
 def test_ensemble_min_members(client):
     # --- given ---
     identifier = "ensemble_grid_point_tx_mean"
@@ -53,15 +54,12 @@ def test_ensemble_min_members(client):
         # assert Path(outputs[0]).stem.startswith("testens_45_500_73_000_ssp245_ssp585")
         ds = open_dataset(outputs[0])
         for vv in ds.data_vars:
-            if min_members > 29: 
+            if min_members > 29:
                 # 29 members in the test dataset, so if min_members > 29, all values should be NaN
                 assert ds[vv].isnull().all()
             else:
                 # 29 members in the test dataset, so if min_members <= 29, we should have some non-NaN values
                 assert not ds[vv].isnull().all()
-
-    
-
 
 
 def test_ensemble_hxmax_days_above_grid_point(client):

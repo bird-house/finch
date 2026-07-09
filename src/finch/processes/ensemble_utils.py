@@ -369,7 +369,7 @@ def make_ensemble(  # noqa: D103
     )
     # make sure we have data starting in 1950
     ensemble = ensemble.sel(time=(ensemble.time.dt.year >= 1950))
-    
+
     if ensemble.lon.size == 1 and ensemble.lat.size == 1 and spatavg:
         ensemble.attrs["history"] = (
             f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
@@ -546,7 +546,9 @@ def ensemble_common_handler(  # noqa: C901,D103
     request_inputs_not_datasets = {
         k: v
         for k, v in request.inputs.items()
-        if k in xci_inputs and not k.startswith("perc") and not k.startswith("min_members")
+        if k in xci_inputs
+        and not k.startswith("perc")
+        and not k.startswith("min_members")
     }
 
     dataset_name = single_input_or_none(request.inputs, "dataset")
@@ -713,7 +715,7 @@ def ensemble_common_handler(  # noqa: C901,D103
             spatavg=spatavg,
             tmpavg=tmpavg,
             region=region,
-            min_members=min_members
+            min_members=min_members,
         )
         ensemble.attrs["source_datasets"] = "\n".join(
             [dsinp.url for dsinp in netcdf_inputs]
