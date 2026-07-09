@@ -13,7 +13,8 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class XclimEnsemblePolygonBase(FinchProcess):
-    """Ensemble with polygon subset base class.
+    """
+    Ensemble with polygon subset base class.
 
     Set xci to the xclim indicator in order to have a working class.
     """

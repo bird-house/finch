@@ -14,7 +14,8 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class XclimEnsembleBboxBase(FinchProcess):
-    """Ensemble with bbox subset base class.
+    """
+    Ensemble with bbox subset base class.
 
     Set xci to the xclim indicator in order to have a working class.
     """

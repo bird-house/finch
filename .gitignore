@@ -85,10 +85,6 @@ docs/build/
 docs/source/output-sanitize.cfg
 docs/source/references.bib
 
-# External Sources
-#src/external
-src/
-
 # tests
 *.log
 *.lock

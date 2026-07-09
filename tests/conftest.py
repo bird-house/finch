@@ -11,7 +11,6 @@ from xarray import DataArray
 from xclim.core.calendar import percentile_doy
 from xclim.testing.helpers import test_timeseries as timeseries
 
-import finch.processes
 import finch.wsgi
 from _common import CFG_FILE, client_for
 

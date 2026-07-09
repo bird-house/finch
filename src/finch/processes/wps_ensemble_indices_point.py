@@ -14,7 +14,8 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class XclimEnsembleGridPointBase(FinchProcess):
-    """Ensemble with grid point subset base class.
+    """
+    Ensemble with grid point subset base class.
 
     Set xci to the xclim indicator in order to have a working class.
     """
