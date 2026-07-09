@@ -132,7 +132,8 @@ temporal_average = LiteralInput(
 min_members = LiteralInput(
     "min_members",
     "Minimum number of members",
-    abstract="Minimum number of members required to compute the ensemble percentiles. If the number of members is lower than this value, the output will be missing.",
+    abstract="Minimum number of members required to compute the ensemble percentiles. \
+    If the number of members is lower than this value, the output will be missing.",
     data_type="integer",
     default=1,
     min_occurs=0,
