@@ -16,7 +16,9 @@ dependencies:
   - clisops >=0.16.2
   - dask >=2023.5.1
   - distributed
+  - fiona >=0.10
   - geopandas >=1.0
+  - gunicorn>=23.0.0
   - jinja2 >=3.1.4
   - netcdf4
   - numpy >=1.25.0
@@ -24,7 +26,6 @@ dependencies:
   - parse >=1.20
   - psutil >=6.0.0
   - python-slugify >=8.0
-  - pywps >=4.6
   - pyyaml >=6.0.1
   - scipy >=1.9.0
   - sentry-sdk
@@ -38,3 +39,5 @@ dependencies:
   - xscen >=0.15,<0.16  # remember to match xscen version in pyproject.toml as well
   # Temporary fixes
   - fastprogress <1.1  # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm is updated in xscen.
+  - pip:
+    - pywps >=4.6  # workaround to avoid installing its dev/doc dependencies embedded in its own environment.yml
