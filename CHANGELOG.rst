@@ -1,10 +1,9 @@
 =========
 Changelog
 =========
-
 v0.14.0 (unreleased)
---------------------
-
+---------------------
+* Exposed a new input parameter `min_members` for ensemble processes, allowing users to specify the minimum number of ensemble members required for calculations. This allows users to ensure that results are only produced when a sufficient number of members are available, enhancing the reliability of the output.
 * Base image for `Dockerfile` changed from `condaforge/mambaforge` to `condaforge/miniforge3`.
 * Removed `pytest-flake8` from development dependencies (incompatible with `pytest` v9.x).
 * Added `numpydoc-validation` to linters; Reformatted several function and class docstrings.
