@@ -4,11 +4,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV PIP_ROOT_USER_ACTION=ignore
 LABEL org.opencontainers.image.authors="Birdhouse and Ouranosinc"
 LABEL org.opencontainers.image.created="2026-07-30T20:37:38Z"
+LABEL org.opencontainers.image.description="Finch WPS"
 LABEL org.opencontainers.image.source="https://github.com/bird-house/finch"
 LABEL org.opencontainers.image.title="FinchWPS"
 LABEL org.opencontainers.image.vendor="Birdhouse"
 LABEL org.opencontainers.image.version="0.13.3-dev.5"
-LABEL Description="Finch WPS"
 
 # Set the working directory to /code
 WORKDIR /code
