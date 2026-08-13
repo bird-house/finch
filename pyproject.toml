@@ -137,6 +137,26 @@ serialize = [
 ]
 
 [[tool.bumpversion.files]]
+filename = "CHANGELOG.rst"
+include_bumps = ["release"]
+search = """\
+`Unreleased <https://github.com/Ouranosinc/xscen>`_ (latest)
+------------------------------------------------------------
+"""
+replace = """\
+..
+    `Unreleased <https://github.com/bird-house/finch>`_ (latest)
+    ------------------------------------------------------------
+
+    * No changes.
+
+.. _changes_{new_version}:
+
+`v{new_version} <https://github.com/bird-house/finch/tree/{new_version}>`_ ({now:%Y-%m-%d})
+-------------------------------------------------------------------------
+"""
+
+[[tool.bumpversion.files]]
 filename = "Dockerfile"
 parse = "LABEL org.opencontainers.image.version=\"{current_version}\""
 replace = "{new_version}"
@@ -149,13 +169,13 @@ regex = true
 
 [[tool.bumpversion.files]]
 filename = "src/finch/__version__.py"
-search = "__version__ = \"{current_version}\""
-replace = "__version__ = \"{new_version}\""
+parse = "__version__ = \"{current_version}\""
+replace = "{new_version}"
 
 [[tool.bumpversion.files]]
 filename = ".cruft.json"
-search = "\"version\": \"{current_version}\""
-replace = "\"version\": \"{new_version}\""
+parse = "\"version\": \"{current_version}\""
+replace = "{new_version}"
 
 [tool.bumpversion.parts.build]
 independent = false
