@@ -158,8 +158,8 @@ replace = """\
 
 [[tool.bumpversion.files]]
 filename = "Dockerfile"
-parse = "LABEL org.opencontainers.image.version=\"{current_version}\""
-replace = "{new_version}"
+search = "LABEL org.opencontainers.image.version=\"{current_version}\""
+replace = "LABEL org.opencontainers.image.version=\"{new_version}\""
 
 [[tool.bumpversion.files]]
 filename = 'Dockerfile'
@@ -169,13 +169,13 @@ regex = true
 
 [[tool.bumpversion.files]]
 filename = "src/finch/__version__.py"
-parse = "__version__ = \"{current_version}\""
-replace = "{new_version}"
+search = "__version__ = \"{current_version}\""
+replace = "__version__ = \"{new_version}\n"
 
 [[tool.bumpversion.files]]
 filename = ".cruft.json"
-parse = "\"version\": \"{current_version}\""
-replace = "{new_version}"
+search = "\"version\": \"{current_version}\""
+replace = "\"version\": \"{new_version}\""
 
 [tool.bumpversion.parts.build]
 independent = false
