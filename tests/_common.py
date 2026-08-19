@@ -50,12 +50,12 @@ def get_output(doc):  # noqa: D103
     return output
 
 
-def get_metalinks(doc: xml.etree.ElementTree):
+def get_metalinks(doc: xml.etree.ElementTree.Element):
     """Return a dictionary of metaurls found in metalink XML, keyed by their file name.
 
     Parameters
     ----------
-    doc : xml.etree.ElementTree
+    doc : xml.etree.ElementTree.Element
         Metalink XML etree.
     """
     output = {}
