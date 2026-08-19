@@ -13,6 +13,8 @@ Changelog
 * Removed the `addnab/docker-run-action` from `docker-testing.yml`; Now simply uses `bash` calls.
 * Adjusted the Dockerfile metadata to use org.opencontainers metadata conventions and run commands for readability.
 * Fixed the Zenodo DOI badge to use the latest URL.
+* `bump-my-version` configuration is now more elaborate; Changes to files on `main` will now bump version.
+* `lxml` has been removed from the development dependencies in favour of `xml.etree`.
 
 .. _changes_0.13.2:
 
