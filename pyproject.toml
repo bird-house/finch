@@ -73,7 +73,6 @@ dev = [
   "flake8-rst-docstrings >=0.4.0",
   "flit >=3.11.0,<4.0",
   "geojson",
-  "lxml",
   "matplotlib >=3.5.0",
   "nbconvert",
   "nbsphinx>=0.9.5",
@@ -323,7 +322,9 @@ ignore = [
   "COM", # commas
   "D205", # blank-line-after-summary
   "D400", # ends-in-period
-  "D401" # non-imperative-mood
+  "D401", # non-imperative-mood
+  "S314", # suspicious-xml-element-tree-usage
+  "S405" # suspicious-xml-etree-import
 ]
 preview = true
 select = [

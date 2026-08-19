@@ -1,3 +1,4 @@
+import xml.etree.ElementTree
 import zipfile
 from pathlib import Path
 
@@ -60,8 +61,6 @@ def test_wps_multiple_xsubsetpoint(netcdf_datasets):
 
 @pytest.mark.online
 def test_thredds():
-    import lxml.etree
-
     client = client_for(
         Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
     )
@@ -82,7 +81,9 @@ def test_thredds():
     assert_response_success(resp)
     out = get_output(resp.xml)
     # FIXME: This is generally unsafe as an approach as the data is untrusted.
-    links = get_metalinks(lxml.etree.fromstring(out["ref"].encode()))  # noqa: S320
+    links = get_metalinks(
+        xml.etree.ElementTree.fromstring(out["ref"].encode())
+    )  # noqa: S320
     assert len(links) == 2
 
 
