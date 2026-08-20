@@ -114,6 +114,7 @@ lint: ## check style
 	@bash -c 'python -m flake8 --config=.flake8 src/finch'
 	@bash -c 'python -m isort --check-only --settings-file=pyproject.toml src/finch'
 	@bash -c 'python -m vulture src/finch tests'
+	@bash -c 'python -m deptry src/finch'
 	@bash -c 'python -m yamllint --config-file=.yamllint.yaml .'
 
 ## Test targets:
