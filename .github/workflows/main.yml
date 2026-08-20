@@ -69,8 +69,8 @@ jobs:
           cache-downloads: true
           cache-downloads-key: downloads-Python${{ matrix.python-version }}-${{ steps.date.outputs.date }}
           cache-environment: true
-          environment-file: environment.yml
-          environment-name: finch
+          environment-file: environment-dev.yml
+          environment-name: finch-dev
           create-args: >-
             python=${{ matrix.python-version }}
       - name: Install finch-wps
