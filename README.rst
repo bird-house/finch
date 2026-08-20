@@ -6,9 +6,9 @@ Finch
 +----------------------------+-----------------------------------------------------+
 | Documentation and Support  | |docs| |gitter|                                     |
 +----------------------------+-----------------------------------------------------+
-| Open Source                | |license| |fossa|                                   |
+| Open Source                | |license| |fossa| |zenodo|                          |
 +----------------------------+-----------------------------------------------------+
-| Coding Standards           | |pre-commit| |ruff|                                 |
+| Coding Standards           | |ruff| |pre-commit|                                 |
 +----------------------------+-----------------------------------------------------+
 | Development Status         | |status| |build|                                    |
 +----------------------------+-----------------------------------------------------+
@@ -94,3 +94,7 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. |versions| image:: https://img.shields.io/pypi/pyversions/birdhouse-finch.svg
         :target: https://pypi.python.org/pypi/birdhouse-finch
         :alt: Supported Python Versions
+
+.. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3471632.svg
+        :target: https://doi.org/10.5281/zenodo.3471632
+        :alt: Zenodo DOI
