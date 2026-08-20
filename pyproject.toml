@@ -169,7 +169,7 @@ regex = true
 [[tool.bumpversion.files]]
 filename = "src/finch/__version__.py"
 search = "__version__ = \"{current_version}\""
-replace = "__version__ = \"{new_version}\n"
+replace = "__version__ = \"{new_version}\""
 
 [[tool.bumpversion.files]]
 filename = ".cruft.json"
