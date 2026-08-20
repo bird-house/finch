@@ -1,7 +1,7 @@
 # noqa: D100
-import xml.etree.ElementTree
 from pathlib import Path
 
+import lxml.etree
 from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
@@ -50,16 +50,16 @@ def get_output(doc):  # noqa: D103
     return output
 
 
-def get_metalinks(doc: xml.etree.ElementTree.Element):
+def get_metalinks(doc: lxml.etree.Element):
     """Return a dictionary of metaurls found in metalink XML, keyed by their file name.
 
     Parameters
     ----------
-    doc : xml.etree.ElementTree.Element
+    doc : lxml.etree.Element
         Metalink XML etree.
     """
     output = {}
-    for child in doc:
+    for child in doc.iterchildren():
         if child.tag == "{urn:ietf:params:xml:ns:metalink}file":
             url = child.find("{urn:ietf:params:xml:ns:metalink}metaurl")
             output[child.attrib["name"]] = url.text

@@ -44,6 +44,7 @@ dependencies:
   - flake8-rst-docstrings >=0.4.0
   - flit >=3.11.0,<4.0
   - geojson
+  - lxml
   - nbsphinx >=0.9.8
   - nbval >=0.10.0
   - owslib

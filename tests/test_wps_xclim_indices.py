@@ -1,5 +1,4 @@
 import json
-import xml.etree.ElementTree
 from pathlib import Path
 from unittest import mock
 from zipfile import ZipFile
@@ -8,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
+from lxml import etree
 from numpy.testing import assert_equal
 from pywps.app.exceptions import ProcessError
 from xclim.testing import open_dataset
@@ -141,7 +141,7 @@ def test_wps_daily_temperature_range_multiple(client, netcdf_datasets):
     assert mock_progress.call_args_list[4][1]["end_percentage"] == 100
 
     # FIXME: This is generally unsafe as an approach as the data is untrusted.
-    et = xml.etree.ElementTree.fromstring(outputs[1].data[0].encode())  # noqa: S320
+    et = etree.fromstring(outputs[1].data[0].encode())  # noqa: S320
     urls = [e[2].text for e in et if e.tag.endswith("file")]
 
     assert len(urls) == 5, "Containing 10 files"
