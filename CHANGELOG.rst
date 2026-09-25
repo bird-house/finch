@@ -17,7 +17,7 @@ Changelog
 * The `environment.yml` file has been split from the now named `environment-dev.yml` in order to prevent the docker image from installing development dependencies.
 * `deptry` has been added to the linters in order to audit all imported dependencies; core and development dependencies are more clearly defined.
 * Add `psycopg` as prod requirement since it is now used by default for `postgresql://` URLs.
-* Ensure that prod requirements are installed in the docker container. 
+* Ensure that prod requirements are installed in the docker container.
 
 .. _changes_0.13.2:
 
