@@ -101,7 +101,8 @@ docs = [
 ]
 prod = [
   "gunicorn>=23.0.0",
-  "psycopg2-binary>=2.9.9"
+  "psycopg2-binary>=2.9.9",
+  "psycopg[binary,pool]>=3.3.6"
 ]
 
 [project.scripts]
@@ -200,10 +201,11 @@ optional_dependencies_dev_groups = ["dev", "docs"]
 
 [tool.deptry.package_module_name_map]
 gunicorn = "gunicorn"
+psycopg = "psycopg"
 psycopg2-binary = "psycopg2_binary"
 
 [tool.deptry.per_rule_ignores]
-DEP002 = ["gunicorn", "psycopg2-binary", "xesmf"]
+DEP002 = ["gunicorn", "psycopg", "psycopg2-binary", "xesmf"]
 
 [tool.flit.module]
 name = "finch"
