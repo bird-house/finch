@@ -28,7 +28,7 @@ ENV PROJ_DATA="/opt/conda/envs/finch/share/proj"
 COPY . /code
 
 # Install WPS project
-RUN conda run -n finch pip install --no-cache-dir .[prod]
+RUN conda run -n finch pip install --no-cache-dir . --no-deps
 
 # Start WPS service on port 5000 of 0.0.0.0
 EXPOSE 5000

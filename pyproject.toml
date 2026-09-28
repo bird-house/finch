@@ -100,8 +100,8 @@ docs = [
   "sphinxcontrib-bibtex>=2.6.0"
 ]
 prod = [
-  "gunicorn>=23.0.0",
-  "psycopg2-binary>=2.9.9",
+  "gunicorn>=26.2.0",
+  "psycopg2-binary>=2.9.12",
   "psycopg[binary,pool]>=3.3.6"
 ]
 
