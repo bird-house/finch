@@ -9,7 +9,7 @@ on:
 concurrency:
   # For a given workflow, if we push to the same branch, cancel all previous builds on that branch except on master.
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -41,8 +41,10 @@ jobs:
       - name: Run pylint
         run: |
           python -m pylint --rcfile=.pylintrc.toml --disable=import-error --exit-zero src/finch
-      - name: Run pre-commit
-        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+      - name: Run prek
+        uses: j178/prek-action@5337cb91e0fa35a7ff31b9ca345126d8bbbcdf16 # v2.0.6
+        with:
+          extra-args: --skip no-commit-to-branch
 
   conda:
     name: Build ⚙️ and test 🧪
@@ -67,9 +69,10 @@ jobs:
         uses: mamba-org/setup-micromamba@d7c9bd84e824b79d2af72a2d4196c7f4300d3476 # v3.0.0
         with:
           cache-downloads: true
+          cache-downloads-key: downloads-Python${{ matrix.python-version }}-${{ steps.date.outputs.date }}
           cache-environment: true
-          environment-file: environment.yml
-          environment-name: finch
+          environment-file: environment-dev.yml
+          environment-name: finch-dev
           create-args: >-
             python=${{ matrix.python-version }}
       - name: Install finch-wps

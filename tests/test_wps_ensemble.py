@@ -30,6 +30,38 @@ poly = {
 }
 
 
+def test_ensemble_min_members(client):
+    # --- given ---
+    identifier = "ensemble_grid_point_tx_mean"
+    for min_members in [1, 2, 15, 29, 35]:
+        inputs = [
+            wps_literal_input("lat", "45.5"),
+            wps_literal_input("lon", "-73.0"),
+            wps_literal_input("scenario", "rcp45"),
+            wps_literal_input("dataset", "test_single_cell"),
+            wps_literal_input("freq", "MS"),
+            wps_literal_input("ensemble_percentiles", "20, 50, 80"),
+            wps_literal_input("output_format", "netcdf"),
+            wps_literal_input("output_name", "testens"),
+            wps_literal_input("min_members", str(min_members)),
+        ]
+
+        # --- when ---
+        outputs = execute_process(client, identifier, inputs)
+        outputs
+        assert len(outputs) == 1
+
+        # assert Path(outputs[0]).stem.startswith("testens_45_500_73_000_ssp245_ssp585")
+        ds = open_dataset(outputs[0])
+        for vv in ds.data_vars:
+            if min_members > 29:
+                # 29 members in the test dataset, so if min_members > 29, all values should be NaN
+                assert ds[vv].isnull().all()
+            else:
+                # 29 members in the test dataset, so if min_members <= 29, we should have some non-NaN values
+                assert not ds[vv].isnull().all()
+
+
 def test_ensemble_hxmax_days_above_grid_point(client):
     # --- given ---
     identifier = "ensemble_grid_point_hxmax_days_above"

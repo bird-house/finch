@@ -369,6 +369,7 @@ def make_ensemble(  # noqa: D103
     spatavg: bool | None = False,
     tmpavg: bool | None = False,
     region: dict | None = None,
+    min_members: int | None = None,
 ) -> None:
     ensemble = ensembles.create_ensemble(
         files, realizations=[file.stem for file in files], decode_timedelta=False
@@ -435,7 +436,7 @@ def make_ensemble(  # noqa: D103
 
     if percentiles:
         ensemble_percentiles = ensembles.ensemble_percentiles(
-            ensemble, values=percentiles
+            ensemble, values=percentiles, min_members=min_members
         )
     else:
         ensemble_percentiles = ensemble
@@ -552,7 +553,9 @@ def ensemble_common_handler(  # noqa: C901,D103
     request_inputs_not_datasets = {
         k: v
         for k, v in request.inputs.items()
-        if k in xci_inputs and not k.startswith("perc")
+        if k in xci_inputs
+        and not k.startswith("perc")
+        and not k.startswith("min_members")
     }
 
     dataset_name = single_input_or_none(request.inputs, "dataset")
@@ -599,6 +602,7 @@ def ensemble_common_handler(  # noqa: C901,D103
         if percentiles_string != "None"
         else []
     )
+    min_members = single_input_or_none(request.inputs, "min_members")
 
     write_log(
         process,
@@ -718,6 +722,7 @@ def ensemble_common_handler(  # noqa: C901,D103
             spatavg=spatavg,
             tmpavg=tmpavg,
             region=region,
+            min_members=min_members,
         )
         ensemble.attrs["source_datasets"] = "\n".join(
             [dsinp.url for dsinp in netcdf_inputs]
