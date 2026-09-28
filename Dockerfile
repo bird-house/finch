@@ -11,7 +11,7 @@ LABEL org.opencontainers.image.vendor="Birdhouse"
 LABEL org.opencontainers.image.version="0.13.3-dev.6"
 
 # Specify a non-root user to run the application
-RUN useradd --create-home --shell /bin/bash --uid 1000 nonroot && mkdir -p /tmp/matplotlib && chown -R nonroot:nonroot /tmp/matplotlib
+RUN useradd --create-home --shell /bin/bash --uid 1001 nonroot && mkdir -p /tmp/matplotlib && chown -R nonroot:nonroot /tmp/matplotlib
 
 # Set the working directory to /code
 WORKDIR /code
