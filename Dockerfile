@@ -16,7 +16,6 @@ WORKDIR /code
 # Create conda environment
 COPY environment.yml .
 RUN mamba env create -n finch -f environment.yml && \
-    mamba install -n finch -c conda-forge gunicorn && \
     mamba clean --all --yes
 
 # Add the project conda environment to the path
@@ -29,7 +28,7 @@ ENV PROJ_DATA="/opt/conda/envs/finch/share/proj"
 COPY . /code
 
 # Install WPS project
-RUN conda run -n finch pip install --no-cache-dir .[prod] --no-deps
+RUN conda run -n finch pip install --no-cache-dir .[prod]
 
 # Start WPS service on port 5000 of 0.0.0.0
 EXPOSE 5000
