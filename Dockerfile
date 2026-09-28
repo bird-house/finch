@@ -30,6 +30,8 @@ ENV PROJ_DATA="/opt/conda/envs/finch/share/proj"
 
 # Copy WPS project
 COPY --chown=nonroot:nonroot . /code
+# allow the directory itself to create log file
+RUN chown nonroot:nonroot /code
 
 # Install WPS project
 RUN conda run -n finch pip install --no-cache-dir . --no-deps
