@@ -16,9 +16,11 @@ Changelog
 * Removed the ``addnab/docker-run-action`` from ``docker-testing.yml``; Now simply uses ``bash`` calls.
 * Adjusted the Dockerfile metadata to use ``org.opencontainers`` metadata conventions and run commands for readability.
 * Fixed the Zenodo DOI badge to use the latest URL.
-* ``bump-my-version`` configuration is now more elaborate; Changes to files on ``main`` will now bump version.
+* `bump-my-version` configuration is now more elaborate; Changes to files on ``main`` will now bump version.
 * The ``environment.yml`` file has been split from the now named ``environment-dev.yml`` in order to prevent the docker image from installing development dependencies.
-* ``deptry`` has been added to the linters in order to audit all imported dependencies; core and development dependencies are more clearly defined.
+* `deptry` has been added to the linters in order to audit all imported dependencies; Core and development dependencies are more clearly defined.
+* Added `psycopg` as prod requirement since it is now used by default for `postgresql://` URLs.
+* Ensured that prod requirements are installed in the docker container.
 
 .. _changes_0.13.2:
 
