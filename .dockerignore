@@ -25,3 +25,8 @@ conftest.py
 # Byte-compiled / optimized / DLL files
 **/__pycache__
 **/*.py[cod]
+
+# virtualenv
+.venv
+venv/
+ENV/

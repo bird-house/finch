@@ -16,7 +16,6 @@ WORKDIR /code
 # Create conda environment
 COPY environment.yml .
 RUN mamba env create -n finch -f environment.yml && \
-    mamba install -n finch -c conda-forge gunicorn && \
     mamba clean --all --yes
 
 # Add the project conda environment to the path
