@@ -29,7 +29,8 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class XclimIndicatorBase(FinchProcess):
-    """Dummy xclim indicator process class.
+    """
+    Dummy xclim indicator process class.
 
     Set xci to the xclim indicator in order to have a working class.
     """

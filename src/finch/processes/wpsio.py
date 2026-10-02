@@ -20,7 +20,8 @@ from .utils import PywpsInput, PywpsOutput, get_datasets_config
 
 
 def copy_io(io: PywpsInput | PywpsOutput, **kwargs) -> PywpsInput | PywpsOutput:
-    """Create a new input or output with modified parameters.
+    """
+    Create a new input or output with modified parameters.
 
     Use this if you want one of the inputs in this file, but want to modify it.
 
@@ -129,6 +130,15 @@ temporal_average = LiteralInput(
     min_occurs=0,
 )
 
+min_members = LiteralInput(
+    "min_members",
+    "Minimum number of members",
+    abstract="Minimum number of members required to compute the ensemble percentiles. \
+    If the number of members is lower than this value, the output will be missing.",
+    data_type="integer",
+    default=1,
+    min_occurs=0,
+)
 
 variable_any = LiteralInput(
     "variable",
