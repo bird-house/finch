@@ -168,6 +168,12 @@ replace = "LABEL org.opencontainers.image.created=\"{utcnow:%Y-%m-%dT%H:%M:%SZ}\
 regex = true
 
 [[tool.bumpversion.files]]
+filename = 'Makefile'
+search = "APP_VERSION ?= {current_version}"
+replace = "APP_VERSION ?= {new_version}"
+regex = true
+
+[[tool.bumpversion.files]]
 filename = "src/finch/__version__.py"
 search = "__version__ = \"{current_version}\""
 replace = "__version__ = \"{new_version}\""
