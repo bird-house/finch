@@ -139,7 +139,7 @@ serialize = [
 filename = "CHANGELOG.rst"
 include_bumps = ["release"]
 search = """\
-`Unreleased <https://github.com/Ouranosinc/xscen>`_ (latest)
+`Unreleased <https://github.com/bird-house/finch>`_ (latest)
 ------------------------------------------------------------
 """
 replace = """\

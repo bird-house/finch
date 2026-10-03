@@ -2,7 +2,7 @@
 Changelog
 =========
 
-`Unreleased <https://github.com/Ouranosinc/xscen>`_ (latest)
+`Unreleased <https://github.com/bird-house/finch>`_ (latest)
 ------------------------------------------------------------
 
 * Adjust dynamic default location of ``.custom.cfg`` and ``pywps.pid`` files, with optional ``FINCH_WORKDIR``
