@@ -41,6 +41,9 @@ EXPOSE 5000
 USER nonroot
 ENV MPLCONFIGDIR=/tmp/matplotlib
 
+# Align finch config and PID locations
+ENV FINCH_WORKDIR=/home/nonroot/finch
+
 CMD ["gunicorn", "--bind=0.0.0.0:5000", "-t 60", "finch.wsgi:application"]
 # docker build -t birdhouse/finch .
 # docker run -p 5000:5000 birdhouse/finch
