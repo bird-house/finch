@@ -16,7 +16,6 @@ RUN useradd --create-home --shell /bin/bash --uid 1001 nonroot && mkdir -p /tmp/
 # Create conda environment (root-owned is fine, nonroot just needs read access)
 COPY environment.yml .
 RUN mamba env create -n finch -f environment.yml && \
-    mamba install -n finch -c conda-forge gunicorn && \
     mamba clean --all --yes
 
 # Add the project conda environment to the path
