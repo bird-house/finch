@@ -15,7 +15,7 @@ For example change the hostname (*demo.org*) and logging level:
 .. code-block:: console
 
    $ cd finch
-   $ cp etc/custom.cfg .custom.cfg
+   $ cp etc/sample-custom.cfg .custom.cfg
    # edit your options
    $ vim .custom.cfg
    $ cat .custom.cfg
