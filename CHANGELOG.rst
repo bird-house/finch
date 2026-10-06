@@ -2,9 +2,11 @@
 Changelog
 =========
 
-`Unreleased <https://github.com/Ouranosinc/xscen>`_ (latest)
+`Unreleased <https://github.com/bird-house/finch>`_ (latest)
 ------------------------------------------------------------
 
+* Adjust dynamic default location of ``.custom.cfg`` and ``pywps.pid`` files, with optional ``FINCH_WORKDIR``
+  environment variable override.
 * Exposed a new input parameter ``min_members`` for ensemble processes, allowing users to specify the minimum number of ensemble members required for calculations.
   This allows users to ensure that results are only produced when a sufficient number of members are available, enhancing the reliability of the output.
 * Base image for ``Dockerfile`` changed from ``condaforge/mambaforge`` to ``condaforge/miniforge3``.
@@ -16,11 +18,11 @@ Changelog
 * Removed the ``addnab/docker-run-action`` from ``docker-testing.yml``; Now simply uses ``bash`` calls.
 * Adjusted the Dockerfile metadata to use ``org.opencontainers`` metadata conventions and run commands for readability.
 * Fixed the Zenodo DOI badge to use the latest URL.
-* `bump-my-version` configuration is now more elaborate; Changes to files on ``main`` will now bump version.
+* ``bump-my-version`` configuration is now more elaborate; Changes to files on ``main`` will now bump version.
 * The ``environment.yml`` file has been split from the now named ``environment-dev.yml`` in order to prevent the docker image from installing development dependencies.
-* `deptry` has been added to the linters in order to audit all imported dependencies; Core and development dependencies are more clearly defined.
-* Added `psycopg` as prod requirement since it is now used by default for `postgresql://` URLs.
-* Ensured that prod requirements are installed in the docker container.
+* ``deptry`` has been added to the linters in order to audit all imported dependencies; core and development dependencies are more clearly defined.
+* Add ``psycopg`` as prod requirement since it is now used by default for ``postgresql://`` URLs.
+* Ensure that prod requirements are installed in the docker container.
 
 .. _changes_0.13.2:
 
