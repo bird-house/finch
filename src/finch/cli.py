@@ -6,6 +6,7 @@
 ###########################################################
 
 import os
+import site
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -16,7 +17,18 @@ from pywps import configuration
 
 from . import wsgi
 
-PID_FILE = Path(__file__).parent.joinpath("pywps.pid").resolve()
+# resolve override or default back to local dev directory (e.g., install editable)
+# switch to workdir when detecting an installed package to avoid write permission errors
+WORKDIR = os.getenv("FINCH_WORKDIR")
+if WORKDIR:
+    WORKDIR = Path(WORKDIR).resolve()
+else:
+    WORKDIR = Path(__file__).parent
+    if any(path in str(WORKDIR) for path in site.getsitepackages()):
+        WORKDIR = Path.cwd()
+    if "src/finch" in str(WORKDIR):
+        WORKDIR = WORKDIR.parent.parent
+PID_FILE = WORKDIR.joinpath("pywps.pid").resolve()
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -42,7 +54,8 @@ def write_user_config(**kwargs) -> Path:
     """
     config_templ = template_env.get_template("pywps.cfg")
     rendered_config = config_templ.render(**kwargs)
-    config_file = Path(__file__).parent.joinpath(".custom.cfg").resolve()
+    WORKDIR.mkdir(exist_ok=True)
+    config_file = WORKDIR.joinpath(".custom.cfg").resolve()
     with config_file.open("w") as fp:
         fp.write(rendered_config)
     return config_file
@@ -83,6 +96,7 @@ def run_process_action(action: str | None = None):
     """
     action = action or "status"
     try:
+        PID_FILE.parent.mkdir(exist_ok=True)
         with PID_FILE.open() as fp:
             pid = int(fp.read())
             p = psutil.Process(pid)
@@ -287,6 +301,7 @@ def start(
             pid = os.fork()
             if pid:
                 click.echo(f"forked process id: {pid}")
+                PID_FILE.parent.mkdir(exist_ok=True)
                 with PID_FILE.open("w") as fp:
                     fp.write(f"{pid}")
         except OSError as e:
