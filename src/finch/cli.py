@@ -6,6 +6,7 @@
 ###########################################################
 
 import os
+import site
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -23,7 +24,7 @@ if WORKDIR:
     WORKDIR = Path(WORKDIR).resolve()
 else:
     WORKDIR = Path(__file__).parent
-    if "site-packages" in WORKDIR.parts:
+    if any(path in str(WORKDIR) for path in site.getsitepackages()):
         WORKDIR = Path.cwd()
     if "src/finch" in str(WORKDIR):
         WORKDIR = WORKDIR.parent.parent
