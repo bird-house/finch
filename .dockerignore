@@ -18,6 +18,7 @@ finch.egg-info/
 .cache
 .pytest_cache
 conftest.py
+test*.*
 
 # PyCharm
 *.idea

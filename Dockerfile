@@ -10,10 +10,10 @@ LABEL org.opencontainers.image.title="FinchWPS"
 LABEL org.opencontainers.image.vendor="Birdhouse"
 LABEL org.opencontainers.image.version="0.13.3-dev.6"
 
-# Set the working directory to /code
-WORKDIR /code
+# Specify a non-root user to run the application
+RUN useradd --create-home --shell /bin/bash --uid 1001 nonroot && mkdir -p /tmp/matplotlib && chown -R nonroot:nonroot /tmp/matplotlib
 
-# Create conda environment
+# Create conda environment (root-owned is fine, nonroot just needs read access)
 COPY environment.yml .
 RUN mamba env create -n finch -f environment.yml && \
     mamba clean --all --yes
@@ -25,7 +25,11 @@ ENV PATH="/opt/conda/envs/finch/bin:$PATH"
 ENV PROJ_DATA="/opt/conda/envs/finch/share/proj"
 
 # Copy WPS project
-COPY . /code
+COPY --chown=nonroot:nonroot . /code
+
+# Set the working directory to /code
+# Must setup after copy to inherit user permissions
+WORKDIR /code
 
 # Install WPS project
 RUN conda run -n finch pip install --no-cache-dir . --no-deps
@@ -33,12 +37,11 @@ RUN conda run -n finch pip install --no-cache-dir . --no-deps
 # Start WPS service on port 5000 of 0.0.0.0
 EXPOSE 5000
 
-# Specify a non-root user to run the application
-RUN useradd --create-home --shell /bin/bash --uid 1001 nonroot && \
-    mkdir -p /tmp/matplotlib && \
-    chown -R nonroot:nonroot /code /home/nonroot /tmp/matplotlib /opt/conda/envs/finch
 USER nonroot
 ENV MPLCONFIGDIR=/tmp/matplotlib
+
+# Align finch config and PID locations
+ENV FINCH_WORKDIR=/home/nonroot/finch
 
 CMD ["gunicorn", "--bind=0.0.0.0:5000", "-t 60", "finch.wsgi:application"]
 # docker build -t birdhouse/finch .
