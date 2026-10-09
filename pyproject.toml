@@ -124,7 +124,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.13.3-dev.6"
+current_version = "0.14.0"
 commit = true
 commit_args = "--no-verify"
 tag = false
@@ -160,6 +160,7 @@ replace = """\
 filename = "Dockerfile"
 search = "LABEL org.opencontainers.image.version=\"{current_version}\""
 replace = "LABEL org.opencontainers.image.version=\"{new_version}\""
+regex = false
 
 [[tool.bumpversion.files]]
 filename = 'Dockerfile'
@@ -171,7 +172,7 @@ regex = true
 filename = 'Makefile'
 search = "APP_VERSION ?= {current_version}"
 replace = "APP_VERSION ?= {new_version}"
-regex = true
+regex = false
 
 [[tool.bumpversion.files]]
 filename = "src/finch/__version__.py"

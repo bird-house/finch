@@ -2,8 +2,16 @@
 Changelog
 =========
 
-`Unreleased <https://github.com/bird-house/finch>`_ (latest)
-------------------------------------------------------------
+..
+    `Unreleased <https://github.com/bird-house/finch>`_ (latest)
+    ------------------------------------------------------------
+
+    * No changes.
+
+.. _changes_0.14.0:
+
+`v0.14.0 <https://github.com/bird-house/finch/tree/0.14.0>`_ (2026-10-09)
+-------------------------------------------------------------------------
 
 * Adjust dynamic default location of ``.custom.cfg`` and ``pywps.pid`` files, with optional ``FINCH_WORKDIR``
   environment variable override.
