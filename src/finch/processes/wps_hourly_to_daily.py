@@ -109,10 +109,8 @@ def _hourly_to_daily(
 ) -> xr.Dataset:
     """Convert an hourly time series to a daily time series."""
     # Validate missing values algorithm options
-    kls = MISSING_METHODS[check_missing]
-    missing = kls.execute
-    if missing_options:
-        kls.validate(**missing_options)
+    if check_missing != "skip":
+        missing = MISSING_METHODS[check_missing](**(missing_options or {}))
 
     # Resample to daily
     out = getattr(ds.resample(time="D"), reducer)(keep_attrs=True)
@@ -131,10 +129,9 @@ def _hourly_to_daily(
 
     # Compute missing values mask
     if check_missing != "skip":
+        srcfreq = xr.infer_freq(ds.time) or "h"
         for key, da in ds.data_vars.items():
-            mask = missing(
-                da, freq="D", src_timestep="H", options=missing_options, indexer={}
-            )
+            mask = missing(da, freq="D", src_timestep=srcfreq)
             out[key] = out[key].where(~mask)
 
     return out

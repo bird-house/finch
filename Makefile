@@ -1,6 +1,9 @@
 # Configuration
 APP_ROOT := $(abspath $(lastword $(MAKEFILE_LIST))/..)
 APP_NAME := finch
+# auto-updated by bump version
+APP_VERSION ?= 0.13.3-dev.6
+APP_REPO ?= birdhouse
 
 WPS_URL = http://localhost:5000
 
@@ -42,12 +45,13 @@ help: ## print this help message. (Default)
 .PHONY: install
 install: ## install finch application
 	@echo "Installing application ..."
-	@-bash -c 'pip install -e .'
+	@-bash -c 'python -m pip install --editable .'
 	@echo "\nStart service with \`make start\` and stop with \`make stop\`."
 
 develop: ## install finch application with development libraries
 	@echo "Installing development requirements for tests and docs ..."
-	@-bash -c 'pip install -e ".[dev]"'
+	@-bash -c 'test "${CONDA_PREFIX:-''} == $(dirname $(dirname $(which python)))" && echo "You are installing deps with pip inside a conda environment, this could lead to broken conda environments."'
+	@-bash -c 'python -m pip install --editable ".[dev]"'
 
 start: ## start finch service as daemon (background process)
 	@echo "Starting application ..."
@@ -113,6 +117,7 @@ lint: ## check style
 	@bash -c 'python -m flake8 --config=.flake8 src/finch'
 	@bash -c 'python -m isort --check-only --settings-file=pyproject.toml src/finch'
 	@bash -c 'python -m vulture src/finch tests'
+	@bash -c 'python -m deptry src/finch'
 	@bash -c 'python -m yamllint --config-file=.yamllint.yaml .'
 
 ## Test targets:
@@ -180,3 +185,10 @@ dist: clean ## build source and wheel package
 release: dist ## upload source and wheel packages
 	@echo "Uploading source and wheel packages ..."
 	@python -m flit publish dist/*
+
+## Docker targets:
+
+.PHONY: docker-build
+docker-build: ## build docker image
+	@echo "Building docker image ..."
+	@docker build -t "$(APP_REPO)/$(APP_NAME):$(APP_VERSION)" .

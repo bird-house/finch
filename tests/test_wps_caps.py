@@ -45,7 +45,7 @@ def test_wps_caps_no_datasets(client, monkeypatch):
     ).split()
 
     indicators = get_indicators(
-        realms=["atmos", "land", "seaIce"], exclude=not_implemented
+        realms=["atmos", "convert", "land", "seaIce"], exclude=not_implemented
     )
     mod_dict = get_virtual_modules()
     for mod in mod_dict.keys():

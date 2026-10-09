@@ -71,7 +71,7 @@ not_implemented = [
 def get_processes():
     """Get wps processes using the current global `pywps` configuration."""
     indicators = get_indicators(
-        realms=["atmos", "land", "seaIce"], exclude=not_implemented
+        realms=["convert", "atmos", "land", "seaIce"], exclude=not_implemented
     )
     mod_dict = get_virtual_modules()
     for mod in mod_dict.keys():

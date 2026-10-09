@@ -2,16 +2,44 @@
 Changelog
 =========
 
+`Unreleased <https://github.com/bird-house/finch>`_ (latest)
+------------------------------------------------------------
+
+* Adjust dynamic default location of ``.custom.cfg`` and ``pywps.pid`` files, with optional ``FINCH_WORKDIR``
+  environment variable override.
+* Exposed a new input parameter ``min_members`` for ensemble processes, allowing users to specify the minimum number of ensemble members required for calculations.
+  This allows users to ensure that results are only produced when a sufficient number of members are available, enhancing the reliability of the output.
+* Base image for ``Dockerfile`` changed from ``condaforge/mambaforge`` to ``condaforge/miniforge3``.
+* Removed ``pytest-flake8`` from development dependencies (incompatible with ``pytest`` v9.x).
+* Added ``numpydoc-validation`` to linters; Reformatted several function and class docstrings.
+* Added a Docker build and Docker Hub publishing workflow.
+* Update Docker build to employ only core packages (removed dev/doc from ``environment.yml``).
+* Optimized Dockerfile to avoid duplicating conda environment layer (and therefore duplicating size as well) when setting nonroot user.
+* Removed the ``addnab/docker-run-action`` from ``docker-testing.yml``; Now simply uses ``bash`` calls.
+* Adjusted the Dockerfile metadata to use ``org.opencontainers`` metadata conventions and run commands for readability.
+* Fixed the Zenodo DOI badge to use the latest URL.
+* ``bump-my-version`` configuration is now more elaborate; Changes to files on ``main`` will now bump version.
+* The ``environment.yml`` file has been split from the now named ``environment-dev.yml`` in order to prevent the docker image from installing development dependencies.
+* ``deptry`` has been added to the linters in order to audit all imported dependencies; core and development dependencies are more clearly defined.
+* Add ``psycopg`` as prod requirement since it is now used by default for ``postgresql://`` URLs.
+* Ensure that prod requirements are installed in the docker container.
+
+.. _changes_0.13.2:
+
 v0.13.2 (2025-06-05)
 --------------------
 
 * Allow calculations of 30-year averages on ensemble processes
-* Synchronized dependencies for `xclim` and `xscen`, placed pins on `numcodecs` to prevent issues with `zarr` and `dask`.
+* Synchronized dependencies for ``xclim`` and ``xscen``, placed pins on ``numcodecs`` to prevent issues with ``zarr`` and ``dask``.
+
+.. _changes_0.13.1:
 
 v0.13.1 (2025-02-13)
 --------------------
 
-* Allowed for the use of four (4) emissions scenarios in the `ensemble_percentiles` process.
+* Allowed for the use of four (4) emissions scenarios in the ``ensemble_percentiles`` process.
+
+.. _changes_0.13.0:
 
 v0.13.0 (2025-01-20)
 --------------------
@@ -19,74 +47,86 @@ v0.13.0 (2025-01-20)
 * Added support for Birdhouse Helper Bot (for bumping versions).
 * CI Actions and Python dependencies are now pinned to commit hashes.
 * Permissions have been set and restricted as needed for all workflows.
-* Pinned `cf-xarray` below v0.9.3.
-* Reformatted and renamed `CHANGES.rst` to `CHANGELOG.rst`.
+* Pinned ``cf-xarray`` below v0.9.3.
+* Reformatted and renamed ``CHANGES.rst`` to ``CHANGELOG.rst``.
 * Dropped support for Python 3.8 and 3.9. The supported versions are now Python 3.10, 3.11 and 3.12.
-* `black` has been updated to v2024.10.0, and coding conventions have been updated to Python3.10+.
-* Several dependencies now are pinned to baseline versions, including `anyascii`, `dask`, `ipython`, `matplotlib`, `nbsphinx` `numpy`, and `sphinxcontrib-bibtex`.
-* Added `xscen` dependency. Now used in spatial averaging of ensemble processes.
-* Updated the build system to use `flit` v3.9.0 (PEP 517 and PEP 621). Several configuration files have been migrated to `pyproject.toml` and `.flake8`.
-* `finch` now uses a src-based layout for the package. The `finch` package is now located in the `src` directory.
-* The pre-commit configuration has been updated to use `pre-commit` v3.5.0. Several hooks have been added, including `pygrep-hooks` (security fixes), `ruff` (code formatting), and `vulture` (dead code).
-* Documentation examples now build without warnings. ReadTheDocs is now configured to `fail_on_warning`.
-* `xclim` has been updated to v0.52.2.
+* ``black`` has been updated to v2024.10.0, and coding conventions have been updated to Python3.10+.
+* Several dependencies now are pinned to baseline versions, including ``anyascii``, ``dask``, ``ipython``, ``matplotlib``, ``nbsphinx``, ``numpy``, and ``sphinxcontrib-bibtex``.
+* Added ``xscen`` dependency. Now used in spatial averaging of ensemble processes.
+* Updated the build system to use ``flit`` v3.9.0 (PEP 517 and PEP 621). Several configuration files have been migrated to ``pyproject.toml`` and ``.flake8``.
+* ``finch`` now uses a src-based layout for the package. The ``finch`` package is now located in the ``src`` directory.
+* The pre-commit configuration has been updated to use ``pre-commit`` v3.5.0. Several hooks have been added, including ``pygrep-hooks`` (security fixes), ``ruff`` (code formatting), and ``vulture`` (dead code).
+* Documentation examples now build without warnings. ReadTheDocs is now configured to ``fail_on_warning``.
+* ``xclim`` has been updated to v0.52.2.
 * Modernized the documentation to reflect recent changes.
-* Added `pylint` to the linting checks and `pre-commit` steps.
+* Added ``pylint`` to the linting checks and ``pre-commit`` steps.
 * Added deployment workflows for PyPI and TestPyPI.
 * Synchronized more dependencies.
+
+.. _changes_0.12.1:
 
 v0.12.1 (2024-06-25)
 --------------------
 
-* Replaced `unidecode` with `anyascii` due to a licensing issue.
+* Replaced ``unidecode`` with ``anyascii`` due to a licensing issue.
 * Synchronized some dependencies across build systems.
-* Added a workaround in ``wps_geoseries_to_netcdf`` to handle a `pandas` v2.0 behaviour change.
+* Added a workaround in ``wps_geoseries_to_netcdf`` to handle a ``pandas`` v2.0 behaviour change.
+
+.. _changes_0.12.0:
 
 v0.12.0 (2024-03-25)
 --------------------
 
-* Renamed the installed package from `finch` to `birdhouse-finch`.
-* First release of the `birdhouse-finch` package on PyPI.
+* Renamed the installed package from ``finch`` to ``birdhouse-finch``.
+* First release of the ``birdhouse-finch`` package on PyPI.
 * Versioning now adheres to SemVer v2.0.0.
 * Added a Makefile recipe to the repository to evaluate notebooks while ignoring the output cells.
 * Cleaned up documentation to facilitate easier navigation.
 * Slightly reorganized the documentation for easier navigation.
 * Fast-forwarded the cookiecutter.
 * Fixed the ``Manifest.in`` to add all necessary files to wheel.
-* Removed references to files that have never existed (`apidoc`).
+* Removed references to files that have never existed (``apidoc``).
 * Cleaned up the setup code.
-* Added more files to be ignored in the `.gitignore` and in the `Manifest.in`.
+* Added more files to be ignored in the ``.gitignore`` and in the ``Manifest.in``.
+
+.. _changes_0.11.4:
 
 v0.11.4 (2023-12-20)
 --------------------
 
-* Fixed a bug that occurred when fixing a broken cftime-index with newer `cftime` versions.
+* Fixed a bug that occurred when fixing a broken cftime-index with newer ``cftime`` versions.
 * Placed pins on xarray and pandas to prevent future errors from changes to frequency codes.
+
+.. _changes_0.11.3:
 
 v0.11.3 (2023-08-23)
 --------------------
 
-* Updated ReadTheDocs to use the new mambaforge version (`2022.9`).
+* Updated ReadTheDocs to use the new mambaforge version (``2022.9``).
 * Addressed calls in GitHub Action usage that were emitting warnings.
-* Updated `MANIFEST.in` to include and exclude the relevant files for the source distribution.
-* Modified the `setup.py` to only include the files necessary in the wheel.
-* Updated `AUTHORS.rst` to list more contributors.
-* Removed namespace file (`__init__.py`) from tests to ensure that they aren't treated like an importable package.
+* Updated ``MANIFEST.in`` to include and exclude the relevant files for the source distribution.
+* Modified the ``setup.py`` to only include the files necessary in the wheel.
+* Updated ``AUTHORS.rst`` to list more contributors.
+* Removed namespace file (``__init__.py``) from tests to ensure that they aren't treated like an importable package.
 * Updated pre-commit hooks.
 * Sorted software requirements for legibility.
 * Removed Travis-CI shell script.
+
+.. _changes_0.11.2:
 
 v0.11.2 (2023-07-27)
 --------------------
 
 * Added a Docker-based testing suite to the GitHub Workflows.
 * Added a wider range of Python versions to test against in the GitHub Workflows.
-* Migrated conda-build action from mamba-org/provision-with-micromamba to mamba-org/setup-micromamba.
+* Migrated conda-build action from ``mamba-org/provision-with-micromamba`` to ``mamba-org/setup-micromamba``.
 * Cleaned up the Dockerfile. Docker now pip-installs finch directly from the GitHub repository.
-* Finch now explicitly supports Python3.11.
+* Finch now explicitly supports Python 3.11.
 * Pinned Python below 3.12 on conda and removed pin on pint for ReadTheDocs builds.
 * Added a GitHub Workflow to bump the version number and to create tags from the version bumping process on dispatch.
 * Added a pre-commit hook for validating the ReadTheDocs configuration and GitHub Workflows.
+
+.. _changes_0.11.1:
 
 v0.11.1 (2023-06-19)
 --------------------
@@ -94,9 +134,11 @@ v0.11.1 (2023-06-19)
 * Update to xclim 0.43.0.
 * Added xclim yml module support:
     - Added humidex days above calculation via yml module.
-    - Reimplmented streamflow indicators via yml module (adjust for xclim 0.41 breaking changes).
+    - Reimplemented streamflow indicators via yml module (adjust for xclim 0.41 breaking changes).
 * Fixed bug for CanDCS-U6 ensemble "26models" list.
-* Passing an empty string to `ensemble_percentiles` in ensemble processes will return the merged un-reduced ensemble. The different members are listed along the `realization` coordinates through raw names allowing for basic distinction between the input members.
+* Passing an empty string to ``ensemble_percentiles`` in ensemble processes will return the merged un-reduced ensemble. The different members are listed along the ``realization`` coordinates through raw names allowing for basic distinction between the input members.
+
+.. _changes_0.11.0:
 
 v0.11.0 (2023-06-13)
 --------------------
@@ -104,7 +146,9 @@ v0.11.0 (2023-06-13)
 * Fixed iter_local when depth > 0 to avoid all files to be considered twice
 * Revised documentation configuration on ReadTheDocs to leverage Anaconda (Mambaforge)
 * Minor adjustments to dependency configurations
-* Removed configuration elements handling from `finch start`. One can still pass custom config files, but all configuration defaults are handled by `finch/default.cfg` and the WSGI function. `jinja2` is not a dependency anymore.
+* Removed configuration elements handling from ``finch start``. One can still pass custom config files, but all configuration defaults are handled by ``finch/default.cfg`` and the WSGI function. ``jinja2`` is not a dependency anymore.
+
+.. _changes_0.10.0:
 
 v0.10.0 (2022-11-04)
 --------------------
@@ -119,15 +163,21 @@ v0.10.0 (2022-11-04)
 * Update to xclim 0.38.0.
 * Improved subset_grid_point_dataset & subset_bbox_dataset performance when using local files.
 
+.. _changes_0.9.2:
+
 v0.9.2 (2022-07-19)
 -------------------
 
 * Fix Finch unable to startup in the Docker image.
 
+.. _changes_0.9.1:
+
 v0.9.1 (2022-07-07)
 -------------------
 
 * Avoid using a broken version of ``libarchive`` in the Docker image.
+
+.. _changes_0.9.0:
 
 v0.9.0 (2022-07-06)
 -------------------
@@ -141,11 +191,15 @@ v0.9.0 (2022-07-06)
 * Removed deprecated processes ``subset_ensemble_bbox_BCCAQv2``, ``subset_ensemble_BCCAQv2`` and ``BCCAQv2_heat_wave_frequency_gridpoint``.
 * Added ``csv_precision`` to all processes allowing CSV output. When given, it controls the number of decimal places in the output.
 
+.. _changes_0.8.3:
+
 v0.8.3 (2022-04-21)
 -------------------
 
 * Preserve RCP dimension in ensemble processes, even when only RCP is selected.
 * Pin ``dask`` and ``distributed`` at ``2022.1.0``, see https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/issues/100
+
+.. _changes_0.8.2:
 
 v0.8.2 (2022-02-07)
 -------------------
@@ -155,31 +209,39 @@ v0.8.2 (2022-02-07)
 * New dependency ``python-slugify`` to ensure filenames are safe and valid.
 * Pinning dask to ``<=2022.1.0`` to avoid a performance issue with ``2022.1.1``.
 
+.. _changes_0.8.0:
+
 v0.8.0 (2022-01-13)
 -------------------
 
 * Add ``hourly_to_daily`` process, converting hourly data to daily data using a reduction operation (sum, mean, max, min).
 * Upgrade to clisops 0.8.0 to accelerate spatial averages over regions.
-* Upgrade to xesmf 0.6.2 to fix spatial averaging bug not weighing correctly cells with varing areas.
+* Upgrade to xesmf 0.6.2 to fix spatial averaging bug not weighing correctly cells with varying areas.
 * Update to PyWPS 4.5.1 to allow the creation of recursive directories for outputs.
 
 Notes
 -----
 * Upgrading to birdy 0.8.1 will remove annoying warnings when accessing netCDF files from THREDDS.
 
+.. _changes_0.7.7:
+
 v0.7.7 (2021-11-16)
 -------------------
 
 * Fix Sentry SDK initialization error
 
+.. _changes_0.7.6:
+
 v0.7.6 (2021-11-16)
 -------------------
 
 * Update to xclim 0.31
-* Added `SENTRY_ENV` configuration
+* Added ``SENTRY_ENV`` configuration
 * Possibility to pass multiple "rcp" inputs for ensemble processes.
 * Writing to netcdf is done only after calling ``load()`` to avoid locks occurring within dask calls to ``to_netcdf`` in multi-processing mode.
 * Add an ``average`` parameter to ensemble processes. When true, a spatial average is returned.
+
+.. _changes_0.7.5:
 
 v0.7.5 (2021-09-07)
 -------------------
@@ -187,6 +249,8 @@ v0.7.5 (2021-09-07)
 * Update to xclim 0.27.0
 * Added ``empirical_quantile_mapping`` process calling ``xclim.sdba.EmpiricalQuantileMapping``.
 * Update to PyWPS 4.4.5
+
+.. _changes_0.7.4:
 
 v0.7.4 (2021-05-04)
 -------------------
@@ -196,6 +260,8 @@ v0.7.4 (2021-05-04)
 * Inclusion of a list of input dataset urls in ensemble processes.
 * Correct ensemble statistics on day-of-year indicators.
 
+.. _changes_0.7.3:
+
 v0.7.3 (2021-04-13)
 -------------------
 
@@ -204,16 +270,22 @@ v0.7.3 (2021-04-13)
 * New subsetting & averaging notebook
 * Require xESMF>=0.5.3
 
+.. _changes_0.7.2:
+
 v0.7.2 (2021-04-01)
 -------------------
 
-* Add `data_validation` and `cf_compliance` arguments for ensemble xclim processes.
+* Add ``data_validation`` and ``cf_compliance`` arguments for ensemble xclim processes.
+
+.. _changes_0.7.1:
 
 v0.7.1 (2021-03-25)
 -------------------
 
-* Add `data_validation` and `cf_compliance` arguments for xclim processes.
-* Skip `data_validation` checks for the BCCAQv2HeatWave process.
+* Add ``data_validation`` and ``cf_compliance`` arguments for xclim processes.
+* Skip ``data_validation`` checks for the BCCAQv2HeatWave process.
+
+.. _changes_0.7.0:
 
 v0.7.0 (2021-03-15)
 -------------------
@@ -221,6 +293,8 @@ v0.7.0 (2021-03-15)
 * Add new process averaging gridded fields over a polygon using xESMF
 * Update to xclim 0.24, allowing for considerable simplification of the indicator process building mechanism
 * Update to PyWPS 4.4
+
+.. _changes_0.6.1:
 
 v0.6.1 (2021-01-26)
 -------------------
@@ -232,16 +306,20 @@ v0.6.1 (2021-01-26)
 * Fix bug in variable name inference
 * Add support for non-standard variable name (univariate case only)
 
+.. _changes_0.6.0:
+
 v0.6.0 (2021-01-12)
 -------------------
 
 * fix to chunk regions of subsetted files
-* use `cruft` to propagate changes from the birdhouse cookiecutter
+* use ``cruft`` to propagate changes from the birdhouse cookiecutter
 * catch documentation build error earlier since doc build is part of regular CI build
 * catch tutorial notebooks out of sync with code earlier since also part of regular CI build
 * use mock imports to facilitate building docs
 * add partial support for xclim v0.21
-* add support for shapefiles in `subset_shape`
+* add support for shapefiles in ``subset_shape``
+
+.. _changes_0.5.2:
 
 v0.5.2 (2020-03-25)
 -------------------
@@ -250,10 +328,14 @@ v0.5.2 (2020-03-25)
 * added chunk datasets for local files also
 * update xclim to == 0.15.2
 
+.. _changes_0.5.1:
+
 v0.5.1 (2020-03-18)
 -------------------
 
 * fix local bccaqv2 files filtering
+
+.. _changes_0.5.0:
 
 v0.5.0 (2020-03-18)
 -------------------
@@ -261,12 +343,16 @@ v0.5.0 (2020-03-18)
 * update xclim to 0.15.0
 * add french translation of processes abstract and descriptions
 
+.. _changes_0.4.1:
+
 v0.4.1 (2020-03-12)
 -------------------
 
-* fix #103 (drs_filename) add defaults when `project_id` is unknown
+* fix #103 (drs_filename) add defaults when ``project_id`` is unknown
 * drs_filenames: use dash instead of underscores in variable names
 * fix #80 frequency attrs of computed datasets
+
+.. _changes_0.4.0:
 
 v0.4.0 (2020-03-10)
 -------------------
@@ -282,10 +368,12 @@ v0.4.0 (2020-03-10)
 * Pin PyWPS to 4.2.4
 * Add DODS to supported formats for resources
 
-v0.3.x (2020-01-17)
+.. _changes_0.3.1:
+
+v0.3.1 (2020-01-17)
 -------------------
 
-* Extract common inputs and outputs to wpsio.py
+* Extract common inputs and outputs to ``wpsio.py``
 * Speed up CSV creation
 * Explicitly close thread pool
 * Tests for CSV conversion
@@ -297,24 +385,32 @@ v0.3.x (2020-01-17)
 * deprecate lon0 and lat0 for SubsetGridPointBCCAQV2Process
 * change point subset processes to accept a comma separated list of floats for multiple grid cells
 
+.. _changes_0.2.7:
+
 v0.2.7 (2019-12-09)
 -------------------
 
 * Fix for segmentation fault in libnetcdf (pin version to 4.6.2 until a fix is released)
+
+.. _changes_0.2.6:
 
 v0.2.6 (2019-12-04)
 -------------------
 
 * Notebooks are tested by Travis-CI
 * Bug fix
-* Update `xclim` to >= 0.12.2
-* Update `pywps` to > 4.2.3
+* Update ``xclim`` to >= 0.12.2
+* Update ``pywps`` to > 4.2.3
+
+.. _changes_0.2.5:
 
 v0.2.5 (2019-10-03)
 -------------------
 
 * Add test for DAP input to subsetting
 * Update notebook to run on the Jenkins test suite
+
+.. _changes_0.2.3:
 
 v0.2.3 (2019-05-27)
 -------------------
@@ -324,15 +420,19 @@ v0.2.3 (2019-05-27)
 * Add BCCAQV2HeatWave process
 * Add basic usage notebook
 
+.. _changes_0.2.1:
+
 v0.2.1 (2019-05-06)
 -------------------
 
 * Require Python>=3.6
 * Fix percentages in status update
-* Improve loggin
+* Improve logging
 
-v0.2.0 (2019-05-02)
--------------------
+.. _changes_0.2.0:
+
+v0.2 (2019-05-02)
+-----------------
 
 * Added subset_gridpoint process
 * Support DAP links
@@ -342,6 +442,8 @@ v0.2.0 (2019-05-02)
 * Use sentry to monitor error messages
 * Include Dockerfile
 * Use processes instead of threads
+
+.. _changes_0.1.0:
 
 v0.1.0 (2018-11-15)
 -------------------

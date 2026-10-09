@@ -20,7 +20,8 @@ from .utils import PywpsInput, PywpsOutput, get_datasets_config
 
 
 def copy_io(io: PywpsInput | PywpsOutput, **kwargs) -> PywpsInput | PywpsOutput:
-    """Create a new input or output with modified parameters.
+    """
+    Create a new input or output with modified parameters.
 
     Use this if you want one of the inputs in this file, but want to modify it.
 
@@ -129,6 +130,15 @@ temporal_average = LiteralInput(
     min_occurs=0,
 )
 
+min_members = LiteralInput(
+    "min_members",
+    "Minimum number of members",
+    abstract="Minimum number of members required to compute the ensemble percentiles. \
+    If the number of members is lower than this value, the output will be missing.",
+    data_type="integer",
+    default=1,
+    min_occurs=0,
+)
 
 variable_any = LiteralInput(
     "variable",
@@ -250,13 +260,15 @@ ensemble_percentiles = LiteralInput(
     min_occurs=0,
 )
 
+_missing_methods = list(MISSING_METHODS.keys())
+_missing_methods.append("skip")
 check_missing = LiteralInput(
     "check_missing",
     "Missing value handling method",
     abstract="Method used to determine which aggregations should be considered missing.",
     data_type="string",
     default=OPTIONS[CHECK_MISSING],
-    allowed_values=list(MISSING_METHODS.keys()),
+    allowed_values=_missing_methods,
     min_occurs=0,
 )
 

@@ -21,7 +21,7 @@ build:
     python: "mambaforge-23.11"
 
 conda:
-  environment: environment-docs.yml
+  environment: environment.yml
 
 # Optionally set the version of Python and requirements required to build your docs
 python:

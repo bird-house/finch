@@ -18,6 +18,7 @@ finch.egg-info/
 .cache
 .pytest_cache
 conftest.py
+test*.*
 
 # PyCharm
 *.idea
@@ -25,3 +26,8 @@ conftest.py
 # Byte-compiled / optimized / DLL files
 **/__pycache__
 **/*.py[cod]
+
+# virtualenv
+.venv
+venv/
+ENV/

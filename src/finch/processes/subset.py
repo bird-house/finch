@@ -25,7 +25,7 @@ from .utils import (
 LOGGER = logging.getLogger("PYWPS")
 
 
-def make_subset_file_name(resource, kind="sub"):
+def make_subset_file_name(resource, kind: str = "sub"):
     """Create output file name."""
     if resource.prop == "file":
         p = Path(resource.file)
@@ -46,7 +46,8 @@ def make_subset_file_name(resource, kind="sub"):
 def finch_subset_gridpoint(
     process: Process, netcdf_inputs: list[ComplexInput], request_inputs: RequestInputs
 ) -> list[Path]:
-    """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
+    """
+    Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
     The expected names of the inputs are as followed (taken from `wpsio.py`):
      - lat: Latitude coordinate, can be a comma separated list of floats
@@ -108,7 +109,7 @@ def finch_subset_gridpoint(
         else:
             subsetted = subsetted.expand_dims("region")
 
-        if not all(subsetted.dims.values()):
+        if not all(subsetted.sizes.values()):
             msg = f"Subset is empty for dataset: {resource.url}"
             LOGGER.warning(msg)
             return
@@ -128,7 +129,8 @@ def finch_subset_gridpoint(
 def finch_subset_bbox(
     process: Process, netcdf_inputs: list[ComplexInput], request_inputs: RequestInputs
 ) -> list[Path]:
-    """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
+    """
+    Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
      - lat0: Latitude coordinate
@@ -185,7 +187,7 @@ def finch_subset_bbox(
         except ValueError:
             subsetted = False
 
-        if subsetted is False or not all(subsetted.dims.values()):
+        if subsetted is False or not all(subsetted.sizes.values()):
             msg = f"Subset is empty for dataset: {resource.url}"
             LOGGER.warning(msg)
             return
@@ -203,19 +205,20 @@ def finch_subset_bbox(
 
 
 def extract_shp(path):
-    """Return a geopandas-compatible path to the shapefile stored in a zip archive.
+    """
+    Return a geopandas-compatible path to the shapefile stored in a zip archive.
 
     If multiple shapefiles are included, return only the first one found.
 
     Parameters
     ----------
     path : Path
-      Path to zip archive holding shapefile.
+        Path to zip archive holding shapefile.
 
     Returns
     -------
     str
-      zip:///<path to zip file>!<relative path to shapefile>
+        zip:///<path to zip file>!<relative path to shapefile>
     """
     from zipfile import ZipFile
 
@@ -232,7 +235,8 @@ def finch_average_shape(
     netcdf_inputs: list[ComplexInput],
     request_inputs: RequestInputs,
 ) -> list[Path] | None:
-    """Parse wps `request_inputs` based on their name and average `netcdf_inputs`.
+    """
+    Parse wps `request_inputs` based on their name and average `netcdf_inputs`.
 
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
      - shape: Polygon contour to average the data over.
@@ -251,6 +255,7 @@ def finch_average_shape(
     shape = gpd.read_file(shp)
     if tolerance > 0:
         shape["geometry"] = shape.simplify(tolerance)
+    shape["geometry"] = shape.geometry.segmentize(1)
 
     n_files = len(netcdf_inputs)
     count = 0
@@ -277,7 +282,7 @@ def finch_average_shape(
             dataset = subset_time(dataset, start_date=start_date, end_date=end_date)
         averaged = average_shape(dataset, shape)
 
-        if not all(averaged.dims.values()):
+        if not all(averaged.sizes.values()):
             msg = f"Average is empty for dataset: {resource.url}"
             LOGGER.warning(msg)
             return
@@ -297,7 +302,8 @@ def finch_subset_shape(
     netcdf_inputs: list[ComplexInput],
     request_inputs: RequestInputs,
 ) -> list[Path]:
-    """Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
+    """
+    Parse wps `request_inputs` based on their name and subset `netcdf_inputs`.
 
     The expected names of the request_inputs are as followed (taken from `wpsio.py`):
      - shape: Polygon contour to subset the data with.
@@ -343,7 +349,7 @@ def finch_subset_shape(
             end_date=end_date,
         )
 
-        if not all(subsetted.dims.values()):
+        if not all(subsetted.sizes.values()):
             msg = f"Subset is empty for dataset: {resource.url}"
             LOGGER.warning(msg)
             return

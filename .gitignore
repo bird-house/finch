@@ -65,6 +65,7 @@ coverage.xml
 coverage
 htmlcov
 nosetests.xml
+test*.*
 
 # buildout
 bin
@@ -84,10 +85,6 @@ bootstrap.py
 docs/build/
 docs/source/output-sanitize.cfg
 docs/source/references.bib
-
-# External Sources
-#src/external
-src/
 
 # tests
 *.log

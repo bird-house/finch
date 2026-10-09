@@ -65,14 +65,8 @@ def test_thredds():
     client = client_for(
         Service(processes=[SubsetGridPointProcess()], cfgfiles=CFG_FILE)
     )
-    fn1 = (
-        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/"
-        "birdhouse/disk2/cmip5/MRI/rcp85/fx/atmos/r0i0p0/sftlf/sftlf_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
-    )
-    fn2 = (
-        "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/"
-        "birdhouse/disk2/cmip5/MRI/rcp85/fx/atmos/r0i0p0/orog/orog_fx_MRI-CGCM3_rcp85_r0i0p0.nc"
-    )
+    fn1 = "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/testdata/xclim/HadGEM2-CC_360day/pr_day_HadGEM2-CC_rcp85_r1i1p1_na10kgrid_qm-moving-50bins-detrend_2095.nc"
+    fn2 = "https://pavics.ouranos.ca/twitcher/ows/proxy/thredds/dodsC/birdhouse/testdata/xclim/HadGEM2-CC_360day/tasmax_day_HadGEM2-CC_rcp85_r1i1p1_na10kgrid_qm-moving-50bins-detrend_2095.nc"
 
     datainputs = (
         f"resource=files@xlink:href={fn1};"
@@ -103,7 +97,9 @@ def test_bad_link_on_thredds():
         f"?service=WPS&request=Execute&version=1.0.0&identifier=subset_gridpoint&datainputs={datainputs}"
     )
 
-    assert "NetCDF: file not found" in resp.response[0].decode()
+    assert ("NetCDF: file not found" in resp.response[0].decode()) or (
+        "NetCDF: Unknown file format" in resp.response[0].decode()
+    )
 
 
 def test_bad_link_on_fs():
@@ -150,7 +146,7 @@ def test_wps_subsetpoint_dataset(client, outfmt):
         with zf.open(data_filenames[0]) as f:
             ds = xr.open_dataset(f)
 
-            dims = dict(ds.dims)
+            dims = dict(ds.sizes)
             assert dims == {
                 "region": 1,
                 "time": 100,

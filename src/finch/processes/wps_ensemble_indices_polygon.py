@@ -13,7 +13,8 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class XclimEnsemblePolygonBase(FinchProcess):
-    """Ensemble with polygon subset base class.
+    """
+    Ensemble with polygon subset base class.
 
     Set xci to the xclim indicator in order to have a working class.
     """
@@ -40,6 +41,7 @@ class XclimEnsemblePolygonBase(FinchProcess):
             wpsio.ensemble_percentiles,
             wpsio.average,
             wpsio.temporal_average,
+            wpsio.min_members,
             *wpsio.get_ensemble_inputs(novar=True),
         ]
 

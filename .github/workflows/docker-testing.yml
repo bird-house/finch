@@ -9,52 +9,48 @@ on:
 concurrency:
   # For a given workflow, if we push to the same branch, cancel all previous builds on that branch except on master.
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
 
+env:
+  TEST_TAG: birdhouse/finch:test
+
 jobs:
   build:
-    name: Build and Test Docker image
+    name: Build Docker image
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d # v2.16.1
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            auth.docker.io:443
-            conda.anaconda.org:443
-            files.pythonhosted.org:443
-            github.com:443
-            production.cloudflare.docker.com:443
-            pypi.org:443
-            registry-1.docker.io:443
+          egress-policy: audit
+
       - name: Checkout Repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
-      - name: Build Docker image (no push)
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          context: .
-          file: "Dockerfile"
-          tags: localfinch:latest
-          load: true
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # platforms: linux/amd64,linux/arm64
-          # sbom: false
+          context: .
+          load: true
           push: false
+          tags: ${{ env.TEST_TAG }}
+
       - name: Run Docker image
-        uses: addnab/docker-run-action@4f65fabd2431ebc8d299f8e5a018d79a769ae185 # v3.0.0
-        with:
-          image: localfinch:latest
-          options: -p 5000:5000
-          run: |
+        run: |
+          docker run --rm ${{ env.TEST_TAG }} sh -c '
             finch start -d
             sleep 2s
             finch status
             finch stop
+          '
