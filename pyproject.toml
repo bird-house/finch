@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.11.0,<4"]
+requires = ["flit_core >=4,<5.0"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -47,14 +47,14 @@ dependencies = [
   "parse >=1.20",
   "psutil >=6.0.0",
   "python-slugify >=8.0",
-  "pywps >=4.6.0",
+  "pywps >=4.7.0",
   "pyyaml >=6.0.1",
   "sentry-sdk",
-  "siphon",
+  "siphon >=0.10.0",
   "xarray >=2023.11.0",
   "xclim >=0.61,<0.62", # remember to match xclim version in environment.yml as well
   "xesmf >=0.8.2,!=0.8.8",
-  "xsdba ==0.7.0", # remember to match xsdba version in environment.yml as well
+  "xsdba >=0.7.0,<0.8.0", # remember to match xsdba version in environment.yml as well
   "xscen >=0.15,<0.16", # remember to match xscen version in environment.yml as well
   "werkzeug>=3.0.6"
 ]

@@ -8,7 +8,8 @@ channels:
   - nodefaults
 dependencies:
   - python >=3.11,<3.15
-  - pip >=26.1.0
+  - pip >=26.1
+  - flit >=4.0,<5.0
   - anyascii >=0.3.0
   - cftime >=1.4.1
   - cf_xarray >=0.9.3
@@ -28,6 +29,7 @@ dependencies:
   - psycopg >=3.3.4
   - psycopg2-binary >=2.9.12
   - python-slugify >=8.0
+  - pywps >=4.7.0
   - pyyaml >=6.0.1
   - sentry-sdk
   - setuptools >=78.1.1
@@ -36,9 +38,7 @@ dependencies:
   - xarray >=2023.11.0
   - xclim >=0.61,<0.62 # remember to match xclim version in pyproject.toml as well
   - xesmf >=0.8.2,!=0.8.8
-  - xsdba >=0.6,<0.7   # remember to match xsdba version in pyproject.toml as well
   - xscen >=0.15,<0.16  # remember to match xscen version in pyproject.toml as well
+  - xsdba >=0.7.0,<0.8.0   # remember to match xsdba version in pyproject.toml as well
   # Temporary fixes
   - fastprogress <1.1  # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm is updated in xscen.
-  - pip:
-    - pywps >=4.6  # workaround to avoid installing its dev/doc dependencies embedded in its own environment.yml
