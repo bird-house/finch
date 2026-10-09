@@ -2,7 +2,7 @@
 APP_ROOT := $(abspath $(lastword $(MAKEFILE_LIST))/..)
 APP_NAME := finch
 # auto-updated by bump version
-APP_VERSION ?= 0.13.3-dev.6
+APP_VERSION ?= 0.14.0-dev.0
 APP_REPO ?= birdhouse
 
 WPS_URL = http://localhost:5000
