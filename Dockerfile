@@ -3,7 +3,7 @@ FROM condaforge/miniforge3
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PIP_ROOT_USER_ACTION=ignore
 LABEL org.opencontainers.image.authors="Birdhouse and Ouranosinc"
-LABEL org.opencontainers.image.created="2026-10-13T05:34:42Z"
+LABEL org.opencontainers.image.created="2026-10-14T05:34:42Z"
 LABEL org.opencontainers.image.description="Finch WPS"
 LABEL org.opencontainers.image.source="https://github.com/bird-house/finch"
 LABEL org.opencontainers.image.title="FinchWPS"
