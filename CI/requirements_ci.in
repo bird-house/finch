@@ -4,4 +4,4 @@ pip==26.2.1
 pre-commit==4.6.2
 pydantic==2.13.5
 pylint==4.0.9
-virtualenv==21.14.9
+virtualenv==21.14.13
